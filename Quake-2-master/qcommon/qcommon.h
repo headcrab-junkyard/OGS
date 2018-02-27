@@ -155,9 +155,6 @@ char *CopyString (char *in);
 
 //============================================================================
 
-void Info_Print (char *s);
-
-
 /* crc.h */
 
 void CRC_Init(unsigned short *crcvalue);
@@ -512,55 +509,7 @@ extern	qboolean	userinfo_modified;
 // this is set each time a CVAR_USERINFO variable is changed
 // so that the client knows to send it to the server
 
-/*
-==============================================================
-
-NET
-
-==============================================================
-*/
-
-// net.h -- quake's interface to the networking layer
-
-#define	PORT_ANY	-1
-
-#define	MAX_MSGLEN		1400		// max length of a message
-#define	PACKET_HEADER	10			// two ints and a short
-
-typedef enum {NA_LOOPBACK, NA_BROADCAST, NA_IP, NA_IPX, NA_BROADCAST_IPX} netadrtype_t;
-
-typedef enum {NS_CLIENT, NS_SERVER} netsrc_t;
-
-typedef struct
-{
-	netadrtype_t	type;
-
-	byte	ip[4];
-	byte	ipx[10];
-
-	unsigned short	port;
-} netadr_t;
-
-void		NET_Init (void);
-void		NET_Shutdown (void);
-
-void		NET_Config (qboolean multiplayer);
-
-qboolean	NET_GetPacket (netsrc_t sock, netadr_t *net_from, sizebuf_t *net_message);
-void		NET_SendPacket (netsrc_t sock, int length, void *data, netadr_t to);
-
-qboolean	NET_CompareAdr (netadr_t a, netadr_t b);
-qboolean	NET_CompareBaseAdr (netadr_t a, netadr_t b);
-qboolean	NET_IsLocalAddress (netadr_t adr);
-char		*NET_AdrToString (netadr_t a);
-qboolean	NET_StringToAdr (char *s, netadr_t *a);
-void		NET_Sleep(int msec);
-
 //============================================================================
-
-#define	OLD_AVG		0.99		// total = oldtotal*OLD_AVG + new*(1-OLD_AVG)
-
-#define	MAX_LATENT	32
 
 typedef struct
 {
