@@ -17,6 +17,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+
 // cvar.h
 
 /*
@@ -53,15 +54,9 @@ Cvars are restricted from having the same names as commands to keep this
 interface from being ambiguous.
 */
 
-typedef struct cvar_s
-{
-	char	*name;
-	char	*string;
-	qboolean archive;		// set to true to cause it to be saved to vars.rc
-	qboolean server;		// notifies players when changed
-	float	value;
-	struct cvar_s *next;
-} cvar_t;
+#include "cvardef.hpp"
+
+extern cvar_t	*cvar_vars;
 
 void 	Cvar_RegisterVariable (cvar_t *variable);
 // registers a cvar that allready has the name, string, and optionally the
@@ -93,5 +88,3 @@ void 	Cvar_WriteVariables (FILE *f);
 // with the archive flag set to true.
 
 cvar_t *Cvar_FindVar (char *var_name);
-
-extern cvar_t	*cvar_vars;

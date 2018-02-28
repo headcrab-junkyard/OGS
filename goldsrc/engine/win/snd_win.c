@@ -84,9 +84,7 @@ void S_BlockSound (void)
 		snd_blocked++;
 
 		if (snd_blocked == 1)
-		{
 			waveOutReset (hWaveOut);
-		}
 	}
 }
 

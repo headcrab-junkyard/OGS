@@ -18,20 +18,19 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
+/// @file
+
 #pragma once
 
-struct usercmd_t
-{
-	byte	msec;
-	vec3_t	viewangles;
+typedef int	func_t;
+typedef int	string_t;
 
-// intended velocities
-	float	forwardmove;
-	float	sidemove;
-	float	upmove;
-	
-	byte	lightlevel;
-	
-	byte	buttons;
-	byte	impulse;
-};
+#if !defined BYTE_DEFINED
+typedef unsigned char 		byte;
+#define BYTE_DEFINED 1
+#endif
+
+#undef true
+#undef false
+
+typedef enum {false, true}	qboolean;

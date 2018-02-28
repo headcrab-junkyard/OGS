@@ -24,6 +24,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define	PROTOCOL_VERSION	49 // LET'S GO PAL!!!
 
+//=========================================
+
+#define	PORT_MASTER	27010
+#define	PORT_CLIENT	27005
+#define	PORT_SERVER	27015
+
+//=========================================
+
 // if the high bit of the servercmd is set, the low bits are fast update flags:
 #define	U_MOREBITS	(1<<0)
 #define	U_ORIGIN1	(1<<1)

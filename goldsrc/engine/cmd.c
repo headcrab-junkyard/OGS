@@ -34,9 +34,6 @@ typedef struct cmdalias_s
 
 cmdalias_t	*cmd_alias;
 
-int trashtest;
-int *trashspot;
-
 qboolean	cmd_wait;
 
 //=============================================================================
@@ -74,7 +71,6 @@ void Cbuf_Init (void)
 {
 	SZ_Alloc (&cmd_text, 8192);		// space for commands and script files
 }
-
 
 /*
 ============

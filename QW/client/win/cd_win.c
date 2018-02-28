@@ -10,7 +10,7 @@ This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
 
-See the included (GNU.txt) GNU General Public License for more details.
+See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
@@ -425,10 +425,9 @@ int CDAudio_Init(void)
     MCI_SET_PARMS	mciSetParms;
 	int				n;
 
-#if		0	// QW
 	if (cls.state == ca_dedicated)
 		return -1;
-#endif
+
 	if (COM_CheckParm("-nocdaudio"))
 		return -1;
 

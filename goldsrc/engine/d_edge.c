@@ -257,6 +257,7 @@ void D_DrawSurfaces (void)
 				}
 
 				D_CalcGradients (pface);
+
 				Turbulent8 (s->spans);
 				D_DrawZSpans (s->spans);
 

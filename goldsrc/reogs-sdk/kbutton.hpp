@@ -18,20 +18,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
+/// @file
+
 #pragma once
 
-struct usercmd_t
+typedef struct
 {
-	byte	msec;
-	vec3_t	viewangles;
-
-// intended velocities
-	float	forwardmove;
-	float	sidemove;
-	float	upmove;
-	
-	byte	lightlevel;
-	
-	byte	buttons;
-	byte	impulse;
-};
+	int		down[2];		// key nums holding it down
+	int		state;			// low bit is down state
+} kbutton_t;

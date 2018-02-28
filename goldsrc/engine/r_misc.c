@@ -100,7 +100,6 @@ void R_TimeRefresh_f (void)
 	r_refdef.viewangles[1] = startangle;
 }
 
-
 /*
 ================
 R_LineGraph

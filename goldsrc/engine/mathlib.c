@@ -151,7 +151,6 @@ void RotatePointAroundVector( vec3_t dst, const vec3_t dir, const vec3_t point, 
 
 /*-----------------------------------------------------------------*/
 
-
 float	anglemod(float a)
 {
 #if 0
@@ -175,7 +174,6 @@ void BOPS_Error (void)
 {
 	Sys_Error ("BoxOnPlaneSide:  Bad signbits");
 }
-
 
 #if	!id386
 

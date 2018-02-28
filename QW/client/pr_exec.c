@@ -18,7 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include "qwsvdef.h"
+#include "quakedef.h"
 
 
 /*
@@ -335,7 +335,7 @@ int PR_LeaveFunction (void)
 	int		i, c;
 
 	if (pr_depth <= 0)
-		SV_Error ("prog stack underflow");
+		Sys_Error ("prog stack underflow");
 
 // restore locals from the stack
 	c = pr_xfunction->locals;

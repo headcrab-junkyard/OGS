@@ -18,20 +18,22 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
+/// @file
+
 #pragma once
 
-struct usercmd_t
+// entity_state_t is the information conveyed from the server
+// in an update message
+struct entity_state_t
 {
-	byte	msec;
-	vec3_t	viewangles;
+	int		number;			// edict index
 
-// intended velocities
-	float	forwardmove;
-	float	sidemove;
-	float	upmove;
-	
-	byte	lightlevel;
-	
-	byte	buttons;
-	byte	impulse;
+	int		flags;			// nolerp, etc
+	vec3_t	origin;
+	vec3_t	angles;
+	int		modelindex;
+	int		frame;
+	int		colormap;
+	int		skinnum;
+	int		effects;
 };

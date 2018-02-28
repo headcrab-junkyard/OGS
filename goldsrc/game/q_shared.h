@@ -241,20 +241,6 @@ float	LittleFloat (float l);
 void	Swap_Init (void);
 char	*va(char *format, ...);
 
-//=============================================
-
-//
-// key / value info strings
-//
-#define	MAX_INFO_KEY		64
-#define	MAX_INFO_VALUE		64
-#define	MAX_INFO_STRING		512
-
-char *Info_ValueForKey (char *s, char *key);
-void Info_RemoveKey (char *s, char *key);
-void Info_SetValueForKey (char *s, char *key, char *value);
-qboolean Info_Validate (char *s);
-
 /*
 ==============================================================
 
@@ -302,29 +288,13 @@ CVARS (console variables)
 ==========================================================
 */
 
-#ifndef CVAR
-#define	CVAR
-
-#define	CVAR_ARCHIVE	1	// set to cause it to be saved to vars.rc
-#define	CVAR_USERINFO	2	// added to userinfo  when changed
-#define	CVAR_SERVERINFO	4	// added to serverinfo when changed
-#define	CVAR_NOSET		8	// don't allow change from console at all,
-							// but can be set from the command line
-#define	CVAR_LATCH		16	// save changes until server restart
-
-// nothing outside the Cvar_*() functions should modify these fields!
 typedef struct cvar_s
 {
-	char		*name;
-	char		*string;
 	char		*latched_string;	// for CVAR_LATCH vars
-	int			flags;
+	
 	qboolean	modified;	// set each time the cvar is changed
-	float		value;
-	struct cvar_s *next;
+	
 } cvar_t;
-
-#endif		// CVAR
 
 /*
 ==============================================================

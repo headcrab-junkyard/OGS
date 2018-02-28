@@ -94,6 +94,7 @@ void Cbuf_AddText (char *text)
 		Con_Printf ("Cbuf_AddText: overflow\n");
 		return;
 	}
+
 	SZ_Write (&cmd_text, text, Q_strlen (text));
 }
 
@@ -180,7 +181,7 @@ void Cbuf_Execute (void)
 		}
 
 // execute the command line
-		Cmd_ExecuteString (line);
+		Cmd_ExecuteString (line, src_command);
 		
 		if (cmd_wait)
 		{	// skip out while text still remains in buffer, leaving it

@@ -31,21 +31,6 @@ typedef union eval_s
 	int				edict;
 } eval_t;	
 
-#define	MAX_ENT_LEAFS	16
-typedef struct edict_s
-{
-	qboolean	free;
-	link_t		area;				// linked to a division node or leaf
-	
-	int			num_leafs;
-	short		leafnums[MAX_ENT_LEAFS];
-
-	entity_state_t	baseline;
-	
-	float		freetime;			// sv.time when the object was freed
-	entvars_t	v;					// C exported fields from progs
-// other fields from progs come immediately after
-} edict_t;
 #define	EDICT_FROM_AREA(l) STRUCT_FROM_LINK(l,edict_t,area)
 
 //============================================================================
@@ -131,4 +116,3 @@ void ED_PrintEdicts (void);
 void ED_PrintNum (int ent);
 
 eval_t *GetEdictFieldValue(edict_t *ed, char *field);
-

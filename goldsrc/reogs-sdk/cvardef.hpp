@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,18 +21,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #pragma once
 
-struct usercmd_t
-{
-	byte	msec;
-	vec3_t	viewangles;
+#define	CVAR_ARCHIVE	1	// set to cause it to be saved to vars.rc
+#define	CVAR_USERINFO	2	// added to userinfo  when changed
+#define	CVAR_SERVERINFO	4	// added to serverinfo when changed
+#define	CVAR_NOSET		8	// don't allow change from console at all,
+							// but can be set from the command line
+#define	CVAR_LATCH		16	// save changes until server restart
 
-// intended velocities
-	float	forwardmove;
-	float	sidemove;
-	float	upmove;
-	
-	byte	lightlevel;
-	
-	byte	buttons;
-	byte	impulse;
-};
+// nothing outside the Cvar_*() functions should modify these fields!
+typedef struct cvar_s
+{
+	char	*name;
+	char	*string;
+	int			flags;
+	//qboolean archive;		// set to true to cause it to be saved to vars.rc
+	//qboolean server;		// notifies players when changed
+	float	value;
+	struct cvar_s *next;
+} cvar_t;

@@ -280,7 +280,7 @@ void Sys_EditFile(char *filename)
 
 }
 
-double Sys_DoubleTime (void)
+double Sys_FloatTime (void)
 {
     struct timeval tp;
     struct timezone tzp; 
@@ -388,11 +388,11 @@ int main (int c, char **v)
 
     Host_Init(&parms);
 
-    oldtime = Sys_DoubleTime ();
+    oldtime = Sys_FloatTime ();
     while (1)
     {
 // find time spent rendering last frame
-        newtime = Sys_DoubleTime ();
+        newtime = Sys_FloatTime ();
         time = newtime - oldtime;
 
 		Host_Frame(time);

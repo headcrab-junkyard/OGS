@@ -20,18 +20,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #pragma once
 
-struct usercmd_t
+struct dlight_t
 {
-	byte	msec;
-	vec3_t	viewangles;
-
-// intended velocities
-	float	forwardmove;
-	float	sidemove;
-	float	upmove;
+	vec3_t	origin;
+	float	radius;
 	
-	byte	lightlevel;
+	// TODO: rgba color
 	
-	byte	buttons;
-	byte	impulse;
+	float	die;				// stop lighting after this time
+	float	decay;				// drop this each second
+	
+	float	minlight;			// don't add when contributing less
+	int		key;
+	
+	qboolean	dark;			// subtracts light instead of adding
 };

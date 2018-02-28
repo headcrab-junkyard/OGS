@@ -19,7 +19,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // client.h
 
-
 typedef struct
 {
 	char		name[16];
@@ -54,33 +53,6 @@ typedef struct
 	int			oldbuttons;
 } player_state_t;
 
-
-#define	MAX_SCOREBOARDNAME	16
-typedef struct player_info_s
-{
-	int		userid;
-	char	userinfo[MAX_INFO_STRING];
-
-	// scoreboard information
-	char	name[MAX_SCOREBOARDNAME];
-	float	entertime;
-	int		frags;
-	int		ping;
-	byte	pl;
-
-	// skin information
-	int		topcolor;
-	int		bottomcolor;
-
-	int		_topcolor;
-	int		_bottomcolor;
-
-	int		spectator;
-	byte	translations[VID_GRADES*256];
-	skin_t	*skin;
-} player_info_t;
-
-
 typedef struct
 {
 	// generated on client side
@@ -113,7 +85,7 @@ typedef struct
 //
 // client_state_t should hold all pieces of the client state
 //
-#define	MAX_DLIGHTS		32
+
 typedef struct
 {
 	int		key;				// so entities can reuse same entry
@@ -285,9 +257,6 @@ typedef struct
 	int			cdtrack;		// cd audio
 
 	entity_t	viewent;		// weapon model
-
-// all player information
-	player_info_t	players[MAX_CLIENTS];
 } client_state_t;
 
 

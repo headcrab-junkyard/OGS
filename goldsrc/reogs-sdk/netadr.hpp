@@ -20,18 +20,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #pragma once
 
-struct usercmd_t
+enum netsrc_t
 {
-	byte	msec;
-	vec3_t	viewangles;
-
-// intended velocities
-	float	forwardmove;
-	float	sidemove;
-	float	upmove;
-	
-	byte	lightlevel;
-	
-	byte	buttons;
-	byte	impulse;
+	NS_CLIENT,
+	NS_SERVER
 };

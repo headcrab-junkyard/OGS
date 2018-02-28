@@ -199,13 +199,7 @@ void BuildTris (void)
 {
 	int		i, j, k;
 	int		startv;
-	mtriangle_t	*last, *check;
-	int		m1, m2;
-	int		striplength;
-	trivertx_t	*v;
-	mtriangle_t *tv;
 	float	s, t;
-	int		index;
 	int		len, bestlen, besttype;
 	int		bestverts[1024];
 	int		besttris[1024];
@@ -290,13 +284,10 @@ GL_MakeAliasModelDisplayLists
 void GL_MakeAliasModelDisplayLists (model_t *m, aliashdr_t *hdr)
 {
 	int		i, j;
-	maliasgroup_t	*paliasgroup;
 	int			*cmds;
 	trivertx_t	*verts;
-	char	cache[MAX_QPATH], fullpath[MAX_OSPATH], *c;
+	char	cache[MAX_QPATH], fullpath[MAX_OSPATH];
 	FILE	*f;
-	int		len;
-	byte	*data;
 
 	aliasmodel = m;
 	paliashdr = hdr;	// (aliashdr_t *)Mod_Extradata (m);

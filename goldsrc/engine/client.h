@@ -19,18 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // client.h
 
-typedef struct
-{
-	vec3_t	viewangles;
-
-// intended velocities
-	float	forwardmove;
-	float	sidemove;
-	float	upmove;
-#ifdef QUAKE2
-	byte	lightlevel;
-#endif
-} usercmd_t;
+#include "usercmd.hpp"
 
 typedef struct
 {
@@ -69,19 +58,7 @@ typedef struct
 #define	SIGNONS		4			// signon messages to receive before connected
 
 #define	MAX_DLIGHTS		32
-typedef struct
-{
-	vec3_t	origin;
-	float	radius;
-	float	die;				// stop lighting after this time
-	float	decay;				// drop this each second
-	float	minlight;			// don't add when contributing less
-	int		key;
-#ifdef QUAKE2
-	qboolean	dark;			// subtracts light instead of adding
-#endif
-} dlight_t;
-
+#include "dlight.hpp"
 
 #define	MAX_BEAMS	24
 typedef struct
@@ -95,14 +72,16 @@ typedef struct
 #define	MAX_EFRAGS		640
 
 #define	MAX_MAPSTRING	2048
+
 #define	MAX_DEMOS		8
 #define	MAX_DEMONAME	16
 
-typedef enum {
-ca_dedicated, 		// a dedicated server with no ability to start a client
-ca_disconnected, 	// full screen console with no connection
-ca_connected		// valid netcon, talking to a server
-} cactive_t;
+enum cactive_t
+{
+	ca_dedicated, 		// a dedicated server with no ability to start a client
+	ca_disconnected, 	// full screen console with no connection
+	ca_connected		// valid netcon, talking to a server
+};
 
 //
 // the client_static_t structure is persistant through an arbitrary number
@@ -219,7 +198,13 @@ typedef struct
 	struct efrag_s	*free_efrags;
 	int			num_entities;	// held in cl_entities array
 	int			num_statics;	// held in cl_staticentities array
+	
 	entity_t	viewent;			// the gun model
+
+	// all player information
+	player_info_t	players[MAX_CLIENTS];
+	
+// BELOW: WINQUAKE-SPECIFIC
 
 	int			cdtrack, looptrack;	// cd audio
 
@@ -310,11 +295,7 @@ extern	entity_t		*cl_visedicts[MAX_VISEDICTS];
 //
 // cl_input
 //
-typedef struct
-{
-	int		down[2];		// key nums holding it down
-	int		state;			// low bit is down state
-} kbutton_t;
+#include "kbutton.hpp"
 
 extern	kbutton_t	in_mlook, in_klook;
 extern 	kbutton_t 	in_strafe;

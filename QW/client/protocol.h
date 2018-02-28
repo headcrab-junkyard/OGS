@@ -247,36 +247,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 							// must be power of two
 #define	UPDATE_MASK		(UPDATE_BACKUP-1)
 
-// entity_state_t is the information conveyed from the server
-// in an update message
-typedef struct
-{
-	int		number;			// edict index
-
-	int		flags;			// nolerp, etc
-	vec3_t	origin;
-	vec3_t	angles;
-	int		modelindex;
-	int		frame;
-	int		colormap;
-	int		skinnum;
-	int		effects;
-} entity_state_t;
-
-
 #define	MAX_PACKET_ENTITIES	64	// doesn't count nails
 typedef struct
 {
 	int		num_entities;
 	entity_state_t	entities[MAX_PACKET_ENTITIES];
 } packet_entities_t;
-
-typedef struct usercmd_s
-{
-	byte	msec;
-	vec3_t	angles;
-	short	forwardmove, sidemove, upmove;
-	byte	buttons;
-	byte	impulse;
-} usercmd_t;
-

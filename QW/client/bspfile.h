@@ -47,7 +47,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	MAX_KEY		32
 #define	MAX_VALUE	1024
 
-
 //=============================================================================
 
 

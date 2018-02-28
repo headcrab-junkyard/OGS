@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -26,26 +27,15 @@ NET
 ==============================================================
 */
 
-// net.h -- quake's interface to the networking layer
+// net.h -- engine's interface to the networking layer
 
 #define	PORT_ANY	-1
 
 //#define	MAX_MSGLEN		1400		// max length of a message
 //#define	PACKET_HEADER	10			// two ints and a short
 
-typedef enum {NA_LOOPBACK, NA_BROADCAST, NA_IP, NA_IPX, NA_BROADCAST_IPX} netadrtype_t;
-
-typedef enum {NS_CLIENT, NS_SERVER} netsrc_t;
-
-typedef struct
-{
-	netadrtype_t	type;
-	
-	byte	ip[4];
-	byte	ipx[10];
-	
-	unsigned short	port;
-} netadr_t;
+#include "enums.hpp"
+#include "netadr.hpp"
 
 //extern	netadr_t	net_local_adr;
 //extern	netadr_t	net_from;		// address of who sent the packet

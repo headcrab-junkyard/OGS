@@ -20,6 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // r_local.h -- private refresh defs
 
 #ifndef GLQUAKE
+
 #include "r_shared.h"
 
 #define ALIAS_BASE_SIZE_RATIO		(1.0 / 11.0)
@@ -313,4 +314,4 @@ void R_ClipEdge (mvertex_t *pv0, mvertex_t *pv1, clipplane_t *clip);
 void R_SplitEntityOnNode2 (mnode_t *node);
 void R_MarkLights (dlight_t *light, int bit, mnode_t *node);
 
-#endif
+#endif // GLQUAKE

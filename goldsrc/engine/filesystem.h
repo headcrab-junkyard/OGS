@@ -6,6 +6,9 @@
 // file IO
 //
 
+struct IFileSystem;
+extern IFileSystem *gpFileSystem;
+
 // returns the file size
 // return -1 if file is not present
 // the file should be in BINARY mode for stupid OSs that care

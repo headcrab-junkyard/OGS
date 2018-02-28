@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // sv_edict.c -- entity dictionary
 
-#include "qwsvdef.h"
+#include "quakedef.h"
 
 dprograms_t		*progs;
 dfunction_t		*pr_functions;
@@ -650,17 +650,17 @@ void ED_ParseGlobals (char *data)
 		if (com_token[0] == '}')
 			break;
 		if (!data)
-			SV_Error ("ED_ParseEntity: EOF without closing brace");
+			Sys_Error ("ED_ParseEntity: EOF without closing brace");
 
 		strcpy (keyname, com_token);
 
 	// parse value	
 		data = COM_Parse (data);
 		if (!data)
-			SV_Error ("ED_ParseEntity: EOF without closing brace");
+			Sys_Error ("ED_ParseEntity: EOF without closing brace");
 
 		if (com_token[0] == '}')
-			SV_Error ("ED_ParseEntity: closing brace without data");
+			Sys_Error ("ED_ParseEntity: closing brace without data");
 
 		key = ED_FindGlobal (keyname);
 		if (!key)
@@ -812,7 +812,7 @@ char *ED_ParseEdict (char *data, edict_t *ent)
 		if (com_token[0] == '}')
 			break;
 		if (!data)
-			SV_Error ("ED_ParseEntity: EOF without closing brace");
+			Sys_Error ("ED_ParseEntity: EOF without closing brace");
 		
 // anglehack is to allow QuakeEd to write single scalar angles
 // and allow them to be turned into vectors. (FIXME...)
@@ -833,10 +833,10 @@ if (!strcmp(com_token, "light"))
 	// parse value	
 		data = COM_Parse (data);
 		if (!data)
-			SV_Error ("ED_ParseEntity: EOF without closing brace");
+			Sys_Error ("ED_ParseEntity: EOF without closing brace");
 
 		if (com_token[0] == '}')
-			SV_Error ("ED_ParseEntity: closing brace without data");
+			Sys_Error ("ED_ParseEntity: closing brace without data");
 
 		init = true;	
 
@@ -903,7 +903,7 @@ void ED_LoadFromFile (char *data)
 		if (!data)
 			break;
 		if (com_token[0] != '{')
-			SV_Error ("ED_LoadFromFile: found %s when expecting {",com_token);
+			Sys_Error ("ED_LoadFromFile: found %s when expecting {",com_token);
 
 		if (!ent)
 			ent = EDICT_NUM(0);
@@ -981,9 +981,9 @@ void PR_LoadProgs (void)
 		((int *)progs)[i] = LittleLong ( ((int *)progs)[i] );		
 
 	if (progs->version != PROG_VERSION)
-		SV_Error ("progs.dat has wrong version number (%i should be %i)", progs->version, PROG_VERSION);
+		Sys_Error ("progs.dat has wrong version number (%i should be %i)", progs->version, PROG_VERSION);
 	if (progs->crc != PROGHEADER_CRC)
-		SV_Error ("You must have the progs.dat from QuakeWorld installed");
+		Sys_Error ("You must have the progs.dat from QuakeWorld installed");
 
 	pr_functions = (dfunction_t *)((byte *)progs + progs->ofs_functions);
 	pr_strings = (char *)progs + progs->ofs_strings;
@@ -1028,7 +1028,7 @@ void PR_LoadProgs (void)
 	{
 		pr_fielddefs[i].type = LittleShort (pr_fielddefs[i].type);
 		if (pr_fielddefs[i].type & DEF_SAVEGLOBAL)
-			SV_Error ("PR_LoadProgs: pr_fielddefs[i].type & DEF_SAVEGLOBAL");
+			Sys_Error ("PR_LoadProgs: pr_fielddefs[i].type & DEF_SAVEGLOBAL");
 		pr_fielddefs[i].ofs = LittleShort (pr_fielddefs[i].ofs);
 		pr_fielddefs[i].s_name = LittleLong (pr_fielddefs[i].s_name);
 	}
@@ -1066,7 +1066,7 @@ void PR_Init (void)
 edict_t *EDICT_NUM(int n)
 {
 	if (n < 0 || n >= MAX_EDICTS)
-		SV_Error ("EDICT_NUM: bad number %i", n);
+		Sys_Error ("EDICT_NUM: bad number %i", n);
 	return (edict_t *)((byte *)sv.edicts+ (n)*pr_edict_size);
 }
 
@@ -1078,8 +1078,6 @@ int NUM_FOR_EDICT(edict_t *e)
 	b = b / pr_edict_size;
 	
 	if (b < 0 || b >= sv.num_edicts)
-		SV_Error ("NUM_FOR_EDICT: bad pointer");
+		Sys_Error ("NUM_FOR_EDICT: bad pointer");
 	return b;
 }
-
-

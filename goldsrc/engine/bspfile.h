@@ -224,7 +224,6 @@ typedef struct
 	byte		ambient_level[NUM_AMBIENTS];
 } dleaf_t;
 
-
 //============================================================================
 
 #ifndef QUAKE_GAME

@@ -237,7 +237,6 @@ dfunction_t *ED_FindFunction (char *name)
 	return NULL;
 }
 
-
 eval_t *GetEdictFieldValue(edict_t *ed, char *field)
 {
 	ddef_t			*def = NULL;
@@ -268,7 +267,6 @@ Done:
 
 	return (eval_t *)((char *)&ed->v + def->ofs*4);
 }
-
 
 /*
 ============
