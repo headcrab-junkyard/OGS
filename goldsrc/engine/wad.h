@@ -46,7 +46,7 @@ typedef struct
 
 typedef struct
 {
-	char		identification[4];		// should be WAD2 or 2DAW
+	char		identification[4];		// should be WAD2/WAD3 or 2DAW/3DAW
 	int			numlumps;
 	int			infotableofs;
 } wadinfo_t;

@@ -201,13 +201,8 @@ void	VID_UnlockBuffer (void);
 //===========================================
 
 #define	MAX_SCOREBOARD		16
-#define	MAX_SCOREBOARDNAME	32
 
 #define	SOUND_CHANNELS		8
-
-// This makes anyone on id's net privileged
-// Use for multiplayer testing only - VERY dangerous!!!
-// #define IDGODS
 
 #include "common.h"
 #include "bspfile.h"
@@ -216,17 +211,7 @@ void	VID_UnlockBuffer (void);
 #include "zone.h"
 #include "mathlib.h"
 
-typedef struct
-{
-	vec3_t	origin;
-	vec3_t	angles;
-	int		modelindex;
-	int		frame;
-	int		colormap;
-	int		skin;
-	int		effects;
-} entity_state_t;
-
+#include "entity_state.hpp"
 
 #include "wad.h"
 #include "draw.h"
@@ -238,7 +223,6 @@ typedef struct
 #include "sbar.h"
 #include "sound.h"
 #include "render.h"
-#include "client.h"
 #include "progs.h"
 #include "server.h"
 
@@ -249,6 +233,7 @@ typedef struct
 #include "d_iface.h"
 #endif
 
+#include "client.h"
 #include "input.h"
 #include "world.h"
 #include "keys.h"

@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "modelgen.h"
 #include "spritegn.h"
 
+#include "com_model.hpp"
+
 /*
 
 d*_t structures are on-disk representations
@@ -51,27 +53,10 @@ BRUSH MODELS
 //
 // in memory representation
 //
-// !!! if this is changed, it must be changed in asm_draw.h too !!!
-typedef struct
-{
-	vec3_t		position;
-} mvertex_t;
 
 #define	SIDE_FRONT	0
 #define	SIDE_BACK	1
 #define	SIDE_ON		2
-
-
-// plane_t structure
-// !!! if this is changed, it must be changed in asm_i386.h too !!!
-typedef struct mplane_s
-{
-	vec3_t	normal;
-	float	dist;
-	byte	type;			// for texture axis selection and fast side tests
-	byte	signbits;		// signx + signy<<1 + signz<<1
-	byte	pad[2];
-} mplane_t;
 
 typedef struct texture_s
 {
@@ -94,21 +79,6 @@ typedef struct texture_s
 #define SURF_DRAWTILED		0x20
 #define SURF_DRAWBACKGROUND	0x40
 #define SURF_UNDERWATER		0x80
-
-// !!! if this is changed, it must be changed in asm_draw.h too !!!
-typedef struct
-{
-	unsigned short	v[2];
-	unsigned int	cachededgeoffset;
-} medge_t;
-
-typedef struct
-{
-	float		vecs[2][4];
-	float		mipadjust;
-	texture_t	*texture;
-	int			flags;
-} mtexinfo_t;
 
 #define	VERTEXSIZE	7
 
@@ -152,56 +122,21 @@ typedef struct msurface_s
 	byte		*samples;		// [numstyles*surfsize]
 } msurface_t;
 
+/*
 typedef struct mnode_s
 {
-// common with leaf
-	int			contents;		// 0, to differentiate from leafs
-	int			visframe;		// node needs to be traversed if current
-	
 	float		minmaxs[6];		// for bounding box culling
 
-	struct mnode_s	*parent;
-
-// node specific
-	mplane_t	*plane;
-	struct mnode_s	*children[2];	
-
-	unsigned short		firstsurface;
-	unsigned short		numsurfaces;
 } mnode_t;
 
 
 
 typedef struct mleaf_s
 {
-// common with node
-	int			contents;		// wil be a negative contents number
-	int			visframe;		// node needs to be traversed if current
-
 	float		minmaxs[6];		// for bounding box culling
 
-	struct mnode_s	*parent;
-
-// leaf specific
-	byte		*compressed_vis;
-	efrag_t		*efrags;
-
-	msurface_t	**firstmarksurface;
-	int			nummarksurfaces;
-	int			key;			// BSP sequence number for leaf's contents
-	byte		ambient_sound_level[NUM_AMBIENTS];
 } mleaf_t;
-
-// !!! if this is changed, it must be changed in asm_i386.h too !!!
-typedef struct
-{
-	dclipnode_t	*clipnodes;
-	mplane_t	*planes;
-	int			firstclipnode;
-	int			lastclipnode;
-	vec3_t		clip_mins;
-	vec3_t		clip_maxs;
-} hull_t;
+*/
 
 /*
 ==============================================================================
@@ -328,8 +263,6 @@ extern	trivertx_t	*poseverts[MAXALIASFRAMES];
 // Whole model
 //
 
-typedef enum {mod_brush, mod_sprite, mod_alias} modtype_t;
-
 #define	EF_ROCKET	1			// leave a trail
 #define	EF_GRENADE	2			// leave a trail
 #define	EF_GIB		4			// leave a trail
@@ -339,6 +272,7 @@ typedef enum {mod_brush, mod_sprite, mod_alias} modtype_t;
 #define	EF_TRACER2	64			// orange split trail + rotate
 #define	EF_TRACER3	128			// purple trail
 
+/*
 typedef struct model_s
 {
 	char		name[MAX_QPATH];
@@ -415,6 +349,7 @@ typedef struct model_s
 	cache_user_t	cache;		// only access through Mod_Extradata
 
 } model_t;
+*/
 
 //============================================================================
 
