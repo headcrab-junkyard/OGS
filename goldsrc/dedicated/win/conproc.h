@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2018 Headcrab Garage
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,7 +18,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// conproc.h
+
+/// @file
 
 #define CCOM_WRITE_TEXT		0x2
 // Param1 : Text
@@ -32,6 +34,5 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define CCOM_SET_SCR_LINES	0x5
 // Param1 : Number of lines
 
-void InitConProc (HANDLE hFile, HANDLE heventParent, HANDLE heventChild);
-void DeinitConProc (void);
-
+void InitConProc(HANDLE hFile, HANDLE heventParent, HANDLE heventChild);
+void DeinitConProc();
