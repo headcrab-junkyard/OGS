@@ -17,7 +17,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// d_local.h:  private rasterization driver defs
+
+/// @file
+/// @brief private rasterization driver defs
 
 #include "r_shared.h"
 
@@ -79,15 +81,15 @@ void D_SpriteDrawSpans (sspan_t *pspan);
 void D_DrawSkyScans8 (espan_t *pspan);
 void D_DrawSkyScans16 (espan_t *pspan);
 
-void R_ShowSubDiv (void);
-void (*prealspandrawer)(void);
+void R_ShowSubDiv ();
+void (*prealspandrawer)();
 surfcache_t	*D_CacheSurface (msurface_t *surface, int miplevel);
 
 extern int D_MipLevelForScale (float scale);
 
 #if id386
-extern void D_PolysetAff8Start (void);
-extern void D_PolysetAff8End (void);
+extern void D_PolysetAff8Start ();
+extern void D_PolysetAff8End ();
 #endif
 
 extern short *d_pzbuffer;
@@ -108,4 +110,3 @@ extern int		d_minmip;
 extern float	d_scalemip[3];
 
 extern void (*d_drawspans) (espan_t *pspan);
-

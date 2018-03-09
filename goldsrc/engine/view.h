@@ -17,7 +17,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// view.h
+
+/// @file
 
 extern	cvar_t		v_gamma;
 
@@ -27,9 +28,7 @@ extern float v_blend[4];
 
 extern cvar_t lcd_x;
 
-
-void V_Init (void);
-void V_RenderView (void);
+void V_Init ();
+void V_RenderView ();
 float V_CalcRoll (vec3_t angles, vec3_t velocity);
-void V_UpdatePalette (void);
-
+void V_UpdatePalette ();

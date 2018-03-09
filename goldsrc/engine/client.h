@@ -17,9 +17,12 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// client.h
 
-#include "usercmd.hpp"
+/// @file
+
+#include "usercmd.h"
+
+#define MAX_CLIENTS 32 // TODO: TEMP?
 
 typedef struct
 {
@@ -58,7 +61,7 @@ typedef struct
 #define	SIGNONS		4			// signon messages to receive before connected
 
 #define	MAX_DLIGHTS		32
-#include "dlight.hpp"
+#include "dlight.h"
 
 #define	MAX_BEAMS	24
 typedef struct
@@ -76,12 +79,12 @@ typedef struct
 #define	MAX_DEMOS		8
 #define	MAX_DEMONAME	16
 
-enum cactive_t
+typedef enum
 {
 	ca_dedicated, 		// a dedicated server with no ability to start a client
 	ca_disconnected, 	// full screen console with no connection
 	ca_connected		// valid netcon, talking to a server
-};
+} cactive_t;
 
 //
 // the client_static_t structure is persistant through an arbitrary number
@@ -89,8 +92,19 @@ enum cactive_t
 //
 typedef struct
 {
+// connection information
 	cactive_t	state;
 
+// network stuff
+	netchan_t	netchan;
+
+// private userinfo for sending to masterless servers
+	char		userinfo[MAX_INFO_STRING];
+	
+	char		servername[MAX_OSPATH];	// name of server from original connect
+	
+	int			qport;
+	
 // personalization data sent to server	
 	char		mapstring[MAX_QPATH];
 	char		spawnparms[MAX_MAPSTRING];	// to restart a level
@@ -110,12 +124,11 @@ typedef struct
 	int			td_startframe;		// host_framecount at start
 	float		td_starttime;		// realtime at second frame of timedemo
 
+	int			challenge;
 
 // connection information
 	int			signon;			// 0 to SIGNONS
-	struct qsocket_s	*netcon;
-	sizebuf_t	message;		// writing buffer to send to server
-	
+	//sizebuf_t	message;		// writing buffer to send to server
 } client_static_t;
 
 extern client_static_t	cls;
@@ -238,8 +251,6 @@ extern	cvar_t	cl_pitchspeed;
 
 extern	cvar_t	cl_anglespeedkey;
 
-extern	cvar_t	cl_autofire;
-
 extern	cvar_t	cl_shownet;
 extern	cvar_t	cl_nolerp;
 
@@ -274,19 +285,21 @@ extern	beam_t			cl_beams[MAX_BEAMS];
 // cl_main
 //
 dlight_t *CL_AllocDlight (int key);
-void	CL_DecayLights (void);
+void	CL_DecayLights ();
 
-void CL_Init (void);
+void CL_Init ();
 
 void CL_EstablishConnection (char *host);
-void CL_Signon1 (void);
-void CL_Signon2 (void);
-void CL_Signon3 (void);
-void CL_Signon4 (void);
+void CL_Signon1 ();
+void CL_Signon2 ();
+void CL_Signon3 ();
+void CL_Signon4 ();
 
-void CL_Disconnect (void);
-void CL_Disconnect_f (void);
-void CL_NextDemo (void);
+void CL_Disconnect ();
+void CL_Disconnect_f ();
+void CL_NextDemo ();
+
+void CL_BeginServerConnect();
 
 #define			MAX_VISEDICTS	256
 extern	int				cl_numvisedicts;
@@ -301,17 +314,17 @@ extern	kbutton_t	in_mlook, in_klook;
 extern 	kbutton_t 	in_strafe;
 extern 	kbutton_t 	in_speed;
 
-void CL_InitInput (void);
-void CL_SendCmd (void);
+void CL_InitInput ();
+void CL_SendCmd ();
 void CL_SendMove (usercmd_t *cmd);
 
-void CL_ParseTEnt (void);
-void CL_UpdateTEnts (void);
+void CL_ParseTEnt ();
+void CL_UpdateTEnts ();
 
-void CL_ClearState (void);
+void CL_ClearState ();
 
+void CL_ReadPackets ();
 
-int  CL_ReadFromServer (void);
 void CL_WriteToServer (usercmd_t *cmd);
 void CL_BaseMove (usercmd_t *cmd);
 
@@ -322,35 +335,34 @@ char *Key_KeynumToString (int keynum);
 //
 // cl_demo.c
 //
-void CL_StopPlayback (void);
-int CL_GetMessage (void);
+void CL_StopPlayback ();
+int CL_GetMessage ();
 
-void CL_Stop_f (void);
-void CL_Record_f (void);
-void CL_PlayDemo_f (void);
-void CL_TimeDemo_f (void);
+void CL_Stop_f ();
+void CL_Record_f ();
+void CL_PlayDemo_f ();
+void CL_TimeDemo_f ();
 
 //
 // cl_parse.c
 //
-void CL_ParseServerMessage (void);
+void CL_ParseServerMessage ();
 void CL_NewTranslation (int slot);
 
 //
 // view
 //
-void V_StartPitchDrift (void);
-void V_StopPitchDrift (void);
+void V_StartPitchDrift ();
+void V_StopPitchDrift ();
 
-void V_RenderView (void);
-void V_UpdatePalette (void);
-void V_Register (void);
-void V_ParseDamage (void);
+void V_RenderView ();
+void V_UpdatePalette ();
+void V_Register ();
+void V_ParseDamage ();
 void V_SetContentsColor (int contents);
-
 
 //
 // cl_tent
 //
-void CL_InitTEnts (void);
-void CL_SignonReply (void);
+void CL_InitTEnts ();
+void CL_SignonReply ();

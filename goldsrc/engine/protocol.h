@@ -18,7 +18,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-// protocol.h -- communications protocols
+/// @file
+/// @brief communications protocols
 
 #pragma once
 
@@ -141,7 +142,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define svc_cutscene		34
 
-constexpr auto svc_resource = 35;
+// PROTOCOL 49 WIP
+//#define svc_resource 35
 
 //
 // client to server
@@ -154,29 +156,3 @@ constexpr auto svc_resource = 35;
 
 #define DEFAULT_SOUND_PACKET_VOLUME 255
 #define DEFAULT_SOUND_PACKET_ATTENUATION 1.0
-
-//
-// temp entity events
-//
-#define	TE_SPIKE			0
-#define	TE_SUPERSPIKE		1
-#define	TE_GUNSHOT			2
-#define	TE_EXPLOSION		3
-#define	TE_TAREXPLOSION		4
-#define	TE_LIGHTNING1		5
-#define	TE_LIGHTNING2		6
-#define	TE_WIZSPIKE			7
-#define	TE_KNIGHTSPIKE		8
-#define	TE_LIGHTNING3		9
-#define	TE_LAVASPLASH		10
-#define	TE_TELEPORT			11
-#define TE_EXPLOSION2		12
-
-// PGM 01/21/97 
-#define TE_BEAM				13
-// PGM 01/21/97 
-
-#ifdef QUAKE2
-#define TE_IMPLOSION		14
-#define TE_RAILTRAIL		15
-#endif

@@ -18,13 +18,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#ifndef __MODEL__
-#define __MODEL__
+/// @file
+
+#pragma once
 
 #include "modelgen.h"
 #include "spritegn.h"
 
-#include "com_model.hpp"
+#include "com_model.h"
 
 /*
 
@@ -58,6 +59,7 @@ BRUSH MODELS
 #define	SIDE_BACK	1
 #define	SIDE_ON		2
 
+/*
 typedef struct texture_s
 {
 	char		name[16];
@@ -70,7 +72,7 @@ typedef struct texture_s
 	struct texture_s *alternate_anims;	// bmodels in frmae 1 use these
 	unsigned	offsets[MIPLEVELS];		// four mip maps stored
 } texture_t;
-
+*/
 
 #define	SURF_PLANEBACK		2
 #define	SURF_DRAWSKY		4
@@ -353,13 +355,11 @@ typedef struct model_s
 
 //============================================================================
 
-void	Mod_Init (void);
-void	Mod_ClearAll (void);
-model_t *Mod_ForName (char *name, qboolean crash);
+void	Mod_Init ();
+void	Mod_ClearAll ();
+model_t *Mod_ForName (const char *name, qboolean crash);
 void	*Mod_Extradata (model_t *mod);	// handles caching
-void	Mod_TouchModel (char *name);
+void	Mod_TouchModel (const char *name);
 
 mleaf_t *Mod_PointInLeaf (float *p, model_t *model);
 byte	*Mod_LeafPVS (mleaf_t *leaf, model_t *model);
-
-#endif	// __MODEL__

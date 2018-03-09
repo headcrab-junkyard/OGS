@@ -17,7 +17,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// d_iface.h: interface header file for rasterization driver modules
+
+/// @file
+/// @brief interface header file for rasterization driver modules
 
 #define WARP_WIDTH		320
 #define WARP_HEIGHT		200
@@ -144,32 +146,32 @@ extern vec3_t	r_pright, r_pup, r_ppn;
 
 void D_Aff8Patch (void *pcolormap);
 void D_BeginDirectRect (int x, int y, byte *pbitmap, int width, int height);
-void D_DisableBackBufferAccess (void);
+void D_DisableBackBufferAccess ();
 void D_EndDirectRect (int x, int y, int width, int height);
-void D_PolysetDraw (void);
+void D_PolysetDraw ();
 void D_PolysetDrawFinalVerts (finalvert_t *fv, int numverts);
 void D_DrawParticle (particle_t *pparticle);
-void D_DrawPoly (void);
-void D_DrawSprite (void);
-void D_DrawSurfaces (void);
-void D_DrawZPoint (void);
-void D_EnableBackBufferAccess (void);
-void D_EndParticles (void);
-void D_Init (void);
-void D_ViewChanged (void);
-void D_SetupFrame (void);
-void D_StartParticles (void);
-void D_TurnZOn (void);
-void D_WarpScreen (void);
+void D_DrawPoly ();
+void D_DrawSprite ();
+void D_DrawSurfaces ();
+void D_DrawZPoint ();
+void D_EnableBackBufferAccess ();
+void D_EndParticles ();
+void D_Init ();
+void D_ViewChanged ();
+void D_SetupFrame ();
+void D_StartParticles ();
+void D_TurnZOn ();
+void D_WarpScreen ();
 
 void D_FillRect (vrect_t *vrect, int color);
-void D_DrawRect (void);
+void D_DrawRect ();
 void D_UpdateRects (vrect_t *prect);
 
 // currently for internal use only, and should be a do-nothing function in
 // hardware drivers
 // FIXME: this should go away
-void D_PolysetUpdateTables (void);
+void D_PolysetUpdateTables ();
 
 // these are currently for internal use only, and should not be used by drivers
 extern int				r_skydirect;
@@ -203,7 +205,7 @@ typedef struct
 
 extern drawsurf_t	r_drawsurf;
 
-void R_DrawSurface (void);
+void R_DrawSurface ();
 void R_GenTile (msurface_t *psurf, void *pdest);
 
 

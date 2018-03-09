@@ -17,7 +17,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// sys.h -- non-portable functions
+
+/// @file
+/// @brief non-portable functions
 
 //
 // memory protection
@@ -27,27 +29,27 @@ void Sys_MakeCodeWriteable (unsigned long startaddr, unsigned long length);
 //
 // system IO
 //
-void Sys_DebugLog(char *file, char *fmt, ...);
+void Sys_DebugLog(const char *file, const char *fmt, ...);
 
-void Sys_Error (char *error, ...);
+void Sys_Error (const char *error, ...);
 // an error will cause the entire program to exit
 
-void Sys_Printf (char *fmt, ...);
+void Sys_Printf (const char *fmt, ...);
 // send text to the console
 
-void Sys_Quit (void);
+void Sys_Quit ();
 
-double Sys_FloatTime (void);
+double Sys_FloatTime ();
 
-char *Sys_ConsoleInput (void);
+char *Sys_ConsoleInput ();
 
-void Sys_Sleep (void);
+void Sys_Sleep ();
 // called to yield for a little bit so as
 // not to hog cpu when paused or debugging
 
-void Sys_SendKeyEvents (void);
+void Sys_SendKeyEvents ();
 // Perform Key_Event () callbacks until the input que is empty
 
-void Sys_LowFPPrecision (void);
-void Sys_HighFPPrecision (void);
-void Sys_SetFPCW (void);
+void Sys_LowFPPrecision ();
+void Sys_HighFPPrecision ();
+void Sys_SetFPCW ();

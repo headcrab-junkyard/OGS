@@ -17,6 +17,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+
+/// @file
+
 // disable data conversion warnings
 
 #pragma warning(disable : 4244)     // MIPS
@@ -31,7 +34,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <GL/glu.h>
 
 void GL_BeginRendering (int *x, int *y, int *width, int *height);
-void GL_EndRendering (void);
+void GL_EndRendering ();
 
 
 #ifdef _WIN32
@@ -95,8 +98,8 @@ extern	PROC glVertexPointerEXT;
 #define BACKFACE_EPSILON	0.01
 
 
-void R_TimeRefresh_f (void);
-void R_ReadPointFile_f (void);
+void R_TimeRefresh_f ();
+void R_ReadPointFile_f ();
 texture_t *R_TextureAnimation (texture_t *base);
 
 typedef struct surfcache_s
@@ -247,5 +250,5 @@ extern lpSelTexFUNC qglSelectTextureSGIS;
 
 extern qboolean gl_mtexable;
 
-void GL_DisableMultitexture(void);
-void GL_EnableMultitexture(void);
+void GL_DisableMultitexture();
+void GL_EnableMultitexture();

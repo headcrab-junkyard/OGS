@@ -34,12 +34,13 @@ NET
 //#define	MAX_MSGLEN		1400		// max length of a message
 //#define	PACKET_HEADER	10			// two ints and a short
 
-#include "enums.hpp"
-#include "netadr.hpp"
+#include "enums.h"
+#include "netadr.h"
 
+// TODO: ???
 //extern	netadr_t	net_local_adr;
-//extern	netadr_t	net_from;		// address of who sent the packet
-//extern	sizebuf_t	net_message;
+extern	netadr_t	net_from;		// address of who sent the packet
+extern	sizebuf_t	net_message;
 
 //extern	cvar_t	hostname;
 
@@ -71,6 +72,8 @@ typedef struct
 {
 	qboolean	fatal_error;
 
+	netsrc_t	sock;
+	
 	float		last_received;		// for timeouts
 
 // the statistics are cleared at each client begin, because
@@ -113,13 +116,13 @@ typedef struct
 
 extern	int	net_drop;		// packets dropped before this one
 
-void Netchan_Init (void);
-void Netchan_Setup (netchan_t *chan, netadr_t adr, int qport);
+void Netchan_Init ();
+void Netchan_Setup (netsrc_t sock, netchan_t *chan, netadr_t adr, int qport);
 
 void Netchan_Transmit (netchan_t *chan, int length, byte *data);
-void Netchan_OutOfBand (netadr_t adr, int length, byte *data);
-void Netchan_OutOfBandPrint (netadr_t adr, char *format, ...);
+void Netchan_OutOfBand (int net_socket, netadr_t adr, int length, byte *data);
+void Netchan_OutOfBandPrint (int net_socket, netadr_t adr, char *format, ...);
 qboolean Netchan_Process (netchan_t *chan);
 
-qboolean Netchan_CanPacket (netchan_t *chan);
+qboolean Netchan_CanPacket (netchan_t *chan); // TODO: ???
 qboolean Netchan_CanReliable (netchan_t *chan);

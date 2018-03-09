@@ -17,9 +17,11 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+
+/// @file
+/// @brief general refresh-related stuff shared between the refresh and the driver
+
 #ifndef GLQUAKE
-// r_shared.h: general refresh-related stuff shared between the refresh and the
-// driver
 
 // FIXME: clean up and move into d_iface.h
 
@@ -121,11 +123,10 @@ extern	float	xscaleshrink, yscaleshrink;
 extern	int d_lightstylevalue[256]; // 8.8 frac of base light value
 
 extern void TransformVector (vec3_t in, vec3_t out);
-extern void SetUpForLineScan(fixed8_t startvertu, fixed8_t startvertv,
-	fixed8_t endvertu, fixed8_t endvertv);
+extern void SetUpForLineScan(fixed8_t startvertu, fixed8_t startvertv, fixed8_t endvertu, fixed8_t endvertv);
 
 extern int	r_skymade;
-extern void R_MakeSky (void);
+extern void R_MakeSky ();
 
 extern int	ubasestep, errorterm, erroradjustup, erroradjustdown;
 

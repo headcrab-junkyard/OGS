@@ -6,18 +6,23 @@
 // file IO
 //
 
-struct IFileSystem;
-extern IFileSystem *gpFileSystem;
+//struct IFileSystem;
+//extern IFileSystem *gpFileSystem;
 
 // returns the file size
 // return -1 if file is not present
 // the file should be in BINARY mode for stupid OSs that care
-int Sys_FileOpenRead (char *path, int *hndl);
+int FS_FileOpenRead(const char *path, int *hndl);
 
-int Sys_FileOpenWrite (char *path);
-void Sys_FileClose (int handle);
-void Sys_FileSeek (int handle, int position);
-int Sys_FileRead (int handle, void *dest, int count);
-int Sys_FileWrite (int handle, void *data, int count);
-int	Sys_FileTime (char *path);
-void Sys_mkdir (char *path);
+int FS_FileOpenWrite (const char *path);
+
+void FS_FileClose (int handle);
+
+void FS_FileSeek (int handle, int position);
+
+int FS_FileRead (int handle, void *dest, int count);
+int FS_FileWrite (int handle, const void *data, int count);
+
+int	FS_FileTime (const char *path);
+
+void FS_mkdir (const char *path);

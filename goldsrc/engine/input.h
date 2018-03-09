@@ -17,18 +17,20 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// input.h -- external (non-keyboard) input devices
 
-void IN_Init (void);
+/// @file
+/// @brief external (non-keyboard) input devices
 
-void IN_Shutdown (void);
+void IN_Init ();
 
-void IN_Commands (void);
+void IN_Shutdown ();
+
+void IN_Commands ();
 // oportunity for devices to stick commands on the script buffer
 
 void IN_Move (usercmd_t *cmd);
 // add additional movement on top of the keyboard move cmd
 
-void IN_ClearStates (void);
+void IN_ClearStates ();
 // restores all button and position states to defaults
 

@@ -17,7 +17,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// wad.h
+
+/// @file
 
 //===============
 //   TYPES
@@ -42,8 +43,6 @@ typedef struct
 	byte		data[4];			// variably sized
 } qpic_t;
 
-
-
 typedef struct
 {
 	char		identification[4];		// should be WAD2/WAD3 or 2DAW/3DAW
@@ -66,10 +65,10 @@ extern	int			wad_numlumps;
 extern	lumpinfo_t	*wad_lumps;
 extern	byte		*wad_base;
 
-void	W_LoadWadFile (char *filename);
-void	W_CleanupName (char *in, char *out);
-lumpinfo_t	*W_GetLumpinfo (char *name);
-void	*W_GetLumpName (char *name);
+void	W_LoadWadFile (const char *filename);
+void	W_CleanupName (const char *in, char *out);
+lumpinfo_t	*W_GetLumpinfo (const char *name);
+void	*W_GetLumpName (const char *name);
 void	*W_GetLumpNum (int num);
 
 void SwapPic (qpic_t *pic);
