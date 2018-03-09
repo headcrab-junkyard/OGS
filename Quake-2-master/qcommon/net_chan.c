@@ -82,17 +82,8 @@ netadr_t	net_from;
 sizebuf_t	net_message;
 byte		net_message_buffer[MAX_MSGLEN];
 
-/*
-===============
-Netchan_Init
-
-===============
-*/
-void Netchan_Init (void)
+void Netchan_Init ()
 {
-	int		port;
-
-	// pick a port value that should be nice and random
 	port = Sys_Milliseconds() & 0xffff;
 
 	showpackets = Cvar_Get ("showpackets", "0", 0);
@@ -100,38 +91,19 @@ void Netchan_Init (void)
 	qport = Cvar_Get ("qport", va("%i", port), CVAR_NOSET);
 }
 
-/*
-===============
-Netchan_OutOfBand
-
-Sends an out-of-band datagram
-================
-*/
 void Netchan_OutOfBand (int net_socket, netadr_t adr, int length, byte *data)
 {
-	sizebuf_t	send;
 	byte		send_buf[MAX_MSGLEN];
 
 // write the packet header
 	SZ_Init (&send, send_buf, sizeof(send_buf));
-	
-	MSG_WriteLong (&send, -1);	// -1 sequence means out of band
-	SZ_Write (&send, data, length);
 
 // send the datagram
 	NET_SendPacket (net_socket, send.cursize, send.data, adr);
 }
 
-/*
-===============
-Netchan_OutOfBandPrint
-
-Sends a text message in an out-of-band datagram
-================
-*/
 void Netchan_OutOfBandPrint (int net_socket, netadr_t adr, char *format, ...)
 {
-	va_list		argptr;
 	static char		string[MAX_MSGLEN - 4];
 	
 	va_start (argptr, format);
@@ -141,18 +113,8 @@ void Netchan_OutOfBandPrint (int net_socket, netadr_t adr, char *format, ...)
 	Netchan_OutOfBand (net_socket, adr, strlen(string), (byte *)string);
 }
 
-
-/*
-==============
-Netchan_Setup
-
-called to open a channel to a remote system
-==============
-*/
 void Netchan_Setup (netsrc_t sock, netchan_t *chan, netadr_t adr, int qport)
 {
-	memset (chan, 0, sizeof(*chan));
-	
 	chan->sock = sock;
 	chan->remote_address = adr;
 	chan->qport = qport;
@@ -200,22 +162,9 @@ qboolean Netchan_NeedReliable (netchan_t *chan)
 	return send_reliable;
 }
 
-/*
-===============
-Netchan_Transmit
-
-tries to send an unreliable message to a connection, and handles the
-transmition / retransmition of the reliable messages.
-
-A 0 length will still generate a packet and deal with the reliable messages.
-================
-*/
 void Netchan_Transmit (netchan_t *chan, int length, byte *data)
 {
-	sizebuf_t	send;
 	byte		send_buf[MAX_MSGLEN];
-	qboolean	send_reliable;
-	unsigned	w1, w2;
 
 // check for message overflow
 	if (chan->message.overflowed)
@@ -287,18 +236,8 @@ void Netchan_Transmit (netchan_t *chan, int length, byte *data)
 	}
 }
 
-/*
-=================
-Netchan_Process
-
-called when the current net_message is from remote_address
-modifies net_message so that it points to the packet payload
-=================
-*/
 qboolean Netchan_Process (netchan_t *chan, sizebuf_t *msg)
 {
-	unsigned	sequence, sequence_ack;
-	unsigned	reliable_ack, reliable_message;
 	int			qport;
 
 // get sequence numbers		
