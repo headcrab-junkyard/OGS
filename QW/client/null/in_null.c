@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2018 Headcrab-Garage
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,19 +18,21 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// in_null.c -- for systems without a mouse
+
+/// @file
+/// @brief for systems without a mouse
 
 #include "quakedef.h"
 
-void IN_Init (void)
+void IN_Init ()
 {
 }
 
-void IN_Shutdown (void)
+void IN_Shutdown ()
 {
 }
 
-void IN_Commands (void)
+void IN_Commands ()
 {
 }
 
@@ -42,7 +45,6 @@ void IN_Move (usercmd_t *cmd)
 IN_ModeChanged
 ===========
 */
-void IN_ModeChanged (void)
+void IN_ModeChanged ()
 {
 }
-

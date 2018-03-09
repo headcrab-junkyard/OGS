@@ -19,16 +19,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // input.h -- external (non-keyboard) input devices
 
-void IN_Init (void);
+void IN_Init ();
 
-void IN_Shutdown (void);
+void IN_Shutdown ();
 
-void IN_Commands (void);
+void IN_Commands ();
 // oportunity for devices to stick commands on the script buffer
 
 void IN_Move (usercmd_t *cmd);
 // add additional movement on top of the keyboard move cmd
 
-void IN_ModeChanged (void);
+void IN_ModeChanged ();
 // called whenever screen dimensions change
 

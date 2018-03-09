@@ -1085,7 +1085,9 @@ void SCR_UpdateScreen (void)
 									//  for linear writes all the time
 
 	VID_LockBuffer ();
+
 	V_RenderView ();
+
 	VID_UnlockBuffer ();
 
 	D_EnableBackBufferAccess ();	// of all overlay stuff if drawing directly
@@ -1118,7 +1120,6 @@ void SCR_UpdateScreen (void)
 		SCR_DrawConsole ();	
 		M_Draw ();
 	}
-
 
 	D_DisableBackBufferAccess ();	// for adapters that can't stay mapped in
 									//  for linear writes all the time

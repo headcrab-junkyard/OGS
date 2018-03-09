@@ -69,11 +69,11 @@ typedef struct
 } frame_t;
 
 
-typedef struct
+struct cshift_t
 {
 	int		destcolor[3];
 	int		percent;		// 0-256
-} cshift_t;
+};
 
 #define	CSHIFT_CONTENTS	0
 #define	CSHIFT_DAMAGE	1
@@ -138,12 +138,7 @@ typedef struct
 // network stuff
 	netchan_t	netchan;
 
-// private userinfo for sending to masterless servers
-	char		userinfo[MAX_INFO_STRING];
-
-	char		servername[MAX_OSPATH];	// name of server from original connect
-
-	int			qport;
+	
 
 	FILE		*download;		// file transfer from server
 	char		downloadtempname[MAX_OSPATH];
@@ -166,7 +161,7 @@ typedef struct
 	int			td_startframe;		// host_framecount at start
 	float		td_starttime;		// realtime at second frame of timedemo
 
-	int			challenge;
+	
 
 	float		latency;		// rolling average
 } client_static_t;
@@ -316,19 +311,19 @@ extern float	server_version;	// version of server we connected to
 // cl_main
 //
 dlight_t *CL_AllocDlight (int key);
-void	CL_DecayLights (void);
+void	CL_DecayLights ();
 
-void CL_Init (void);
+void CL_Init ();
 void Host_WriteConfiguration (void);
 
 void CL_EstablishConnection (char *host);
 
-void CL_Disconnect (void);
-void CL_Disconnect_f (void);
-void CL_NextDemo (void);
-qboolean CL_DemoBehind(void);
+void CL_Disconnect ();
+void CL_Disconnect_f ();
+void CL_NextDemo ();
+qboolean CL_DemoBehind();
 
-void CL_BeginServerConnect(void);
+void CL_BeginServerConnect();
 
 #define			MAX_VISEDICTS	256
 extern	int				cl_numvisedicts, cl_oldnumvisedicts;
@@ -350,18 +345,17 @@ extern	kbutton_t	in_mlook, in_klook;
 extern 	kbutton_t 	in_strafe;
 extern 	kbutton_t 	in_speed;
 
-void CL_InitInput (void);
-void CL_SendCmd (void);
+void CL_InitInput ();
+void CL_SendCmd ();
 void CL_SendMove (usercmd_t *cmd);
 
-void CL_ParseTEnt (void);
-void CL_UpdateTEnts (void);
+void CL_ParseTEnt ();
+void CL_UpdateTEnts ();
 
-void CL_ClearState (void);
+void CL_ClearState ();
 
-void CL_ReadPackets (void);
+void CL_ReadPackets ();
 
-int  CL_ReadFromServer (void);
 void CL_WriteToServer (usercmd_t *cmd);
 void CL_BaseMove (usercmd_t *cmd);
 
@@ -372,15 +366,15 @@ char *Key_KeynumToString (int keynum);
 //
 // cl_demo.c
 //
-void CL_StopPlayback (void);
-qboolean CL_GetMessage (void);
+void CL_StopPlayback ();
+qboolean CL_GetMessage ();
 void CL_WriteDemoCmd (usercmd_t *pcmd);
 
-void CL_Stop_f (void);
-void CL_Record_f (void);
-void CL_ReRecord_f (void);
-void CL_PlayDemo_f (void);
-void CL_TimeDemo_f (void);
+void CL_Stop_f ();
+void CL_Record_f ();
+void CL_ReRecord_f ();
+void CL_PlayDemo_f ();
+void CL_TimeDemo_f ();
 
 //
 // cl_parse.c
@@ -388,34 +382,33 @@ void CL_TimeDemo_f (void);
 #define NET_TIMINGS 256
 #define NET_TIMINGSMASK 255
 extern int	packet_latency[NET_TIMINGS];
-int CL_CalcNet (void);
-void CL_ParseServerMessage (void);
+int CL_CalcNet ();
+void CL_ParseServerMessage ();
 void CL_NewTranslation (int slot);
-qboolean	CL_CheckOrDownloadFile (char *filename);
-qboolean CL_IsUploading(void);
-void CL_NextUpload(void);
+qboolean	CL_CheckOrDownloadFile (const char *filename);
+qboolean CL_IsUploading();
+void CL_NextUpload();
 void CL_StartUpload (byte *data, int size);
-void CL_StopUpload(void);
+void CL_StopUpload();
 
 //
 // view.c
 //
-void V_StartPitchDrift (void);
-void V_StopPitchDrift (void);
+void V_StartPitchDrift ();
+void V_StopPitchDrift ();
 
-void V_RenderView (void);
-void V_UpdatePalette (void);
-void V_Register (void);
-void V_ParseDamage (void);
+void V_RenderView ();
+void V_UpdatePalette ();
+void V_Register ();
+void V_ParseDamage ();
 void V_SetContentsColor (int contents);
-void V_CalcBlend (void);
-
+void V_CalcBlend ();
 
 //
 // cl_tent
 //
-void CL_InitTEnts (void);
-void CL_ClearTEnts (void);
+void CL_InitTEnts ();
+void CL_ClearTEnts ();
 
 //
 // cl_ents.c

@@ -76,7 +76,7 @@ void R_TimeRefresh_f (void)
 
 	startangle = r_refdef.viewangles[1];
 	
-	start = Sys_DoubleTime ();
+	start = Sys_FloatTime ();
 	for (i=0 ; i<128 ; i++)
 	{
 		r_refdef.viewangles[1] = i/128.0*360.0;
@@ -94,7 +94,7 @@ void R_TimeRefresh_f (void)
 		vr.pnext = NULL;
 		VID_Update (&vr);
 	}
-	stop = Sys_DoubleTime ();
+	stop = Sys_FloatTime ();
 	time = stop-start;
 	Con_Printf ("%f seconds (%f fps)\n", time, 128/time);
 	
@@ -168,7 +168,7 @@ void R_TimeGraph (void)
 	static byte	r_timings[MAX_TIMINGS];
 	int		x;
 	
-	r_time2 = Sys_DoubleTime ();
+	r_time2 = Sys_FloatTime ();
 
 	a = (r_time2-r_time1)/0.01;
 //a = fabs(mouse_y * 0.05);
@@ -272,7 +272,7 @@ void R_PrintTimes (void)
 	float	r_time2;
 	float		ms;
 
-	r_time2 = Sys_DoubleTime ();
+	r_time2 = Sys_FloatTime ();
 
 	ms = 1000* (r_time2 - r_time1);
 	
@@ -291,7 +291,7 @@ void R_PrintDSpeeds (void)
 {
 	float	ms, dp_time, r_time2, rw_time, db_time, se_time, de_time, dv_time;
 
-	r_time2 = Sys_DoubleTime ();
+	r_time2 = Sys_FloatTime ();
 
 	dp_time = (dp_time2 - dp_time1) * 1000;
 	rw_time = (rw_time2 - rw_time1) * 1000;

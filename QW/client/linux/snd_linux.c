@@ -35,7 +35,7 @@ int snd_inited;
 
 static int tryrates[] = { 11025, 22051, 44100, 8000 };
 
-qboolean SNDDMA_Init(void)
+qboolean SNDDMA_Init()
 {
 
 	int rc;
@@ -225,7 +225,7 @@ qboolean SNDDMA_Init(void)
 
 }
 
-int SNDDMA_GetDMAPos(void)
+int SNDDMA_GetDMAPos()
 {
 
 	struct count_info count;
@@ -248,7 +248,7 @@ int SNDDMA_GetDMAPos(void)
 
 }
 
-void SNDDMA_Shutdown(void)
+void SNDDMA_Shutdown()
 {
 	if (snd_inited)
 	{
@@ -264,7 +264,7 @@ SNDDMA_Submit
 Send sound to device if buffer isn't really the dma buffer
 ===============
 */
-void SNDDMA_Submit(void)
+void SNDDMA_Submit()
 {
 }
 

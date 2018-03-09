@@ -327,6 +327,7 @@ void R_TranslatePlayerSkin (int playernum)
 
 		scaled_width = gl_max_size.value < 512 ? gl_max_size.value : 512;
 		scaled_height = gl_max_size.value < 256 ? gl_max_size.value : 256;
+
 		// allow users to crunch sizes down even more if they want
 		scaled_width >>= (int)gl_playermip.value;
 		scaled_height >>= (int)gl_playermip.value;
@@ -450,7 +451,7 @@ void R_TimeRefresh_f (void)
 	glDrawBuffer  (GL_FRONT);
 	glFinish ();
 
-	start = Sys_DoubleTime ();
+	start = Sys_FloatTime ();
 	for (i=0 ; i<128 ; i++)
 	{
 		r_refdef.viewangles[1] = i/128.0*360.0;
@@ -458,7 +459,7 @@ void R_TimeRefresh_f (void)
 	}
 
 	glFinish ();
-	stop = Sys_DoubleTime ();
+	stop = Sys_FloatTime ();
 	time = stop-start;
 	Con_Printf ("%f seconds (%f fps)\n", time, 128/time);
 

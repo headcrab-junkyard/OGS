@@ -78,6 +78,7 @@ void D_WarpScreen (void)
 	{
 		col = &column[turb[v]];
 		row = &rowptr[v];
+
 		for (u=0 ; u<scr_vrect.width ; u+=4)
 		{
 			dest[u+0] = row[turb[u+0]][col[u+0]];

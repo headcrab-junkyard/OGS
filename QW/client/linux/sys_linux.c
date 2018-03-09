@@ -101,7 +101,7 @@ void Sys_Printf (char *fmt, ...)
 }
 */
 
-void Sys_Printf (char *fmt, ...)
+void Sys_Printf (const char *fmt, ...)
 {
 	va_list		argptr;
 	char		text[2048];
@@ -124,21 +124,21 @@ void Sys_Printf (char *fmt, ...)
 			putc(*p, stdout);
 }
 
-void Sys_Quit (void)
+void Sys_Quit ()
 {
 	Host_Shutdown();
     fcntl (0, F_SETFL, fcntl (0, F_GETFL, 0) & ~FNDELAY);
 	exit(0);
 }
 
-void Sys_Init(void)
+void Sys_Init()
 {
 #if id386
 	Sys_SetFPCW();
 #endif
 }
 
-void Sys_Error (char *error, ...)
+void Sys_Error (const char *error, ...)
 { 
     va_list     argptr;
     char        string[1024];
@@ -156,7 +156,7 @@ void Sys_Error (char *error, ...)
 
 } 
 
-void Sys_Warn (char *warning, ...)
+void Sys_Warn (const char *warning, ...)
 { 
     va_list     argptr;
     char        string[1024];
@@ -174,7 +174,7 @@ Sys_FileTime
 returns -1 if not present
 ============
 */
-int	Sys_FileTime (char *path)
+int	Sys_FileTime (const char *path)
 {
 	struct	stat	buf;
 	
@@ -185,12 +185,12 @@ int	Sys_FileTime (char *path)
 }
 
 
-void Sys_mkdir (char *path)
+void Sys_mkdir (const char *path)
 {
     mkdir (path, 0777);
 }
 
-int Sys_FileOpenRead (char *path, int *handle)
+int Sys_FileOpenRead (const char *path, int *handle)
 {
 	int	h;
 	struct stat	fileinfo;
@@ -207,7 +207,7 @@ int Sys_FileOpenRead (char *path, int *handle)
 	return fileinfo.st_size;
 }
 
-int Sys_FileOpenWrite (char *path)
+int Sys_FileOpenWrite (const char *path)
 {
 	int     handle;
 
@@ -242,7 +242,7 @@ int Sys_FileRead (int handle, void *dest, int count)
     return read (handle, dest, count);
 }
 
-void Sys_DebugLog(char *file, char *fmt, ...)
+void Sys_DebugLog(const char *file, const char *fmt, ...)
 {
     va_list argptr; 
     static char data[1024];
@@ -257,7 +257,7 @@ void Sys_DebugLog(char *file, char *fmt, ...)
     close(fd);
 }
 
-void Sys_EditFile(char *filename)
+void Sys_EditFile(const char *filename)
 {
 
 	char cmd[256];
@@ -280,7 +280,7 @@ void Sys_EditFile(char *filename)
 
 }
 
-double Sys_FloatTime (void)
+double Sys_FloatTime ()
 {
     struct timeval tp;
     struct timezone tzp; 
@@ -308,7 +308,7 @@ void alarm_handler(int x)
 	oktogo=1;
 }
 
-void Sys_LineRefresh(void)
+void Sys_LineRefresh()
 {
 }
 
@@ -318,7 +318,7 @@ void floating_point_exception_handler(int whatever)
 	signal(SIGFPE, floating_point_exception_handler);
 }
 
-char *Sys_ConsoleInput(void)
+char *Sys_ConsoleInput()
 {
 #if 0
     static char text[256];
@@ -337,11 +337,11 @@ char *Sys_ConsoleInput(void)
 }
 
 #if !id386
-void Sys_HighFPPrecision (void)
+void Sys_HighFPPrecision ()
 {
 }
 
-void Sys_LowFPPrecision (void)
+void Sys_LowFPPrecision ()
 {
 }
 #endif

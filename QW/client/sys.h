@@ -17,46 +17,24 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-//
-// nonintel.c: code for non-Intel processors only
-//
 
-#include "quakedef.h"
+/// @file
+/// @brief non-portable functions
 
-#if	!id386
+int	Sys_FileTime (char *path);
 
-/*
-================
-R_Surf8Patch
-================
-*/
-void R_Surf8Patch ()
-{
-	// we only patch code on Intel
-}
+void Sys_mkdir (char *path);
 
+void Sys_Error (const char *error, ...);
+// an error will cause the entire program to exit
 
-/*
-================
-R_Surf16Patch
-================
-*/
-void R_Surf16Patch ()
-{
-	// we only patch code on Intel
-}
+void Sys_Printf (const char *fmt, ...);
+// send text to the console
 
+void Sys_Quit ();
 
-/*
-================
-R_SurfacePatch
-================
-*/
-void R_SurfacePatch (void)
-{
-	// we only patch code on Intel
-}
+double Sys_FloatTime ();
 
+char *Sys_ConsoleInput ();
 
-#endif	// !id386
-
+void Sys_Init ();

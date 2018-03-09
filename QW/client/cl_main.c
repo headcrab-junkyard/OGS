@@ -170,108 +170,7 @@ void CL_Version_f (void)
 }
 
 
-/*
-=======================
-CL_SendConnectPacket
 
-called by CL_Connect_f and CL_CheckResend
-======================
-*/
-void CL_SendConnectPacket (void)
-{
-	netadr_t	adr;
-	char	data[2048];
-	double t1, t2;
-// JACK: Fixed bug where DNS lookups would cause two connects real fast
-//       Now, adds lookup time to the connect time.
-//		 Should I add it to realtime instead?!?!
-
-	if (cls.state != ca_disconnected)
-		return;
-
-	t1 = Sys_DoubleTime ();
-
-	if (!NET_StringToAdr (cls.servername, &adr))
-	{
-		Con_Printf ("Bad server address\n");
-		connect_time = -1;
-		return;
-	}
-
-	if (!NET_IsClientLegal(&adr))
-	{
-		Con_Printf ("Illegal server address\n");
-		connect_time = -1;
-		return;
-	}
-
-	if (adr.port == 0)
-		adr.port = BigShort (27500);
-	t2 = Sys_DoubleTime ();
-
-	connect_time = realtime+t2-t1;	// for retransmit requests
-
-	cls.qport = Cvar_VariableValue("qport");
-
-	Info_SetValueForStarKey (cls.userinfo, "*ip", NET_AdrToString(adr), MAX_INFO_STRING);
-
-//	Con_Printf ("Connecting to %s...\n", cls.servername);
-	sprintf (data, "%c%c%c%cconnect %i %i %i \"%s\"\n",
-		255, 255, 255, 255,	PROTOCOL_VERSION, cls.qport, cls.challenge, cls.userinfo);
-	NET_SendPacket (strlen(data), data, adr);
-}
-
-/*
-=================
-CL_CheckForResend
-
-Resend a connect message if the last one has timed out
-
-=================
-*/
-void CL_CheckForResend (void)
-{
-	netadr_t	adr;
-	char	data[2048];
-	double t1, t2;
-
-	if (connect_time == -1)
-		return;
-	if (cls.state != ca_disconnected)
-		return;
-	if (connect_time && realtime - connect_time < 5.0)
-		return;
-
-	t1 = Sys_DoubleTime ();
-	if (!NET_StringToAdr (cls.servername, &adr))
-	{
-		Con_Printf ("Bad server address\n");
-		connect_time = -1;
-		return;
-	}
-	if (!NET_IsClientLegal(&adr))
-	{
-		Con_Printf ("Illegal server address\n");
-		connect_time = -1;
-		return;
-	}
-
-	if (adr.port == 0)
-		adr.port = BigShort (27500);
-	t2 = Sys_DoubleTime ();
-
-	connect_time = realtime+t2-t1;	// for retransmit requests
-
-	Con_Printf ("Connecting to %s...\n", cls.servername);
-	sprintf (data, "%c%c%c%cgetchallenge\n", 255, 255, 255, 255);
-	NET_SendPacket (strlen(data), data, adr);
-}
-
-void CL_BeginServerConnect(void)
-{
-	connect_time = 0;
-	CL_CheckForResend();
-}
 
 /*
 ================
@@ -403,15 +302,11 @@ Sends a disconnect message to the server
 This is also called on Host_Error, so it shouldn't cause any errors
 =====================
 */
-void CL_Disconnect (void)
+void CL_Disconnect ()
 {
 	byte	final[10];
 
 	connect_time = -1;
-
-#ifdef _WIN32
-	SetWindowText (mainwindow, "QuakeWorld: disconnected");
-#endif
 
 // stop sounds (especially looping!)
 	S_StopAllSounds (true);
@@ -1304,7 +1199,7 @@ void Host_Frame (float time)
 	static double		time1 = 0;
 	static double		time2 = 0;
 	static double		time3 = 0;
-	int			pass1, pass2, pass3;
+	
 	float fps;
 	if (setjmp (host_abort) )
 		return;			// something bad happened, or the server disconnected
@@ -1326,57 +1221,20 @@ void Host_Frame (float time)
 	oldrealtime = realtime;
 	if (host_frametime > 0.2)
 		host_frametime = 0.2;
-		
-	// get new key events
-	Sys_SendKeyEvents ();
-
-	// allow mice or other external controllers to add commands
-	IN_Commands ();
-
-	// process console commands
-	Cbuf_Execute ();
-
-	// fetch results from server
-	CL_ReadPackets ();
 
 	// send intentions now
-	// resend a connection request if necessary
-	if (cls.state == ca_disconnected) {
+	
+	if (cls.state == ca_disconnected)
 		CL_CheckForResend ();
-	} else
+	else
 		CL_SendCmd ();
-
-	// Set up prediction for other players
-	CL_SetUpPlayerPrediction(false);
-
-	// do client side motion prediction
-	CL_PredictMove ();
-
-	// Set up prediction for other players
-	CL_SetUpPlayerPrediction(true);
-
-	// build a refresh entity list
-	CL_EmitEntities ();
-
-	// update video
-	if (host_speeds.value)
-		time1 = Sys_DoubleTime ();
-
-	SCR_UpdateScreen ();
-
-	if (host_speeds.value)
-		time2 = Sys_DoubleTime ();
 		
 	// update audio
 	if (cls.state == ca_active)
 	{
-		S_Update (r_origin, vpn, vright, vup);
-		CL_DecayLights ();
 	}
 	else
 		S_Update (vec3_origin, vec3_origin, vec3_origin, vec3_origin);
-	
-	CDAudio_Update();
 
 	if (host_speeds.value)
 	{
@@ -1409,11 +1267,6 @@ void Host_FixupModelNames(void)
 
 //============================================================================
 
-/*
-====================
-Host_Init
-====================
-*/
 void Host_Init (quakeparms_t *parms)
 {
 	COM_InitArgv (parms->argc, parms->argv);
@@ -1493,42 +1346,14 @@ void Host_Init (quakeparms_t *parms)
 	Cbuf_AddText ("echo Type connect <internet address> or use GameSpy to connect to a game.\n");
 	Cbuf_AddText ("cl_warncmd 1\n");
 
-	Hunk_AllocName (0, "-HOST_HUNKLEVEL-");
-	host_hunklevel = Hunk_LowMark ();
-
-	host_initialized = true;
-
 	Con_Printf ("\nClient Version %4.2f (Build %04d)\n\n", VERSION, build_number());
 
 	Con_Printf ("ÄÅÅÅÅÅÅ QuakeWorld Initialized ÅÅÅÅÅÅÇ\n");	
 }
 
-
-/*
-===============
-Host_Shutdown
-
-FIXME: this is a callback from Sys_Quit and Sys_Error.  It would be better
-to run quit through here before the final handoff to the sys code.
-===============
-*/
 void Host_Shutdown(void)
 {
-	static qboolean isdown = false;
-	
-	if (isdown)
-	{
-		printf ("recursive shutdown\n");
-		return;
-	}
-	isdown = true;
 
-	Host_WriteConfiguration (); 
-		
-	CDAudio_Shutdown ();
-	NET_Shutdown ();
-	S_Shutdown();
-	IN_Shutdown ();
 	if (host_basepal)
 		VID_Shutdown();
 }

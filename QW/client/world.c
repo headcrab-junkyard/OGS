@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // world.c -- world query functions
 
-#include "qwsvdef.h"
+#include "quakedef.h"
 
 /*
 
@@ -137,12 +137,12 @@ hull_t *SV_HullForEntity (edict_t *ent, vec3_t mins, vec3_t maxs, vec3_t offset)
 	if (ent->v.solid == SOLID_BSP)
 	{	// explicit hulls in the BSP model
 		if (ent->v.movetype != MOVETYPE_PUSH)
-			SV_Error ("SOLID_BSP without MOVETYPE_PUSH");
+			Sys_Error ("SOLID_BSP without MOVETYPE_PUSH");
 
 		model = sv.models[ (int)ent->v.modelindex ];
 
 		if (!model || model->type != mod_brush)
-			SV_Error ("MOVETYPE_PUSH with a non bsp model");
+			Sys_Error ("MOVETYPE_PUSH with a non bsp model");
 
 		VectorSubtract (maxs, mins, size);
 		if (size[0] < 3)
@@ -292,7 +292,7 @@ void SV_TouchLinks ( edict_t *ent, areanode_t *node )
 		pr_global_struct->self = EDICT_TO_PROG(touch);
 		pr_global_struct->other = EDICT_TO_PROG(ent);
 		pr_global_struct->time = sv.time;
-		PR_ExecuteProgram (touch->v.touch);
+		gEntityInterface.pfnTouch(touch, ent);
 
 		pr_global_struct->self = old_self;
 		pr_global_struct->other = old_other;
@@ -459,7 +459,7 @@ int SV_HullPointContents (hull_t *hull, int num, vec3_t p)
 	while (num >= 0)
 	{
 		if (num < hull->firstclipnode || num > hull->lastclipnode)
-			SV_Error ("SV_HullPointContents: bad node number");
+			Sys_Error ("SV_HullPointContents: bad node number");
 	
 		node = hull->clipnodes + num;
 		plane = hull->planes + node->planenum;
@@ -558,7 +558,7 @@ qboolean SV_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec
 	}
 
 	if (num < hull->firstclipnode || num > hull->lastclipnode)
-		SV_Error ("SV_RecursiveHullCheck: bad node number");
+		Sys_Error ("SV_RecursiveHullCheck: bad node number");
 
 //
 // find the point distances
@@ -729,7 +729,7 @@ void SV_ClipToLinks ( areanode_t *node, moveclip_t *clip )
 		if (touch == clip->passedict)
 			continue;
 		if (touch->v.solid == SOLID_TRIGGER)
-			SV_Error ("Trigger in clipping list");
+			Sys_Error ("Trigger in clipping list");
 
 		if (clip->type == MOVE_NOMONSTERS && touch->v.solid != SOLID_BSP)
 			continue;

@@ -78,7 +78,7 @@ void Sys_DebugLog(char *file, char *fmt, ...)
 {
 }
 
-void Sys_Error (char *error, ...)
+void Sys_Error (const char *error, ...)
 {
 	va_list		argptr;
 
@@ -91,7 +91,7 @@ void Sys_Error (char *error, ...)
 	exit (1);
 }
 
-void Sys_Printf (char *fmt, ...)
+void Sys_Printf (const char *fmt, ...)
 {
 	va_list		argptr;
 	
@@ -100,12 +100,12 @@ void Sys_Printf (char *fmt, ...)
 	va_end (argptr);
 }
 
-void Sys_Quit (void)
+void Sys_Quit ()
 {
 	exit (0);
 }
 
-double Sys_FloatTime (void)
+double Sys_FloatTime ()
 {
 	static double t;
 	
@@ -114,24 +114,24 @@ double Sys_FloatTime (void)
 	return t;
 }
 
-char *Sys_ConsoleInput (void)
+char *Sys_ConsoleInput ()
 {
 	return NULL;
 }
 
-void Sys_Sleep (void)
+void Sys_Sleep ()
 {
 }
 
-void Sys_SendKeyEvents (void)
+void Sys_SendKeyEvents ()
 {
 }
 
-void Sys_HighFPPrecision (void)
+void Sys_HighFPPrecision ()
 {
 }
 
-void Sys_LowFPPrecision (void)
+void Sys_LowFPPrecision ()
 {
 }
 
@@ -152,10 +152,8 @@ void main (int argc, char **argv)
 
 	printf ("Host_Init\n");
 	Host_Init (&parms);
-	while (1)
+	while (true)
 	{
 		Host_Frame (0.1);
 	}
 }
-
-

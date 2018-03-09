@@ -17,19 +17,21 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// screen.h
 
-void SCR_Init (void);
+/// @file
 
-void SCR_UpdateScreen (void);
+void SCR_Init ();
 
+void SCR_UpdateScreen ();
 
-void SCR_SizeUp (void);
-void SCR_SizeDown (void);
-void SCR_BringDownConsole (void);
-void SCR_CenterPrint (char *str);
+void SCR_SizeUp ();
+void SCR_SizeDown ();
 
-int SCR_ModalMessage (char *text);
+void SCR_BringDownConsole ();
+
+void SCR_CenterPrint (const char *str);
+
+int SCR_ModalMessage (const char *text);
 
 extern	float		scr_con_current;
 extern	float		scr_conlines;		// lines of console to display
@@ -39,6 +41,7 @@ extern	int			sb_lines;
 
 extern	int			clearnotify;	// set to 0 whenever notify text is drawn
 extern	qboolean	scr_disabled_for_loading;
+extern qboolean	scr_skipupdate;
 
 extern	cvar_t		scr_viewsize;
 
@@ -48,6 +51,4 @@ extern cvar_t scr_viewsize;
 extern	int			scr_copytop;
 extern	int			scr_copyeverything;
 
-qboolean	scr_skipupdate;
-
-qboolean	block_drawing;
+extern qboolean	block_drawing;

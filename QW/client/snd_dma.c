@@ -170,7 +170,7 @@ S_Init
 void S_Init (void)
 {
 
-//	Con_Printf("\nSound Initialization\n");
+	Con_Printf("\nSound Initialization\n");
 
 	if (COM_CheckParm("-nosound"))
 		return;
@@ -850,8 +850,6 @@ void S_ExtraUpdate (void)
 		return;		// don't pollute timings
 	S_Update_();
 }
-
-
 
 void S_Update_(void)
 {

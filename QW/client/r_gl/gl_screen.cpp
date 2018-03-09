@@ -92,6 +92,7 @@ cvar_t          scr_showpause = {"showpause","1"};
 cvar_t          scr_printspeed = {"scr_printspeed","8"};
 cvar_t			scr_allowsnap = {"scr_allowsnap", "1"};
 cvar_t			gl_triplebuffer = {"gl_triplebuffer", "1", true };
+
 extern  		cvar_t  crosshair;
 
 qboolean        scr_initialized;                // ready to draw

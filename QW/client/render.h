@@ -108,10 +108,10 @@ extern	struct texture_s	*r_notexture_mip;
 
 extern	entity_t	r_worldentity;
 
-void R_Init (void);
-void R_InitTextures (void);
-void R_InitEfrags (void);
-void R_RenderView (void);		// must set r_refdef first
+void R_Init ();
+void R_InitTextures ();
+void R_InitEfrags ();
+void R_RenderView ();		// must set r_refdef first
 void R_ViewChanged (vrect_t *pvrect, int lineadj, float aspect);
 								// called whenever r_refdef or vid change
 void R_InitSky (struct texture_s *mt);	// called at level load
@@ -119,10 +119,10 @@ void R_InitSky (struct texture_s *mt);	// called at level load
 void R_AddEfrags (entity_t *ent);
 void R_RemoveEfrags (entity_t *ent);
 
-void R_NewMap (void);
+void R_NewMap ();
 
 
-void R_ParseParticleEffect (void);
+void R_ParseParticleEffect ();
 void R_RunParticleEffect (vec3_t org, vec3_t dir, int color, int count);
 void R_RocketTrail (vec3_t start, vec3_t end, int type);
 
@@ -132,11 +132,11 @@ void R_ParticleExplosion (vec3_t org);
 void R_LavaSplash (vec3_t org);
 void R_TeleportSplash (vec3_t org);
 
-void R_PushDlights (void);
-void R_InitParticles (void);
-void R_ClearParticles (void);
-void R_DrawParticles (void);
-void R_DrawWaterSurfaces (void);
+void R_PushDlights ();
+void R_InitParticles ();
+void R_ClearParticles ();
+void R_DrawParticles ();
+void R_DrawWaterSurfaces ();
 
 
 //
@@ -146,8 +146,8 @@ extern	int		reinit_surfcache;	// if 1, surface cache is currently empty and
 extern qboolean	r_cache_thrash;	// set if thrashing the surface cache
 
 int	D_SurfaceCacheForRes (int width, int height);
-void D_FlushCaches (void);
-void D_DeleteSurfaceCache (void);
+void D_FlushCaches ();
+void D_DeleteSurfaceCache ();
 void D_InitCaches (void *buffer, int size);
 void R_SetVrect (vrect_t *pvrect, vrect_t *pvrectin, int lineadj);
 

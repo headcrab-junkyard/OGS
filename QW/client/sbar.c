@@ -222,7 +222,7 @@ void Sbar_Init (void)
 
 //=============================================================================
 
-// drawing routines are reletive to the status bar location
+// drawing routines are relative to the status bar location
 
 /*
 =============
@@ -1289,9 +1289,7 @@ void Sbar_MiniDeathmatchOverlay (void)
 		
 		y += 8;
 	}
-
 }
-
 
 /*
 ==================
@@ -1326,5 +1324,3 @@ void Sbar_FinaleOverlay (void)
 	pic = Draw_CachePic ("gfx/finale.lmp");
 	Draw_TransPic ( (vid.width-pic->width)/2, 16, pic);
 }
-
-

@@ -21,14 +21,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 
-dprograms_t		*progs;
-dfunction_t		*pr_functions;
 char			*pr_strings;
-ddef_t			*pr_fielddefs;
-ddef_t			*pr_globaldefs;
-dstatement_t	*pr_statements;
 globalvars_t	*pr_global_struct;
-float			*pr_globals;			// same as pr_global_struct
 int				pr_edict_size;	// in bytes
 
 int		type_size[8] = {1,sizeof(void *)/4,1,3,1,1,sizeof(void *)/4,sizeof(void *)/4};
@@ -80,7 +74,7 @@ edict_t *ED_Alloc (void)
 	int			i;
 	edict_t		*e;
 
-	for ( i=MAX_CLIENTS+1 ; i<sv.num_edicts ; i++)
+	for ( i=svs.maxclients+1 ; i<sv.num_edicts ; i++)
 	{
 		e = EDICT_NUM(i);
 		// the first couple seconds of server time can involve a lot of
@@ -527,7 +521,7 @@ ED_PrintEdicts
 For debugging, prints all the entities in the current server
 =============
 */
-void ED_PrintEdicts (void)
+void ED_PrintEdicts ()
 {
 	int		i;
 	
@@ -562,7 +556,7 @@ ED_Count
 For debugging
 =============
 */
-void ED_Count (void)
+void ED_Count ()
 {
 	int		i;
 	edict_t	*ent;
@@ -670,7 +664,7 @@ void ED_ParseGlobals (char *data)
 		}
 
 		if (!ED_ParseEpair ((void *)pr_globals, key, com_token))
-			SV_Error ("ED_ParseGlobals: parse error");
+			Host_Error ("ED_ParseGlobals: parse error");
 	}
 }
 
@@ -860,7 +854,7 @@ sprintf (com_token, "0 %s 0", temp);
 }
 
 		if (!ED_ParseEpair ((void *)&ent->v, key, com_token))
-			SV_Error ("ED_ParseEdict: parse error");
+			Host_Error ("ED_ParseEdict: parse error");
 	}
 
 	if (!init)
@@ -955,7 +949,7 @@ void ED_LoadFromFile (char *data)
 PR_LoadProgs
 ===============
 */
-void PR_LoadProgs (void)
+void PR_LoadProgs ()
 {
 	int		i;
 	char	num[32];
@@ -982,19 +976,14 @@ void PR_LoadProgs (void)
 
 	if (progs->version != PROG_VERSION)
 		Sys_Error ("progs.dat has wrong version number (%i should be %i)", progs->version, PROG_VERSION);
-	if (progs->crc != PROGHEADER_CRC)
-		Sys_Error ("You must have the progs.dat from QuakeWorld installed");
-
+	
 	pr_functions = (dfunction_t *)((byte *)progs + progs->ofs_functions);
 	pr_strings = (char *)progs + progs->ofs_strings;
 	pr_globaldefs = (ddef_t *)((byte *)progs + progs->ofs_globaldefs);
-	pr_fielddefs = (ddef_t *)((byte *)progs + progs->ofs_fielddefs);
-	pr_statements = (dstatement_t *)((byte *)progs + progs->ofs_statements);
-
+	
 	num_prstr = 0;
 
 	pr_global_struct = (globalvars_t *)((byte *)progs + progs->ofs_globals);
-	pr_globals = (float *)pr_global_struct;
 	
 	pr_edict_size = progs->entityfields * 4 + sizeof (edict_t) - sizeof(entvars_t);
 	
@@ -1053,15 +1042,13 @@ void PR_LoadProgs (void)
 PR_Init
 ===============
 */
-void PR_Init (void)
+void PR_Init ()
 {
 	Cmd_AddCommand ("edict", ED_PrintEdict_f);
 	Cmd_AddCommand ("edicts", ED_PrintEdicts);
 	Cmd_AddCommand ("edictcount", ED_Count);
 	Cmd_AddCommand ("profile", PR_Profile_f);
 }
-
-
 
 edict_t *EDICT_NUM(int n)
 {
