@@ -316,15 +316,6 @@ void	CL_DecayLights ();
 void CL_Init ();
 void Host_WriteConfiguration (void);
 
-void CL_EstablishConnection (char *host);
-
-void CL_Disconnect ();
-void CL_Disconnect_f ();
-void CL_NextDemo ();
-qboolean CL_DemoBehind();
-
-void CL_BeginServerConnect();
-
 #define			MAX_VISEDICTS	256
 extern	int				cl_numvisedicts, cl_oldnumvisedicts;
 extern	entity_t		*cl_visedicts, *cl_oldvisedicts;
@@ -394,40 +385,12 @@ void CL_StopUpload();
 //
 // view.c
 //
-void V_StartPitchDrift ();
-void V_StopPitchDrift ();
-
-void V_RenderView ();
-void V_UpdatePalette ();
-void V_Register ();
-void V_ParseDamage ();
-void V_SetContentsColor (int contents);
-void V_CalcBlend ();
 
 //
 // cl_tent
 //
 void CL_InitTEnts ();
 void CL_ClearTEnts ();
-
-//
-// cl_ents.c
-//
-void CL_SetSolidPlayers (int playernum);
-void CL_SetUpPlayerPrediction(qboolean dopred);
-void CL_EmitEntities (void);
-void CL_ClearProjectiles (void);
-void CL_ParseProjectiles (void);
-void CL_ParsePacketEntities (qboolean delta);
-void CL_SetSolidEntities (void);
-void CL_ParsePlayerinfo (void);
-
-//
-// cl_pred.c
-//
-void CL_InitPrediction (void);
-void CL_PredictMove (void);
-void CL_PredictUsercmd (player_state_t *from, player_state_t *to, usercmd_t *u, qboolean spectator);
 
 //
 // cl_cam.c

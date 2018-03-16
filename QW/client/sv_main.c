@@ -823,8 +823,7 @@ void SV_ConnectionlessPacket (void)
 	else if (!strcmp(c, "rcon"))
 		SVC_RemoteCommand ();
 	else
-		Con_Printf ("bad connectionless packet from %s:\n%s\n"
-		, NET_AdrToString (net_from), s);
+		Con_Printf ("bad connectionless packet from %s:\n%s\n", NET_AdrToString (net_from), s);
 }
 
 /*

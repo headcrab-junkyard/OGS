@@ -286,16 +286,16 @@ void SV_TouchLinks ( edict_t *ent, areanode_t *node )
 		|| ent->v.absmax[2] < touch->v.absmin[2] )
 			continue;
 			
-		old_self = pr_global_struct->self;
-		old_other = pr_global_struct->other;
+		old_self = gGlobalVariables.self;
+		old_other = gGlobalVariables.other;
 
-		pr_global_struct->self = EDICT_TO_PROG(touch);
-		pr_global_struct->other = EDICT_TO_PROG(ent);
-		pr_global_struct->time = sv.time;
+		gGlobalVariables.self = EDICT_TO_PROG(touch);
+		gGlobalVariables.other = EDICT_TO_PROG(ent);
+		gGlobalVariables.time = sv.time;
 		gEntityInterface.pfnTouch(touch, ent);
 
-		pr_global_struct->self = old_self;
-		pr_global_struct->other = old_other;
+		gGlobalVariables.self = old_self;
+		gGlobalVariables.other = old_other;
 	}
 	
 // recurse down both sides

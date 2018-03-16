@@ -17,6 +17,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+
+/// @file
+
 // disable data conversion warnings
 
 #pragma warning(disable : 4244)     // MIPS

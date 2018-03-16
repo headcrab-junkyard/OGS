@@ -50,25 +50,14 @@ typedef struct edict_s
 
 //============================================================================
 
-extern	dprograms_t		*progs;
-extern	dfunction_t		*pr_functions;
 extern	char			*pr_strings;
-extern	ddef_t			*pr_globaldefs;
-extern	ddef_t			*pr_fielddefs;
-extern	dstatement_t	*pr_statements;
 extern	globalvars_t	*pr_global_struct;
-extern	float			*pr_globals;			// same as pr_global_struct
-
-extern	int				pr_edict_size;	// in bytes
 
 //============================================================================
 
 void PR_Init (void);
 
-void PR_ExecuteProgram (func_t fnum);
 void PR_LoadProgs (void);
-
-void PR_Profile_f (void);
 
 edict_t *ED_Alloc (void);
 void ED_Free (edict_t *ed);
@@ -98,30 +87,14 @@ int NUM_FOR_EDICT(edict_t *e);
 
 //============================================================================
 
-#define	G_FLOAT(o) (pr_globals[o])
-#define	G_INT(o) (*(int *)&pr_globals[o])
-#define	G_EDICT(o) ((edict_t *)((byte *)sv.edicts+ *(int *)&pr_globals[o]))
-#define G_EDICTNUM(o) NUM_FOR_EDICT(G_EDICT(o))
-#define	G_VECTOR(o) (&pr_globals[o])
-#define	G_STRING(o) (PR_GetString(*(string_t *)&pr_globals[o]))
-#define	G_FUNCTION(o) (*(func_t *)&pr_globals[o])
-
 #define	E_FLOAT(e,o) (((float*)&e->v)[o])
 #define	E_INT(e,o) (*(int *)&((float*)&e->v)[o])
 #define	E_VECTOR(e,o) (&((float*)&e->v)[o])
 #define	E_STRING(e,o) (PR_GetString(*(string_t *)&((float*)&e->v)[o]))
 
-extern	int		type_size[8];
-
-typedef void (*builtin_t) (void);
-extern	builtin_t *pr_builtins;
-extern int pr_numbuiltins;
-
 extern int		pr_argc;
 
 extern	qboolean	pr_trace;
-extern	dfunction_t	*pr_xfunction;
-extern	int			pr_xstatement;
 
 extern func_t SpectatorConnect;
 extern func_t SpectatorThink;
@@ -131,17 +104,3 @@ void PR_RunError (char *error, ...);
 
 void ED_PrintEdicts (void);
 void ED_PrintNum (int ent);
-
-eval_t *GetEdictFieldValue(edict_t *ed, char *field);
-
-//
-// PR STrings stuff
-//
-#define MAX_PRSTR 1024
-
-extern char *pr_strtbl[MAX_PRSTR];
-extern int num_prstr;
-
-char *PR_GetString(int num);
-int PR_SetString(char *s);
-

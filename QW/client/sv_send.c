@@ -46,7 +46,7 @@ extern cvar_t sv_phs;
 SV_FlushRedirect
 ==================
 */
-void SV_FlushRedirect (void)
+void SV_FlushRedirect ()
 {
 	char	send[8000+6];
 
@@ -87,7 +87,7 @@ void SV_BeginRedirect (redirect_t rd)
 	outputbuf[0] = 0;
 }
 
-void SV_EndRedirect (void)
+void SV_EndRedirect ()
 {
 	SV_FlushRedirect ();
 	sv_redirected = RD_NONE;
@@ -439,7 +439,7 @@ FRAME UPDATES
 
 int		sv_nailmodel, sv_supernailmodel, sv_playermodel;
 
-void SV_FindModelNumbers (void)
+void SV_FindModelNumbers ()
 {
 	int		i;
 
@@ -614,7 +614,7 @@ qboolean SV_SendClientDatagram (client_t *client)
 SV_UpdateToReliableMessages
 =======================
 */
-void SV_UpdateToReliableMessages (void)
+void SV_UpdateToReliableMessages ()
 {
 	int			i, j;
 	client_t *client;
@@ -690,93 +690,8 @@ void SV_UpdateToReliableMessages (void)
 #pragma optimize( "", off )
 #endif
 
-
-
-/*
-=======================
-SV_SendClientMessages
-=======================
-*/
-void SV_SendClientMessages (void)
+void SV_SendClientMessages ()
 {
-	int			i, j;
-	client_t	*c;
-
-// update frags, names, etc
-	SV_UpdateToReliableMessages ();
-
-// build individual updates
-	for (i=0, c = svs.clients ; i<MAX_CLIENTS ; i++, c++)
-	{
-		if (!c->state)
-			continue;
-
-		if (c->drop) {
-			SV_DropClient(c);
-			c->drop = false;
-			continue;
-		}
-
-		// check to see if we have a backbuf to stick in the reliable
-		if (c->num_backbuf) {
-			// will it fit?
-			if (c->netchan.message.cursize + c->backbuf_size[0] <
-				c->netchan.message.maxsize) {
-
-				Con_DPrintf("%s: backbuf %d bytes\n",
-					c->name, c->backbuf_size[0]);
-
-				// it'll fit
-				SZ_Write(&c->netchan.message, c->backbuf_data[0],
-					c->backbuf_size[0]);
-				
-				//move along, move along
-				for (j = 1; j < c->num_backbuf; j++) {
-					memcpy(c->backbuf_data[j - 1], c->backbuf_data[j],
-						c->backbuf_size[j]);
-					c->backbuf_size[j - 1] = c->backbuf_size[j];
-				}
-
-				c->num_backbuf--;
-				if (c->num_backbuf) {
-					memset(&c->backbuf, 0, sizeof(c->backbuf));
-					c->backbuf.data = c->backbuf_data[c->num_backbuf - 1];
-					c->backbuf.cursize = c->backbuf_size[c->num_backbuf - 1];
-					c->backbuf.maxsize = sizeof(c->backbuf_data[c->num_backbuf - 1]);
-				}
-			}
-		}
-
-		// if the reliable message overflowed,
-		// drop the client
-		if (c->netchan.message.overflowed)
-		{
-			SZ_Clear (&c->netchan.message);
-			SZ_Clear (&c->datagram);
-			SV_BroadcastPrintf (PRINT_HIGH, "%s overflowed\n", c->name);
-			Con_Printf ("WARNING: reliable overflow for %s\n",c->name);
-			SV_DropClient (c);
-			c->send_message = true;
-			c->netchan.cleartime = 0;	// don't choke this message
-		}
-
-		// only send messages if the client has sent one
-		// and the bandwidth is not choked
-		if (!c->send_message)
-			continue;
-		c->send_message = false;	// try putting this after choke?
-		if (!sv.paused && !Netchan_CanPacket (&c->netchan))
-		{
-			c->chokecount++;
-			continue;		// bandwidth choke
-		}
-
-		if (c->state == cs_spawned)
-			SV_SendClientDatagram (c);
-		else
-			Netchan_Transmit (&c->netchan, 0, NULL);	// just update reliable
-			
-	}
 }
 
 #ifdef _WIN32
@@ -792,7 +707,7 @@ SV_SendMessagesToAll
 FIXME: does this sequence right?
 =======================
 */
-void SV_SendMessagesToAll (void)
+void SV_SendMessagesToAll ()
 {
 	int			i;
 	client_t	*c;
