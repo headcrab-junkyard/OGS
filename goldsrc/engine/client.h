@@ -289,7 +289,6 @@ void	CL_DecayLights ();
 
 void CL_Init ();
 
-void CL_EstablishConnection (char *host);
 void CL_Signon1 ();
 void CL_Signon2 ();
 void CL_Signon3 ();
@@ -298,6 +297,7 @@ void CL_Signon4 ();
 void CL_Disconnect ();
 void CL_Disconnect_f ();
 void CL_NextDemo ();
+//qboolean CL_DemoBehind();
 
 void CL_BeginServerConnect();
 
@@ -360,9 +360,29 @@ void V_UpdatePalette ();
 void V_Register ();
 void V_ParseDamage ();
 void V_SetContentsColor (int contents);
+//void V_CalcBlend ();
 
 //
 // cl_tent
 //
 void CL_InitTEnts ();
 void CL_SignonReply ();
+
+//
+// cl_ents.c
+//
+void CL_SetSolidPlayers (int playernum);
+void CL_SetUpPlayerPrediction(qboolean dopred);
+void CL_EmitEntities ();
+void CL_ClearProjectiles ();
+void CL_ParseProjectiles ();
+void CL_ParsePacketEntities (qboolean delta);
+void CL_SetSolidEntities ();
+void CL_ParsePlayerinfo ();
+
+//
+// cl_pred.c
+//
+void CL_InitPrediction ();
+void CL_PredictMove ();
+//void CL_PredictUsercmd (player_state_t *from, player_state_t *to, usercmd_t *u, qboolean spectator); // TODO

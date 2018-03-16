@@ -23,6 +23,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #pragma once
 
+#define CVOXFILESENTENCEMAX 1536
+
 // !!! if this is changed, it much be changed in asm_i386.h too !!!
 typedef struct
 {

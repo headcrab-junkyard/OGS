@@ -488,7 +488,7 @@ qboolean SV_ReadClientMessage ()
 	do
 	{
 nextmsg:
-		ret = NET_GetMessage (host_client->netconnection);
+		ret = NET_GetMessage (host_client->netchan);
 		if (ret == -1)
 		{
 			Sys_Printf ("SV_ReadClientMessage: NET_GetMessage failed\n");
@@ -527,10 +527,10 @@ nextmsg:
 				
 			case clc_stringcmd:	
 				s = MSG_ReadString ();
-				if (host_client->privileged)
+				//if (host_client->privileged) // TODO
 					ret = 2;
-				else
-					ret = 0;
+				//else
+					//ret = 0;
 				if (Q_strncasecmp(s, "status", 6) == 0)
 					ret = 1;
 				else if (Q_strncasecmp(s, "god", 3) == 0)

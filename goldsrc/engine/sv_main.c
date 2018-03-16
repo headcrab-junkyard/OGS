@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2018 Headcrab Garage
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,7 +18,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// sv_main.c -- server main program
+
+/// @file
+/// @brief server main program
 
 #include "quakedef.h"
 
@@ -33,7 +36,7 @@ char	localmodels[MAX_MODELS][5];			// inline model names for precache
 SV_Init
 ===============
 */
-void SV_Init (void)
+void SV_Init ()
 {
 	int		i;
 	extern	cvar_t	sv_maxvelocity;
@@ -115,8 +118,7 @@ Larger attenuations will drop off.  (max 4 attenuation)
 
 ==================
 */  
-void SV_StartSound (edict_t *entity, int channel, char *sample, int volume,
-    float attenuation)
+void SV_StartSound (edict_t *entity, int channel, const char *sample, int volume, float attenuation)
 {       
     int         sound_num;
     int field_mask;
@@ -245,25 +247,25 @@ void SV_ConnectClient (int clientnum)
 	edict_t			*ent;
 	client_t		*client;
 	int				edictnum;
-	struct qsocket_s *netconnection;
+	struct netchan_s *netconnection;
 	int				i;
 	float			spawn_parms[NUM_SPAWN_PARMS];
 
 	client = svs.clients + clientnum;
 
-	Con_DPrintf ("Client %s connected\n", client->netconnection->address);
+	Con_DPrintf ("Client %s connected\n", client->netchan.remote_address);
 
 	edictnum = clientnum+1;
 
 	ent = EDICT_NUM(edictnum);
 	
 // set up the client_t
-	netconnection = client->netconnection;
+	netconnection = &client->netchan;
 	
 	if (sv.loadgame)
 		memcpy (spawn_parms, client->spawn_parms, sizeof(spawn_parms));
 	memset (client, 0, sizeof(*client));
-	client->netconnection = netconnection;
+	client->netchan = netconnection;
 
 	strcpy (client->name, "unconnected");
 	client->active = true;
@@ -273,12 +275,6 @@ void SV_ConnectClient (int clientnum)
 	client->message.maxsize = sizeof(client->msgbuf);
 	client->message.allowoverflow = true;		// we can catch it
 
-#ifdef IDGODS
-	client->privileged = IsID(&client->netconnection->addr);
-#else	
-	client->privileged = false;				
-#endif
-
 	if (sv.loadgame)
 		memcpy (client->spawn_parms, spawn_parms, sizeof(spawn_parms));
 	else
@@ -286,7 +282,7 @@ void SV_ConnectClient (int clientnum)
 	// call the progs to get default spawn parms for the new client
 		gEntityInterface.pfnSetNewParms();
 		for (i=0 ; i<NUM_SPAWN_PARMS ; i++)
-			client->spawn_parms[i] = (&pr_global_struct->parm1)[i];
+			client->spawn_parms[i] = (&gGlobalVariables.parm1)[i];
 	}
 
 	SV_SendServerinfo (client);
@@ -299,9 +295,9 @@ SV_CheckForNewClients
 
 ===================
 */
-void SV_CheckForNewClients (void)
+void SV_CheckForNewClients ()
 {
-	struct qsocket_s	*ret;
+	struct netchan_s	*ret;
 	int				i;
 		
 //
@@ -322,10 +318,8 @@ void SV_CheckForNewClients (void)
 		if (i == svs.maxclients)
 			Sys_Error ("Host_CheckForNewClients: no free clients");
 		
-		svs.clients[i].netconnection = ret;
-		SV_ConnectClient (i);	
-	
-		net_activeconnections++;
+		svs.clients[i].netchan = *ret;
+		SV_ConnectClient (i);
 	}
 }
 
@@ -345,7 +339,7 @@ SV_ClearDatagram
 
 ==================
 */
-void SV_ClearDatagram (void)
+void SV_ClearDatagram ()
 {
 	SZ_Clear (&sv.datagram);
 }
@@ -554,7 +548,7 @@ SV_CleanupEnts
 
 =============
 */
-void SV_CleanupEnts (void)
+void SV_CleanupEnts ()
 {
 	int		e;
 	edict_t	*ent;
@@ -579,9 +573,9 @@ void SV_WriteClientdataToMessage (edict_t *ent, sizebuf_t *msg)
 	int		i;
 	edict_t	*other;
 	int		items;
-#ifndef QUAKE2
-	eval_t	*val;
-#endif
+//#ifndef QUAKE2
+	//eval_t	*val;
+//#endif
 
 //
 // send a damage message
@@ -623,16 +617,18 @@ void SV_WriteClientdataToMessage (edict_t *ent, sizebuf_t *msg)
 
 // stuff the sigil bits into the high bits of items for sbar, or else
 // mix in items2
-#ifdef QUAKE2
-	items = (int)ent->v.items | ((int)ent->v.items2 << 23);
+//#ifdef QUAKE2
+	items = (int)ent->v.items;
+/*
 #else
 	val = GetEdictFieldValue(ent, "items2");
 
 	if (val)
 		items = (int)ent->v.items | ((int)val->_float << 23);
 	else
-		items = (int)ent->v.items | ((int)pr_global_struct->serverflags << 28);
+		items = (int)ent->v.items | ((int)gGlobalVariables.serverflags << 28);
 #endif
+*/
 
 	bits |= SU_ITEMS;
 	
@@ -739,7 +735,7 @@ qboolean SV_SendClientDatagram (client_t *client)
 		SZ_Write (&msg, sv.datagram.data, sv.datagram.cursize);
 
 // send the datagram
-	if (NET_SendUnreliableMessage (client->netconnection, &msg) == -1)
+	if (NET_SendUnreliableMessage (client->netchan, &msg) == -1)
 	{
 		SV_DropClient (true);// if the message couldn't send, kick off
 		return false;
@@ -753,7 +749,7 @@ qboolean SV_SendClientDatagram (client_t *client)
 SV_UpdateToReliableMessages
 =======================
 */
-void SV_UpdateToReliableMessages (void)
+void SV_UpdateToReliableMessages ()
 {
 	int			i, j;
 	client_t *client;
@@ -806,7 +802,7 @@ void SV_SendNop (client_t *client)
 
 	MSG_WriteChar (&msg, svc_nop);
 
-	if (NET_SendUnreliableMessage (client->netconnection, &msg) == -1)
+	if (NET_SendUnreliableMessage (client->netchan, &msg) == -1)
 		SV_DropClient (true);	// if the message couldn't send, kick off
 	client->last_message = realtime;
 }
@@ -816,71 +812,128 @@ void SV_SendNop (client_t *client)
 SV_SendClientMessages
 =======================
 */
-void SV_SendClientMessages (void)
+void SV_SendClientMessages ()
 {
-	int			i;
+	int			i, j;
+	client_t	*c;
 	
 // update frags, names, etc
 	SV_UpdateToReliableMessages ();
 
 // build individual updates
-	for (i=0, host_client = svs.clients ; i<svs.maxclients ; i++, host_client++)
+	for (i=0, c = svs.clients ; i<svs.maxclients ; i++, c++)
 	{
-		if (!host_client->active)
+		if (!c->state)
+		//if (!c->active)
 			continue;
 
-		if (host_client->spawned)
+		if(c->drop)
 		{
-			if (!SV_SendClientDatagram (host_client))
-				continue;
+			SV_DropClient(c);
+			c->drop = false;
+			continue;
 		}
-		else
+		
+		// TODO
+		/*
+		// check to see if we have a backbuf to stick in the reliable
+		if (c->num_backbuf)
 		{
+			// will it fit?
+			if (c->netchan.message.cursize + c->backbuf_size[0] < c->netchan.message.maxsize)
+			{
+				Con_DPrintf("%s: backbuf %d bytes\n", c->name, c->backbuf_size[0]);
+
+				// it'll fit
+				SZ_Write(&c->netchan.message, c->backbuf_data[0], c->backbuf_size[0]);
+				
+				//move along, move along
+				for (j = 1; j < c->num_backbuf; j++)
+				{
+					memcpy(c->backbuf_data[j - 1], c->backbuf_data[j], c->backbuf_size[j]);
+					c->backbuf_size[j - 1] = c->backbuf_size[j];
+				}
+
+				c->num_backbuf--;
+				
+				if (c->num_backbuf)
+				{
+					memset(&c->backbuf, 0, sizeof(c->backbuf));
+					c->backbuf.data = c->backbuf_data[c->num_backbuf - 1];
+					c->backbuf.cursize = c->backbuf_size[c->num_backbuf - 1];
+					c->backbuf.maxsize = sizeof(c->backbuf_data[c->num_backbuf - 1]);
+				}
+			}
+		}
+		*/
+		
 		// the player isn't totally in the game yet
 		// send small keepalive messages if too much time has passed
 		// send a full message when the next signon stage has been requested
 		// some other message data (name changes, etc) may accumulate 
 		// between signon stages
-			if (!host_client->sendsignon)
-			{
-				if (realtime - host_client->last_message > 5)
-					SV_SendNop (host_client);
-				continue;	// don't send out non-signon messages
-			}
+		/*
+		if (!c->sendsignon)
+		{
+			if (realtime - c->last_message > 5)
+				SV_SendNop (c);
+			continue;	// don't send out non-signon messages
 		}
+		*/
 
-		// check for an overflowed message.  Should only happen
-		// on a very fucked up connection that backs up a lot, then
-		// changes level
-		if (host_client->message.overflowed)
+		// if the reliable message overflowed, drop the client
+		if (c->netchan.message.overflowed)
 		{
-			SV_DropClient (true);
-			host_client->message.overflowed = false;
-			continue;
+			SZ_Clear (&c->netchan.message);
+			SZ_Clear (&c->datagram);
+			SV_BroadcastPrintf (PRINT_HIGH, "%s overflowed\n", c->name);
+			Con_Printf ("WARNING: reliable overflow for %s\n",c->name);
+			SV_DropClient (c/*, true*/);
+			c->send_message = true;
+			c->netchan.cleartime = 0;	// don't choke this message
 		}
-			
-		if (host_client->message.cursize || host_client->dropasap)
+		
+		// only send messages if the client has sent one
+		// and the bandwidth is not choked
+		if (!c->send_message)
+			continue;
+		
+		c->send_message = false;	// try putting this after choke?
+		
+		if (!sv.paused && !Netchan_CanPacket (&c->netchan))
 		{
-			if (!NET_CanSendMessage (host_client->netconnection))
+			c->chokecount++;
+			continue;		// bandwidth choke
+		}
+		
+		/*
+		if (c->netchan.message.cursize)
+		{
+			if (!Netchan_CanPacket (&c->netchan)) // TODO: was NET_CanSendMessage; Netchan_CanReliable?
 			{
 //				I_Printf ("can't write\n");
 				continue;
 			}
 
-			if (host_client->dropasap)
+			if (c->dropasap)
 				SV_DropClient (false);	// went to another level
 			else
 			{
-				if (NET_SendMessage (host_client->netconnection
-				, &host_client->message) == -1)
+				if (NET_SendMessage (c->netchan, &c->netchan.message) == -1)
 					SV_DropClient (true);	// if the message couldn't send, kick off
-				SZ_Clear (&host_client->message);
-				host_client->last_message = realtime;
-				host_client->sendsignon = false;
+				SZ_Clear (&c->netchan.message);
+				c->last_message = realtime;
+				c->sendsignon = false;
 			}
 		}
+		*/
+		
+		//if (c->state == cs_spawned) // TODO
+		if(c->spawned)
+			SV_SendClientDatagram (c);
+		else
+			Netchan_Transmit(&c->netchan, 0, NULL);	// just update reliable
 	}
-	
 	
 // clear muzzle flashes
 	SV_CleanupEnts ();
@@ -901,7 +954,7 @@ SV_ModelIndex
 
 ================
 */
-int SV_ModelIndex (char *name)
+int SV_ModelIndex (const char *name)
 {
 	int		i;
 	
@@ -922,7 +975,7 @@ SV_CreateBaseline
 
 ================
 */
-void SV_CreateBaseline (void)
+void SV_CreateBaseline ()
 {
 	int			i;
 	edict_t			*svent;
@@ -947,7 +1000,7 @@ void SV_CreateBaseline (void)
 		if (entnum > 0 && entnum <= svs.maxclients)
 		{
 			svent->baseline.colormap = entnum;
-			svent->baseline.modelindex = SV_ModelIndex("progs/player.mdl");
+			svent->baseline.modelindex = SV_ModelIndex("models/player.mdl");
 		}
 		else
 		{
@@ -982,7 +1035,7 @@ SV_SendReconnect
 Tell all the clients that the server is changing levels
 ================
 */
-void SV_SendReconnect (void)
+void SV_SendReconnect ()
 {
 	char	data[128];
 	sizebuf_t	msg;
@@ -991,9 +1044,10 @@ void SV_SendReconnect (void)
 	msg.cursize = 0;
 	msg.maxsize = sizeof(data);
 
-	MSG_WriteChar (&msg, svc_stufftext);
-	MSG_WriteString (&msg, "reconnect\n");
-	NET_SendToAll (&msg, 5);
+	//MSG_WriteChar (&msg, svc_stufftext);
+	//MSG_WriteString (&msg, "reconnect\n");
+	//NET_SendToAll (&msg, 5);
+	SV_BroadcastCommand("reconnect\n");
 	
 	if (cls.state != ca_dedicated)
 #ifdef QUAKE2
@@ -1012,11 +1066,11 @@ Grabs the current state of each client for saving across the
 transition to another level
 ================
 */
-void SV_SaveSpawnparms (void)
+void SV_SaveSpawnparms ()
 {
 	int		i, j;
 
-	svs.serverflags = pr_global_struct->serverflags;
+	svs.serverflags = gGlobalVariables.serverflags;
 
 	for (i=0, host_client = svs.clients ; i<svs.maxclients ; i++, host_client++)
 	{
@@ -1024,10 +1078,10 @@ void SV_SaveSpawnparms (void)
 			continue;
 
 	// call the progs to get default spawn parms for the new client
-		pr_global_struct->self = EDICT_TO_PROG(host_client->edict);
+		gGlobalVariables.self = EDICT_TO_PROG(host_client->edict);
 		gEntityInterface.pfnSetChangeParms();
 		for (j=0 ; j<NUM_SPAWN_PARMS ; j++)
-			host_client->spawn_parms[j] = (&pr_global_struct->parm1)[j];
+			host_client->spawn_parms[j] = (&gGlobalVariables.parm1)[j];
 	}
 }
 
@@ -1041,11 +1095,7 @@ This is called at the start of each level
 */
 extern float		scr_centertime_off;
 
-#ifdef QUAKE2
-void SV_SpawnServer (char *server, char *startspot)
-#else
-void SV_SpawnServer (char *server)
-#endif
+void SV_SpawnServer (const char *server, const char *startspot)
 {
 	edict_t		*ent;
 	int			i;
@@ -1087,10 +1137,9 @@ void SV_SpawnServer (char *server)
 	memset (&sv, 0, sizeof(sv));
 
 	strcpy (sv.name, server);
-#ifdef QUAKE2
+
 	if (startspot)
 		strcpy(sv.startspot, startspot);
-#endif
 
 // load progs to get entity field count
 	PR_LoadProgs ();
@@ -1098,7 +1147,7 @@ void SV_SpawnServer (char *server)
 // allocate server memory
 	sv.max_edicts = MAX_EDICTS;
 	
-	sv.edicts = Hunk_AllocName (sv.max_edicts*pr_edict_size, "edicts");
+	sv.edicts = Hunk_AllocName (sv.max_edicts*sizeof(edict_t), "edicts");
 
 	sv.datagram.maxsize = sizeof(sv.datagram_buf);
 	sv.datagram.cursize = 0;
@@ -1155,7 +1204,7 @@ void SV_SpawnServer (char *server)
 // load the rest of the entities
 //	
 	ent = EDICT_NUM(0);
-	memset (&ent->v, 0, progs->entityfields * 4);
+	memset (&ent->v, 0, sizeof(entvars_t));
 	ent->free = false;
 	ent->v.model = sv.worldmodel->name - pr_strings;
 	ent->v.modelindex = 1;		// world model
@@ -1163,17 +1212,15 @@ void SV_SpawnServer (char *server)
 	ent->v.movetype = MOVETYPE_PUSH;
 
 	if (coop.value)
-		pr_global_struct->coop = coop.value;
+		gGlobalVariables.coop = coop.value;
 	else
-		pr_global_struct->deathmatch = deathmatch.value;
+		gGlobalVariables.deathmatch = deathmatch.value;
 
-	pr_global_struct->mapname = sv.name - pr_strings;
-#ifdef QUAKE2
-	pr_global_struct->startspot = sv.startspot - pr_strings;
-#endif
+	gGlobalVariables.mapname = sv.name - pr_strings;
+	gGlobalVariables.startspot = sv.startspot - pr_strings;
 
 // serverflags are for cross level information (sigils)
-	pr_global_struct->serverflags = svs.serverflags;
+	gGlobalVariables.serverflags = svs.serverflags;
 	
 	ED_LoadFromFile (sv.worldmodel->entities);
 
@@ -1197,4 +1244,3 @@ void SV_SpawnServer (char *server)
 	
 	Con_DPrintf ("Server spawned.\n");
 }
-

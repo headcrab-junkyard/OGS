@@ -300,7 +300,7 @@ void Host_Init (quakeparms_t *parms);
 void Host_Shutdown();
 void Host_Error (const char *error, ...);
 void Host_EndGame (const char *message, ...);
-void Host_Frame (float time);
+void Host_Frame (float time); // TODO: state, stateinfo
 void Host_Quit_f ();
 void Host_ClientCommands (const char *fmt, ...);
 void Host_ShutdownServer (qboolean crash);

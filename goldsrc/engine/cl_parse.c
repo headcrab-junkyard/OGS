@@ -98,7 +98,7 @@ entity_t	*CL_EntityNum (int num)
 CL_ParseStartSoundPacket
 ==================
 */
-void CL_ParseStartSoundPacket(void)
+void CL_ParseStartSoundPacket()
 {
     vec3_t  pos;
     int 	channel, ent;
@@ -143,7 +143,7 @@ When the client is taking a long time to load stuff, send keepalive messages
 so the server doesn't disconnect.
 ==================
 */
-void CL_KeepaliveMessage (void)
+void CL_KeepaliveMessage ()
 {
 	float	time;
 	static float lastmsg;
@@ -201,7 +201,7 @@ void CL_KeepaliveMessage (void)
 CL_ParseServerInfo
 ==================
 */
-void CL_ParseServerInfo (void)
+void CL_ParseServerInfo ()
 {
 	char	*str;
 	int		i;
@@ -665,7 +665,7 @@ void CL_NewTranslation (int slot)
 CL_ParseStatic
 =====================
 */
-void CL_ParseStatic (void)
+void CL_ParseStatic ()
 {
 	entity_t *ent;
 	int		i;
@@ -694,7 +694,7 @@ void CL_ParseStatic (void)
 CL_ParseStaticSound
 ===================
 */
-void CL_ParseStaticSound (void)
+void CL_ParseStaticSound ()
 {
 	vec3_t		org;
 	int			sound_num, vol, atten;
@@ -717,7 +717,7 @@ void CL_ParseStaticSound (void)
 CL_ParseServerMessage
 =====================
 */
-void CL_ParseServerMessage (void)
+void CL_ParseServerMessage ()
 {
 	int			cmd;
 	int			i;

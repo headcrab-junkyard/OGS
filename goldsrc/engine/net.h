@@ -42,7 +42,7 @@ NET
 extern	netadr_t	net_from;		// address of who sent the packet
 extern	sizebuf_t	net_message;
 
-//extern	cvar_t	hostname;
+extern cvar_t hostname; // TODO
 
 //extern	int		net_socket;
 

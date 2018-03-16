@@ -3,7 +3,7 @@
 #pragma once
 
 #include "quakedef.h"
-#include "IEngine.hpp"
+#include "iengine.h"
 
 class CEngine final : public IEngine
 {

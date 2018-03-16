@@ -81,13 +81,10 @@ typedef struct client_s
 	qboolean		active;				// false = client is free
 	qboolean		spawned;			// false = don't send datagrams
 	qboolean		dropasap;			// has been told to go to another level
-	qboolean		privileged;			// can execute any host command
 	qboolean		sendsignon;			// only valid before spawned
 
 	double			last_message;		// reliable messages must be sent
 										// periodically
-
-	struct qsocket_s *netconnection;	// communications handle
 
 	usercmd_t		cmd;				// movement
 	vec3_t			wishdir;			// intended motion calced from cmd
@@ -107,6 +104,9 @@ typedef struct client_s
 
 // client known data for deltas	
 	int				old_frags;
+
+//===== NETWORK ============
+	netchan_t		netchan;
 } client_t;
 
 //=============================================================================
@@ -166,10 +166,11 @@ void SV_SetIdealPitch ();
 void SV_AddUpdates ();
 
 void SV_ClientThink ();
-void SV_AddClientToServer (struct qsocket_s	*ret);
 
 void SV_ClientPrintf (const char *fmt, ...);
 void SV_BroadcastPrintf (const char *fmt, ...);
+
+void SV_BroadcastCommand(const char *fmt, ...);
 
 void SV_Physics ();
 

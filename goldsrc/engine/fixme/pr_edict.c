@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2018 Headcrab Garage
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -23,10 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 char			*pr_strings;
 globalvars_t	gGlobalVariables;
-
-cvar_t	nomonsters = {"nomonsters", "0"};
-cvar_t	gamecfg = {"gamecfg", "0"};
-cvar_t	savedgamecfg = {"savedgamecfg", "0", true};
 
 /*
 =================
@@ -226,59 +223,6 @@ char *PR_UglyValueString (etype_t type, eval_t *val)
 	
 	return line;
 }
-
-/*
-============
-PR_GlobalString
-
-Returns a string with a description and the contents of a global,
-padded to 20 field width
-============
-*/
-char *PR_GlobalString (int ofs)
-{
-	char	*s;
-	int		i;
-	ddef_t	*def;
-	void	*val;
-	static char	line[128];
-	
-	val = (void *)&pr_globals[ofs];
-	if (!def)
-		sprintf (line,"%i(???)", ofs);
-	else
-	{
-		s = PR_ValueString (def->type, val);
-		sprintf (line,"%i(%s)%s", ofs, PR_GetString(def->s_name), s);
-	}
-	
-	i = strlen(line);
-	for ( ; i<20 ; i++)
-		strcat (line," ");
-	strcat (line," ");
-		
-	return line;
-}
-
-char *PR_GlobalStringNoContents (int ofs)
-{
-	int		i;
-	ddef_t	*def;
-	static char	line[128];
-	
-	if (!def)
-		sprintf (line,"%i(???)", ofs);
-	else
-		sprintf (line,"%i(%s)", ofs, PR_GetString(def->s_name));
-	
-	i = strlen(line);
-	for ( ; i<20 ; i++)
-		strcat (line," ");
-	strcat (line," ");
-		
-	return line;
-}
-
 
 /*
 =============
@@ -544,7 +488,7 @@ void ED_ParseGlobals (char *data)
 ED_NewString
 =============
 */
-char *ED_NewString (char *string)
+char *ED_NewString (const char *string)
 {
 	char	*new, *new_p;
 	int		i,l;
@@ -648,12 +592,12 @@ if (!strcmp(com_token, "light"))
 			continue;
 		}
 
-if (anglehack)
-{
-char	temp[32];
-strcpy (temp, com_token);
-sprintf (com_token, "0 %s 0", temp);
-}
+		if (anglehack)
+		{
+			char	temp[32];
+			strcpy (temp, com_token);
+			sprintf (com_token, "0 %s 0", temp);
+		}
 
 		//if (!ED_ParseEpair ((void *)&ent->v, key, com_token))
 			//Host_Error ("ED_ParseEdict: parse error");
@@ -755,6 +699,10 @@ void ED_LoadFromFile (char *data)
 	Con_DPrintf ("%i entities inhibited\n", inhibit);
 }
 
+typedef void (*pfnGiveFnptrsToDll)(enginefuncs_t *apEngFuncs, globalvars_t *apGlobals);
+
+typedef int (*pfnGetEntityAPI)(DLL_FUNCTIONS *apFuncs, int anVersion);
+typedef int (*pfnGetEntityAPI2)(DLL_FUNCTIONS *apFuncs, int *apVersion);
 
 /*
 ===============
@@ -763,22 +711,45 @@ PR_LoadProgs
 */
 void PR_LoadProgs ()
 {
-	int		i;
+	static void *gamedll = NULL;
+	pfnGetEntityAPI fnGetEntityAPI = NULL;
+	pfnGetEntityAPI2 fnGetEntityAPI2 = NULL;
 	
 	gamedll = Sys_LoadModule("dlls/server");
 
 	if (!gamedll)
 		Sys_Error ("PR_LoadProgs: couldn't load game dll");
 
-// byte swap the header
-	for (i=0 ; i<sizeof(*progs)/4 ; i++)
-		((int *)progs)[i] = LittleLong ( ((int *)progs)[i] );		
-
-	if (gamedll->version != INTERFACE_VERSION)
-		Sys_Error ("game dll has wrong version number (%i should be %i)", gEntityInterface.version, PROG_VERSION);
-
-	gEntityInterface = (dfunction_t *)((byte *)progs + progs->ofs_functions);
 	pr_strings = (char *)progs + progs->ofs_strings;
+	
+	fnGiveFnptrsToDll = (pfnGiveFnptrsToDll)Sys_GetExport(gamedll, "GiveFnptrsToDll");
+	
+	if(!fnGiveFnptrsToDll)
+		return;
+	
+	fnGiveFnptrsToDll(&gEngFuncs, &gGlobalVariables);
+	
+	fnGetEntityAPI = (pfnGetEntityAPI)Sys_GetExport(gamedll, "GetEntityAPI");
+	fnGetEntityAPI2 = (pfnGetEntityAPI2)Sys_GetExport(gamedll, "GetEntityAPI2");
+	
+	if(fnGetEntityAPI2)
+	{
+		int nDLLVersion = INTERFACE_VERSION;
+		
+		if(!fnGetEntityAPI2(&gEntityInterface, &nDLLVersion))
+			return;
+		
+		if(nDLLVersion != INTERFACE_VERSION)
+			Sys_Error ("game dll has wrong version number (%i should be %i)", nDLLVersion, INTERFACE_VERSION);
+		
+		return;
+	};
+	
+	if(fnGetEntityAPI)
+	{
+		if(!fnGetEntityAPI(&gEntityInterface, INTERFACE_VERSION))
+			return;
+	};
 }
 
 /*
@@ -791,17 +762,13 @@ void PR_Init ()
 	Cmd_AddCommand ("edict", ED_PrintEdict_f);
 	Cmd_AddCommand ("edicts", ED_PrintEdicts);
 	Cmd_AddCommand ("edictcount", ED_Count);
-	Cmd_AddCommand ("profile", PR_Profile_f);
-	Cvar_RegisterVariable (&nomonsters);
-	Cvar_RegisterVariable (&gamecfg);
-	Cvar_RegisterVariable (&savedgamecfg);
 }
 
 edict_t *EDICT_NUM(int n)
 {
 	if (n < 0 || n >= sv.max_edicts)
 		Sys_Error ("EDICT_NUM: bad number %i", n);
-	return (edict_t *)((byte *)sv.edicts+ (n)*pr_edict_size);
+	return (edict_t *)((byte *)sv.edicts+ (n)*sizeof(edict_t));
 }
 
 int NUM_FOR_EDICT(edict_t *e)
@@ -809,7 +776,7 @@ int NUM_FOR_EDICT(edict_t *e)
 	int		b;
 	
 	b = (byte *)e - (byte *)sv.edicts;
-	b = b / pr_edict_size;
+	b = b / sizeof(edict_t);
 	
 	if (b < 0 || b >= sv.num_edicts)
 		Sys_Error ("NUM_FOR_EDICT: bad pointer");

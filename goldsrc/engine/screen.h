@@ -31,8 +31,8 @@ void SCR_BringDownConsole ();
 
 void SCR_CenterPrint (const char *str);
 
-void SCR_BeginLoadingPlaque ();
-void SCR_EndLoadingPlaque ();
+void SCR_BeginLoadingPlaque (); // TODO
+void SCR_EndLoadingPlaque (); // TODO
 
 int SCR_ModalMessage (const char *text);
 
@@ -56,4 +56,4 @@ extern	int			scr_copyeverything;
 
 extern qboolean		block_drawing;
 
-void SCR_UpdateWholeScreen ();
+void SCR_UpdateWholeScreen (); // TODO

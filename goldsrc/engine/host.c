@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 /*
 
-A server can allways be started, even if the system started out as a client
+A server can always be started, even if the system started out as a client
 to a remote system.
 
 A client can NOT be started if the system started as a dedicated server.
@@ -64,7 +64,7 @@ cvar_t	fraglimit = {"fraglimit","0",false,true};
 cvar_t	timelimit = {"timelimit","0",false,true};
 cvar_t	teamplay = {"teamplay","0",false,true};
 
-#ifdef OGS_DEV
+#if defined(OGS_DEV) || defined(OGS_DEBUG)
 cvar_t	developer = {"developer","1"};	// should be 0 for release!
 #else
 cvar_t	developer = {"developer","0"};
@@ -306,6 +306,28 @@ void SV_BroadcastPrintf (const char *fmt, ...)
 
 /*
 =================
+SV_BroadcastCommand
+
+Sends text to all active clients
+=================
+*/
+void SV_BroadcastCommand (const char *fmt, ...)
+{
+	va_list		argptr;
+	char		string[1024];
+	
+	if (!sv.state)
+		return;
+	va_start (argptr,fmt);
+	vsprintf (string, fmt,argptr);
+	va_end (argptr);
+
+	MSG_WriteByte (&sv.reliable_datagram, svc_stufftext);
+	MSG_WriteString (&sv.reliable_datagram, string);
+}
+
+/*
+=================
 Host_ClientCommands
 
 Send text over to the client to be executed
@@ -332,7 +354,7 @@ Called when the player is getting totally kicked off the host
 if (crash = true), don't bother sending signofs
 =====================
 */
-void SV_DropClient (qboolean crash)
+void SV_DropClient (client_t *host_client, qboolean crash)
 {
 	int		saveSelf;
 	int		i;
@@ -341,10 +363,10 @@ void SV_DropClient (qboolean crash)
 	if (!crash)
 	{
 		// send any final messages (don't check for errors)
-		if (Netchan_CanPacket (&host_client->netconnection)) // TODO: was NET_CanSendMessage; Netchan_CanReliable?
+		if (Netchan_CanPacket (&host_client->netchan)) // TODO: was NET_CanSendMessage; Netchan_CanReliable?
 		{
 			MSG_WriteByte (&host_client->message, svc_disconnect);
-			NET_SendMessage (host_client->netconnection, &host_client->message);
+			NET_SendMessage (host_client->netchan, &host_client->message);
 		}
 	
 		if (host_client->edict && host_client->spawned)
@@ -360,15 +382,10 @@ void SV_DropClient (qboolean crash)
 		Sys_Printf ("Client %s removed\n",host_client->name);
 	}
 
-// break the net connection
-	NET_Close (host_client->netconnection);
-	host_client->netconnection = NULL;
-
 // free the client (the body stays around)
 	host_client->active = false;
 	host_client->name[0] = 0;
 	host_client->old_frags = -999999;
-	//net_activeconnections--; // TODO: ???
 
 // send notification to all clients
 	for (i=0, client = svs.clients ; i<svs.maxclients ; i++, client++)
@@ -420,14 +437,14 @@ void Host_ShutdownServer(qboolean crash)
 		{
 			if (host_client->active && host_client->message.cursize)
 			{
-				if (NET_CanSendMessage (host_client->netconnection))
+				if (Netchan_CanPacket (&host_client->netchan)) // TODO: was NET_CanSendMessage; Netchan_CanReliable?
 				{
-					NET_SendMessage(host_client->netconnection, &host_client->message);
+					NET_SendMessage(host_client->netchan, &host_client->message);
 					SZ_Clear (&host_client->message);
 				}
 				else
 				{
-					NET_GetMessage(host_client->netconnection);
+					NET_GetPacket(NS_SERVER, &net_from, &host_client->netchan); // TODO: was NET_GetMessage
 					count++;
 				}
 			}
@@ -780,7 +797,7 @@ void Host_Frame (float time)
 
 //============================================================================
 
-
+/*
 extern int vcrFile;
 #define	VCR_SIGNATURE	0x56435231
 // "VCR1"
@@ -842,6 +859,7 @@ void Host_InitVCR (quakeparms_t *parms)
 	}
 	
 }
+*/
 
 /*
 ====================
@@ -872,7 +890,7 @@ void Host_Init (quakeparms_t *parms)
 	Cmd_Init ();	
 	V_Init ();
 	Chase_Init ();
-	Host_InitVCR (parms);
+	//Host_InitVCR (parms);
 	COM_Init (parms->basedir);
 	Host_InitLocal ();
 	W_LoadWadFile ("gfx.wad");
@@ -885,7 +903,9 @@ void Host_Init (quakeparms_t *parms)
 	Netchan_Init();
 	SV_Init ();
 
-	Con_Printf ("Exe: "__TIME__" "__DATE__"\n");
+	Con_Printf ("Protocol version %d\n", PROTOCOL_VERSION);
+	//Con_Printf ("Exe version %s/%s (%s)\n", TODO); // Exe version 1.1.2.2/Stdio (tfc)
+	//Con_Printf ("Exe build: " __TIME__ " " __DATE__ "(%d)\n", buildnum()); // TODO
 	Con_Printf ("%4.1f megabyte heap\n",parms->memsize/ (1024*1024.0));
 	
 	R_InitTextures ();		// needed even for dedicated servers
@@ -967,8 +987,5 @@ void Host_Shutdown()
 	IN_Shutdown ();
 
 	if (cls.state != ca_dedicated)
-	{
 		VID_Shutdown();
-	}
 }
-
