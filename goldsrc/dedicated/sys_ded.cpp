@@ -2,35 +2,12 @@
 
 #include <cstdio>
 
-#include "IEngine.hpp"
+#include "engine_hlds_api.h"
 
 #define INTERFACE_IMPL
 #include "Interface.hpp"
 
-// TEMP DUPLICATE
-struct quakeparms_t
-{
-	char	*basedir;
-	char	*cachedir;		// for development over ISDN lines
-	
-	int		argc;
-	char	**argv;
-	
-	void	*membase;
-	int		memsize;
-};
-
-using pfnHost_Init = void (*)(quakeparms_t *parms);
-using pfnHost_Frame = void (*)(float frametime);
-using pfnHost_Shutdown = void (*)();
-
-using pfnGetEngine = IEngine *(*)();
-
-void RunServer()
-{
-};
-
-int main(int argc, char **argv)
+int RunServer() // void?
 {
 	auto pFSLib{Sys_LoadModule("filesystem_stdio")};
 	
@@ -49,42 +26,30 @@ int main(int argc, char **argv)
 	
 	auto pEngineFactory{Sys_GetFactory(pEngineLib)};
 	
-	//if(!pEngineFactory)
-		//return EXIT_FAILURE;
-	
-	auto fnHost_Init{(pfnHost_Init)Sys_GetExport(pEngineLib, "Host_Init")};
-	auto fnHost_Frame{(pfnHost_Frame)Sys_GetExport(pEngineLib, "Host_Frame")};
-	auto fnHost_Shutdown{(pfnHost_Shutdown)Sys_GetExport(pEngineLib, "Host_Shutdown")};
-	
-	if(!fnHost_Init || !fnHost_Frame || !fnHost_Shutdown)
+	if(!pEngineFactory)
 		return EXIT_FAILURE;
 	
-	auto fnGetEngine{(pfnGetEngine)Sys_GetExport(pEngineLib, "GetEngine")};
-	
-	if(!fnGetEngine)
-		return EXIT_FAILURE;
-	
-	auto pEngine{fnGetEngine()};
+	auto pEngine{(IDedicatedServerAPI*)pEngineFactory(VENGINE_HLDS_API_VERSION, nullptr)};
 	
 	if(!pEngine)
 		return EXIT_FAILURE;
 	
-	//pEngineFactory();
-	
-	quakeparms_t parms{};
-	
-	parms.argc = argc;
-	parms.argv = argv;
-	
-	fnHost_Init(&parms);
-	//pEngine->Init();
+	//char *basedir, char *cmdline, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory
+	if(!pEngine->Init(".", "", nullptr, pFSFactory))
+		return EXIT_FAILURE;
 	
 	while(true)
-		fnHost_Frame(0.1f);
-		//pEngine->Frame();
+		pEngine->RunFrame();
 	
-	fnHost_Shutdown();
-	//pEngine->Shutdown();
+	pEngine->Shutdown();
+	
+	return EXIT_SUCCESS;
+};
+
+int main(int argc, char **argv)
+{
+	if(!RunServer())
+		return EXIT_FAILURE;
 	
 	return EXIT_SUCCESS;
 };
