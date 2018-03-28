@@ -276,7 +276,7 @@ void SV_TouchLinks ( edict_t *ent, areanode_t *node )
 		touch = EDICT_FROM_AREA(l);
 		if (touch == ent)
 			continue;
-		if (!touch->v.touch || touch->v.solid != SOLID_TRIGGER)
+		if (/* !touch->v.touch || */ touch->v.solid != SOLID_TRIGGER) // TODO
 			continue;
 		if (ent->v.absmin[0] > touch->v.absmax[0]
 		|| ent->v.absmin[1] > touch->v.absmax[1]
@@ -373,8 +373,36 @@ void SV_LinkEdict (edict_t *ent, qboolean touch_triggers)
 		return;
 
 // set the abs box
-	VectorAdd (ent->v.origin, ent->v.mins, ent->v.absmin);	
-	VectorAdd (ent->v.origin, ent->v.maxs, ent->v.absmax);
+
+#ifdef QUAKE2
+	if (ent->v.solid == SOLID_BSP && 
+	(ent->v.angles[0] || ent->v.angles[1] || ent->v.angles[2]) )
+	{	// expand for rotation
+		float		max, v;
+		int			i;
+
+		max = 0;
+		for (i=0 ; i<3 ; i++)
+		{
+			v =fabs( ent->v.mins[i]);
+			if (v > max)
+				max = v;
+			v =fabs( ent->v.maxs[i]);
+			if (v > max)
+				max = v;
+		}
+		for (i=0 ; i<3 ; i++)
+		{
+			ent->v.absmin[i] = ent->v.origin[i] - max;
+			ent->v.absmax[i] = ent->v.origin[i] + max;
+		}
+	}
+	else
+#endif
+	{
+		VectorAdd (ent->v.origin, ent->v.mins, ent->v.absmin);	
+		VectorAdd (ent->v.origin, ent->v.maxs, ent->v.absmax);
+	}
 
 //
 // to make items easier to pick up and allow them to be grabbed off
@@ -690,8 +718,58 @@ trace_t SV_ClipMoveToEntity (edict_t *ent, vec3_t start, vec3_t mins, vec3_t max
 	VectorSubtract (start, offset, start_l);
 	VectorSubtract (end, offset, end_l);
 
+#ifdef QUAKE2
+	// rotate start and end into the models frame of reference
+	if (ent->v.solid == SOLID_BSP && 
+	(ent->v.angles[0] || ent->v.angles[1] || ent->v.angles[2]) )
+	{
+		vec3_t	a;
+		vec3_t	forward, right, up;
+		vec3_t	temp;
+
+		AngleVectors (ent->v.angles, forward, right, up);
+
+		VectorCopy (start_l, temp);
+		start_l[0] = DotProduct (temp, forward);
+		start_l[1] = -DotProduct (temp, right);
+		start_l[2] = DotProduct (temp, up);
+
+		VectorCopy (end_l, temp);
+		end_l[0] = DotProduct (temp, forward);
+		end_l[1] = -DotProduct (temp, right);
+		end_l[2] = DotProduct (temp, up);
+	}
+#endif
+
 // trace a line through the apropriate clipping hull
 	SV_RecursiveHullCheck (hull, hull->firstclipnode, 0, 1, start_l, end_l, &trace);
+
+#ifdef QUAKE2
+	// rotate endpos back to world frame of reference
+	if (ent->v.solid == SOLID_BSP && 
+	(ent->v.angles[0] || ent->v.angles[1] || ent->v.angles[2]) )
+	{
+		vec3_t	a;
+		vec3_t	forward, right, up;
+		vec3_t	temp;
+
+		if (trace.fraction != 1)
+		{
+			VectorSubtract (vec3_origin, ent->v.angles, a);
+			AngleVectors (a, forward, right, up);
+
+			VectorCopy (trace.endpos, temp);
+			trace.endpos[0] = DotProduct (temp, forward);
+			trace.endpos[1] = -DotProduct (temp, right);
+			trace.endpos[2] = DotProduct (temp, up);
+
+			VectorCopy (trace.plane.normal, temp);
+			trace.plane.normal[0] = DotProduct (temp, forward);
+			trace.plane.normal[1] = -DotProduct (temp, right);
+			trace.plane.normal[2] = DotProduct (temp, up);
+		}
+	}
+#endif
 
 // fix trace up by the offset
 	if (trace.fraction != 1)

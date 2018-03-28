@@ -18,7 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include "qwsvdef.h"
+#include "quakedef.h"
 
 qboolean	sv_allow_cheats;
 
@@ -44,7 +44,7 @@ SV_SetMaster_f
 Make a master server current
 ====================
 */
-void SV_SetMaster_f (void)
+void SV_SetMaster_f ()
 {
 	char	data[2];
 	int		i;
@@ -79,7 +79,7 @@ void SV_SetMaster_f (void)
 SV_Quit_f
 ==================
 */
-void SV_Quit_f (void)
+void SV_Quit_f ()
 {
 	SV_FinalMessage ("server shutdown\n");
 	Con_Printf ("Shutting down.\n");
@@ -92,7 +92,7 @@ void SV_Quit_f (void)
 SV_Logfile_f
 ============
 */
-void SV_Logfile_f (void)
+void SV_Logfile_f ()
 {
 	char	name[MAX_OSPATH];
 
@@ -117,7 +117,7 @@ void SV_Logfile_f (void)
 SV_Fraglogfile_f
 ============
 */
-void SV_Fraglogfile_f (void)
+void SV_Fraglogfile_f ()
 {
 	char	name[MAX_OSPATH];
 	int		i;
@@ -162,7 +162,7 @@ SV_SetPlayer
 Sets host_client and sv_player to the player with idnum Cmd_Argv(1)
 ==================
 */
-qboolean SV_SetPlayer (void)
+qboolean SV_SetPlayer ()
 {
 	client_t	*cl;
 	int			i;
@@ -193,7 +193,7 @@ SV_God_f
 Sets client to godmode
 ==================
 */
-void SV_God_f (void)
+void SV_God_f ()
 {
 	if (!sv_allow_cheats)
 	{
@@ -212,7 +212,7 @@ void SV_God_f (void)
 }
 
 
-void SV_Noclip_f (void)
+void SV_Noclip_f ()
 {
 	if (!sv_allow_cheats)
 	{
@@ -241,7 +241,7 @@ void SV_Noclip_f (void)
 SV_Give_f
 ==================
 */
-void SV_Give_f (void)
+void SV_Give_f ()
 {
 	char	*t;
 	int		v;
@@ -299,7 +299,7 @@ map <mapname>
 command from the console or progs.
 ======================
 */
-void SV_Map_f (void)
+void SV_Map_f ()
 {
 	char	level[MAX_QPATH];
 	char	expanded[MAX_QPATH];
@@ -346,7 +346,7 @@ SV_Kick_f
 Kick a user off of the server
 ==================
 */
-void SV_Kick_f (void)
+void SV_Kick_f ()
 {
 	int			i;
 	client_t	*cl;
@@ -378,7 +378,7 @@ void SV_Kick_f (void)
 SV_Status_f
 ================
 */
-void SV_Status_f (void)
+void SV_Status_f ()
 {
 	int			i, j, l;
 	client_t	*cl;
@@ -484,7 +484,7 @@ void SV_Status_f (void)
 SV_ConSay_f
 ==================
 */
-void SV_ConSay_f(void)
+void SV_ConSay_f()
 {
 	client_t *client;
 	int		j;
@@ -519,7 +519,7 @@ void SV_ConSay_f(void)
 SV_Heartbeat_f
 ==================
 */
-void SV_Heartbeat_f (void)
+void SV_Heartbeat_f ()
 {
 	svs.last_heartbeat = -9999;
 }
@@ -542,7 +542,7 @@ SV_Serverinfo_f
 ===========
 */
 char *CopyString(char *s);
-void SV_Serverinfo_f (void)
+void SV_Serverinfo_f ()
 {
 	cvar_t	*var;
 
@@ -587,7 +587,7 @@ SV_Serverinfo_f
 ===========
 */
 char *CopyString(char *s);
-void SV_Localinfo_f (void)
+void SV_Localinfo_f ()
 {
 	if (Cmd_Argc() == 1)
 	{
@@ -618,7 +618,7 @@ SV_User_f
 Examine a users info strings
 ===========
 */
-void SV_User_f (void)
+void SV_User_f ()
 {
 	if (Cmd_Argc() != 2)
 	{
@@ -639,7 +639,7 @@ SV_Gamedir
 Sets the fake *gamedir to a different directory.
 ================
 */
-void SV_Gamedir (void)
+void SV_Gamedir ()
 {
 	char			*dir;
 
@@ -675,7 +675,7 @@ Sets the gamedir and path to a different directory.
 ================
 */
 
-void SV_Floodprot_f (void)
+void SV_Floodprot_f ()
 {
 	int arg1, arg2, arg3;
 	
@@ -715,7 +715,7 @@ void SV_Floodprot_f (void)
 	fp_secondsdead = arg3;
 }
 
-void SV_Floodprotmsg_f (void)
+void SV_Floodprotmsg_f ()
 {
 	if (Cmd_Argc() == 1) {
 		Con_Printf("Current msg: %s\n", fp_msg);
@@ -735,7 +735,7 @@ Sets the gamedir and path to a different directory.
 ================
 */
 char	gamedirfile[MAX_OSPATH];
-void SV_Gamedir_f (void)
+void SV_Gamedir_f ()
 {
 	char			*dir;
 
@@ -825,7 +825,7 @@ void SV_Snap (int uid)
 SV_Snap_f
 ================
 */
-void SV_Snap_f (void)
+void SV_Snap_f ()
 {
 	int			uid;
 
@@ -845,7 +845,7 @@ void SV_Snap_f (void)
 SV_Snap
 ================
 */
-void SV_SnapAll_f (void)
+void SV_SnapAll_f ()
 {
 	client_t *cl;
 	int			i;
@@ -863,7 +863,7 @@ void SV_SnapAll_f (void)
 SV_InitOperatorCommands
 ==================
 */
-void SV_InitOperatorCommands (void)
+void SV_InitOperatorCommands ()
 {
 	if (COM_CheckParm ("-cheats"))
 	{

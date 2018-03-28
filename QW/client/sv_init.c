@@ -16,14 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-*/
-
-#include "qwsvdef.h"
-
-server_static_t	svs;				// persistant server info
-server_t		sv;					// local server
-
-char	localmodels[MAX_MODELS][5];	// inline model names for precache
+*/			
 
 char localinfo[MAX_LOCALINFO_STRING+1]; // local game info
 
@@ -280,8 +273,6 @@ This is only called from the SV_Map_f() function.
 */
 void SV_SpawnServer (char *server)
 {
-	edict_t		*ent;
-	int			i;
 
 	Con_DPrintf ("SpawnServer: %s\n",server);
 	
@@ -320,9 +311,6 @@ void SV_SpawnServer (char *server)
 	// load progs to get entity field count
 	// which determines how big each edict is
 	PR_LoadProgs ();
-
-	// allocate edicts
-	sv.edicts = Hunk_AllocName (MAX_EDICTS*pr_edict_size, "edicts");
 	
 	// leave slots at start for clients only
 	sv.num_edicts = MAX_CLIENTS+1;
@@ -372,19 +360,8 @@ void SV_SpawnServer (char *server)
 	ent = EDICT_NUM(0);
 	ent->free = false;
 	ent->v.model = PR_SetString(sv.worldmodel->name);
-	ent->v.modelindex = 1;		// world model
-	ent->v.solid = SOLID_BSP;
-	ent->v.movetype = MOVETYPE_PUSH;
 
 	pr_global_struct->mapname = PR_SetString(sv.name);
-	// serverflags are for cross level information (sigils)
-	pr_global_struct->serverflags = svs.serverflags;
-	
-	// run the frame start qc function to let progs check cvars
-	SV_ProgStartFrame ();
-
-	// load and spawn all other entities
-	ED_LoadFromFile (sv.worldmodel->entities);
 
 	// look up some model indexes for specialized message compression
 	SV_FindModelNumbers ();
@@ -392,20 +369,5 @@ void SV_SpawnServer (char *server)
 	// all spawning is completed, any further precache statements
 	// or prog writes to the signon message are errors
 	sv.state = ss_active;
-	
-	// run two frames to allow everything to settle
-	host_frametime = 0.1;
-	SV_Physics ();
-	SV_Physics ();
-
-	// save movement vars
-	SV_SetMoveVars();
-
-	// create a baseline for more efficient communications
-	SV_CreateBaseline ();
-	sv.signon_buffer_size[sv.num_signon_buffers-1] = sv.signon.cursize;
-
-	Info_SetValueForKey (svs.info, "map", sv.name, MAX_SERVERINFO_STRING);
-	Con_DPrintf ("Server spawned.\n");
 }
 

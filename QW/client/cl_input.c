@@ -336,7 +336,7 @@ void CL_FinishMove (usercmd_t *cmd)
 	int		ms;
 
 //
-// allways dump the first two message, because it may contain leftover inputs
+// always dump the first two message, because it may contain leftover inputs
 // from the last level
 //
 	if (++cl.movemessages <= 2)
@@ -375,62 +375,18 @@ void CL_FinishMove (usercmd_t *cmd)
 		cmd->angles[i] = ((int)(cmd->angles[i]*65536.0/360)&65535) * (360.0/65536.0);
 }
 
-/*
-=================
-CL_SendCmd
-=================
-*/
-void CL_SendCmd (void)
+void CL_SendCmd ()
 {
-	sizebuf_t	buf;
-	byte		data[128];
-	int			i;
+	
 	usercmd_t	*cmd, *oldcmd;
-	int			checksumIndex;
-	int			lost;
-	int			seq_hash;
-
-	if (cls.demoplayback)
-		return; // sendcmds come from the demo
-
-	// save this command off for prediction
-	i = cls.netchan.outgoing_sequence & UPDATE_MASK;
-	cmd = &cl.frames[i].cmd;
-	cl.frames[i].senttime = realtime;
-	cl.frames[i].receivedtime = -1;		// we haven't gotten a reply yet
-
-//	seq_hash = (cls.netchan.outgoing_sequence & 0xffff) ; // ^ QW_CHECK_HASH;
-	seq_hash = cls.netchan.outgoing_sequence;
-
-	// get basic movement from keyboard
-	CL_BaseMove (cmd);
+	
 
 	// allow mice or other external controllers to add to the move
 	IN_Move (cmd);
 
-	// if we are spectator, try autocam
-	if (cl.spectator)
-		Cam_Track(cmd);
+	
 
-	CL_FinishMove(cmd);
-
-	Cam_FinishMove(cmd);
-
-// send this and the previous cmds in the message, so
-// if the last packet was dropped, it can be recovered
-	buf.maxsize = 128;
-	buf.cursize = 0;
-	buf.data = data;
-
-	MSG_WriteByte (&buf, clc_move);
-
-	// save the position for a checksum byte
-	checksumIndex = buf.cursize;
-	MSG_WriteByte (&buf, 0);
-
-	// write our lossage percentage
-	lost = CL_CalcNet();
-	MSG_WriteByte (&buf, (byte)lost);
+	
 
 	i = (cls.netchan.outgoing_sequence-2) & UPDATE_MASK;
 	cmd = &cl.frames[i].cmd;
@@ -468,10 +424,7 @@ void CL_SendCmd (void)
 	if (cls.demorecording)
 		CL_WriteDemoCmd(cmd);
 
-//
-// deliver the message
-//
-	Netchan_Transmit (&cls.netchan, buf.cursize, buf.data);	
+
 }
 
 

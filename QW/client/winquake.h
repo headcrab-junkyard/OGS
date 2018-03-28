@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2018 Headcrab Garage
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,7 +18,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// winquake.h: Win32-specific Quake header file
+
+/// @file
+/// @brief Win32-specific Quake header file
 
 #ifdef _WIN32 
 #pragma warning( disable : 4229 )  // mgraph gets this

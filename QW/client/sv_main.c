@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2018 Headcrab Garage
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,37 +21,26 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "qwsvdef.h"
 
-quakeparms_t host_parms;
-
 qboolean	host_initialized;		// true if into command execution (compatability)
 
-double		host_frametime;
-double		realtime;				// without any filtering or bounding
-
-int			host_hunklevel;
-
 netadr_t	master_adr[MAX_MASTERS];	// address of group servers
-
-client_t	*host_client;			// current client
 
 cvar_t	sv_mintic = {"sv_mintic","0.03"};	// bound the size of the
 cvar_t	sv_maxtic = {"sv_maxtic","0.1"};	// physics time tic 
 
-cvar_t	developer = {"developer","0"};		// show extra messages
-
-cvar_t	timeout = {"timeout","65"};		// seconds without any message
-cvar_t	zombietime = {"zombietime", "2"};	// seconds to sink messages
+cvar_t	timeout = {"sv_timeout","65"};		// seconds without any message
+cvar_t	zombietime = {"sv_zombietime", "2"};	// seconds to sink messages
 											// after disconnect
 
 cvar_t	rcon_password = {"rcon_password", ""};	// password for remote server commands
 cvar_t	password = {"password", ""};	// password for entering the game
 cvar_t	spectator_password = {"spectator_password", ""};	// password for entering as a sepctator
 
-cvar_t	allow_download = {"allow_download", "1"};
-cvar_t	allow_download_skins = {"allow_download_skins", "1"};
-cvar_t	allow_download_models = {"allow_download_models", "1"};
-cvar_t	allow_download_sounds = {"allow_download_sounds", "1"};
-cvar_t	allow_download_maps = {"allow_download_maps", "1"};
+cvar_t	allow_download = {"sv_allow_download", "1"};
+cvar_t	allow_download_skins = {"sv_allow_download_skins", "1"};
+cvar_t	allow_download_models = {"sv_allow_download_models", "1"};
+cvar_t	allow_download_sounds = {"sv_allow_download_sounds", "1"};
+cvar_t	allow_download_maps = {"sv_allow_download_maps", "1"};
 
 cvar_t sv_highchars = {"sv_highchars", "1"};
 
@@ -120,26 +110,10 @@ then exits
 */
 void SV_Error (char *error, ...)
 {
-	va_list		argptr;
 	static	char		string[1024];
-	static	qboolean inerror = false;
 
 	if (inerror)
 		Sys_Error ("SV_Error: recursively entered (%s)", string);
-
-	inerror = true;
-
-	va_start (argptr,error);
-	vsprintf (string,error,argptr);
-	va_end (argptr);
-
-	Con_Printf ("SV_Error: %s\n",string);
-
-	SV_FinalMessage (va("server crashed: %s\n", string));
-		
-	SV_Shutdown ();
-
-	Sys_Error ("SV_Error: %s\n",string);
 }
 
 /*
@@ -182,8 +156,7 @@ or crashing.
 */
 void SV_DropClient (client_t *drop)
 {
-	// add the disconnect
-	MSG_WriteByte (&drop->netchan.message, svc_disconnect);
+	
 
 	if (drop->state == cs_spawned)
 		if (!drop->spectator)
@@ -208,12 +181,14 @@ void SV_DropClient (client_t *drop)
 
 	if (drop->download)
 	{
-		fclose (drop->download);
+		FS_FreeFile (drop->download); // was fclose
 		drop->download = NULL;
 	}
+	
+	// NOTE: not present in Q2
 	if (drop->upload)
 	{
-		fclose (drop->upload);
+		FS_FreeFile (drop->upload); // was fclose
 		drop->upload = NULL;
 	}
 	*drop->uploadfn = 0;
@@ -224,7 +199,7 @@ void SV_DropClient (client_t *drop)
 	drop->old_frags = 0;
 	drop->edict->v.frags = 0;
 	drop->name[0] = 0;
-	memset (drop->userinfo, 0, sizeof(drop->userinfo));
+	
 
 // send notification to all remaining clients
 	SV_FullClientUpdate (drop, &sv.reliable_datagram);
@@ -766,65 +741,7 @@ void SVC_RemoteCommand (void)
 }
 
 
-/*
-=================
-SV_ConnectionlessPacket
 
-A connectionless packet has four leading 0xff
-characters to distinguish it from a game channel.
-Clients that are in the game can still send
-connectionless packets.
-=================
-*/
-void SV_ConnectionlessPacket (void)
-{
-	char	*s;
-	char	*c;
-
-	MSG_BeginReading ();
-	MSG_ReadLong ();		// skip the -1 marker
-
-	s = MSG_ReadStringLine ();
-
-	Cmd_TokenizeString (s);
-
-	c = Cmd_Argv(0);
-
-	if (!strcmp(c, "ping") || ( c[0] == A2A_PING && (c[1] == 0 || c[1] == '\n')) )
-	{
-		SVC_Ping ();
-		return;
-	}
-	if (c[0] == A2A_ACK && (c[1] == 0 || c[1] == '\n') )
-	{
-		Con_Printf ("A2A_ACK from %s\n", NET_AdrToString (net_from));
-		return;
-	}
-	else if (!strcmp(c,"status"))
-	{
-		SVC_Status ();
-		return;
-	}
-	else if (!strcmp(c,"log"))
-	{
-		SVC_Log ();
-		return;
-	}
-	else if (!strcmp(c,"connect"))
-	{
-		SVC_DirectConnect ();
-		return;
-	}
-	else if (!strcmp(c,"getchallenge"))
-	{
-		SVC_GetChallenge ();
-		return;
-	}
-	else if (!strcmp(c, "rcon"))
-		SVC_RemoteCommand ();
-	else
-		Con_Printf ("bad connectionless packet from %s:\n%s\n", NET_AdrToString (net_from), s);
-}
 
 /*
 ==============================================================================
@@ -1058,140 +975,6 @@ qboolean SV_FilterPacket (void)
 //============================================================================
 
 /*
-=================
-SV_ReadPackets
-=================
-*/
-void SV_ReadPackets (void)
-{
-	int			i;
-	client_t	*cl;
-	qboolean	good;
-	int			qport;
-
-	good = false;
-	while (NET_GetPacket ())
-	{
-		if (SV_FilterPacket ())
-		{
-			SV_SendBan ();	// tell them we aren't listening...
-			continue;
-		}
-
-		// check for connectionless packet (0xffffffff) first
-		if (*(int *)net_message.data == -1)
-		{
-			SV_ConnectionlessPacket ();
-			continue;
-		}
-		
-		// read the qport out of the message so we can fix up
-		// stupid address translating routers
-		MSG_BeginReading ();
-		MSG_ReadLong ();		// sequence number
-		MSG_ReadLong ();		// sequence number
-		qport = MSG_ReadShort () & 0xffff;
-
-		// check for packets from connected clients
-		for (i=0, cl=svs.clients ; i<MAX_CLIENTS ; i++,cl++)
-		{
-			if (cl->state == cs_free)
-				continue;
-			if (!NET_CompareBaseAdr (net_from, cl->netchan.remote_address))
-				continue;
-			if (cl->netchan.qport != qport)
-				continue;
-			if (cl->netchan.remote_address.port != net_from.port)
-			{
-				Con_DPrintf ("SV_ReadPackets: fixing up a translated port\n");
-				cl->netchan.remote_address.port = net_from.port;
-			}
-			if (Netchan_Process(&cl->netchan))
-			{	// this is a valid, sequenced packet, so process it
-				svs.stats.packets++;
-				good = true;
-				cl->send_message = true;	// reply at end of frame
-				if (cl->state != cs_zombie)
-					SV_ExecuteClientMessage (cl);
-			}
-			break;
-		}
-		
-		if (i != MAX_CLIENTS)
-			continue;
-	
-		// packet is not from a known client
-		//	Con_Printf ("%s:sequenced packet without connection\n"
-		// ,NET_AdrToString(net_from));
-	}
-}
-
-/*
-==================
-SV_CheckTimeouts
-
-If a packet has not been received from a client in timeout.value
-seconds, drop the conneciton.
-
-When a client is normally dropped, the client_t goes into a zombie state
-for a few seconds to make sure any final reliable message gets resent
-if necessary
-==================
-*/
-void SV_CheckTimeouts (void)
-{
-	int		i;
-	client_t	*cl;
-	float	droptime;
-	int	nclients;
-	
-	droptime = realtime - timeout.value;
-	nclients = 0;
-
-	for (i=0,cl=svs.clients ; i<MAX_CLIENTS ; i++,cl++)
-	{
-		if (cl->state == cs_connected || cl->state == cs_spawned) {
-			if (!cl->spectator)
-				nclients++;
-			if (cl->netchan.last_received < droptime) {
-				SV_BroadcastPrintf (PRINT_HIGH, "%s timed out\n", cl->name);
-				SV_DropClient (cl); 
-				cl->state = cs_free;	// don't bother with zombie state
-			}
-		}
-		if (cl->state == cs_zombie && 
-			realtime - cl->connection_started > zombietime.value)
-		{
-			cl->state = cs_free;	// can now be reused
-		}
-	}
-	if (sv.paused && !nclients) {
-		// nobody left, unpause the server
-		SV_TogglePause("Pause released since no players are left.\n");
-	}
-}
-
-/*
-===================
-SV_GetConsoleCommands
-
-Add them exactly as if they had been typed at the console
-===================
-*/
-void SV_GetConsoleCommands (void)
-{
-	char	*cmd;
-
-	while (1)
-	{
-		cmd = Sys_ConsoleInput ();
-		if (!cmd)
-			break;
-		Cbuf_AddText (cmd);
-	}
-}
-
-/*
 ===================
 SV_CheckVars
 
@@ -1220,12 +1003,6 @@ void SV_CheckVars (void)
 		Info_SetValueForKey (svs.info, "needpass", va("%i",v), MAX_SERVERINFO_STRING);
 }
 
-/*
-==================
-SV_Frame
-
-==================
-*/
 void SV_Frame (float time)
 {
 	static double	start, end;
@@ -1242,46 +1019,13 @@ void SV_Frame (float time)
 		sv.time += time;
 	}
 
-// check timeouts
-	SV_CheckTimeouts ();
 
-// toggle the log buffer if full
-	SV_CheckLog ();
+
+
 
 // move autonomous things around if enough time has passed
 	if (!sv.paused)
 		SV_Physics ();
-
-// get packets
-	SV_ReadPackets ();
-
-// check for commands typed to the host
-	SV_GetConsoleCommands ();
-	
-// process console commands
-	Cbuf_Execute ();
-
-	SV_CheckVars ();
-
-// send messages back to the clients that had packets read this frame
-	SV_SendClientMessages ();
-
-// send a heartbeat to the master if needed
-	Master_Heartbeat ();
-
-// collect timing statistics
-	end = Sys_DoubleTime ();
-	svs.stats.active += end-start;
-	if (++svs.stats.count == STATFRAMES)
-	{
-		svs.stats.latched_active = svs.stats.active;
-		svs.stats.latched_idle = svs.stats.idle;
-		svs.stats.latched_packets = svs.stats.packets;
-		svs.stats.active = 0;
-		svs.stats.idle = 0;
-		svs.stats.packets = 0;
-		svs.stats.count = 0;
-	}
 }
 
 /*
@@ -1310,21 +1054,12 @@ void SV_InitLocal (void)
 	Cvar_RegisterVariable (&password);
 	Cvar_RegisterVariable (&spectator_password);
 
-	Cvar_RegisterVariable (&sv_mintic);
-	Cvar_RegisterVariable (&sv_maxtic);
-
-	Cvar_RegisterVariable (&fraglimit);
-	Cvar_RegisterVariable (&timelimit);
-	Cvar_RegisterVariable (&teamplay);
-	Cvar_RegisterVariable (&samelevel);
 	Cvar_RegisterVariable (&maxclients);
 	Cvar_RegisterVariable (&maxspectators);
 	Cvar_RegisterVariable (&hostname);
 	Cvar_RegisterVariable (&deathmatch);
 	Cvar_RegisterVariable (&spawn);
 	Cvar_RegisterVariable (&watervis);
-
-	Cvar_RegisterVariable (&developer);
 
 	Cvar_RegisterVariable (&timeout);
 	Cvar_RegisterVariable (&zombietime);
@@ -1589,19 +1324,11 @@ void SV_InitNet (void)
 	}
 	NET_Init (port);
 
-	Netchan_Init ();
-
-	// heartbeats will allways be sent to the id master
+	// heartbeats will always be sent to the id master
 	svs.last_heartbeat = -99999;		// send immediately
 //	NET_StringToAdr ("192.246.40.70:27000", &idmaster_adr);
 }
 
-
-/*
-====================
-SV_Init
-====================
-*/
 void SV_Init (quakeparms_t *parms)
 {
 	COM_InitArgv (parms->argc, parms->argv);
@@ -1611,39 +1338,12 @@ void SV_Init (quakeparms_t *parms)
 	if (COM_CheckParm ("-minmemory"))
 		parms->memsize = MINIMUM_MEMORY;
 
-	host_parms = *parms;
-
 	if (parms->memsize < MINIMUM_MEMORY)
 		SV_Error ("Only %4.1f megs of memory reported, can't execute game", parms->memsize / (float)0x100000);
-
-	Memory_Init (parms->membase, parms->memsize);
-	Cbuf_Init ();
-	Cmd_Init ();	
-
-	COM_Init ();
-	
-	PR_Init ();
-	Mod_Init ();
-
-	SV_InitNet ();
 
 	SV_InitLocal ();
 	Sys_Init ();
 	Pmove_Init ();
-
-	Hunk_AllocName (0, "-HOST_HUNKLEVEL-");
-	host_hunklevel = Hunk_LowMark ();
-
-	Cbuf_InsertText ("exec server.cfg\n");
-
-	host_initialized = true;
-	
-	Con_Printf ("Exe: "__TIME__" "__DATE__"\n");
-	Con_Printf ("%4.1f megabyte heap\n",parms->memsize/ (1024*1024.0));	
-
-	Con_Printf ("\nServer Version %4.2f (Build %04d)\n\n", VERSION, build_number());
-
-	Con_Printf ("======== QuakeWorld Initialized ========\n");
 	
 // process command line arguments
 	Cmd_StuffCmds_f ();

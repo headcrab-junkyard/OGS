@@ -150,7 +150,7 @@ keyname_t keynames[] =
 ==============================================================================
 */
 
-qboolean CheckForCommand (void)
+qboolean CheckForCommand ()
 {
 	char	command[128];
 	char	*cmd, *s;
@@ -173,7 +173,7 @@ qboolean CheckForCommand (void)
 	return true;
 }
 
-void CompleteCommand (void)
+void CompleteCommand ()
 {
 	char	*cmd, *s;
 
@@ -532,7 +532,7 @@ void Key_Unbindall_f (void)
 Key_Bind_f
 ===================
 */
-void Key_Bind_f (void)
+void Key_Bind_f ()
 {
 	int			i, c, b;
 	char		cmd[1024];
@@ -826,7 +826,7 @@ void Key_Event (int key, qboolean down)
 Key_ClearStates
 ===================
 */
-void Key_ClearStates (void)
+void Key_ClearStates ()
 {
 	int		i;
 

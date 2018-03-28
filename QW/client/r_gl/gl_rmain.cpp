@@ -778,7 +778,6 @@ void R_SetFrustum (void)
 	}
 	else
 	{
-
 		// rotate VPN right by FOV_X/2 degrees
 		RotatePointAroundVector( frustum[0].normal, vup, vpn, -(90-r_refdef.fov_x / 2 ) );
 		// rotate VPN left by FOV_X/2 degrees
@@ -1065,7 +1064,6 @@ void R_Mirror (void)
 	R_RenderScene ();
 	R_DrawWaterSurfaces ();
 
-
 	gldepthmin = 0;
 	gldepthmax = 0.5;
 	glDepthRange (gldepthmin, gldepthmax);
@@ -1113,7 +1111,7 @@ void R_RenderView (void)
 	if (r_speeds.value)
 	{
 		glFinish ();
-		time1 = Sys_DoubleTime ();
+		time1 = Sys_FloatTime ();
 		c_brush_polys = 0;
 		c_alias_polys = 0;
 	}
@@ -1138,7 +1136,7 @@ void R_RenderView (void)
 	if (r_speeds.value)
 	{
 //		glFinish ();
-		time2 = Sys_DoubleTime ();
+		time2 = Sys_FloatTime ();
 		Con_Printf ("%3i ms  %4i wpoly %4i epoly\n", (int)((time2-time1)*1000), c_brush_polys, c_alias_polys); 
 	}
 }

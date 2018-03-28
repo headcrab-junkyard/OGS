@@ -140,7 +140,7 @@ CL_GetDemoMessage
   FIXME...
 ====================
 */
-qboolean CL_GetDemoMessage (void)
+qboolean CL_GetDemoMessage ()
 {
 	int		r, i, j;
 	float	f;
@@ -256,7 +256,7 @@ CL_GetMessage
 Handles recording and playback of demos, on top of NET_ code
 ====================
 */
-qboolean CL_GetMessage (void)
+qboolean CL_GetMessage ()
 {
 	if	(cls.demoplayback)
 		return CL_GetDemoMessage ();
@@ -277,7 +277,7 @@ CL_Stop_f
 stop recording a demo
 ====================
 */
-void CL_Stop_f (void)
+void CL_Stop_f ()
 {
 	if (!cls.demorecording)
 	{
@@ -298,7 +298,6 @@ void CL_Stop_f (void)
 	cls.demorecording = false;
 	Con_Printf ("Completed demo\n");
 }
-
 
 /*
 ====================
@@ -338,7 +337,7 @@ void CL_WriteRecordDemoMessage (sizebuf_t *msg, int seq)
 }
 
 
-void CL_WriteSetDemoMessage (void)
+void CL_WriteSetDemoMessage ()
 {
 	int		len;
 	float	fl;
@@ -363,9 +362,6 @@ void CL_WriteSetDemoMessage (void)
 	fflush (cls.demofile);
 }
 
-
-
-
 /*
 ====================
 CL_Record_f
@@ -373,7 +369,7 @@ CL_Record_f
 record <demoname> <server>
 ====================
 */
-void CL_Record_f (void)
+void CL_Record_f ()
 {
 	int		c;
 	char	name[MAX_OSPATH];
@@ -407,7 +403,7 @@ void CL_Record_f (void)
 //
 // open the demo file
 //
-	COM_DefaultExtension (name, ".qwd");
+	COM_DefaultExtension (name, ".dem");
 
 	cls.demofile = fopen (name, "wb");
 	if (!cls.demofile)
@@ -668,7 +664,7 @@ CL_ReRecord_f
 record <demoname>
 ====================
 */
-void CL_ReRecord_f (void)
+void CL_ReRecord_f ()
 {
 	int		c;
 	char	name[MAX_OSPATH];
@@ -693,7 +689,7 @@ void CL_ReRecord_f (void)
 //
 // open the demo file
 //
-	COM_DefaultExtension (name, ".qwd");
+	COM_DefaultExtension (name, ".dem");
 
 	cls.demofile = fopen (name, "wb");
 	if (!cls.demofile)
@@ -709,7 +705,6 @@ void CL_ReRecord_f (void)
 	CL_BeginServerConnect();
 }
 
-
 /*
 ====================
 CL_PlayDemo_f
@@ -717,7 +712,7 @@ CL_PlayDemo_f
 play [demoname]
 ====================
 */
-void CL_PlayDemo_f (void)
+void CL_PlayDemo_f ()
 {
 	char	name[256];
 

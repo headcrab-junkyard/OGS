@@ -19,7 +19,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // cl_main.c  -- client main loop
 
-#include "quakedef.h"
 #include "winquake.h"
 #ifdef _WIN32
 #include "winsock.h"
@@ -76,19 +75,10 @@ cvar_t	topcolor = {"topcolor","0", true, true};
 cvar_t	bottomcolor = {"bottomcolor","0", true, true};
 cvar_t	rate = {"rate","2500", true, true};
 cvar_t	noaim = {"noaim","0", true, true};
-cvar_t	msg = {"msg","1", true, true};
 
 extern cvar_t cl_hightrack;
 
-
-client_static_t	cls;
-client_state_t	cl;
-
-entity_state_t	cl_baselines[MAX_EDICTS];
-efrag_t			cl_efrags[MAX_EFRAGS];
-entity_t		cl_static_entities[MAX_STATIC_ENTITIES];
-lightstyle_t	cl_lightstyle[MAX_LIGHTSTYLES];
-dlight_t		cl_dlights[MAX_DLIGHTS];
+entity_state_t	cl_baselines[MAX_EDICTS]; // TODO: instead of cl_entities?
 
 // refresh list
 // this is double buffered so the last frame
@@ -99,21 +89,6 @@ entity_t		cl_visedicts_list[2][MAX_VISEDICTS];
 
 double			connect_time = -1;		// for connection retransmits
 
-quakeparms_t host_parms;
-
-qboolean	host_initialized;		// true if into command execution
-qboolean	nomaster;
-
-double		host_frametime;
-double		realtime;				// without any filtering or bounding
-double		oldrealtime;			// last frame run
-int			host_framecount;
-
-int			host_hunklevel;
-
-byte		*host_basepal;
-byte		*host_colormap;
-
 netadr_t	master_adr;				// address of the master server
 
 cvar_t	host_speeds = {"host_speeds","0"};			// set for running times
@@ -121,8 +96,6 @@ cvar_t	show_fps = {"show_fps","0"};			// set for running times
 cvar_t	developer = {"developer","0"};
 
 int			fps_count;
-
-jmp_buf 	host_abort;
 
 void Master_Connect_f (void);
 
@@ -254,16 +227,8 @@ void CL_Rcon_f (void)
 		, to);
 }
 
-
-/*
-=====================
-CL_ClearState
-
-=====================
-*/
 void CL_ClearState (void)
 {
-	int			i;
 
 	S_StopAllSounds (true);
 
@@ -294,30 +259,10 @@ void CL_ClearState (void)
 	cl.free_efrags[i].entnext = NULL;
 }
 
-/*
-=====================
-CL_Disconnect
-
-Sends a disconnect message to the server
-This is also called on Host_Error, so it shouldn't cause any errors
-=====================
-*/
 void CL_Disconnect ()
 {
-	byte	final[10];
-
-	connect_time = -1;
-
-// stop sounds (especially looping!)
-	S_StopAllSounds (true);
-	
-// if running a local server, shut it down
-	if (cls.demoplayback)
-		CL_StopPlayback ();
 	else if (cls.state != ca_disconnected)
 	{
-		if (cls.demorecording)
-			CL_Stop_f ();
 
 		final[0] = clc_stringcmd;
 		strcpy (final+1, "drop");
@@ -329,7 +274,7 @@ void CL_Disconnect ()
 
 		cls.demoplayback = cls.demorecording = cls.timedemo = false;
 	}
-	Cam_Reset();
+	
 
 	if (cls.download) {
 		fclose(cls.download);
@@ -480,7 +425,6 @@ CL_FullInfo_f
 
 Allow clients to change userinfo
 ==================
-Casey was here :)
 */
 void CL_FullInfo_f (void)
 {
@@ -684,142 +628,7 @@ void CL_Reconnect_f (void)
 	CL_BeginServerConnect();
 }
 
-/*
-=================
-CL_ConnectionlessPacket
 
-Responses to broadcasts, etc
-=================
-*/
-void CL_ConnectionlessPacket (void)
-{
-	char	*s;
-	int		c;
-
-    MSG_BeginReading ();
-    MSG_ReadLong ();        // skip the -1
-
-	c = MSG_ReadByte ();
-	if (!cls.demoplayback)
-		Con_Printf ("%s: ", NET_AdrToString (net_from));
-//	Con_DPrintf ("%s", net_message.data + 5);
-	if (c == S2C_CONNECTION)
-	{
-		Con_Printf ("connection\n");
-		if (cls.state >= ca_connected)
-		{
-			if (!cls.demoplayback)
-				Con_Printf ("Dup connect received.  Ignored.\n");
-			return;
-		}
-		Netchan_Setup (&cls.netchan, net_from, cls.qport);
-		MSG_WriteChar (&cls.netchan.message, clc_stringcmd);
-		MSG_WriteString (&cls.netchan.message, "new");	
-		cls.state = ca_connected;
-		Con_Printf ("Connected.\n");
-		allowremotecmd = false; // localid required now for remote cmds
-		return;
-	}
-	// remote command from gui front end
-	if (c == A2C_CLIENT_COMMAND)
-	{
-		char	cmdtext[2048];
-
-		Con_Printf ("client command\n");
-
-		if ((*(unsigned *)net_from.ip != *(unsigned *)net_local_adr.ip
-			&& *(unsigned *)net_from.ip != htonl(INADDR_LOOPBACK)) )
-		{
-			Con_Printf ("Command packet from remote host.  Ignored.\n");
-			return;
-		}
-#ifdef _WIN32
-		ShowWindow (mainwindow, SW_RESTORE);
-		SetForegroundWindow (mainwindow);
-#endif
-		s = MSG_ReadString ();
-
-		strncpy(cmdtext, s, sizeof(cmdtext) - 1);
-		cmdtext[sizeof(cmdtext) - 1] = 0;
-
-		s = MSG_ReadString ();
-
-		while (*s && isspace(*s))
-			s++;
-		while (*s && isspace(s[strlen(s) - 1]))
-			s[strlen(s) - 1] = 0;
-
-		if (!allowremotecmd && (!*localid.string || strcmp(localid.string, s))) {
-			if (!*localid.string) {
-				Con_Printf("===========================\n");
-				Con_Printf("Command packet received from local host, but no "
-					"localid has been set.  You may need to upgrade your server "
-					"browser.\n");
-				Con_Printf("===========================\n");
-				return;
-			}
-			Con_Printf("===========================\n");
-			Con_Printf("Invalid localid on command packet received from local host. "
-				"\n|%s| != |%s|\n"
-				"You may need to reload your server browser and QuakeWorld.\n",
-				s, localid.string);
-			Con_Printf("===========================\n");
-			Cvar_Set("localid", "");
-			return;
-		}
-
-		Cbuf_AddText (cmdtext);
-		allowremotecmd = false;
-		return;
-	}
-	// print command from somewhere
-	if (c == A2C_PRINT)
-	{
-		Con_Printf ("print\n");
-
-		s = MSG_ReadString ();
-		Con_Print (s);
-		return;
-	}
-
-	// ping from somewhere
-	if (c == A2A_PING)
-	{
-		char	data[6];
-
-		Con_Printf ("ping\n");
-
-		data[0] = 0xff;
-		data[1] = 0xff;
-		data[2] = 0xff;
-		data[3] = 0xff;
-		data[4] = A2A_ACK;
-		data[5] = 0;
-		
-		NET_SendPacket (6, &data, net_from);
-		return;
-	}
-
-	if (c == S2C_CHALLENGE) {
-		Con_Printf ("challenge\n");
-
-		s = MSG_ReadString ();
-		cls.challenge = atoi(s);
-		CL_SendConnectPacket ();
-		return;
-	}
-
-#if 0
-	if (c == svc_disconnect) {
-		Con_Printf ("disconnect\n");
-
-		Host_EndGame ("Server disconnected");
-		return;
-	}
-#endif
-
-	Con_Printf ("unknown:  %c\n", c);
-}
 
 
 /*
@@ -868,8 +677,7 @@ void CL_ReadPackets (void)
 	//
 	// check timeout
 	//
-	if (cls.state >= ca_connected
-	 && realtime - cls.netchan.last_received > cl_timeout.value)
+	if (cls.state >= ca_connected && realtime - cls.netchan.last_received > cl_timeout.value)
 	{
 		Con_Printf ("\nServer connection timed out.\n");
 		CL_Disconnect ();
@@ -922,115 +730,39 @@ void CL_Download_f (void)
 	SZ_Print (&cls.netchan.message, va("download %s\n",Cmd_Argv(1)));
 }
 
-#ifdef _WINDOWS
-#include <windows.h>
-/*
-=================
-CL_Minimize_f
-=================
-*/
-void CL_Windows_f (void) {
-//	if (modestate == MS_WINDOWED)
-//		ShowWindow(mainwindow, SW_MINIMIZE);
-//	else
-		SendMessage(mainwindow, WM_SYSKEYUP, VK_TAB, 1 | (0x0F << 16) | (1<<29));
-}
-#endif
-
-/*
-=================
-CL_Init
-=================
-*/
 void CL_Init (void)
 {
 	extern	cvar_t		baseskin;
 	extern	cvar_t		noskins;
 	char st[80];
 
-	cls.state = ca_disconnected;
-
-	Info_SetValueForKey (cls.userinfo, "name", "unnamed", MAX_INFO_STRING);
-	Info_SetValueForKey (cls.userinfo, "topcolor", "0", MAX_INFO_STRING);
-	Info_SetValueForKey (cls.userinfo, "bottomcolor", "0", MAX_INFO_STRING);
-	Info_SetValueForKey (cls.userinfo, "rate", "2500", MAX_INFO_STRING);
-	Info_SetValueForKey (cls.userinfo, "msg", "1", MAX_INFO_STRING);
-	sprintf (st, "%4.2f-%04d", VERSION, build_number());
-	Info_SetValueForStarKey (cls.userinfo, "*ver", st, MAX_INFO_STRING);
-
-	CL_InitInput ();
-	CL_InitTEnts ();
-	CL_InitPrediction ();
-	CL_InitCam ();
-	Pmove_Init ();
-	
-//
-// register our commands
-//
 	Cvar_RegisterVariable (&show_fps);
 	Cvar_RegisterVariable (&host_speeds);
 	Cvar_RegisterVariable (&developer);
 
 	Cvar_RegisterVariable (&cl_warncmd);
-	Cvar_RegisterVariable (&cl_upspeed);
-	Cvar_RegisterVariable (&cl_forwardspeed);
-	Cvar_RegisterVariable (&cl_backspeed);
-	Cvar_RegisterVariable (&cl_sidespeed);
-	Cvar_RegisterVariable (&cl_movespeedkey);
-	Cvar_RegisterVariable (&cl_yawspeed);
-	Cvar_RegisterVariable (&cl_pitchspeed);
-	Cvar_RegisterVariable (&cl_anglespeedkey);
+	
 	Cvar_RegisterVariable (&cl_shownet);
 	Cvar_RegisterVariable (&cl_sbar);
 	Cvar_RegisterVariable (&cl_hudswap);
 	Cvar_RegisterVariable (&cl_maxfps);
 	Cvar_RegisterVariable (&cl_timeout);
-	Cvar_RegisterVariable (&lookspring);
-	Cvar_RegisterVariable (&lookstrafe);
-	Cvar_RegisterVariable (&sensitivity);
-
-	Cvar_RegisterVariable (&m_pitch);
-	Cvar_RegisterVariable (&m_yaw);
-	Cvar_RegisterVariable (&m_forward);
-	Cvar_RegisterVariable (&m_side);
 
 	Cvar_RegisterVariable (&rcon_password);
 	Cvar_RegisterVariable (&rcon_address);
 
-	Cvar_RegisterVariable (&entlatency);
-	Cvar_RegisterVariable (&cl_predict_players2);
-	Cvar_RegisterVariable (&cl_predict_players);
-	Cvar_RegisterVariable (&cl_solid_players);
+	
 
-	Cvar_RegisterVariable (&localid);
+	
 
-	Cvar_RegisterVariable (&baseskin);
-	Cvar_RegisterVariable (&noskins);
-
-	//
-	// info mirrors
-	//
-	Cvar_RegisterVariable (&name);
-	Cvar_RegisterVariable (&password);
-	Cvar_RegisterVariable (&spectator);
-	Cvar_RegisterVariable (&skin);
-	Cvar_RegisterVariable (&team);
-	Cvar_RegisterVariable (&topcolor);
-	Cvar_RegisterVariable (&bottomcolor);
-	Cvar_RegisterVariable (&rate);
-	Cvar_RegisterVariable (&msg);
-	Cvar_RegisterVariable (&noaim);
+	
 
 
 	Cmd_AddCommand ("version", CL_Version_f);
 
 	Cmd_AddCommand ("changing", CL_Changing_f);
-	Cmd_AddCommand ("disconnect", CL_Disconnect_f);
-	Cmd_AddCommand ("record", CL_Record_f);
-	Cmd_AddCommand ("rerecord", CL_ReRecord_f);
-	Cmd_AddCommand ("stop", CL_Stop_f);
-	Cmd_AddCommand ("playdemo", CL_PlayDemo_f);
-	Cmd_AddCommand ("timedemo", CL_TimeDemo_f);
+	
+	
 
 	Cmd_AddCommand ("skins", Skin_Skins_f);
 	Cmd_AddCommand ("allskins", Skin_AllSkins_f);
@@ -1063,13 +795,6 @@ void CL_Init (void)
 	Cmd_AddCommand ("say", NULL);
 	Cmd_AddCommand ("say_team", NULL);
 	Cmd_AddCommand ("serverinfo", NULL);
-
-//
-//  Windows commands
-//
-#ifdef _WINDOWS
-	Cmd_AddCommand ("windows", CL_Windows_f);
-#endif
 }
 
 
@@ -1082,19 +807,11 @@ Call this to drop to a console without exiting the qwcl
 */
 void Host_EndGame (char *message, ...)
 {
-	va_list		argptr;
-	char		string[1024];
-	
-	va_start (argptr,message);
-	vsprintf (string,message,argptr);
-	va_end (argptr);
 	Con_Printf ("\n===========================\n");
 	Con_Printf ("Host_EndGame: %s\n",string);
 	Con_Printf ("===========================\n\n");
 	
-	CL_Disconnect ();
-
-	longjmp (host_abort, 1);
+	CL_Disconnect (); // only this here for qw
 }
 
 /*
@@ -1283,28 +1000,11 @@ void Host_Init (quakeparms_t *parms)
 	if (parms->memsize < MINIMUM_MEMORY)
 		Sys_Error ("Only %4.1f megs of memory reported, can't execute game", parms->memsize / (float)0x100000);
 
-	Memory_Init (parms->membase, parms->memsize);
-	Cbuf_Init ();
-	Cmd_Init ();
-	V_Init ();
-
 	COM_Init ();
 
 	Host_FixupModelNames();
 	
-	NET_Init (PORT_CLIENT);
-	Netchan_Init ();
-
-	W_LoadWadFile ("gfx.wad");
-	Key_Init ();
-	Con_Init ();	
-	M_Init ();	
-	Mod_Init ();
-	
-//	Con_Printf ("Exe: "__TIME__" "__DATE__"\n");
 	Con_Printf ("%4.1f megs RAM used.\n",parms->memsize/ (1024*1024.0));
-	
-	R_InitTextures ();
  
 	host_basepal = (byte *)COM_LoadHunkFile ("gfx/palette.lmp");
 	if (!host_basepal)
