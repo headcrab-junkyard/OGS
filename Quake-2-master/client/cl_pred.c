@@ -21,47 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "client.h"
 
 
-/*
-===================
-CL_CheckPredictionError
-===================
-*/
-void CL_CheckPredictionError (void)
-{
-	int		frame;
-	int		delta[3];
-	int		i;
-	int		len;
 
-	if (!cl_predict->value || (cl.frame.playerstate.pmove.pm_flags & PMF_NO_PREDICTION))
-		return;
-
-	// calculate the last usercmd_t we sent that the server has processed
-	frame = cls.netchan.incoming_acknowledged;
-	frame &= (CMD_BACKUP-1);
-
-	// compare what the server returned with what we had predicted it to be
-	VectorSubtract (cl.frame.playerstate.pmove.origin, cl.predicted_origins[frame], delta);
-
-	// save the prediction error for interpolation
-	len = abs(delta[0]) + abs(delta[1]) + abs(delta[2]);
-	if (len > 640)	// 80 world units
-	{	// a teleport or something
-		VectorClear (cl.prediction_error);
-	}
-	else
-	{
-		if (cl_showmiss->value && (delta[0] || delta[1] || delta[2]) )
-			Com_Printf ("prediction miss on %i: %i\n", cl.frame.serverframe, 
-			delta[0] + delta[1] + delta[2]);
-
-		VectorCopy (cl.frame.playerstate.pmove.origin, cl.predicted_origins[frame]);
-
-		// save for error itnerpolation
-		for (i=0 ; i<3 ; i++)
-			cl.prediction_error[i] = delta[i]*0.125;
-	}
-}
 
 
 /*

@@ -62,40 +62,14 @@ SV_ClientPrintf
 Sends text across to be displayed if the level passes
 =================
 */
-void SV_ClientPrintf (client_t *cl, int level, char *fmt, ...)
+void SV_ClientPrintf (client_t *cl, , char *fmt, ...)
 {
-	va_list		argptr;
-	char		string[1024];
-	
-	if (level < cl->messagelevel)
-		return;
-	
-	va_start (argptr,fmt);
-	vsprintf (string, fmt,argptr);
-	va_end (argptr);
-	
-	MSG_WriteByte (&cl->netchan.message, svc_print);
-	MSG_WriteByte (&cl->netchan.message, level);
-	MSG_WriteString (&cl->netchan.message, string);
 }
 
-/*
-=================
-SV_BroadcastPrintf
-
-Sends text to all active clients
-=================
-*/
 void SV_BroadcastPrintf (int level, char *fmt, ...)
 {
-	va_list		argptr;
 	char		string[2048];
 	client_t	*cl;
-	int			i;
-
-	va_start (argptr,fmt);
-	vsprintf (string, fmt,argptr);
-	va_end (argptr);
 	
 	// echo to console
 	if (dedicated->value)
@@ -122,23 +96,8 @@ void SV_BroadcastPrintf (int level, char *fmt, ...)
 	}
 }
 
-/*
-=================
-SV_BroadcastCommand
-
-Sends text to all active clients
-=================
-*/
 void SV_BroadcastCommand (char *fmt, ...)
 {
-	va_list		argptr;
-	char		string[1024];
-	
-	if (!sv.state)
-		return;
-	va_start (argptr,fmt);
-	vsprintf (string, fmt,argptr);
-	va_end (argptr);
 
 	MSG_WriteByte (&sv.multicast, svc_stufftext);
 	MSG_WriteString (&sv.multicast, string);

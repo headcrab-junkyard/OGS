@@ -69,20 +69,13 @@ or crashing.
 */
 void SV_DropClient (client_t *drop)
 {
-	// add the disconnect
-	MSG_WriteByte (&drop->netchan.message, svc_disconnect);
+	
 
 	if (drop->state == cs_spawned)
 	{
 		// call the prog function for removing a client
 		// this will remove the body, among other things
 		ge->ClientDisconnect (drop->edict);
-	}
-
-	if (drop->download)
-	{
-		FS_FreeFile (drop->download);
-		drop->download = NULL;
 	}
 
 	drop->state = cs_zombie;		// become free in a few seconds
