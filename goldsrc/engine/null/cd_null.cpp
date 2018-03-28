@@ -20,40 +20,54 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 /// @file
+/// @brief null ICDAudio interface implementation
 
 #include "quakedef.h"
+#include "icdaudio.h"
 
-void CDAudio_Play(byte track, qboolean looping)
+class CCDAudio/*Null*/ final : public ICDAudio
 {
-}
+public:
+	CCDAudio();
+	~CCDAudio();
+	
+	int Init() override;
+	void Shutdown() override;
+	
+	void Frame() override;
+	
+	void Pause() override;
+	void Resume() override;
+private:
+	void Play(byte track, qboolean looping); // override
+	void Stop(); // override
+};
 
-
-void CDAudio_Stop()
-{
-}
-
-
-void CDAudio_Pause()
-{
-}
-
-
-void CDAudio_Resume()
-{
-}
-
-
-void CDAudio_Update()
-{
-}
-
-
-int CDAudio_Init()
+int CCDAudio::Init()
 {
 	return 0;
-}
+};
 
-
-void CDAudio_Shutdown()
+void CCDAudio::Shutdown()
 {
-}
+};
+
+void CCDAudio::Frame() // TODO: was Update
+{
+};
+
+void CCDAudio::Play(byte track, qboolean looping)
+{
+};
+
+void CCDAudio::Stop()
+{
+};
+
+void CCDAudio::Pause()
+{
+};
+
+void CCDAudio::Resume()
+{
+};
