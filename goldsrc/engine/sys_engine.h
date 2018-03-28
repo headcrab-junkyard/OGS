@@ -11,8 +11,8 @@ public:
 	CEngine();
 	~CEngine();
 	
-	bool Init() override;
-	void Shutdown() override;
+	bool Load(bool dedicated, char *basedir, char *cmdline) override;
+	void Unload() override;
 	
 	void Frame() override;
 private:
