@@ -12,4 +12,10 @@
 - [x] Null network driver implementation;
 - [ ] Client DLL loading (per single export);
 - [ ] Crypted client dlls loading;
-- [ ] Const-correctnes;
+- [ ] Const-correctness;
+- [ ] Fix cvars to use flags;
+- [ ] FS module/wrapper should support dll loading (because of search directories);
+- [ ] GameUI should search for a IGameClientExports interface implementation and use its internal impl in case it's not found;
+- [ ] GameUI DLL loading;
+- [ ] sv_main : SV_LoadEntities();
+- [ ] pr_edict.c : SuckOutClassname(edict_t *pEdict, char *szInputStream);
