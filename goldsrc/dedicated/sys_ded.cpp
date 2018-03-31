@@ -2,10 +2,45 @@
 
 #include <cstdio>
 
+#ifdef _WIN32
+	#include "conproc.h"
+#endif
+
 #include "engine_hlds_api.h"
 
-#define INTERFACE_IMPL
-#include "Interface.hpp"
+#include "interface.h"
+
+bool InitConsole()
+{
+#ifdef _WIN32
+	if(!AllocConsole())
+		Sys_Error("Couldn't create dedicated server console");
+
+	hinput = GetStdHandle (STD_INPUT_HANDLE);
+	houtput = GetStdHandle (STD_OUTPUT_HANDLE);
+
+	// give QHOST a chance to hook into the console
+	if ((t = COM_CheckParm ("-HFILE")) > 0)
+	{
+		if (t < com_argc)
+			hFile = (HANDLE)Q_atoi (com_argv[t+1]);
+	};
+		
+	if ((t = COM_CheckParm ("-HPARENT")) > 0)
+	{
+		if (t < com_argc)
+			heventParent = (HANDLE)Q_atoi (com_argv[t+1]);
+	};
+		
+	if ((t = COM_CheckParm ("-HCHILD")) > 0)
+	{
+		if (t < com_argc)
+			heventChild = (HANDLE)Q_atoi (com_argv[t+1]);
+	};
+
+	InitConProc (hFile, heventParent, heventChild);
+#endif // _WIN32
+};
 
 int RunServer() // void?
 {
@@ -48,8 +83,19 @@ int RunServer() // void?
 
 int main(int argc, char **argv)
 {
+	if(!InitConsole())
+		return EXIT_FAILURE;
+	
 	if(!RunServer())
 		return EXIT_FAILURE;
 	
+#ifdef _WIN32
+	FreeConsole();
+	
+	// shutdown QHOST hooks if necessary
+	DeinitConProc();
+#endif
+
+	// return success of application
 	return EXIT_SUCCESS;
 };
