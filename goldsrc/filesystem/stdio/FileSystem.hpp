@@ -33,6 +33,7 @@ private:
 	
 	int findhandle();
 	int filelength(FILE *f);
-	
+
+	// TODO: if WIN only?
 	FILE *sys_handles[MAX_HANDLES]{nullptr};
 };
