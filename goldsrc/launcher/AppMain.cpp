@@ -21,5 +21,6 @@ int AppMain(IApplication *apApp)
 	}
 	while(bRestart);
 	
+	// return success of application
 	return EXIT_SUCCESS;
 };
