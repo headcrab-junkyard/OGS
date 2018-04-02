@@ -24,8 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 
-server_t		sv;
-server_static_t	svs;
+server_t		sv; // local server
+server_static_t	svs; // persistant server info
 
 char	localmodels[MAX_MODELS][5];			// inline model names for precache
 
@@ -63,6 +63,299 @@ void SV_Init ()
 
 	for (i=0 ; i<MAX_MODELS ; i++)
 		sprintf (localmodels[i], "*%i", i);
+}
+
+/*
+=================
+SV_ReadPackets
+=================
+*/
+void SV_ReadPackets ()
+{
+	int			i;
+	client_t	*cl;
+	qboolean	good;
+	int			qport;
+
+	good = false;
+	while (NET_GetPacket (NS_SERVER, &net_from, &net_message))
+	{
+		if (SV_FilterPacket ())
+		{
+			SV_SendBan ();	// tell them we aren't listening...
+			continue;
+		}
+
+		// check for connectionless packet (0xffffffff) first
+		if (*(int *)net_message.data == -1)
+		{
+			SV_ConnectionlessPacket ();
+			continue;
+		}
+		
+		// read the qport out of the message so we can fix up
+		// stupid address translating routers
+		MSG_BeginReading ();
+		MSG_ReadLong ();		// sequence number
+		MSG_ReadLong ();		// sequence number
+		qport = MSG_ReadShort () & 0xffff;
+
+		// check for packets from connected clients
+		for (i=0, cl=svs.clients ; i<MAX_CLIENTS ; i++,cl++)
+		{
+			if (cl->state == cs_free)
+				continue;
+			if (!NET_CompareBaseAdr (net_from, cl->netchan.remote_address))
+				continue;
+			if (cl->netchan.qport != qport)
+				continue;
+			if (cl->netchan.remote_address.port != net_from.port)
+			{
+				Con_DPrintf ("SV_ReadPackets: fixing up a translated port\n");
+				cl->netchan.remote_address.port = net_from.port;
+			}
+			if (Netchan_Process(&cl->netchan))
+			{	// this is a valid, sequenced packet, so process it
+				svs.stats.packets++;
+				good = true;
+				cl->send_message = true;	// reply at end of frame
+				if (cl->state != cs_zombie)
+					SV_ExecuteClientMessage (cl);
+			}
+			break;
+		}
+		
+		if (i != MAX_CLIENTS)
+			continue;
+	
+		// packet is not from a known client
+		//	Con_Printf ("%s:sequenced packet without connection\n"
+		// ,NET_AdrToString(net_from));
+	}
+}
+
+/*
+==================
+SV_CheckTimeouts
+
+If a packet has not been received from a client in timeout.value
+seconds, drop the conneciton.
+
+When a client is normally dropped, the client_t goes into a zombie state
+for a few seconds to make sure any final reliable message gets resent
+if necessary
+==================
+*/
+void SV_CheckTimeouts()
+{
+	int		i;
+	client_t	*cl;
+	float	droptime;
+	int	nclients;
+	
+	droptime = realtime - timeout.value;
+	nclients = 0;
+
+	for (i=0,cl=svs.clients ; i<MAX_CLIENTS ; i++,cl++)
+	{
+		if (cl->state == cs_connected || cl->state == cs_spawned) {
+			if (!cl->spectator)
+				nclients++;
+			if (cl->netchan.last_received < droptime) {
+				SV_BroadcastPrintf (PRINT_HIGH, "%s timed out\n", cl->name);
+				SV_DropClient (cl); 
+				cl->state = cs_free;	// don't bother with zombie state
+			}
+		}
+		if (cl->state == cs_zombie && 
+			realtime - cl->connection_started > zombietime.value)
+		{
+			cl->state = cs_free;	// can now be reused
+		}
+	}
+	if (sv.paused && !nclients) {
+		// nobody left, unpause the server
+		SV_TogglePause("Pause released since no players are left.\n");
+	}
+}
+
+/*
+==================
+SV_Frame
+
+==================
+*/
+#ifdef FPS_20
+
+void _SV_Frame ()
+{
+// run the world state	
+	gGlobalVariables.frametime = host_frametime;
+
+// read client messages
+	SV_RunClients ();
+	
+// move things around and think
+// always pause in single player if in console or menus
+	if (!sv.paused && (svs.maxclients > 1 || key_dest == key_game) )
+		SV_Physics ();
+}
+
+void SV_Frame ()
+{
+	float	save_host_frametime;
+	float	temp_host_frametime;
+
+// run the world state	
+	gGlobalVariables.frametime = host_frametime;
+
+// set the time and clear the general datagram
+	SV_ClearDatagram ();
+	
+// check for new clients
+	SV_CheckForNewClients ();
+
+	temp_host_frametime = save_host_frametime = host_frametime;
+	while(temp_host_frametime > (1.0/72.0))
+	{
+		if (temp_host_frametime > 0.05)
+			host_frametime = 0.05;
+		else
+			host_frametime = temp_host_frametime;
+		temp_host_frametime -= host_frametime;
+		_SV_Frame ();
+	}
+	host_frametime = save_host_frametime;
+
+// send all messages to the clients
+	SV_SendClientMessages ();
+}
+
+#else
+
+void SV_Frame ()
+{
+// run the world state	
+	gGlobalVariables.frametime = host_frametime;
+
+// set the time and clear the general datagram
+	//SV_ClearDatagram (); // TODO: remove?
+	
+	// check timeouts
+	SV_CheckTimeouts ();
+	
+	// toggle the log buffer if full
+	//SV_CheckLog (); // TODO: qw
+	
+// move things around and think
+// always pause in single player if in console or menus
+	if (!sv.paused && (svs.maxclients > 1 || key_dest == key_game) )
+		SV_Physics ();
+
+	// get packets
+	SV_ReadPackets ();
+	
+	// check for commands typed to the host
+	//SV_GetConsoleCommands (); // TODO: handled by Host_GetConsoleCommands
+	
+	// process console commands
+	//Cbuf_Execute (); // TODO: qw
+	
+	//SV_CheckVars (); // TODO: qw
+	
+// send messages back to the clients that had packets read this frame
+	SV_SendClientMessages ();
+	
+// send a heartbeat to the master if needed
+	//Master_Heartbeat (); // TODO: qw
+	
+	// TODO: qw
+	
+	// collect timing statistics
+/*
+	end = Sys_FloatTime ();
+	svs.stats.active += end-start;
+	if (++svs.stats.count == STATFRAMES)
+	{
+		svs.stats.latched_active = svs.stats.active;
+		svs.stats.latched_idle = svs.stats.idle;
+		svs.stats.latched_packets = svs.stats.packets;
+		svs.stats.active = 0;
+		svs.stats.idle = 0;
+		svs.stats.packets = 0;
+		svs.stats.count = 0;
+	}
+*/
+}
+
+#endif
+
+/*
+==============================================================================
+
+CONNECTIONLESS COMMANDS
+
+==============================================================================
+*/
+
+/*
+=================
+SV_ConnectionlessPacket
+
+A connectionless packet has four leading 0xff
+characters to distinguish it from a game channel.
+Clients that are in the game can still send
+connectionless packets.
+=================
+*/
+void SV_ConnectionlessPacket ()
+{
+	char	*s;
+	char	*c;
+
+	MSG_BeginReading ();
+	MSG_ReadLong ();		// skip the -1 marker
+
+	s = MSG_ReadStringLine ();
+
+	Cmd_TokenizeString (s);
+
+	c = Cmd_Argv(0);
+
+	if (!strcmp(c, "ping") || ( c[0] == A2A_PING && (c[1] == 0 || c[1] == '\n')) )
+	{
+		SVC_Ping ();
+		return;
+	}
+	if (c[0] == A2A_ACK && (c[1] == 0 || c[1] == '\n') )
+	{
+		Con_Printf ("A2A_ACK from %s\n", NET_AdrToString (net_from));
+		return;
+	}
+	else if (!strcmp(c,"status"))
+	{
+		SVC_Status ();
+		return;
+	}
+	else if (!strcmp(c,"log"))
+	{
+		SVC_Log ();
+		return;
+	}
+	else if (!strcmp(c,"connect"))
+	{
+		SVC_DirectConnect ();
+		return;
+	}
+	else if (!strcmp(c,"getchallenge"))
+	{
+		SVC_GetChallenge ();
+		return;
+	}
+	else if (!strcmp(c, "rcon"))
+		SVC_RemoteCommand ();
+	else
+		Con_Printf ("bad connectionless packet from %s:\n%s\n", NET_AdrToString (net_from), s);
 }
 
 /*
@@ -193,42 +486,42 @@ void SV_SendServerinfo (client_t *client)
 	char			**s;
 	char			message[2048];
 
-	MSG_WriteByte (&client->message, svc_print);
-	sprintf (message, "%c\nVERSION %4.2f SERVER (%i CRC)", 2, VERSION, pr_crc);
-	MSG_WriteString (&client->message,message);
+	MSG_WriteByte (&client->netchan.message, svc_print);
+	sprintf (message, "%c\BUILD %4.2f SERVER (%i CRC)", 2, VERSION, 0 /*pr_crc*/);
+	MSG_WriteString (&client->netchan.message,message);
 
-	MSG_WriteByte (&client->message, svc_serverinfo);
-	MSG_WriteLong (&client->message, PROTOCOL_VERSION);
-	MSG_WriteByte (&client->message, svs.maxclients);
+	MSG_WriteByte (&client->netchan.message, svc_serverinfo);
+	MSG_WriteLong (&client->netchan.message, PROTOCOL_VERSION);
+	MSG_WriteByte (&client->netchan.message, svs.maxclients);
 
 	if (!coop.value && deathmatch.value)
-		MSG_WriteByte (&client->message, GAME_DEATHMATCH);
+		MSG_WriteByte (&client->netchan.message, GAME_DEATHMATCH);
 	else
-		MSG_WriteByte (&client->message, GAME_COOP);
+		MSG_WriteByte (&client->netchan.message, GAME_COOP);
 
 	sprintf (message, pr_strings+sv.edicts->v.message);
 
-	MSG_WriteString (&client->message,message);
+	MSG_WriteString (&client->netchan.message,message);
 
 	for (s = sv.model_precache+1 ; *s ; s++)
-		MSG_WriteString (&client->message, *s);
-	MSG_WriteByte (&client->message, 0);
+		MSG_WriteString (&client->netchan.message, *s);
+	MSG_WriteByte (&client->netchan.message, 0);
 
 	for (s = sv.sound_precache+1 ; *s ; s++)
-		MSG_WriteString (&client->message, *s);
-	MSG_WriteByte (&client->message, 0);
+		MSG_WriteString (&client->netchan.message, *s);
+	MSG_WriteByte (&client->netchan.message, 0);
 
 // send music
-	MSG_WriteByte (&client->message, svc_cdtrack);
-	MSG_WriteByte (&client->message, sv.edicts->v.sounds);
-	MSG_WriteByte (&client->message, sv.edicts->v.sounds);
+	MSG_WriteByte (&client->netchan.message, svc_cdtrack);
+	MSG_WriteByte (&client->netchan.message, sv.edicts->v.sounds);
+	MSG_WriteByte (&client->netchan.message, sv.edicts->v.sounds);
 
 // set view	
-	MSG_WriteByte (&client->message, svc_setview);
-	MSG_WriteShort (&client->message, NUM_FOR_EDICT(client->edict));
+	MSG_WriteByte (&client->netchan.message, svc_setview);
+	MSG_WriteShort (&client->netchan.message, NUM_FOR_EDICT(client->edict));
 
-	MSG_WriteByte (&client->message, svc_signonnum);
-	MSG_WriteByte (&client->message, 1);
+	MSG_WriteByte (&client->netchan.message, svc_signonnum);
+	MSG_WriteByte (&client->netchan.message, 1);
 
 	client->sendsignon = true;
 	client->spawned = false;		// need prespawn, spawn, etc
@@ -271,9 +564,9 @@ void SV_ConnectClient (int clientnum)
 	client->active = true;
 	client->spawned = false;
 	client->edict = ent;
-	client->message.data = client->msgbuf;
-	client->message.maxsize = sizeof(client->msgbuf);
-	client->message.allowoverflow = true;		// we can catch it
+	client->netchan.message.data = client->msgbuf;
+	client->netchan.message.maxsize = sizeof(client->msgbuf);
+	client->netchan.message.allowoverflow = true;		// we can catch it
 
 	if (sv.loadgame)
 		memcpy (client->spawn_parms, spawn_parms, sizeof(spawn_parms));
@@ -295,6 +588,7 @@ SV_CheckForNewClients
 
 ===================
 */
+/*
 void SV_CheckForNewClients ()
 {
 	struct netchan_s	*ret;
@@ -322,7 +616,7 @@ void SV_CheckForNewClients ()
 		SV_ConnectClient (i);
 	}
 }
-
+*/
 
 
 /*
@@ -737,7 +1031,7 @@ qboolean SV_SendClientDatagram (client_t *client)
 // send the datagram
 	if (NET_SendUnreliableMessage (client->netchan, &msg) == -1)
 	{
-		SV_DropClient (true);// if the message couldn't send, kick off
+		SV_DropClient (client, true);// if the message couldn't send, kick off
 		return false;
 	}
 	
@@ -763,9 +1057,9 @@ void SV_UpdateToReliableMessages ()
 			{
 				if (!client->active)
 					continue;
-				MSG_WriteByte (&client->message, svc_updatefrags);
-				MSG_WriteByte (&client->message, i);
-				MSG_WriteShort (&client->message, host_client->edict->v.frags);
+				MSG_WriteByte (&client->netchan.message, svc_updatefrags);
+				MSG_WriteByte (&client->netchan.message, i);
+				MSG_WriteShort (&client->netchan.message, host_client->edict->v.frags);
 			}
 
 			host_client->old_frags = host_client->edict->v.frags;
@@ -776,7 +1070,7 @@ void SV_UpdateToReliableMessages ()
 	{
 		if (!client->active)
 			continue;
-		SZ_Write (&client->message, sv.reliable_datagram.data, sv.reliable_datagram.cursize);
+		SZ_Write (&client->netchan.message, sv.reliable_datagram.data, sv.reliable_datagram.cursize);
 	}
 
 	SZ_Clear (&sv.reliable_datagram);
@@ -803,7 +1097,7 @@ void SV_SendNop (client_t *client)
 	MSG_WriteChar (&msg, svc_nop);
 
 	if (NET_SendUnreliableMessage (client->netchan, &msg) == -1)
-		SV_DropClient (true);	// if the message couldn't send, kick off
+		SV_DropClient (client, true);	// if the message couldn't send, kick off
 	client->last_message = realtime;
 }
 
@@ -829,7 +1123,7 @@ void SV_SendClientMessages ()
 
 		if(c->drop)
 		{
-			SV_DropClient(c);
+			SV_DropClient(c, false);
 			c->drop = false;
 			continue;
 		}
@@ -1147,6 +1441,7 @@ void SV_SpawnServer (const char *server, const char *startspot)
 // allocate server memory
 	sv.max_edicts = MAX_EDICTS;
 	
+	// allocate edicts
 	sv.edicts = Hunk_AllocName (sv.max_edicts*sizeof(edict_t), "edicts");
 
 	sv.datagram.maxsize = sizeof(sv.datagram_buf);
@@ -1222,6 +1517,10 @@ void SV_SpawnServer (const char *server, const char *startspot)
 // serverflags are for cross level information (sigils)
 	gGlobalVariables.serverflags = svs.serverflags;
 	
+	// run the frame start qc function to let progs check cvars
+	//SV_ProgStartFrame ();
+	
+	// load and spawn all other entities
 	ED_LoadFromFile (sv.worldmodel->entities);
 
 	sv.active = true;
@@ -1234,13 +1533,20 @@ void SV_SpawnServer (const char *server, const char *startspot)
 	SV_Physics ();
 	SV_Physics ();
 
+// save movement vars
+	//SV_SetMoveVars();
+	
 // create a baseline for more efficient communications
 	SV_CreateBaseline ();
-
+	//sv.signon_buffer_size[sv.num_signon_buffers-1] = sv.signon.cursize;
+	
+	// TODO: not present in qw
 // send serverinfo to all connected clients
 	for (i=0,host_client = svs.clients ; i<svs.maxclients ; i++, host_client++)
 		if (host_client->active)
 			SV_SendServerinfo (host_client);
+	//
 	
+	//Info_SetValueForKey (svs.info, "map", sv.name, MAX_SERVERINFO_STRING);
 	Con_DPrintf ("Server spawned.\n");
 }
