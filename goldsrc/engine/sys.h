@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2018 Headcrab Garage
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -31,6 +32,8 @@ void Sys_MakeCodeWriteable (unsigned long startaddr, unsigned long length);
 //
 void Sys_DebugLog(const char *file, const char *fmt, ...);
 
+void Sys_Init ();
+
 void Sys_Error (const char *error, ...);
 // an error will cause the entire program to exit
 
@@ -53,3 +56,7 @@ void Sys_SendKeyEvents ();
 void Sys_LowFPPrecision ();
 void Sys_HighFPPrecision ();
 void Sys_SetFPCW ();
+
+//int Sys_FileTime (char *path); // TODO: FS_FileTime
+
+//void Sys_mkdir (char *path); // TODO: FS_mkdir

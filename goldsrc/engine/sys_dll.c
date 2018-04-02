@@ -23,6 +23,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 
+#ifdef _WIN32
+qboolean WinNT;
+
+static double pfreq;
+static double curtime = 0.0;
+static double lastcurtime = 0.0;
+static int lowshift;
+#endif
+
 void Sys_InitAuthentication()
 {
 	// TODO
@@ -52,6 +61,29 @@ void Sys_ShutdownMemory()
 {
 	// TODO
 };
+
+/*
+================
+Sys_InitFloatTime
+================
+*/
+#ifdef _WIN32
+void Sys_InitFloatTime()
+{
+	int j;
+
+	Sys_FloatTime();
+
+	j = COM_CheckParm("-starttime");
+
+	if (j)
+		curtime = (double)(Q_atof(com_argv[j+1]));
+	else
+		curtime = 0.0;
+
+	lastcurtime = curtime;
+};
+#endif // _WIN32
 
 /*
 ================
@@ -139,7 +171,7 @@ void Sys_Printf(const char *fmt, ...)
 		vsprintf (text, fmt, argptr);
 		va_end (argptr);
 
-		WriteFile(houtput, text, strlen (text), &dummy, NULL);	
+		//WriteFile(houtput, text, strlen (text), &dummy, NULL); // TODO: IDedicatedExports->Printf
 	};
 #else // if linux
 	va_list		argptr;

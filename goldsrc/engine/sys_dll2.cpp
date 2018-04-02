@@ -40,6 +40,9 @@ public:
 
 EXPOSE_SINGLE_INTERFACE(CEngineAPI, IEngineAPI, VENGINE_LAUNCHER_API_VERSION);
 
+CEngineAPI::CEngineAPI() = default;
+CEngineAPI::~CEngineAPI() = default;
+
 int CEngineAPI::Run(void *instance, char *basedir, char *cmdline, char *postRestartCmdLineArgs, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory)
 {
 	return RunListenServer(instance, basedir, cmdline, postRestartCmdLineArgs, launcherFactory, filesystemFactory);
@@ -80,7 +83,7 @@ CGameUIFuncs::~CGameUIFuncs() = default;
 
 bool CGameUIFuncs::IsKeyDown(char const *keyname, bool &isdown)
 {
-	return Key_IsDown(keyname, isdown);
+	return false; // TODO: Key_IsDown(keyname, isdown);
 };
 
 const char *CGameUIFuncs::Key_NameForKey(int keynum)
@@ -93,9 +96,9 @@ const char *CGameUIFuncs::Key_BindingForKey(int keynum)
 	return Key_BindingForKey(keynum);
 };
 
-vgui::KeyCode CGameUIFuncs::GetVGUI2KeyCodeForBind(const char *bind)
+vgui2::KeyCode CGameUIFuncs::GetVGUI2KeyCodeForBind(const char *bind)
 {
-	return 0;
+	return vgui2::KeyCode::KEY_NONE;
 };
 
 void CGameUIFuncs::GetVideoModes(struct vmode_s **liststart, int *count)
@@ -138,7 +141,7 @@ public:
 	void UpdateStatus(float *fps, int *nActive, int *nMaxPlayers, char *pszMap) override;
 };
 
-EXPOSE_SINGLE_INTERFACE(CDedicatedServerAPI, IDedicatedServerAPI, DEDICATEDSERVERAPI_INTERFACE_VERSION);
+EXPOSE_SINGLE_INTERFACE(CDedicatedServerAPI, IDedicatedServerAPI, VENGINE_HLDS_API_VERSION);
 
 CDedicatedServerAPI::CDedicatedServerAPI() = default;
 CDedicatedServerAPI::~CDedicatedServerAPI() = default;
