@@ -18,7 +18,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// cl_main.c  -- client main loop
+
+/// @file
+/// @brief client main loop
 
 #include "quakedef.h"
 
@@ -26,27 +28,55 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // references them even when on a unix system.
 
 // these two are not intended to be set directly
-cvar_t	cl_name = {"_cl_name", "player", true};
-cvar_t	cl_color = {"_cl_color", "0", true};
+cvar_t	cl_name = {"_cl_name", "player", FCVAR_ARCHIVE};
+cvar_t	cl_color = {"_cl_color", "0", FCVAR_ARCHIVE};
+
+cvar_t	cl_timeout = {"cl_timeout", "60"};
 
 cvar_t	cl_shownet = {"cl_shownet","0"};	// can be 0, 1, or 2
 cvar_t	cl_nolerp = {"cl_nolerp","0"};
 
-cvar_t	lookspring = {"lookspring","0", true};
-cvar_t	lookstrafe = {"lookstrafe","0", true};
-cvar_t	sensitivity = {"sensitivity","3", true};
+/*
+cvar_t	cl_sbar		= {"cl_sbar", "0", true};
+cvar_t	cl_hudswap	= {"cl_hudswap", "0", true};
+cvar_t	cl_maxfps	= {"fps_max", "0", true};
+*/
 
-cvar_t	m_pitch = {"m_pitch","0.022", true};
-cvar_t	m_yaw = {"m_yaw","0.022", true};
-cvar_t	m_forward = {"m_forward","1", true};
-cvar_t	m_side = {"m_side","0.8", true};
+cvar_t	lookspring = {"lookspring","0", FCVAR_ARCHIVE};
+cvar_t	lookstrafe = {"lookstrafe","0", FCVAR_ARCHIVE};
+cvar_t	sensitivity = {"sensitivity","3", FCVAR_ARCHIVE};
 
+cvar_t	m_pitch = {"m_pitch","0.022", FCVAR_ARCHIVE};
+cvar_t	m_yaw = {"m_yaw","0.022", FCVAR_ARCHIVE};
+cvar_t	m_forward = {"m_forward","1", FCVAR_ARCHIVE};
+cvar_t	m_side = {"m_side","0.8", FCVAR_ARCHIVE};
+
+cvar_t	entlatency = {"entlatency", "20"};
+cvar_t	cl_predict_players = {"cl_predict_players", "1"};
+cvar_t	cl_predict_players2 = {"cl_predict_players2", "1"};
+cvar_t	cl_solid_players = {"cl_solid_players", "1"};
+
+cvar_t  localid = {"localid", ""};
+
+//
+// info mirrors
+//
+cvar_t	password = {"password", "", FCVAR_USERINFO};
+cvar_t	spectator = {"spectator", "", FCVAR_USERINFO};
+cvar_t	name = {"name","unnamed", FCVAR_ARCHIVE | FCVAR_USERINFO};
+cvar_t	team = {"team","", FCVAR_ARCHIVE | FCVAR_USERINFO};
+cvar_t	skin = {"skin","", FCVAR_ARCHIVE | FCVAR_USERINFO};
+cvar_t	topcolor = {"topcolor","0", FCVAR_ARCHIVE | FCVAR_USERINFO};
+cvar_t	bottomcolor = {"bottomcolor","0", FCVAR_ARCHIVE | FCVAR_USERINFO};
+cvar_t	rate = {"rate","2500", FCVAR_ARCHIVE | FCVAR_USERINFO};
+cvar_t	noaim = {"noaim","0", FCVAR_ARCHIVE | FCVAR_USERINFO};
 
 client_static_t	cls;
 client_state_t	cl;
+
 // FIXME: put these on hunk?
 efrag_t			cl_efrags[MAX_EFRAGS];
-entity_t		cl_entities[MAX_EDICTS];
+entity_t		cl_entities[MAX_EDICTS]; // TODO: dynamic-sized
 entity_t		cl_static_entities[MAX_STATIC_ENTITIES];
 lightstyle_t	cl_lightstyle[MAX_LIGHTSTYLES];
 dlight_t		cl_dlights[MAX_DLIGHTS];
@@ -157,8 +187,12 @@ void CL_ClearState ()
 {
 	int			i;
 
+	//S_StopAllSounds (true);
+
 	if (!sv.active)
 		Host_ClearMemory ();
+
+	//CL_ClearTEnts ();
 
 // wipe the entire cl structure
 	memset (&cl, 0, sizeof(cl));
@@ -194,6 +228,8 @@ void CL_Disconnect ()
 {
 	byte	final[10];
 	
+	connect_time = -1;
+	
 // stop sounds (especially looping!)
 	S_StopAllSounds (true);
 	
@@ -224,8 +260,10 @@ void CL_Disconnect ()
 		
 		if (sv.active)
 			Host_ShutdownServer(false);
-	}
+	};
 
+	Cam_Reset();
+	
 	cls.demoplayback = cls.timedemo = false;
 	cls.signon = 0;
 }
@@ -277,7 +315,7 @@ void CL_SignonReply ()
 {
 	char 	str[8192];
 
-Con_DPrintf ("CL_SignonReply: %i\n", cls.signon);
+	Con_DPrintf ("CL_SignonReply: %i\n", cls.signon);
 
 	switch (cls.signon)
 	{
@@ -725,6 +763,148 @@ void CL_RelinkEntities ()
 }
 
 /*
+=================
+CL_ConnectionlessPacket
+
+Responses to broadcasts, etc
+=================
+*/
+void CL_ConnectionlessPacket ()
+{
+	char	*s;
+	int		c;
+
+    MSG_BeginReading ();
+    MSG_ReadLong ();        // skip the -1
+
+	c = MSG_ReadByte ();
+	if (!cls.demoplayback)
+		Con_Printf ("%s: ", NET_AdrToString (net_from));
+//	Con_DPrintf ("%s", net_message.data + 5);
+	if (c == S2C_CONNECTION)
+	{
+		Con_Printf ("connection\n");
+		if (cls.state >= ca_connected)
+		{
+			if (!cls.demoplayback)
+				Con_Printf ("Dup connect received.  Ignored.\n");
+			return;
+		}
+		Netchan_Setup (NS_CLIENT, &cls.netchan, net_from, cls.qport);
+		MSG_WriteChar (&cls.netchan.message, clc_stringcmd);
+		MSG_WriteString (&cls.netchan.message, "new");	
+		cls.state = ca_connected;
+		Con_Printf ("Connected.\n");
+		allowremotecmd = false; // localid required now for remote cmds
+		return;
+	}
+	// remote command from gui front end
+	if (c == A2C_CLIENT_COMMAND)
+	{
+		char	cmdtext[2048];
+
+		Con_Printf ("client command\n");
+
+		if ((*(unsigned *)net_from.ip != *(unsigned *)net_local_adr.ip
+			&& *(unsigned *)net_from.ip != htonl(INADDR_LOOPBACK)) )
+		{
+			Con_Printf ("Command packet from remote host.  Ignored.\n");
+			return;
+		}
+#ifdef _WIN32
+		ShowWindow (mainwindow, SW_RESTORE);
+		SetForegroundWindow (mainwindow);
+#endif
+		s = MSG_ReadString ();
+
+		strncpy(cmdtext, s, sizeof(cmdtext) - 1);
+		cmdtext[sizeof(cmdtext) - 1] = 0;
+
+		s = MSG_ReadString ();
+
+		while (*s && isspace(*s))
+			s++;
+		while (*s && isspace(s[strlen(s) - 1]))
+			s[strlen(s) - 1] = 0;
+
+		if (!allowremotecmd && (!*localid.string || strcmp(localid.string, s))) {
+			if (!*localid.string) {
+				Con_Printf("===========================\n");
+				Con_Printf("Command packet received from local host, but no "
+					"localid has been set.  You may need to upgrade your server "
+					"browser.\n");
+				Con_Printf("===========================\n");
+				return;
+			}
+			Con_Printf("===========================\n");
+			Con_Printf("Invalid localid on command packet received from local host. "
+				"\n|%s| != |%s|\n"
+				"You may need to reload your server browser and QuakeWorld.\n",
+				s, localid.string);
+			Con_Printf("===========================\n");
+			Cvar_Set("localid", "");
+			return;
+		}
+
+		Cbuf_AddText (cmdtext);
+		allowremotecmd = false;
+		return;
+	}
+	// print command from somewhere
+	if (c == A2C_PRINT)
+	{
+		Con_Printf ("print\n");
+
+		s = MSG_ReadString ();
+		Con_Print (s);
+		return;
+	}
+
+	// ping from somewhere
+	if (c == A2A_PING)
+	{
+		char	data[6];
+
+		Con_Printf ("ping\n");
+
+		data[0] = 0xff;
+		data[1] = 0xff;
+		data[2] = 0xff;
+		data[3] = 0xff;
+		data[4] = A2A_ACK;
+		data[5] = 0;
+		
+		NET_SendPacket (NS_CLIENT, 6, &data, net_from);
+		return;
+	}
+
+	if (c == S2C_CHALLENGE) {
+		Con_Printf ("challenge\n");
+
+		s = MSG_ReadString ();
+		cls.challenge = atoi(s);
+		CL_SendConnectPacket ();
+		return;
+	}
+
+#if 0
+	if (c == svc_disconnect) {
+		Con_Printf ("disconnect\n");
+
+		Host_EndGame ("Server disconnected");
+		return;
+	}
+#endif
+
+	//char *response_buffer;
+	//int response_buffer_size;
+	if(ClientDLL_ConnectionlessPacket(&net_from, s, NULL, NULL)) // TODO
+		return;
+
+	Con_Printf ("unknown:  %c\n", c);
+}
+
+/*
 ===============
 CL_ReadFromServer
 
@@ -748,7 +928,8 @@ void CL_ReadPackets ()
 		
 		cl.last_received_message = realtime;
 		CL_ParseServerMessage ();
-	} while (ret && cls.state == ca_connected);
+	}
+	while (ret && cls.state == ca_connected);
 	
 	if (cl_shownet.value)
 		Con_Printf ("\n");
@@ -768,43 +949,56 @@ CL_SendCmd
 */
 void CL_SendCmd ()
 {
-	usercmd_t		cmd;
-
-	if (cls.state != ca_connected)
-		return;
-
-	if (cls.signon == SIGNONS)
-	{
-	// get basic movement from keyboard
-		CL_BaseMove (&cmd);
+	int i;
+	usercmd_t *cmd;
+	int checksumIndex;
+	int lost;
+	int seq_hash;
 	
-	// allow mice or other external controllers to add to the move
-		IN_Move (&cmd);
+	//if (cls.state != ca_connected) // NetQuake
+		//return;
 	
-	// send the unreliable message
-		CL_SendMove (&cmd);
-	}
-
 	if (cls.demoplayback)
 	{
-		SZ_Clear (&cls.netchan.message);
-		return;
+		//SZ_Clear (&cls.netchan.message); // NetQuake
+		return; // sendcmds come from the demo
+	}
+	
+	// save this command off for prediction
+	i = cls.netchan.outgoing_sequence & UPDATE_MASK;
+	cmd = &cl.frames[i].cmd;
+	cl.frames[i].senttime = realtime;
+	cl.frames[i].receivedtime = -1;		// we haven't gotten a reply yet
+
+//	seq_hash = (cls.netchan.outgoing_sequence & 0xffff) ; // ^ QW_CHECK_HASH;
+	seq_hash = cls.netchan.outgoing_sequence;
+
+	//if (cls.signon == SIGNONS) // TODO: NetQuake
+	{
+	// get basic movement from keyboard
+		CL_BaseMove (cmd);
+	
+	// allow mice or other external controllers to add to the move
+		IN_Move (cmd);
+	
+	// send the unreliable message
+		CL_SendMove (cmd);
 	}
 	
 // send the reliable message
-	if (!cls.netchan.message.cursize)
-		return;		// no message at all
+	//if (!cls.netchan.message.cursize)
+		//return;		// no message at all
 	
-	if (!Netchan_CanPacket (&cls.netchan)) // TODO: was NET_CanSendMessage; Netchan_CanReliable?
-	{
-		Con_DPrintf ("CL_WriteToServer: can't send\n");
-		return;
-	}
+	//if (!Netchan_CanPacket (&cls.netchan)) // TODO: was NET_CanSendMessage; Netchan_CanReliable?
+	//{
+		//Con_DPrintf ("CL_WriteToServer: can't send\n");
+		//return;
+	//}
 
-	if (NET_SendMessage (cls.netchan, &cls.netchan.message) == -1)
-		Host_Error ("CL_WriteToServer: lost server connection");
+	//if (NET_SendMessage (cls.netchan, &cls.netchan.message) == -1)
+		//Host_Error ("CL_WriteToServer: lost server connection");
 
-	SZ_Clear (&cls.netchan.message);
+	//SZ_Clear (&cls.netchan.message);
 }
 
 /*
@@ -813,11 +1007,25 @@ CL_Init
 =================
 */
 void CL_Init ()
-{	
+{
+	//cls.state = ca_disconnected;
+	
 	SZ_Alloc (&cls.netchan.message, 1024);
+	
+	Info_SetValueForKey (cls.userinfo, "name", "unnamed", MAX_INFO_STRING);
+	Info_SetValueForKey (cls.userinfo, "topcolor", "0", MAX_INFO_STRING);
+	Info_SetValueForKey (cls.userinfo, "bottomcolor", "0", MAX_INFO_STRING);
+	Info_SetValueForKey (cls.userinfo, "rate", "2500", MAX_INFO_STRING);
+	//Info_SetValueForKey (cls.userinfo, "msg", "1", MAX_INFO_STRING);
 
+	//sprintf (st, "%4.2f-%04d", VERSION, build_number());
+	//Info_SetValueForStarKey (cls.userinfo, "*ver", st, MAX_INFO_STRING);
+	
 	CL_InitInput ();
 	CL_InitTEnts ();
+	CL_InitPrediction ();
+	CL_InitCam ();
+	Pmove_Init ();
 	
 //
 // register our commands
@@ -832,7 +1040,19 @@ void CL_Init ()
 	Cvar_RegisterVariable (&cl_yawspeed);
 	Cvar_RegisterVariable (&cl_pitchspeed);
 	Cvar_RegisterVariable (&cl_anglespeedkey);
+	
+	//Cvar_RegisterVariable (&cl_warncmd);
+	
 	Cvar_RegisterVariable (&cl_shownet);
+	
+	//Cvar_RegisterVariable (&cl_sbar);
+	//Cvar_RegisterVariable (&cl_hudswap);
+	//Cvar_RegisterVariable (&cl_maxfps);
+	Cvar_RegisterVariable (&cl_timeout);
+	
+	//Cvar_RegisterVariable (&rcon_password);
+	//Cvar_RegisterVariable (&rcon_address);
+	
 	Cvar_RegisterVariable (&cl_nolerp);
 	Cvar_RegisterVariable (&lookspring);
 	Cvar_RegisterVariable (&lookstrafe);
@@ -842,14 +1062,34 @@ void CL_Init ()
 	Cvar_RegisterVariable (&m_yaw);
 	Cvar_RegisterVariable (&m_forward);
 	Cvar_RegisterVariable (&m_side);
-
-//	Cvar_RegisterVariable (&cl_autofire);
+	
+	Cvar_RegisterVariable (&entlatency);
+	Cvar_RegisterVariable (&cl_predict_players2);
+	Cvar_RegisterVariable (&cl_predict_players);
+	Cvar_RegisterVariable (&cl_solid_players);
+	
+	Cvar_RegisterVariable (&localid);
+	
+	//
+	// info mirrors
+	//
+	Cvar_RegisterVariable (&name);
+	Cvar_RegisterVariable (&password);
+	Cvar_RegisterVariable (&spectator);
+	Cvar_RegisterVariable (&skin);
+	Cvar_RegisterVariable (&team);
+	Cvar_RegisterVariable (&topcolor);
+	Cvar_RegisterVariable (&bottomcolor);
+	Cvar_RegisterVariable (&rate);
+	Cvar_RegisterVariable (&noaim);
 	
 	Cmd_AddCommand ("entities", CL_PrintEntities_f);
 	Cmd_AddCommand ("disconnect", CL_Disconnect_f);
 	Cmd_AddCommand ("record", CL_Record_f);
+	//Cmd_AddCommand ("rerecord", CL_ReRecord_f);
 	Cmd_AddCommand ("stop", CL_Stop_f);
 	Cmd_AddCommand ("playdemo", CL_PlayDemo_f);
 	Cmd_AddCommand ("timedemo", CL_TimeDemo_f);
-}
-
+	
+	ClientDLL_HudInit(); // TODO: called somewhere around here
+};
