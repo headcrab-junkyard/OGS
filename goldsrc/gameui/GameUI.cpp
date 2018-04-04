@@ -72,7 +72,7 @@ int CGameUI::ContinueProgressBar(int progressPoint, float progressFraction)
 	return 0;
 };
 
-void CGameUI::StopProgressBar(bool bError, const char *failureReason, const char *extendedReason = "")
+void CGameUI::StopProgressBar(bool bError, const char *failureReason, const char *extendedReason)
 {
 };
 

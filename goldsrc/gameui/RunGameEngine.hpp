@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "IRunGameEngine.h"
+#include "GameUI/IRunGameEngine.h"
 
 class CRunGameEngine final : public IRunGameEngine
 {

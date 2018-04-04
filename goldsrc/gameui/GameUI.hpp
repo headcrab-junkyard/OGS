@@ -33,7 +33,7 @@ public:
 
 	void StartProgressBar(const char *progressType, int progressSteps) override;
 	int ContinueProgressBar(int progressPoint, float progressFraction) override;
-	void StopProgressBar(bool bError, const char *failureReason, const char *extendedReason = "") override;
+	void StopProgressBar(bool bError, const char *failureReason, const char *extendedReason) override;
 
 	int SetProgressBarStatusText(const char *statusText) override;
 
