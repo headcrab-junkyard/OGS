@@ -19,3 +19,7 @@
 - [ ] GameUI DLL loading;
 - [ ] sv_main : SV_LoadEntities();
 - [ ] pr_edict.c : SuckOutClassname(edict_t *pEdict, char *szInputStream);
+- [ ] Implement Network API;
+- [ ] Implement Demo API;
+- [ ] Text console;
+- [ ] Command line parser/handler;
