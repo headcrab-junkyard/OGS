@@ -118,7 +118,7 @@ int Q_memcmp (const void *m1, const void *m2, int count);
 void Q_strcpy (char *dest, const char *src);
 void Q_strncpy (char *dest, const char *src, int count);
 int Q_strlen (const char *str);
-char *Q_strrchr (const char *s, char c);
+const char *Q_strrchr (const char *s, char c);
 void Q_strcat (char *dest, const char *src);
 int Q_strcmp (const char *s1, const char *s2);
 int Q_strncmp (const char *s1, const char *s2, int count);
@@ -133,7 +133,7 @@ float Q_atof (const char *str);
 extern	char		com_token[1024];
 extern	qboolean	com_eof;
 
-char *COM_Parse (const char *data);
+const char *COM_Parse (const char *data);
 
 
 extern	int		com_argc;
@@ -143,10 +143,10 @@ int COM_CheckParm (const char *parm);
 void COM_Init (const char *path);
 void COM_InitArgv (int argc, char **argv);
 
-char *COM_SkipPath (const char *pathname);
+const char *COM_SkipPath (const char *pathname);
 void COM_StripExtension (const char *in, char *out);
 void COM_FileBase (const char *in, char *out);
-void COM_DefaultExtension (const char *path, char *extension);
+void COM_DefaultExtension (char *path, const char *extension);
 
 char	*va(const char *format, ...);
 // does a varargs printf into a temp buffer

@@ -87,7 +87,7 @@ Netchan_Init
 
 ===============
 */
-void Netchan_Init (void)
+void Netchan_Init ()
 {
 	int		port;
 
@@ -209,7 +209,7 @@ qboolean Netchan_CanReliable (netchan_t *chan)
 }
 
 #ifdef SERVERONLY
-qboolean ServerPaused(void);
+qboolean ServerPaused();
 #endif
 
 /*

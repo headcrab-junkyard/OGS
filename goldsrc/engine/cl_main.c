@@ -24,6 +24,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 
+#ifdef _WIN32
+#include "winquake.h"
+#endif
+
 // we need to declare some mouse variables here, because the menu system
 // references them even when on a unix system.
 
@@ -71,6 +75,8 @@ cvar_t	bottomcolor = {"bottomcolor","0", FCVAR_ARCHIVE | FCVAR_USERINFO};
 cvar_t	rate = {"rate","2500", FCVAR_ARCHIVE | FCVAR_USERINFO};
 cvar_t	noaim = {"noaim","0", FCVAR_ARCHIVE | FCVAR_USERINFO};
 
+static qboolean allowremotecmd = true; // TODO: purpose?
+
 client_static_t	cls;
 client_state_t	cl;
 
@@ -111,12 +117,13 @@ void CL_SendConnectPacket ()
 	if (!NET_StringToAdr (cls.servername, &adr))
 	{
 		Con_Printf ("Bad server address\n");
-		connect_time = -1;
+		connect_time = -1; // cls.connect_time
 		return;
 	}
 
 	if (adr.port == 0)
-		adr.port = BigShort (27500);
+		adr.port = BigShort (PORT_SERVER);
+
 	t2 = Sys_FloatTime ();
 
 	connect_time = realtime+t2-t1;	// for retransmit requests
@@ -136,10 +143,9 @@ void CL_SendConnectPacket ()
 CL_CheckForResend
 
 Resend a connect message if the last one has timed out
-
 =================
 */
-void CL_CheckForResend ()
+void CL_CheckForResend()
 {
 	netadr_t	adr;
 	char	data[2048];
@@ -147,8 +153,10 @@ void CL_CheckForResend ()
 
 	if (connect_time == -1)
 		return;
+
 	if (cls.state != ca_disconnected)
 		return;
+
 	if (connect_time && realtime - connect_time < 5.0)
 		return;
 
@@ -192,10 +200,12 @@ void CL_ClearState ()
 	if (!sv.active)
 		Host_ClearMemory ();
 
+	//CL_ClearEffects (); // Q2
 	//CL_ClearTEnts ();
 
 // wipe the entire cl structure
 	memset (&cl, 0, sizeof(cl));
+	//memset (&cl_entities, 0, sizeof(cl_entities));
 
 	SZ_Clear (&cls.netchan.message);
 
@@ -293,7 +303,6 @@ void CL_EstablishConnection (char *host)
 
 	CL_Disconnect ();
 
-	cls.netchan = NET_Connect (host);
 	if (!cls.netchan)
 		Host_Error ("CL_Connect: connect failed\n");
 	Con_DPrintf ("CL_EstablishConnection: connected to %s\n", host);
@@ -778,9 +787,12 @@ void CL_ConnectionlessPacket ()
     MSG_ReadLong ();        // skip the -1
 
 	c = MSG_ReadByte ();
+
 	if (!cls.demoplayback)
 		Con_Printf ("%s: ", NET_AdrToString (net_from));
-//	Con_DPrintf ("%s", net_message.data + 5);
+
+	//Con_DPrintf ("%s", net_message.data + 5);
+
 	if (c == S2C_CONNECTION)
 	{
 		Con_Printf ("connection\n");
@@ -951,8 +963,6 @@ void CL_SendCmd ()
 {
 	int i;
 	usercmd_t *cmd;
-	int checksumIndex;
-	int lost;
 	int seq_hash;
 	
 	//if (cls.state != ca_connected) // NetQuake
@@ -1091,5 +1101,5 @@ void CL_Init ()
 	Cmd_AddCommand ("playdemo", CL_PlayDemo_f);
 	Cmd_AddCommand ("timedemo", CL_TimeDemo_f);
 	
-	ClientDLL_HudInit(); // TODO: called somewhere around here
+	//ClientDLL_HudInit(); // TODO: wrong place?
 };

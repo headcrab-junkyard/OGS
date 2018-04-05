@@ -488,7 +488,7 @@ qboolean SV_ReadClientMessage ()
 	do
 	{
 nextmsg:
-		ret = NET_GetMessage (host_client->netchan);
+		ret = NET_GetPacket(NS_SERVER, &net_from, &host_client->netchan.message); // TODO
 		if (ret == -1)
 		{
 			Sys_Printf ("SV_ReadClientMessage: NET_GetMessage failed\n");
@@ -610,7 +610,7 @@ void SV_RunClients ()
 
 		if (!SV_ReadClientMessage ())
 		{
-			SV_DropClient (false);	// client misbehaved...
+			SV_DropClient (host_client, false, "Bye!");	// client misbehaved... // TODO
 			continue;
 		}
 

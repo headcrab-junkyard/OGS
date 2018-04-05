@@ -21,6 +21,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// @file
 /// @brief Command buffer and command execution
 
+#pragma once
+
 //===========================================================================
 
 /*
@@ -80,7 +82,7 @@ extern	cmd_source_t	cmd_source;
 
 void	Cmd_Init ();
 
-void	Cmd_AddCommand (const char *cmd_name, xcommand_t function);
+void	Cmd_AddCommand (/*const*/ char *cmd_name, xcommand_t function);
 // called by the init functions of other parts of the program to
 // register commands and functions to call for them.
 // The cmd_name is referenced later, so it should not be in temp memory
@@ -93,8 +95,8 @@ char 	*Cmd_CompleteCommand (const char *partial);
 // returns NULL if nothing fits
 
 int		Cmd_Argc ();
-char	*Cmd_Argv (int arg);
-char	*Cmd_Args ();
+const char	*Cmd_Argv (int arg);
+const char	*Cmd_Args ();
 // The functions that execute commands get their parameters with these
 // functions. Cmd_Argv () will return an empty string, not a NULL
 // if arg > argc, so string operations are always safe.

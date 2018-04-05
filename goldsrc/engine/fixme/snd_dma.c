@@ -25,12 +25,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "winquake.h"
 #endif
 
-void S_Play(void);
-void S_PlayVol(void);
-void S_SoundList(void);
+void S_Play();
+void S_PlayVol();
+void S_SoundList();
 void S_Update_();
 void S_StopAllSounds(qboolean clear);
-void S_StopAllSoundsC(void);
+void S_StopAllSoundsC();
 
 // =======================================================================
 // Internal sound data & structures
@@ -97,19 +97,19 @@ qboolean fakedma = false;
 int fakedma_updates = 15;
 
 
-void S_AmbientOff (void)
+void S_AmbientOff ()
 {
 	snd_ambient = false;
 }
 
 
-void S_AmbientOn (void)
+void S_AmbientOn ()
 {
 	snd_ambient = true;
 }
 
 
-void S_SoundInfo_f(void)
+void S_SoundInfo_f()
 {
 	if (!sound_started || !shm)
 	{
@@ -134,7 +134,7 @@ S_Startup
 ================
 */
 
-void S_Startup (void)
+void S_Startup ()
 {
 	int		rc;
 
@@ -164,11 +164,11 @@ void S_Startup (void)
 S_Init
 ================
 */
-void S_Init (void)
+void S_Init ()
 {
-
 	Con_Printf("\nSound Initialization\n");
-
+	VOX_Init(); // TODO
+	
 	if (COM_CheckParm("-nosound"))
 		return;
 
@@ -245,7 +245,7 @@ void S_Init (void)
 // Shutdown sound engine
 // =======================================================================
 
-void S_Shutdown(void)
+void S_Shutdown()
 {
 
 	if (!sound_started)
@@ -551,12 +551,12 @@ void S_StopAllSounds(qboolean clear)
 		S_ClearBuffer ();
 }
 
-void S_StopAllSoundsC (void)
+void S_StopAllSoundsC ()
 {
 	S_StopAllSounds (true);
 }
 
-void S_ClearBuffer (void)
+void S_ClearBuffer ()
 {
 	int		clear;
 		
@@ -661,7 +661,7 @@ void S_StaticSound (sfx_t *sfx, vec3_t origin, float vol, float attenuation)
 S_UpdateAmbientSounds
 ===================
 */
-void S_UpdateAmbientSounds (void)
+void S_UpdateAmbientSounds ()
 {
 	mleaf_t		*l;
 	float		vol;
@@ -807,7 +807,7 @@ void S_Update(vec3_t origin, vec3_t forward, vec3_t right, vec3_t up)
 	S_Update_();
 }
 
-void GetSoundtime(void)
+void GetSoundtime()
 {
 	int		samplepos;
 	static	int		buffers;
@@ -840,7 +840,7 @@ void GetSoundtime(void)
 #endif
 }
 
-void S_ExtraUpdate (void)
+void S_ExtraUpdate ()
 {
 
 #ifdef _WIN32
@@ -852,7 +852,7 @@ void S_ExtraUpdate (void)
 	S_Update_();
 }
 
-void S_Update_(void)
+void S_Update_()
 {
 	unsigned        endtime;
 	int				samps;
@@ -908,7 +908,7 @@ console functions
 ===============================================================================
 */
 
-void S_Play(void)
+void S_Play()
 {
 	static int hash=345;
 	int 	i;
@@ -931,7 +931,7 @@ void S_Play(void)
 	}
 }
 
-void S_PlayVol(void)
+void S_PlayVol()
 {
 	static int hash=543;
 	int i;
@@ -956,7 +956,7 @@ void S_PlayVol(void)
 	}
 }
 
-void S_SoundList(void)
+void S_SoundList()
 {
 	int		i;
 	sfx_t	*sfx;
@@ -1000,17 +1000,17 @@ void S_LocalSound (const char *sound)
 }
 
 
-void S_ClearPrecache (void)
+void S_ClearPrecache ()
 {
 }
 
 
-void S_BeginPrecaching (void)
+void S_BeginPrecaching ()
 {
 }
 
 
-void S_EndPrecaching (void)
+void S_EndPrecaching ()
 {
 }
 

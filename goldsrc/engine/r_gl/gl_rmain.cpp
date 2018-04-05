@@ -288,15 +288,9 @@ GL_DrawAliasFrame
 */
 void GL_DrawAliasFrame (aliashdr_t *paliashdr, int posenum)
 {
-	float	s, t;
 	float 	l;
-	int		i, j;
-	int		index;
-	trivertx_t	*v, *verts;
-	int		list;
+	trivertx_t	*verts;
 	int		*order;
-	vec3_t	point;
-	float	*normal;
 	int		count;
 
 lastposenum = posenum;
@@ -346,14 +340,9 @@ extern	vec3_t			lightspot;
 
 void GL_DrawAliasShadow (aliashdr_t *paliashdr, int posenum)
 {
-	float	s, t, l;
-	int		i, j;
-	int		index;
-	trivertx_t	*v, *verts;
-	int		list;
+	trivertx_t	*verts;
 	int		*order;
 	vec3_t	point;
-	float	*normal;
 	float	height, lheight;
 	int		count;
 

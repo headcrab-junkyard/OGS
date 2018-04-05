@@ -18,7 +18,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// sv_edict.c -- entity dictionary
+
+/// @file
+/// @brief entity dictionary
 
 #include "quakedef.h"
 
@@ -34,7 +36,7 @@ Sets everything to NULL
 */
 void ED_ClearEdict (edict_t *e)
 {
-	memset (&e->v, 0, progs->entityfields * 4);
+	memset (&e->v, 0, sizeof(e->v));
 	e->free = false;
 }
 
@@ -105,11 +107,13 @@ void ED_Free (edict_t *ed)
 
 //===========================================================================
 
+// TODO: unused?
 /*
 ============
 ED_FindFunction
 ============
 */
+/*
 dfunction_t *ED_FindFunction (char *name)
 {
 	dfunction_t		*func;
@@ -123,7 +127,9 @@ dfunction_t *ED_FindFunction (char *name)
 	}
 	return NULL;
 }
+*/
 
+// TODO: unused?
 /*
 ============
 PR_ValueString
@@ -131,6 +137,7 @@ PR_ValueString
 Returns a string describing *data in a type specific manner
 =============
 */
+/*
 char *PR_ValueString (etype_t type, eval_t *val)
 {
 	static char	line[256];
@@ -174,7 +181,9 @@ char *PR_ValueString (etype_t type, eval_t *val)
 	
 	return line;
 }
+*/
 
+// TODO: unused?
 /*
 ============
 PR_UglyValueString
@@ -183,6 +192,7 @@ Returns a string describing *data in a type specific manner
 Easier to parse than PR_ValueString
 =============
 */
+/*
 char *PR_UglyValueString (etype_t type, eval_t *val)
 {
 	static char	line[256];
@@ -223,7 +233,9 @@ char *PR_UglyValueString (etype_t type, eval_t *val)
 	
 	return line;
 }
+*/
 
+// TODO: unused?
 /*
 =============
 ED_Print
@@ -231,6 +243,7 @@ ED_Print
 For debugging
 =============
 */
+/*
 void ED_Print (edict_t *ed)
 {
 	int		l;
@@ -273,7 +286,9 @@ void ED_Print (edict_t *ed)
 		Con_Printf ("%s\n", PR_ValueString(d->type, (eval_t *)v));		
 	}
 }
+*/
 
+// TODO: unused?
 /*
 =============
 ED_Write
@@ -281,6 +296,7 @@ ED_Write
 For savegames
 =============
 */
+/*
 void ED_Write (FILE *f, edict_t *ed)
 {
 	ddef_t	*d;
@@ -320,12 +336,17 @@ void ED_Write (FILE *f, edict_t *ed)
 
 	fprintf (f, "}\n");
 }
+*/
 
+// TODO: unused?
+/*
 void ED_PrintNum (int ent)
 {
 	ED_Print (EDICT_NUM(ent));
 }
+*/
 
+// TODO: unused?
 /*
 =============
 ED_PrintEdicts
@@ -333,6 +354,7 @@ ED_PrintEdicts
 For debugging, prints all the entities in the current server
 =============
 */
+/*
 void ED_PrintEdicts ()
 {
 	int		i;
@@ -341,7 +363,9 @@ void ED_PrintEdicts ()
 	for (i=0 ; i<sv.num_edicts ; i++)
 		ED_PrintNum (i);
 }
+*/
 
+// TODO: unused?
 /*
 =============
 ED_PrintEdict_f
@@ -349,6 +373,7 @@ ED_PrintEdict_f
 For debugging, prints a single edicy
 =============
 */
+/*
 void ED_PrintEdict_f ()
 {
 	int		i;
@@ -361,7 +386,9 @@ void ED_PrintEdict_f ()
 	}
 	ED_PrintNum (i);
 }
+*/
 
+// TODO: unused?
 /*
 =============
 ED_Count
@@ -407,11 +434,13 @@ FIXME: need to tag constants, doesn't really work
 ==============================================================================
 */
 
+// TODO: unused?
 /*
 =============
 ED_WriteGlobals
 =============
 */
+/*
 void ED_WriteGlobals (FILE *f)
 {
 	ddef_t		*def;
@@ -439,12 +468,15 @@ void ED_WriteGlobals (FILE *f)
 	}
 	fprintf (f,"}\n");
 }
+*/
 
+// TODO: unused?
 /*
 =============
 ED_ParseGlobals
 =============
 */
+/*
 void ED_ParseGlobals (char *data)
 {
 	char	keyname[64];
@@ -479,9 +511,9 @@ void ED_ParseGlobals (char *data)
 			//Host_Error ("ED_ParseGlobals: parse error");
 	}
 }
+*/
 
 //============================================================================
-
 
 /*
 =============
@@ -535,7 +567,7 @@ char *ED_ParseEdict (char *data, edict_t *ent)
 
 // clear it
 	if (ent != sv.edicts)	// hack
-		memset (&ent->v, 0, progs->entityfields * 4);
+		memset (&ent->v, 0, sizeof(ent->v));
 
 // go through all the dictionary pairs
 	while (1)
@@ -709,7 +741,7 @@ typedef int (*pfnGetEntityAPI2)(DLL_FUNCTIONS *apFuncs, int *apVersion);
 PR_LoadProgs
 ===============
 */
-void PR_LoadProgs ()
+void PR_LoadProgs () // our temporary LoadEntityDLLs
 {
 	static void *gamedll = NULL;
 	pfnGetEntityAPI fnGetEntityAPI = NULL;
@@ -759,9 +791,9 @@ PR_Init
 */
 void PR_Init ()
 {
-	Cmd_AddCommand ("edict", ED_PrintEdict_f);
-	Cmd_AddCommand ("edicts", ED_PrintEdicts);
-	Cmd_AddCommand ("edictcount", ED_Count);
+	//Cmd_AddCommand ("edict", ED_PrintEdict_f);
+	//Cmd_AddCommand ("edicts", ED_PrintEdicts);
+	//Cmd_AddCommand ("edictcount", ED_Count);
 }
 
 edict_t *EDICT_NUM(int n)

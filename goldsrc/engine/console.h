@@ -20,6 +20,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 /// @file
 
+#pragma once
+
 //
 // console
 //
@@ -45,4 +47,3 @@ void Con_ClearNotify ();
 void Con_ToggleConsole_f ();
 
 void Con_NotifyBox (const char *text);	// during startup for sound / cd warnings
-

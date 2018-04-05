@@ -15,7 +15,7 @@ void FileSystem_Init(char *basedir, void *filesystemFactory)
 	if(!filesystemFactory)
 		return;
 	
-	gpFileSystem = (IFileSystem*)(((CreateInterfaceFn)filesystemFactory)(FILESYSTEM_INTERFACE_VERSION, nullptr));
+	gpFileSystem = (IFileSystem*)(((CreateInterfaceFn)filesystemFactory)(OGS_FILESYSTEM_INTERFACE_VERSION, nullptr)); // TODO: FILESYSTEM_INTERFACE_VERSION
 	
 	if(!gpFileSystem)
 		return;
@@ -76,7 +76,7 @@ void FS_mkdir(const char *path)
 	// TODO: if not dedicated?
 
 #ifdef _WIN32
-	_mkdir(path);
+	//_mkdir(path); // TODO
 #else
 	mkdir(path, 0777);
 #endif

@@ -31,19 +31,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MINIMUM_WIN_MEMORY		0x0880000
 #define MAXIMUM_WIN_MEMORY		0x1000000
 
-#define CONSOLE_ERROR_TIMEOUT	60.0	// # of seconds to wait on Sys_Error running
-										//  dedicated before exiting
-#define PAUSE_SLEEP		50				// sleep time on pause or minimization
-#define NOT_FOCUS_SLEEP	20				// sleep time when not focus
+#define CONSOLE_ERROR_TIMEOUT	60.0	// # of seconds to wait on Sys_Error running dedicated before exiting
+
+
 
 int			starttime;
-qboolean	ActiveApp, Minimized;
-qboolean	WinNT;
 
-static double		pfreq;
-static double		curtime = 0.0;
-static double		lastcurtime = 0.0;
-static int			lowshift;
+
 qboolean			isDedicated;
 static qboolean		sc_return_on_enter = false;
 HANDLE				hinput, houtput;
@@ -96,9 +90,6 @@ FILE IO
 
 ===============================================================================
 */
-
-#define	MAX_HANDLES		10
-FILE	*sys_handles[MAX_HANDLES];
 
 int		findhandle ()
 {
@@ -245,12 +236,6 @@ int	Sys_FileTime (char *path)
 	return retval;
 }
 
-void Sys_mkdir (char *path)
-{
-	_mkdir (path);
-}
-
-
 /*
 ===============================================================================
 
@@ -292,59 +277,6 @@ void MaskExceptions ()
 }
 
 #endif
-
-/*
-================
-Sys_Init
-================
-*/
-void Sys_Init ()
-{
-	LARGE_INTEGER	PerformanceFreq;
-	unsigned int	lowpart, highpart;
-	OSVERSIONINFO	vinfo;
-
-	MaskExceptions ();
-	Sys_SetFPCW ();
-
-	if (!QueryPerformanceFrequency (&PerformanceFreq))
-		Sys_Error ("No hardware timer available");
-
-// get 32 out of the 64 time bits such that we have around
-// 1 microsecond resolution
-	lowpart = (unsigned int)PerformanceFreq.LowPart;
-	highpart = (unsigned int)PerformanceFreq.HighPart;
-	lowshift = 0;
-
-	while (highpart || (lowpart > 2000000.0))
-	{
-		lowshift++;
-		lowpart >>= 1;
-		lowpart |= (highpart & 1) << 31;
-		highpart >>= 1;
-	}
-
-	pfreq = 1.0 / (double)lowpart;
-
-	Sys_InitFloatTime ();
-
-	vinfo.dwOSVersionInfoSize = sizeof(vinfo);
-
-	if (!GetVersionEx (&vinfo))
-		Sys_Error ("Couldn't get OS info");
-
-	if ((vinfo.dwMajorVersion < 4) ||
-		(vinfo.dwPlatformId == VER_PLATFORM_WIN32s))
-	{
-		Sys_Error ("WinQuake requires at least Win95 or NT 4.0");
-	}
-
-	if (vinfo.dwPlatformId == VER_PLATFORM_WIN32_NT)
-		WinNT = true;
-	else
-		WinNT = false;
-}
-
 
 void Sys_Error (char *error, ...)
 {
@@ -400,12 +332,12 @@ void Sys_Error (char *error, ...)
 		{
 			in_sys_error0 = 1;
 			VID_SetDefaultMode ();
-			MessageBox(NULL, text, "Quake Error",
+			MessageBox(NULL, text, "Engine Error",
 					   MB_OK | MB_SETFOREGROUND | MB_ICONSTOP);
 		}
 		else
 		{
-			MessageBox(NULL, text, "Double Quake Error",
+			MessageBox(NULL, text, "Double Engine Error",
 					   MB_OK | MB_SETFOREGROUND | MB_ICONSTOP);
 		}
 	}
@@ -426,41 +358,17 @@ void Sys_Error (char *error, ...)
 	exit (1);
 }
 
-void Sys_Printf (char *fmt, ...)
-{
-	va_list		argptr;
-	char		text[1024];
-	DWORD		dummy;
-	
-	if (isDedicated)
-	{
-		va_start (argptr,fmt);
-		vsprintf (text, fmt, argptr);
-		va_end (argptr);
-
-		WriteFile(houtput, text, strlen (text), &dummy, NULL);	
-	}
-}
-
 void Sys_Quit ()
 {
-
 	VID_ForceUnlockedAndReturnState ();
 
 	Host_Shutdown();
 
 	if (tevent)
-		CloseHandle (tevent);
-
-	if (isDedicated)
-		FreeConsole ();
-
-// shut down QHOST hooks if necessary
-	DeinitConProc ();
+		CloseHandle (tevent);	
 
 	exit (0);
 }
-
 
 /*
 ================
@@ -527,33 +435,6 @@ double Sys_FloatTime ()
 
     return curtime;
 }
-
-
-/*
-================
-Sys_InitFloatTime
-================
-*/
-void Sys_InitFloatTime ()
-{
-	int		j;
-
-	Sys_FloatTime ();
-
-	j = COM_CheckParm("-starttime");
-
-	if (j)
-	{
-		curtime = (double) (Q_atof(com_argv[j+1]));
-	}
-	else
-	{
-		curtime = 0.0;
-	}
-
-	lastcurtime = curtime;
-}
-
 
 char *Sys_ConsoleInput ()
 {
@@ -640,7 +521,6 @@ void Sys_Sleep ()
 	Sleep (1);
 }
 
-
 void Sys_SendKeyEvents ()
 {
     MSG        msg;
@@ -673,20 +553,9 @@ void Sys_SendKeyEvents ()
 WinMain
 ==================
 */
-void SleepUntilInput (int time)
-{
-
-	MsgWaitForMultipleObjects(1, &tevent, FALSE, time, QS_ALLINPUT);
-}
 
 
 /*
-==================
-WinMain
-==================
-*/
-HINSTANCE	global_hInstance;
-int			global_nCmdShow;
 char		*argv[MAX_NUM_ARGVS];
 static char	*empty_string = "";
 HWND		hwnd_dialog;
@@ -695,19 +564,15 @@ HWND		hwnd_dialog;
 int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
     MSG				msg;
-	quakeparms_t	parms;
-	double			time, oldtime, newtime;
+	
 	MEMORYSTATUS	lpBuffer;
 	static	char	cwd[1024];
 	int				t;
 	RECT			rect;
 
-    /* previous instances do not exist in Win32 */
-    if (hPrevInstance)
-        return 0;
+    
 
-	global_hInstance = hInstance;
-	global_nCmdShow = nCmdShow;
+	
 
 	lpBuffer.dwLength = sizeof(MEMORYSTATUS);
 	GlobalMemoryStatus (&lpBuffer);
@@ -748,12 +613,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 
 	parms.argv = argv;
 
-	COM_InitArgv (parms.argc, parms.argv);
-
-	parms.argc = com_argc;
-	parms.argv = com_argv;
-
-	isDedicated = (COM_CheckParm ("-dedicated") != 0);
+	
 
 	if (!isDedicated)
 	{
@@ -812,38 +672,6 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	if (!tevent)
 		Sys_Error ("Couldn't create event");
 
-	if (isDedicated)
-	{
-		if (!AllocConsole ())
-		{
-			Sys_Error ("Couldn't create dedicated server console");
-		}
-
-		hinput = GetStdHandle (STD_INPUT_HANDLE);
-		houtput = GetStdHandle (STD_OUTPUT_HANDLE);
-
-	// give QHOST a chance to hook into the console
-		if ((t = COM_CheckParm ("-HFILE")) > 0)
-		{
-			if (t < com_argc)
-				hFile = (HANDLE)Q_atoi (com_argv[t+1]);
-		}
-			
-		if ((t = COM_CheckParm ("-HPARENT")) > 0)
-		{
-			if (t < com_argc)
-				heventParent = (HANDLE)Q_atoi (com_argv[t+1]);
-		}
-			
-		if ((t = COM_CheckParm ("-HCHILD")) > 0)
-		{
-			if (t < com_argc)
-				heventChild = (HANDLE)Q_atoi (com_argv[t+1]);
-		}
-
-		InitConProc (hFile, heventParent, heventChild);
-	}
-
 	Sys_Init ();
 
 // because sound is off until we become active
@@ -854,43 +682,10 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 
 	oldtime = Sys_FloatTime ();
 
-    /* main window message loop */
+    // main window message loop
 	while (1)
 	{
-		if (isDedicated)
-		{
-			newtime = Sys_FloatTime ();
-			time = newtime - oldtime;
-
-			while (time < sys_ticrate.value )
-			{
-				Sys_Sleep();
-				newtime = Sys_FloatTime ();
-				time = newtime - oldtime;
-			}
-		}
-		else
-		{
-		// yield the CPU for a little while when paused, minimized, or not the focus
-			if ((cl.paused && (!ActiveApp && !DDActive)) || Minimized || block_drawing)
-			{
-				SleepUntilInput (PAUSE_SLEEP);
-				scr_skipupdate = 1;		// no point in bothering to draw
-			}
-			else if (!ActiveApp && !DDActive)
-			{
-				SleepUntilInput (NOT_FOCUS_SLEEP);
-			}
-
-			newtime = Sys_FloatTime ();
-			time = newtime - oldtime;
-		}
-
-		Host_Frame (time);
-		oldtime = newtime;
+		
 	}
-
-    /* return success of application */
-    return TRUE;
 }
-
+*/

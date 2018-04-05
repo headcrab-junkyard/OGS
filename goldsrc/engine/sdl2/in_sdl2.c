@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2018 Headcrab Garage
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -19,9 +20,36 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 /// @file
+/// @brief for systems without a mouse
 
-// this file is shared by quake and qcc
+#include "quakedef.h"
 
-#define	DEF_SAVEGLOBAL	(1<<15)
+void IN_Init ()
+{
+}
 
-#define	MAX_PARMS	8
+void IN_Shutdown ()
+{
+}
+
+void IN_Commands ()
+{
+}
+
+void IN_Move (usercmd_t *cmd)
+{
+}
+
+// TODO: IN_ClearStates?
+
+// TODO: unused?
+/*
+===========
+IN_ModeChanged
+===========
+*/
+/*
+void IN_ModeChanged()
+{
+}
+*/

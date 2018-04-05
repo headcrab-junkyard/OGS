@@ -20,7 +20,7 @@ void ClientDLL_Init()
 	// TODO
 	ClientDLL_HudInit();
 	ClientDLL_HudVidInit();
-	ClientDLL_ClientMoveInit();
+	ClientDLL_ClientMoveInit(NULL /*TODO*/);
 };
 
 void ClientDLL_Shutdown()
@@ -81,26 +81,26 @@ void ClientDLL_CreateMove(float frametime, struct usercmd_s *cmd, int active)
 
 void ClientDLL_ActivateMouse()
 {
-	if(cl_funcs.pfnActivateMouse)
-		cl_funcs.pfnActivateMouse();
+	if(cl_funcs.pfnIN_ActivateMouse)
+		cl_funcs.pfnIN_ActivateMouse();
 };
 
 void ClientDLL_DeactivateMouse()
 {
-	if(cl_funcs.pfnDeactivateMouse)
-		cl_funcs.pfnDeactivateMouse();
+	if(cl_funcs.pfnIN_DeactivateMouse)
+		cl_funcs.pfnIN_DeactivateMouse();
 };
 
 void ClientDLL_MouseEvent(int mstate)
 {
-	if(cl_funcs.pfnMouseEvent)
-		cl_funcs.pfnMouseEvent(mstate);
+	if(cl_funcs.pfnIN_MouseEvent)
+		cl_funcs.pfnIN_MouseEvent(mstate);
 };
 
 void ClientDLL_ClearStates()
 {
-	if(cl_funcs.pfnClearStates)
-		cl_funcs.pfnClearStates();
+	if(cl_funcs.pfnIN_ClearStates)
+		cl_funcs.pfnIN_ClearStates();
 };
 
 int ClientDLL_IsThirdPerson()
@@ -168,7 +168,7 @@ void ClientDLL_StudioEvent(const struct mstudioevent_s *event, const struct cl_e
 	// TODO
 };
 
-void ClientDLL_PostRunCmd(struct local_state_s *from, struct local_state_s *to, struct usercmd_s *cmd, int runfuncs, double time, uint random_seed)
+void ClientDLL_PostRunCmd(struct local_state_s *from, struct local_state_s *to, struct usercmd_s *cmd, int runfuncs, double time, unsigned int random_seed)
 {
 	// TODO
 };

@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2018 Headcrab Garage
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -76,6 +77,11 @@ typedef struct
 #define	NUM_PING_TIMES		16
 #define	NUM_SPAWN_PARMS		16
 
+// TODO: temp
+#ifndef MAX_INFO_STRING
+#define MAX_INFO_STRING 256
+#endif
+
 typedef struct client_s
 {
 	qboolean		active;				// false = client is free
@@ -83,15 +89,15 @@ typedef struct client_s
 	qboolean		dropasap;			// has been told to go to another level
 	qboolean		sendsignon;			// only valid before spawned
 
+	int				userid;							// identifying number
+	char			userinfo[MAX_INFO_STRING];		// infostring
+	
 	double			last_message;		// reliable messages must be sent
 										// periodically
 
 	usercmd_t		cmd;				// movement
 	vec3_t			wishdir;			// intended motion calced from cmd
 
-	sizebuf_t		message;			// can be added to at any time,
-										// copied and clear once per frame
-	byte			msgbuf[MAX_MSGLEN];
 	edict_t			*edict;				// EDICT_NUM(clientnum+1)
 	char			name[32];			// for printing to other people
 	int				colors;
@@ -154,7 +160,7 @@ void SV_Init ();
 void SV_StartParticle (vec3_t org, vec3_t dir, int color, int count);
 void SV_StartSound (edict_t *entity, int channel, const char *sample, int volume, float attenuation);
 
-void SV_DropClient (qboolean crash);
+void SV_DropClient (client_t *drop, qboolean crash, char *fmt, ...);
 
 void SV_SendClientMessages ();
 void SV_ClearDatagram ();
@@ -167,10 +173,12 @@ void SV_AddUpdates ();
 
 void SV_ClientThink ();
 
-void SV_ClientPrintf (const char *fmt, ...);
+void SV_ClientPrintf (client_t *cl, const char *fmt, ...);
 void SV_BroadcastPrintf (const char *fmt, ...);
 
 void SV_BroadcastCommand(const char *fmt, ...);
+
+void SV_Frame ();
 
 void SV_Physics ();
 

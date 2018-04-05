@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2018 Headcrab Garage
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,6 +18,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+
+/// @file
 
 #include "quakedef.h"
 
@@ -86,7 +89,7 @@ void Host_Status_f ()
 	{
 		if (!client->active)
 			continue;
-		seconds = (int)(net_time - client->netconnection->connecttime);
+		seconds = (int)(net_time - client->netchan.connecttime);
 		minutes = seconds / 60;
 		if (minutes)
 		{
@@ -98,7 +101,7 @@ void Host_Status_f ()
 		else
 			hours = 0;
 		print ("#%-2u %-16.16s  %3i  %2i:%02i:%02i\n", j+1, client->name, (int)client->edict->v.frags, hours, minutes, seconds);
-		print ("   %s\n", client->netconnection->address);
+		print ("   %s\n", client->netchan.address);
 	}
 }
 
@@ -118,7 +121,7 @@ void Host_God_f ()
 		return;
 	}
 
-	if (pr_global_struct->deathmatch && !host_client->privileged)
+	if (gGlobalVariables.deathmatch && !host_client->privileged)
 		return;
 
 	sv_player->v.flags = (int)sv_player->v.flags ^ FL_GODMODE;
@@ -136,7 +139,7 @@ void Host_Notarget_f ()
 		return;
 	}
 
-	if (pr_global_struct->deathmatch && !host_client->privileged)
+	if (gGlobalVariables.deathmatch && !host_client->privileged)
 		return;
 
 	sv_player->v.flags = (int)sv_player->v.flags ^ FL_NOTARGET;
@@ -156,7 +159,7 @@ void Host_Noclip_f ()
 		return;
 	}
 
-	if (pr_global_struct->deathmatch && !host_client->privileged)
+	if (gGlobalVariables.deathmatch && !host_client->privileged)
 		return;
 
 	if (sv_player->v.movetype != MOVETYPE_NOCLIP)
@@ -188,7 +191,7 @@ void Host_Fly_f ()
 		return;
 	}
 
-	if (pr_global_struct->deathmatch && !host_client->privileged)
+	if (gGlobalVariables.deathmatch && !host_client->privileged)
 		return;
 
 	if (sv_player->v.movetype != MOVETYPE_FLY)
@@ -695,7 +698,6 @@ void Host_Loadgame_f ()
 	}
 }
 
-#ifdef QUAKE2
 void SaveGamestate()
 {
 	char	name[256];
@@ -886,8 +888,6 @@ void Host_Changelevel2_f ()
 	if (LoadGamestate (level, startspot))
 		SV_SpawnServer (level, startspot);
 }
-#endif
-
 
 //============================================================================
 
@@ -1192,8 +1192,8 @@ void Host_Kill_f ()
 		return;
 	}
 	
-	pr_global_struct->time = sv.time;
-	//pr_global_struct->self = EDICT_TO_PROG(sv_player);
+	gGlobalVariables.time = sv.time;
+	//gGlobalVariables.self = EDICT_TO_PROG(sv_player);
 	gEntityInterface.pfnClientKill(sv_player);
 }
 
@@ -1254,9 +1254,9 @@ void Host_PreSpawn_f ()
 		return;
 	}
 	
-	SZ_Write (&host_client->message, sv.signon.data, sv.signon.cursize);
-	MSG_WriteByte (&host_client->message, svc_signonnum);
-	MSG_WriteByte (&host_client->message, 2);
+	SZ_Write (&host_client->netchan.message, sv.signon.data, sv.signon.cursize);
+	MSG_WriteByte (&host_client->netchan.message, svc_signonnum);
+	MSG_WriteByte (&host_client->netchan.message, 2);
 	host_client->sendsignon = true;
 }
 
@@ -1302,15 +1302,15 @@ void Host_Spawn_f ()
 		// copy spawn parms out of the client_t
 
 		for (i=0 ; i< NUM_SPAWN_PARMS ; i++)
-			(&pr_global_struct->parm1)[i] = host_client->spawn_parms[i];
+			(&gGlobalVariables.parm1)[i] = host_client->spawn_parms[i];
 
 		// call the spawn function
 
-		pr_global_struct->time = sv.time;
-		//pr_global_struct->self = EDICT_TO_PROG(sv_player);
+		gGlobalVariables.time = sv.time;
+		//gGlobalVariables.self = EDICT_TO_PROG(sv_player);
 		gEntityInterface.pfnClientConnect(sv_player);
 
-		if ((Sys_FloatTime() - host_client->netconnection->connecttime) <= sv.time)
+		if ((Sys_FloatTime() - host_client->netchan.connecttime) <= sv.time)
 			Sys_Printf ("%s entered the game\n", host_client->name);
 
 		gEntityInterface.pfnPutClientInServer(sv_player);	
@@ -1318,51 +1318,51 @@ void Host_Spawn_f ()
 
 
 // send all current names, colors, and frag counts
-	SZ_Clear (&host_client->message);
+	SZ_Clear (&host_client->netchan.message);
 
 // send time of update
-	MSG_WriteByte (&host_client->message, svc_time);
-	MSG_WriteFloat (&host_client->message, sv.time);
+	MSG_WriteByte (&host_client->netchan.message, svc_time);
+	MSG_WriteFloat (&host_client->netchan.message, sv.time);
 
 	for (i=0, client = svs.clients ; i<svs.maxclients ; i++, client++)
 	{
-		MSG_WriteByte (&host_client->message, svc_updatename);
-		MSG_WriteByte (&host_client->message, i);
-		MSG_WriteString (&host_client->message, client->name);
-		MSG_WriteByte (&host_client->message, svc_updatefrags);
-		MSG_WriteByte (&host_client->message, i);
-		MSG_WriteShort (&host_client->message, client->old_frags);
-		MSG_WriteByte (&host_client->message, svc_updatecolors);
-		MSG_WriteByte (&host_client->message, i);
-		MSG_WriteByte (&host_client->message, client->colors);
+		MSG_WriteByte (&host_client->netchan.message, svc_updatename);
+		MSG_WriteByte (&host_client->netchan.message, i);
+		MSG_WriteString (&host_client->netchan.message, client->name);
+		MSG_WriteByte (&host_client->netchan.message, svc_updatefrags);
+		MSG_WriteByte (&host_client->netchan.message, i);
+		MSG_WriteShort (&host_client->netchan.message, client->old_frags);
+		MSG_WriteByte (&host_client->netchan.message, svc_updatecolors);
+		MSG_WriteByte (&host_client->netchan.message, i);
+		MSG_WriteByte (&host_client->netchan.message, client->colors);
 	}
 	
 // send all current light styles
 	for (i=0 ; i<MAX_LIGHTSTYLES ; i++)
 	{
-		MSG_WriteByte (&host_client->message, svc_lightstyle);
-		MSG_WriteByte (&host_client->message, (char)i);
-		MSG_WriteString (&host_client->message, sv.lightstyles[i]);
+		MSG_WriteByte (&host_client->netchan.message, svc_lightstyle);
+		MSG_WriteByte (&host_client->netchan.message, (char)i);
+		MSG_WriteString (&host_client->netchan.message, sv.lightstyles[i]);
 	}
 
 //
 // send some stats
 //
-	MSG_WriteByte (&host_client->message, svc_updatestat);
-	MSG_WriteByte (&host_client->message, STAT_TOTALSECRETS);
-	MSG_WriteLong (&host_client->message, pr_global_struct->total_secrets);
+	MSG_WriteByte (&host_client->netchan.message, svc_updatestat);
+	MSG_WriteByte (&host_client->netchan.message, STAT_TOTALSECRETS);
+	MSG_WriteLong (&host_client->netchan.message, gGlobalVariables.total_secrets);
 
-	MSG_WriteByte (&host_client->message, svc_updatestat);
-	MSG_WriteByte (&host_client->message, STAT_TOTALMONSTERS);
-	MSG_WriteLong (&host_client->message, pr_global_struct->total_monsters);
+	MSG_WriteByte (&host_client->netchan.message, svc_updatestat);
+	MSG_WriteByte (&host_client->netchan.message, STAT_TOTALMONSTERS);
+	MSG_WriteLong (&host_client->netchan.message, gGlobalVariables.total_monsters);
 
-	MSG_WriteByte (&host_client->message, svc_updatestat);
-	MSG_WriteByte (&host_client->message, STAT_SECRETS);
-	MSG_WriteLong (&host_client->message, pr_global_struct->found_secrets);
+	MSG_WriteByte (&host_client->netchan.message, svc_updatestat);
+	MSG_WriteByte (&host_client->netchan.message, STAT_SECRETS);
+	MSG_WriteLong (&host_client->netchan.message, gGlobalVariables.found_secrets);
 
-	MSG_WriteByte (&host_client->message, svc_updatestat);
-	MSG_WriteByte (&host_client->message, STAT_MONSTERS);
-	MSG_WriteLong (&host_client->message, pr_global_struct->killed_monsters);
+	MSG_WriteByte (&host_client->netchan.message, svc_updatestat);
+	MSG_WriteByte (&host_client->netchan.message, STAT_MONSTERS);
+	MSG_WriteLong (&host_client->netchan.message, gGlobalVariables.killed_monsters);
 
 	
 //
@@ -1372,15 +1372,15 @@ void Host_Spawn_f ()
 // and it won't happen if the game was just loaded, so you wind up
 // with a permanent head tilt
 	ent = EDICT_NUM( 1 + (host_client - svs.clients) );
-	MSG_WriteByte (&host_client->message, svc_setangle);
+	MSG_WriteByte (&host_client->netchan.message, svc_setangle);
 	for (i=0 ; i < 2 ; i++)
-		MSG_WriteAngle (&host_client->message, ent->v.angles[i] );
-	MSG_WriteAngle (&host_client->message, 0 );
+		MSG_WriteAngle (&host_client->netchan.message, ent->v.angles[i] );
+	MSG_WriteAngle (&host_client->netchan.message, 0 );
 
-	SV_WriteClientdataToMessage (sv_player, &host_client->message);
+	SV_WriteClientdataToMessage (sv_player, &host_client->netchan.message);
 
-	MSG_WriteByte (&host_client->message, svc_signonnum);
-	MSG_WriteByte (&host_client->message, 3);
+	MSG_WriteByte (&host_client->netchan.message, svc_signonnum);
+	MSG_WriteByte (&host_client->netchan.message, 3);
 	host_client->sendsignon = true;
 }
 
@@ -1426,7 +1426,7 @@ void Host_Kick_f ()
 			return;
 		}
 	}
-	else if (pr_global_struct->deathmatch && !host_client->privileged)
+	else if (gGlobalVariables.deathmatch && !host_client->privileged)
 		return;
 
 	save = host_client;
@@ -1514,7 +1514,7 @@ void Host_Give_f ()
 		return;
 	}
 
-	if (pr_global_struct->deathmatch && !host_client->privileged)
+	if (gGlobalVariables.deathmatch && !host_client->privileged)
 		return;
 
 	t = Cmd_Argv(1);
@@ -1875,9 +1875,7 @@ void Host_InitCommands ()
 	Cmd_AddCommand ("map", Host_Map_f);
 	Cmd_AddCommand ("restart", Host_Restart_f);
 	Cmd_AddCommand ("changelevel", Host_Changelevel_f);
-#ifdef QUAKE2
 	Cmd_AddCommand ("changelevel2", Host_Changelevel2_f);
-#endif
 	Cmd_AddCommand ("connect", Host_Connect_f);
 	Cmd_AddCommand ("reconnect", Host_Reconnect_f);
 	Cmd_AddCommand ("name", Host_Name_f);

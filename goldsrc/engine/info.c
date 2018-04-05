@@ -39,7 +39,7 @@ Searches the string for the given
 key and returns the associated value, or an empty string.
 ===============
 */
-char *Info_ValueForKey (char *s, char *key)
+char *Info_ValueForKey (const char *s, const char *key)
 {
 	char	pkey[512];
 	static	char value[4][512];	// use two buffers so compares
@@ -81,7 +81,7 @@ char *Info_ValueForKey (char *s, char *key)
 	}
 }
 
-void Info_RemoveKey (char *s, char *key)
+void Info_RemoveKey (char *s, const char *key)
 {
 	char	*start;
 	char	pkey[512];
@@ -175,7 +175,7 @@ void Info_RemovePrefixedKeys (char *start, char prefix)
 }
 
 
-void Info_SetValueForStarKey (char *s, char *key, char *value, int maxsize)
+void Info_SetValueForStarKey (char *s, const char *key, const char *value, int maxsize)
 {
 	char	new[1024], *v;
 	int		c;
@@ -252,7 +252,7 @@ void Info_SetValueForStarKey (char *s, char *key, char *value, int maxsize)
 	*s = 0;
 }
 
-void Info_SetValueForKey (char *s, char *key, char *value, int maxsize)
+void Info_SetValueForKey (char *s, const char *key, const char *value, int maxsize)
 {
 	if (key[0] == '*')
 	{

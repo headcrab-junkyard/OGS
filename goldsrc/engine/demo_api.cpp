@@ -6,21 +6,22 @@
 
 int DemoAPI_IsRecording()
 {
-	return cl.recording;
+	return cls.demorecording;
 };
 
 int DemoAPI_IsPlayingback()
 {
-	return cl.playback;
+	return cls.demoplayback;
 };
 
 int DemoAPI_IsTimeDemo()
 {
-	return cl.timedemo;
+	return cls.timedemo;
 };
 
 void DemoAPI_WriteBuffer(int size, byte *buffer)
 {
+	// TODO
 };
 
 demo_api_t demoapi =

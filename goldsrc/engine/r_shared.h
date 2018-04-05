@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2018 Headcrab Garage
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -21,6 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// @file
 /// @brief general refresh-related stuff shared between the refresh and the driver
 
+#pragma once
+
 #ifndef GLQUAKE
 
 // FIXME: clean up and move into d_iface.h
@@ -34,9 +37,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // !!! if this is changed, it must be changed in d_ifacea.h too !!!
 #define	MAXHEIGHT		1024
 #define	MAXWIDTH		1280
-#define MAXDIMENSION	((MAXHEIGHT > MAXWIDTH) ? MAXHEIGHT : MAXWIDTH)
+#define MAXDIMENSION	((MAXHEIGHT > MAXWIDTH) ? MAXHEIGHT : MAXWIDTH) // TODO: not present in qw
 
-#define SIN_BUFFER_SIZE	(MAXDIMENSION+CYCLE)
+#define SIN_BUFFER_SIZE	(MAXDIMENSION+CYCLE) // TODO: not present in qw
 
 #define INFINITE_DISTANCE	0x10000		// distance that's always guaranteed to
 										//  be farther away than anything in
@@ -56,17 +59,17 @@ extern int		r_drawnpolycount;
 
 extern cvar_t	r_clearcolor;
 
-extern int	sintable[SIN_BUFFER_SIZE];
-extern int	intsintable[SIN_BUFFER_SIZE];
+extern int	sintable[SIN_BUFFER_SIZE]; // TODO: 1280 for qw
+extern int	intsintable[SIN_BUFFER_SIZE]; // TODO: 1280 for qw
 
 extern	vec3_t	vup, base_vup;
 extern	vec3_t	vpn, base_vpn;
 extern	vec3_t	vright, base_vright;
 extern	entity_t		*currententity;
 
-#define NUMSTACKEDGES		2400
+#define NUMSTACKEDGES		2400 // TODO: 2000 for qw
 #define	MINEDGES			NUMSTACKEDGES
-#define NUMSTACKSURFACES	800
+#define NUMSTACKSURFACES	800 // TODO: 1000 for qw
 #define MINSURFACES			NUMSTACKSURFACES
 #define	MAXSPANS			3000
 

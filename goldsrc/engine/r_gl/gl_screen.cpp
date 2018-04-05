@@ -301,7 +301,7 @@ static void SCR_CalcRefdef (void)
 	if (cl.intermission)
 	{
 		full = true;
-		size = 100;
+		size = 100.0;
 		sb_lines = 0;
 	}
 	size /= 100.0;

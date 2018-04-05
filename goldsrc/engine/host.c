@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2018 Headcrab Garage
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -17,7 +18,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// host.c -- coordinates spawning and killing of local servers
+
+/// @file
+/// @brief coordinates spawning and killing of local servers
 
 #include "quakedef.h"
 #include "r_local.h"
@@ -36,9 +39,10 @@ Memory is cleared / released when a server or client begins, not when they end.
 quakeparms_t host_parms;
 
 qboolean	host_initialized;		// true if into command execution
+//qboolean	nomaster;
 
 double		host_frametime;
-double		host_time;
+//double		host_time; // TODO
 double		realtime;				// without any filtering or bounding
 double		oldrealtime;			// last frame run
 int			host_framecount;
@@ -58,14 +62,14 @@ cvar_t	host_framerate = {"host_framerate","0"};	// set for slow motion
 cvar_t	host_speeds = {"host_speeds","0"};			// set for running times
 
 cvar_t	sys_ticrate = {"sys_ticrate","0.05"};
-cvar_t	serverprofile = {"serverprofile","0"};
+cvar_t	serverprofile = {"serverprofile","0"}; // TODO: host_profile
 
 cvar_t	fraglimit = {"fraglimit","0",false,true};
 cvar_t	timelimit = {"timelimit","0",false,true};
 cvar_t	teamplay = {"teamplay","0",false,true};
 
 #if defined(OGS_DEV) || defined(OGS_DEBUG)
-cvar_t	developer = {"developer","1"};	// should be 0 for release!
+cvar_t	developer = {"developer","1"};	// show extra messages (should be 0 for release!)
 #else
 cvar_t	developer = {"developer","0"};
 #endif
@@ -75,7 +79,6 @@ cvar_t	deathmatch = {"deathmatch","0"};			// 0, 1, or 2
 cvar_t	coop = {"coop","0"};			// 0 or 1
 
 cvar_t	pausable = {"pausable","1"};
-
 
 /*
 ================
@@ -121,14 +124,21 @@ void Host_Error (const char *error, ...)
 	
 	if (inerror)
 		Sys_Error ("Host_Error: recursively entered");
+	
 	inerror = true;
 	
+	// TODO: revisit
 	SCR_EndLoadingPlaque ();		// reenable screen updates
 
 	va_start (argptr,error);
 	vsprintf (string,error,argptr);
 	va_end (argptr);
+	
 	Con_Printf ("Host_Error: %s\n",string);
+	
+	//qw
+	//SV_FinalMessage (va("server crashed: %s\n", string));
+	//SV_Shutdown();
 	
 	if (sv.active)
 		Host_ShutdownServer (false);
@@ -215,8 +225,9 @@ void Host_InitLocal ()
 	Cvar_RegisterVariable (&timelimit);
 	Cvar_RegisterVariable (&teamplay);
 	
-	Cvar_RegisterVariable (&skill);
 	Cvar_RegisterVariable (&developer);
+	
+	Cvar_RegisterVariable (&skill);
 	Cvar_RegisterVariable (&deathmatch);
 	Cvar_RegisterVariable (&coop);
 
@@ -239,8 +250,7 @@ void Host_WriteConfiguration ()
 {
 	FILE	*f;
 
-// dedicated servers initialize the host but don't parse and set the
-// config.cfg cvars
+	// dedicated servers initialize the host but don't parse and set the config.cfg cvars
 	if (host_initialized & !isDedicated)
 	{
 		f = fopen (va("%s/config.cfg",com_gamedir), "w");
@@ -266,17 +276,21 @@ Sends text across to be displayed
 FIXME: make this just a stuffed echo?
 =================
 */
-void SV_ClientPrintf (const char *fmt, ...)
+void SV_ClientPrintf (client_t *cl, /*int level,*/ const char *fmt, ...)
 {
 	va_list		argptr;
 	char		string[1024];
+	
+	//if (level < cl->messagelevel)
+		//return;
 	
 	va_start (argptr,fmt);
 	vsprintf (string, fmt,argptr);
 	va_end (argptr);
 	
-	MSG_WriteByte (&host_client->message, svc_print);
-	MSG_WriteString (&host_client->message, string);
+	MSG_WriteByte (&cl->netchan.message, svc_print);
+	//MSG_WriteByte (&cl->netchan.message, level);
+	MSG_WriteString (&cl->netchan.message, string);
 }
 
 /*
@@ -299,11 +313,12 @@ void SV_BroadcastPrintf (const char *fmt, ...)
 	for (i=0 ; i<svs.maxclients ; i++)
 		if (svs.clients[i].active && svs.clients[i].spawned)
 		{
-			MSG_WriteByte (&svs.clients[i].message, svc_print);
-			MSG_WriteString (&svs.clients[i].message, string);
+			MSG_WriteByte (&svs.clients[i].netchan.message, svc_print);
+			MSG_WriteString (&svs.clients[i].netchan.message, string);
 		}
 }
 
+// TODO: move to sv_main (or sv_send)
 /*
 =================
 SV_BroadcastCommand
@@ -342,8 +357,8 @@ void Host_ClientCommands (const char *fmt, ...)
 	vsprintf (string, fmt,argptr);
 	va_end (argptr);
 	
-	MSG_WriteByte (&host_client->message, svc_stufftext);
-	MSG_WriteString (&host_client->message, string);
+	MSG_WriteByte (&host_client->netchan.message, svc_stufftext);
+	MSG_WriteString (&host_client->netchan.message, string);
 }
 
 /*
@@ -354,53 +369,56 @@ Called when the player is getting totally kicked off the host
 if (crash = true), don't bother sending signofs
 =====================
 */
-void SV_DropClient (client_t *host_client, qboolean crash)
+void SV_DropClient (client_t *drop, qboolean crash, char *fmt, ...)
 {
-	int		saveSelf;
-	int		i;
-	client_t *client;
-
+	// TODO: fmt support
+	
+	// add the disconnect
+	MSG_WriteByte (&drop->netchan.message, svc_disconnect);
+	
 	if (!crash)
 	{
 		// send any final messages (don't check for errors)
-		if (Netchan_CanPacket (&host_client->netchan)) // TODO: was NET_CanSendMessage; Netchan_CanReliable?
+		if (Netchan_CanPacket (&drop->netchan)) // TODO: was NET_CanSendMessage; Netchan_CanReliable?
 		{
-			MSG_WriteByte (&host_client->message, svc_disconnect);
-			NET_SendMessage (host_client->netchan, &host_client->message);
+			MSG_WriteByte (&drop->netchan.message, svc_disconnect);
+			Netchan_Transmit(&drop->netchan, 0, drop->netchan.message.data);
 		}
 	
-		if (host_client->edict && host_client->spawned)
+		if (drop->edict && drop->spawned)
 		{
-		// call the prog function for removing a client
-		// this will set the body to a dead frame, among other things
-			//saveSelf = gGlobalVariables.self;
-			//gGlobalVariables.self = EDICT_TO_PROG(host_client->edict);
-			gEntityInterface.pfnClientDisconnect(host_client->edict);
-			//gGlobalVariables.self = saveSelf;
+			// call the prog function for removing a client
+			// this will set the body to a dead frame, among other things
+			//gGlobalVariables.self = EDICT_TO_PROG(drop->edict);
+			gEntityInterface.pfnClientDisconnect(drop->edict);
 		}
 
-		Sys_Printf ("Client %s removed\n",host_client->name);
+		Sys_Printf ("Client %s removed\n", drop->name);
 	}
 
 // free the client (the body stays around)
-	host_client->active = false;
-	host_client->name[0] = 0;
-	host_client->old_frags = -999999;
+	drop->active = false;
+	drop->name[0] = 0;
+	drop->old_frags = 0; // TODO: was -999999
 
+	memset (drop->userinfo, 0, sizeof(drop->userinfo));
+	
 // send notification to all clients
+	int		i;
+	client_t *client;
 	for (i=0, client = svs.clients ; i<svs.maxclients ; i++, client++)
 	{
 		if (!client->active)
 			continue;
-		MSG_WriteByte (&client->message, svc_updatename);
-		MSG_WriteByte (&client->message, host_client - svs.clients);
-		MSG_WriteString (&client->message, "");
-		MSG_WriteByte (&client->message, svc_updatefrags);
-		MSG_WriteByte (&client->message, host_client - svs.clients);
-		MSG_WriteShort (&client->message, 0);
-		MSG_WriteByte (&client->message, svc_updatecolors);
-		MSG_WriteByte (&client->message, host_client - svs.clients);
-		MSG_WriteByte (&client->message, 0);
+		MSG_WriteByte (&client->netchan.message, svc_updatename);
+		MSG_WriteByte (&client->netchan.message, drop - svs.clients);
+		MSG_WriteString (&client->netchan.message, "");
+		MSG_WriteByte (&client->netchan.message, svc_updatefrags);
+		MSG_WriteByte (&client->netchan.message, drop - svs.clients);
+		MSG_WriteShort (&client->netchan.message, 0);
+		MSG_WriteByte (&client->netchan.message, svc_updatecolors);
+		MSG_WriteByte (&client->netchan.message, drop - svs.clients);
+		MSG_WriteByte (&client->netchan.message, 0);
 	}
 }
 
@@ -435,16 +453,16 @@ void Host_ShutdownServer(qboolean crash)
 		count = 0;
 		for (i=0, host_client = svs.clients ; i<svs.maxclients ; i++, host_client++)
 		{
-			if (host_client->active && host_client->message.cursize)
+			if (host_client->active && host_client->netchan.message.cursize)
 			{
 				if (Netchan_CanPacket (&host_client->netchan)) // TODO: was NET_CanSendMessage; Netchan_CanReliable?
 				{
-					NET_SendMessage(host_client->netchan, &host_client->message);
-					SZ_Clear (&host_client->message);
+					Netchan_Transmit(&host_client->netchan, strlen(message), buf.data);
+					SZ_Clear (&host_client->netchan.message);
 				}
 				else
 				{
-					NET_GetPacket(NS_SERVER, &net_from, &host_client->netchan); // TODO: was NET_GetMessage
+					NET_GetPacket(NS_SERVER, &net_from, &host_client->netchan.message); // TODO: was NET_GetMessage; REVISIT: We're reading into write buffer?????????
 					count++;
 				}
 			}
@@ -459,13 +477,13 @@ void Host_ShutdownServer(qboolean crash)
 	buf.maxsize = 4;
 	buf.cursize = 0;
 	MSG_WriteByte(&buf, svc_disconnect);
-	count = NET_SendToAll(&buf, 5);
+	SV_BroadcastCommand("disconnect"); // TODO: was count = NET_SendToAll(&buf, 5);
 	if (count)
 		Con_Printf("Host_ShutdownServer: NET_SendToAll failed for %u clients\n", count);
 
 	for (i=0, host_client = svs.clients ; i<svs.maxclients ; i++, host_client++)
 		if (host_client->active)
-			SV_DropClient(crash);
+			SV_DropClient(host_client, crash, "???");
 
 //
 // clear structures
@@ -488,7 +506,7 @@ void Host_ClearMemory ()
 	Con_DPrintf ("Clearing memory\n");
 	D_FlushCaches ();
 	Mod_ClearAll ();
-	if (host_hunklevel)
+	if (host_hunklevel) // FIXME: check this...
 		Hunk_FreeToLowMark (host_hunklevel);
 
 	cls.signon = 0;
@@ -551,86 +569,14 @@ void Host_GetConsoleCommands ()
 	}
 }
 
-
-/*
-==================
-Host_ServerFrame
-
-==================
-*/
-#ifdef FPS_20
-
-void _Host_ServerFrame ()
+void Host_UpdateScreen()
 {
-// run the world state	
-	gGlobalVariables.frametime = host_frametime;
-
-// read client messages
-	SV_RunClients ();
+	// TODO: something else?
 	
-// move things around and think
-// always pause in single player if in console or menus
-	if (!sv.paused && (svs.maxclients > 1 || key_dest == key_game) )
-		SV_Physics ();
-}
-
-void Host_ServerFrame ()
-{
-	float	save_host_frametime;
-	float	temp_host_frametime;
-
-// run the world state	
-	gGlobalVariables.frametime = host_frametime;
-
-// set the time and clear the general datagram
-	SV_ClearDatagram ();
+	SCR_UpdateScreen();
 	
-// check for new clients
-	SV_CheckForNewClients ();
-
-	temp_host_frametime = save_host_frametime = host_frametime;
-	while(temp_host_frametime > (1.0/72.0))
-	{
-		if (temp_host_frametime > 0.05)
-			host_frametime = 0.05;
-		else
-			host_frametime = temp_host_frametime;
-		temp_host_frametime -= host_frametime;
-		_Host_ServerFrame ();
-	}
-	host_frametime = save_host_frametime;
-
-// send all messages to the clients
-	SV_SendClientMessages ();
-}
-
-#else
-
-void Host_ServerFrame ()
-{
-// run the world state	
-	gGlobalVariables.frametime = host_frametime;
-
-// set the time and clear the general datagram
-	SV_ClearDatagram ();
-	
-// check for new clients
-	SV_CheckForNewClients ();
-
-// read client messages
-	SV_RunClients ();
-	
-// move things around and think
-// always pause in single player if in console or menus
-	if (!sv.paused && (svs.maxclients > 1 || key_dest == key_game) )
-		SV_Physics ();
-
-// send all messages to the clients
-	SV_SendClientMessages ();
-}
-
-#endif
-
+	// TODO: something else?
+};
 
 /*
 ==================
@@ -688,7 +634,7 @@ void _Host_Frame (float time)
 	Host_GetConsoleCommands ();
 	
 	if (sv.active)
-		Host_ServerFrame ();
+		SV_Frame ();
 
 //-------------------
 //
@@ -730,7 +676,7 @@ void _Host_Frame (float time)
 	if (host_speeds.value)
 		time1 = Sys_FloatTime ();
 		
-	SCR_UpdateScreen ();
+	Host_UpdateScreen (); // TODO: was SCR_UpdateScreen
 
 	if (host_speeds.value)
 		time2 = Sys_FloatTime ();
@@ -830,7 +776,7 @@ void Host_InitVCR (quakeparms_t *parms)
 			FS_FileRead (vcrFile, p, len);
 			com_argv[i+1] = p;
 		}
-		com_argc++; /* add one for arg[0] */
+		com_argc++; // add one for arg[0]
 		parms->argc = com_argc;
 		parms->argv = com_argv;
 	}
@@ -868,11 +814,7 @@ Host_Init
 */
 void Host_Init (quakeparms_t *parms)
 {
-
-	if (standard_quake)
-		minimum_memory = MINIMUM_MEMORY;
-	else
-		minimum_memory = MINIMUM_MEMORY_LEVELPAK;
+	minimum_memory = MINIMUM_MEMORY;
 
 	if (COM_CheckParm ("-minmemory"))
 		parms->memsize = minimum_memory;
@@ -887,15 +829,16 @@ void Host_Init (quakeparms_t *parms)
 
 	Memory_Init (parms->membase, parms->memsize);
 	Cbuf_Init ();
-	Cmd_Init ();	
+	Cmd_Init ();
+	
 	V_Init ();
 	Chase_Init ();
 	//Host_InitVCR (parms);
-	COM_Init (parms->basedir);
+	COM_Init (parms->basedir); // TODO: no basedir?
 	Host_InitLocal ();
 	W_LoadWadFile ("gfx.wad");
 	Key_Init ();
-	Con_Init ();	
+	Con_Init ();
 	M_Init ();	
 	PR_Init ();
 	Mod_Init ();
@@ -906,7 +849,7 @@ void Host_Init (quakeparms_t *parms)
 	Con_Printf ("Protocol version %d\n", PROTOCOL_VERSION);
 	//Con_Printf ("Exe version %s/%s (%s)\n", TODO); // Exe version 1.1.2.2/Stdio (tfc)
 	//Con_Printf ("Exe build: " __TIME__ " " __DATE__ "(%d)\n", buildnum()); // TODO
-	Con_Printf ("%4.1f megabyte heap\n",parms->memsize/ (1024*1024.0));
+	Con_Printf ("%4.1f Mb heap\n", parms->memsize / (1024*1024.0));
 	
 	R_InitTextures ();		// needed even for dedicated servers
  
@@ -923,7 +866,8 @@ void Host_Init (quakeparms_t *parms)
 		IN_Init ();
 #endif
 		VID_Init (host_basepal);
-
+		// TODO: GL_Init() here + no VID_Shutdown in GS (at least for hw)
+	
 		Draw_Init ();
 		SCR_Init ();
 		R_Init ();
@@ -952,9 +896,12 @@ void Host_Init (quakeparms_t *parms)
 	Hunk_AllocName (0, "-HOST_HUNKLEVEL-");
 	host_hunklevel = Hunk_LowMark ();
 
+	//Cbuf_InsertText ("exec server.cfg\n"); // TODO: dedicated
+	
 	host_initialized = true;
 	
-	Sys_Printf ("========OGS Initialized=========\n");	
+	//Con_Printf ("\nServer Version %4.2f (Build %04d)\n\n", VERSION, build_number());
+	Sys_Printf ("======== OGS Initialized =========\n"); // TODO: Con_Printf?
 }
 
 /*

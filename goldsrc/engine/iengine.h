@@ -13,3 +13,5 @@ struct IEngine
 	///
 	virtual void Frame() = 0;
 };
+
+extern IEngine *gpEngine;

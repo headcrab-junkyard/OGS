@@ -187,12 +187,15 @@ int Q_strlen (const char *str)
 	return count;
 }
 
-char *Q_strrchr(const char *s, char c)
+const char *Q_strrchr(const char *s, char c)
 {
     int len = Q_strlen(s);
     s += len;
+
     while (len--)
-	if (*--s == c) return s;
+		if (*--s == c)
+			return s;
+
     return 0;
 }
 
@@ -781,9 +784,9 @@ void SZ_Print (sizebuf_t *buf, const char *data)
 COM_SkipPath
 ============
 */
-char *COM_SkipPath (const char *pathname)
+const char *COM_SkipPath (const char *pathname)
 {
-	char    *last;
+	const char    *last;
 	
 	last = pathname;
 	while (*pathname)
@@ -835,7 +838,7 @@ COM_FileBase
 */
 void COM_FileBase (const char *in, char *out)
 {
-	char *s, *s2;
+	const char *s, *s2;
 	
 	s = in + strlen(in) - 1;
 	
@@ -861,7 +864,7 @@ void COM_FileBase (const char *in, char *out)
 COM_DefaultExtension
 ==================
 */
-void COM_DefaultExtension (const char *path, char *extension)
+void COM_DefaultExtension (char *path, const char *extension)
 {
 	char    *src;
 //
@@ -888,7 +891,7 @@ COM_Parse
 Parse a token out of a string
 ==============
 */
-char *COM_Parse (const char *data)
+const char *COM_Parse (const char *data)
 {
 	int             c;
 	int             len;
@@ -1250,12 +1253,13 @@ Only used for CopyFile
 */
 void    COM_CreatePath (const char *path)
 {
-	char    *ofs;
+	char *ofs;
 	
-	for (ofs = path+1 ; *ofs ; ofs++)
+	for (ofs = (char*)path+1 ; *ofs ; ofs++)
 	{
 		if (*ofs == '/')
-		{       // create the directory
+		{
+			// create the directory
 			*ofs = 0;
 			FS_mkdir (path);
 			*ofs = '/';

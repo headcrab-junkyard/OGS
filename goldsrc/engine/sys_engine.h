@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "quakedef.h"
+#include "quakedef.h" // TODO: host
 #include "iengine.h"
 
 class CEngine final : public IEngine

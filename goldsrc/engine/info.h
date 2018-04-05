@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1996-2001 Id Software, Inc.
+Copyright (C) 2018 Headcrab Garage
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -29,14 +30,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	MAX_INFO_VALUE		64
 //#define	MAX_INFO_STRING		512 // TODO: com_model
 
-char *Info_ValueForKey (char *s, char *key);
+char *Info_ValueForKey (const char *s, const char *key);
 
-void Info_RemoveKey (char *s, char *key);
+void Info_RemoveKey (char *s, const char *key);
 void Info_RemovePrefixedKeys (char *start, char prefix);
 
-//void Info_SetValueForKey (char *s, char *key, char *value); // TODO: Q2 version
-void Info_SetValueForKey (char *s, char *key, char *value, int maxsize);
-void Info_SetValueForStarKey (char *s, char *key, char *value, int maxsize);
+void Info_SetValueForKey (char *s, const char *key, const char *value, int maxsize);
+void Info_SetValueForStarKey (char *s, const char *key, const char *value, int maxsize);
 
 void Info_Print (char *s);
 

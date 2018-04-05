@@ -27,9 +27,29 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //=========================================
 
-#define	PORT_MASTER	27010
 #define	PORT_CLIENT	27005
+#define	PORT_MASTER	27010
 #define	PORT_SERVER	27015
+
+//=========================================
+
+// out of band message id bytes
+
+// M = master, S = server, C = client, A = any
+// the second character will allways be \n if the message isn't a single
+// byte long (?? not true anymore?)
+
+#define	S2C_CHALLENGE		'c'
+#define	S2C_CONNECTION		'j'
+#define	A2A_PING			'k'	// respond with an A2A_ACK
+#define	A2A_ACK				'l'	// general acknowledgement without info
+#define	A2A_NACK			'm'	// [+ comment] general failure
+#define A2A_ECHO			'e' // for echoing
+#define	A2C_PRINT			'n'	// print a message on client
+
+#define	S2M_HEARTBEAT		'a'	// + serverinfo + userlist + fraglist
+#define	A2C_CLIENT_COMMAND	'B'	// + command line
+#define	S2M_SHUTDOWN		'C'
 
 //=========================================
 
@@ -144,6 +164,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 // PROTOCOL 49 WIP
 //#define svc_resource 35
+//#define svc_resourcelist2 36
 
 //
 // client to server
@@ -156,3 +177,27 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define DEFAULT_SOUND_PACKET_VOLUME 255
 #define DEFAULT_SOUND_PACKET_ATTENUATION 1.0
+
+// TODO: QW
+
+/*
+==========================================================
+
+  ELEMENTS COMMUNICATED ACROSS THE NET
+
+==========================================================
+*/
+
+#define	MAX_CLIENTS		32
+
+#define	UPDATE_BACKUP	64	// copies of entity_state_t to keep buffered
+							// must be power of two
+#define	UPDATE_MASK		(UPDATE_BACKUP-1)
+
+#define	MAX_PACKET_ENTITIES	64	// doesn't count nails
+
+typedef struct
+{
+	int		num_entities;
+	entity_state_t	entities[MAX_PACKET_ENTITIES];
+} packet_entities_t;

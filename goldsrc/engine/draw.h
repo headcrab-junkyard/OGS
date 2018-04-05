@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2018 Headcrab Garage
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -21,20 +22,32 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// @file
 /// @brief these are the only functions outside the refresh allowed to touch the vid buffer
 
-extern	qpic_t		*draw_disc;	// also used on sbar
+#pragma once
+
+extern qpic_t *draw_disc; // also used on sbar
 
 void Draw_Init ();
+
 void Draw_Character (int x, int y, int num);
 void Draw_DebugChar (char num);
+
 void Draw_Pic (int x, int y, qpic_t *pic);
+
 void Draw_TransPic (int x, int y, qpic_t *pic);
 void Draw_TransPicTranslate (int x, int y, qpic_t *pic, byte *translation);
+
 void Draw_ConsoleBackground (int lines);
+
 void Draw_BeginDisc ();
 void Draw_EndDisc ();
+
 void Draw_TileClear (int x, int y, int w, int h);
+
 void Draw_Fill (int x, int y, int w, int h, int c);
+
 void Draw_FadeScreen ();
+
 void Draw_String (int x, int y, const char *str);
+
 qpic_t *Draw_PicFromWad (const char *name);
 qpic_t *Draw_CachePic (const char *path);

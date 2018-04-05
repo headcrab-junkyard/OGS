@@ -1,6 +1,7 @@
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
 Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 2018 Headcrab Garage
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -37,8 +38,7 @@ NET
 #include "enums.h"
 #include "netadr.h"
 
-// TODO: ???
-//extern	netadr_t	net_local_adr;
+extern	netadr_t	net_local_adr;
 extern	netadr_t	net_from;		// address of who sent the packet
 extern	sizebuf_t	net_message;
 

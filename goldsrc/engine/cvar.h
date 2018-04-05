@@ -20,21 +20,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 /// @file
 
+#pragma once
+
 /*
 
 cvar_t variables are used to hold scalar or string variables that can be changed or displayed at the console or prog code as well as accessed directly
 in C code.
 
 it is sufficient to initialize a cvar_t with just the first two fields, or
-you can add a ,true flag for variables that you want saved to the configuration
-file when the game is quit:
+you can add a flags bitsum for variables that you want to be applied on a cvar:
 
 cvar_t	r_draworder = {"r_draworder","1"};
-cvar_t	scr_screensize = {"screensize","1",true};
+cvar_t	scr_screensize = {"screensize","1",FCVAR_ARCHIVE};
 
 Cvars must be registered before use, or they will have a 0 value instead of the float interpretation of the string.  Generally, all cvar_t declarations should be registered in the apropriate init function before any console commands are executed:
 Cvar_RegisterVariable (&host_framerate);
-
 
 C code usually just references a cvar in place:
 if ( r_draworder.value )
@@ -45,7 +45,7 @@ if (Cvar_VariableValue ("r_draworder"))
 Interpreted prog code can access cvars with the cvar(name) or
 cvar_set (name, value) internal functions:
 teamplay = cvar("teamplay");
-cvar_set ("registered", "1");
+cvar_set ("gl_ztrick", "1");
 
 The user can access cvars from the console in two ways:
 r_draworder			prints the current value
@@ -59,7 +59,7 @@ interface from being ambiguous.
 extern cvar_t	*cvar_vars;
 
 void 	Cvar_RegisterVariable (cvar_t *variable);
-// registers a cvar that allready has the name, string, and optionally the
+// registers a cvar that already has the name, string, and optionally the
 // archive elements set.
 
 void 	Cvar_Set (const char *var_name, const char *value);

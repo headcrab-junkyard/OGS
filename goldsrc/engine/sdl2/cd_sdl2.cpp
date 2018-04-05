@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2018 Headcrab Garage
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -19,8 +20,54 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 /// @file
+/// @brief null ICDAudio interface implementation
 
-void CRC_Init(unsigned short *crcvalue);
-void CRC_ProcessByte(unsigned short *crcvalue, byte data);
-unsigned short CRC_Value(unsigned short crcvalue);
-unsigned short CRC_Block (byte *start, int count);
+#include "quakedef.h"
+#include "icdaudio.h"
+
+class CCDAudio/*Null*/ final : public ICDAudio
+{
+public:
+	CCDAudio();
+	~CCDAudio();
+	
+	int Init() override;
+	void Shutdown() override;
+	
+	void Frame() override;
+	
+	void Pause() override;
+	void Resume() override;
+private:
+	void Play(byte track, qboolean looping); // override
+	void Stop(); // override
+};
+
+int CCDAudio::Init()
+{
+	return 0;
+};
+
+void CCDAudio::Shutdown()
+{
+};
+
+void CCDAudio::Frame() // TODO: was Update
+{
+};
+
+void CCDAudio::Play(byte track, qboolean looping)
+{
+};
+
+void CCDAudio::Stop()
+{
+};
+
+void CCDAudio::Pause()
+{
+};
+
+void CCDAudio::Resume()
+{
+};

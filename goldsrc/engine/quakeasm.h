@@ -21,6 +21,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// @file
 /// @brief general asm header file
 
+#pragma once
+
 //#define GLQUAKE	1
 
 #if defined(_WIN32) && !defined(WINDED)

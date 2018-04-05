@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2018 Headcrab Garage
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -21,6 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// @file
 /// @brief interface header file for rasterization driver modules
 
+#pragma once
+
 #define WARP_WIDTH		320
 #define WARP_HEIGHT		200
 
@@ -33,23 +36,7 @@ typedef struct
 	float	zi;
 } emitpoint_t;
 
-typedef enum {
-	pt_static, pt_grav, pt_slowgrav, pt_fire, pt_explode, pt_explode2, pt_blob, pt_blob2
-} ptype_t;
-
-// !!! if this is changed, it must be changed in d_ifacea.h too !!!
-typedef struct particle_s
-{
-// driver-usable fields
-	vec3_t		org;
-	float		color;
-// drivers never touch the following fields
-	struct particle_s	*next;
-	vec3_t		vel;
-	float		ramp;
-	float		die;
-	ptype_t		type;
-} particle_t;
+#include "particledef.h"
 
 #define PARTICLE_Z_CLIP	8.0
 

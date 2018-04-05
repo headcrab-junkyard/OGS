@@ -1,5 +1,6 @@
 /*
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2018 Headcrab Garage
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -22,7 +23,56 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "usercmd.h"
 
-#define MAX_CLIENTS 32 // TODO: TEMP?
+/*
+typedef struct
+{
+	char		name[16];
+	qboolean	failedload;		// the name isn't a valid skin
+	cache_user_t	cache;
+} skin_t;
+*/
+
+// TODO: was player_state_t
+// local_state_t is the information needed by a player entity
+// to do move prediction and to generate a drawable entity
+typedef struct
+{
+	int			messagenum;		// all player's won't be updated each frame
+
+	double		state_time;		// not the same as the packet time,
+								// because player commands come asyncronously
+	usercmd_t	command;		// last command for prediction
+
+	vec3_t		origin;
+	vec3_t		viewangles;		// only for demos, not from server
+	vec3_t		velocity;
+	int			weaponframe;
+
+	int			modelindex;
+	int			frame;
+	int			skinnum;
+	int			effects;
+
+	int			flags;			// dead, gib, etc
+
+	float		waterjumptime;
+	int			onground;		// -1 = in air, else pmove entity number
+	int			oldbuttons;
+} local_state_t;
+
+typedef struct
+{
+	// generated on client side
+	usercmd_t	cmd;		// cmd that generated the frame
+	double		senttime;	// time cmd was sent off
+	int			delta_sequence;		// sequence number to delta from, -1 = full update
+
+	// received from server
+	double		receivedtime;	// time message was received, or -1
+	local_state_t	playerstate[MAX_CLIENTS];	// message received that reflects performing the usercmd
+	packet_entities_t	packet_entities;
+	qboolean	invalid;		// true if the packet_entities delta was invalid
+} frame_t;
 
 typedef struct
 {
@@ -64,15 +114,9 @@ typedef struct
 #include "dlight.h"
 
 #define	MAX_BEAMS	24
-typedef struct
-{
-	int		entity;
-	struct model_s	*model;
-	float	endtime;
-	vec3_t	start, end;
-} beam_t;
+#include "beamdef.h"
 
-#define	MAX_EFRAGS		640
+#define	MAX_EFRAGS		640 // TODO: 512 for qw
 
 #define	MAX_MAPSTRING	2048
 
@@ -85,6 +129,18 @@ typedef enum
 	ca_disconnected, 	// full screen console with no connection
 	ca_connected		// valid netcon, talking to a server
 } cactive_t;
+
+/*
+/// download type
+typedef enum
+{
+	dl_none,
+	dl_model,
+	dl_sound,
+	dl_skin,
+	dl_single
+} dltype_t;
+*/
 
 //
 // the client_static_t structure is persistant through an arbitrary number
@@ -128,7 +184,6 @@ typedef struct
 
 // connection information
 	int			signon;			// 0 to SIGNONS
-	//sizebuf_t	message;		// writing buffer to send to server
 } client_static_t;
 
 extern client_static_t	cls;
@@ -139,11 +194,28 @@ extern client_static_t	cls;
 //
 typedef struct
 {
+	int			servercount;	// server identification for prespawns
+
+	//char		serverinfo[MAX_SERVERINFO_STRING]; // TODO
+	
+	int			parsecount;		// server message counter
+	int			validsequence;	// this is the sequence number of the last good
+								// packetentity_t we got.  If this is 0, we can't
+								// render a frame yet
 	int			movemessages;	// since connecting to this server
 								// throw out the first couple, so the player
 								// doesn't accidentally do something the 
 								// first frame
-	usercmd_t	cmd;			// last command sent to the server
+	
+	int			spectator;
+	
+	//usercmd_t	cmd;			// last command sent to the server
+
+	double		last_ping_request;	// while showing scoreboard
+	double		last_servermessage;
+
+// sentcmds[cl.netchan.outgoing_sequence & UPDATE_MASK] = cmd
+	frame_t		frames[UPDATE_BACKUP];
 
 // information for local display
 	int			stats[MAX_CL_STATS];	// health, etc
@@ -198,6 +270,9 @@ typedef struct
 //
 // information that is static for the entire time connected to a server
 //
+	//char		model_name[MAX_MODELS][MAX_QPATH];
+	//char		sound_name[MAX_SOUNDS][MAX_QPATH];
+
 	struct model_s		*model_precache[MAX_MODELS];
 	struct sfx_s		*sound_precache[MAX_SOUNDS];
 
@@ -205,6 +280,7 @@ typedef struct
 	int			viewentity;		// cl_entitites[cl.viewentity] = player
 	int			maxclients;
 	int			gametype;
+	int			playernum;
 
 // refresh related state
 	struct model_s	*worldmodel;	// cl_entitites[0].model
@@ -264,7 +340,6 @@ extern	cvar_t	m_yaw;
 extern	cvar_t	m_forward;
 extern	cvar_t	m_side;
 
-
 #define	MAX_TEMP_ENTITIES	64			// lightning bolts, etc
 #define	MAX_STATIC_ENTITIES	128			// torches, etc
 
@@ -289,10 +364,12 @@ void	CL_DecayLights ();
 
 void CL_Init ();
 
+/*
 void CL_Signon1 ();
 void CL_Signon2 ();
 void CL_Signon3 ();
 void CL_Signon4 ();
+*/
 
 void CL_Disconnect ();
 void CL_Disconnect_f ();
@@ -301,6 +378,8 @@ void CL_NextDemo ();
 
 void CL_BeginServerConnect();
 
+void CL_CheckForResend();
+
 #define			MAX_VISEDICTS	256
 extern	int				cl_numvisedicts;
 extern	entity_t		*cl_visedicts[MAX_VISEDICTS];
@@ -308,7 +387,7 @@ extern	entity_t		*cl_visedicts[MAX_VISEDICTS];
 //
 // cl_input
 //
-#include "kbutton.hpp"
+#include "kbutton.h"
 
 extern	kbutton_t	in_mlook, in_klook;
 extern 	kbutton_t 	in_strafe;
@@ -328,9 +407,7 @@ void CL_ReadPackets ();
 void CL_WriteToServer (usercmd_t *cmd);
 void CL_BaseMove (usercmd_t *cmd);
 
-
 float CL_KeyState (kbutton_t *key);
-char *Key_KeynumToString (int keynum);
 
 //
 // cl_demo.c
@@ -340,6 +417,7 @@ int CL_GetMessage ();
 
 void CL_Stop_f ();
 void CL_Record_f ();
+//void CL_ReRecord_f ();
 void CL_PlayDemo_f ();
 void CL_TimeDemo_f ();
 
@@ -385,4 +463,5 @@ void CL_ParsePlayerinfo ();
 //
 void CL_InitPrediction ();
 void CL_PredictMove ();
-//void CL_PredictUsercmd (player_state_t *from, player_state_t *to, usercmd_t *u, qboolean spectator); // TODO
+void CL_PredictUsercmd (local_state_t *from, local_state_t *to, usercmd_t *u, qboolean spectator); // TODO
+//void CL_CheckPredictionError ();

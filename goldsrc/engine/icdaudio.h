@@ -28,3 +28,5 @@ struct ICDAudio
 	///
 	virtual void Resume() = 0;
 };
+
+extern ICDAudio *cdaudio; // gpCDAudio

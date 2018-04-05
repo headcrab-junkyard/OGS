@@ -1,4 +1,5 @@
 /// @file
+/// @brief internal filesystem module wrapper
 
 //
 // file IO

@@ -20,6 +20,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 /// @file
 
+#pragma once
+
 // disable data conversion warnings
 
 #pragma warning(disable : 4244)     // MIPS

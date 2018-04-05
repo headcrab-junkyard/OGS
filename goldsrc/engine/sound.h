@@ -90,21 +90,29 @@ typedef struct
 } wavinfo_t;
 
 void S_Init ();
-void S_Startup ();
 void S_Shutdown ();
+
+void S_Startup ();
+
 void S_StartSound (int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float fvol,  float attenuation);
 void S_StaticSound (sfx_t *sfx, vec3_t origin, float vol, float attenuation);
+
 void S_StopSound (int entnum, int entchannel);
 void S_StopAllSounds(qboolean clear);
+
 void S_ClearBuffer ();
+
 void S_Update (vec3_t origin, vec3_t v_forward, vec3_t v_right, vec3_t v_up);
 void S_ExtraUpdate ();
 
 sfx_t *S_PrecacheSound (const char *sample);
 void S_TouchSound (const char *sample);
+
 void S_ClearPrecache ();
+
 void S_BeginPrecaching ();
 void S_EndPrecaching ();
+
 void S_PaintChannels(int endtime);
 void S_InitPaintChannels ();
 

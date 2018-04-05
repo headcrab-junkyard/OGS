@@ -106,32 +106,6 @@ void Sys_Printf (char *fmt, ...)
 }
 */
 
-void Sys_Printf (const char *fmt, ...)
-{
-	va_list		argptr;
-	char		text[1024];
-	unsigned char		*p;
-
-	va_start (argptr,fmt);
-	vsprintf (text,fmt,argptr);
-	va_end (argptr);
-
-	if (strlen(text) > sizeof(text))
-		Sys_Error("memory overwrite in Sys_Printf");
-
-    if (nostdout)
-        return;
-
-	for (p = (unsigned char *)text; *p; p++)
-	{
-		*p &= 0x7f;
-		if ((*p > 128 || *p < 32) && *p != 10 && *p != 13 && *p != 9)
-			printf("[%02x]", *p);
-		else
-			putc(*p, stdout);
-	}
-}
-
 void Sys_Quit ()
 {
 	Host_Shutdown();
@@ -139,13 +113,6 @@ void Sys_Quit ()
 
 	fflush(stdout);
 	exit(0);
-}
-
-void Sys_Init()
-{
-#if id386
-	Sys_SetFPCW();
-#endif
 }
 
 void Sys_Error (const char *error, ...)
@@ -194,12 +161,6 @@ int	Sys_FileTime (const char *path)
 	return buf.st_mtime;
 }
 
-
-void Sys_mkdir (const char *path)
-{
-    mkdir (path, 0777);
-}
-
 int Sys_FileOpenRead (const char *path, int *handle)
 {
 	int	h;
@@ -230,26 +191,6 @@ int Sys_FileOpenWrite (const char *path)
 		Sys_Error ("Error opening %s: %s", path,strerror(errno));
 
 	return handle;
-}
-
-int Sys_FileWrite (int handle, void *src, int count)
-{
-	return write (handle, src, count);
-}
-
-void Sys_FileClose (int handle)
-{
-	close (handle);
-}
-
-void Sys_FileSeek (int handle, int position)
-{
-	lseek (handle, position, SEEK_SET);
-}
-
-int Sys_FileRead (int handle, void *dest, int count)
-{
-    return read (handle, dest, count);
 }
 
 void Sys_DebugLog(const char *file, const char *fmt, ...)
@@ -368,7 +309,6 @@ int main (int c, char **v)
 {
 
 	double		time, oldtime, newtime;
-	quakeparms_t parms;
 	extern int vcrFile;
 	extern int recording;
 	int j;
@@ -377,12 +317,6 @@ int main (int c, char **v)
 
 //	signal(SIGFPE, floating_point_exception_handler);
 	signal(SIGFPE, SIG_IGN);
-
-	memset(&parms, 0, sizeof(parms));
-
-	COM_InitArgv(c, v);
-	parms.argc = com_argc;
-	parms.argv = com_argv;
 
 #ifdef GLQUAKE
 	parms.memsize = 16*1024*1024;

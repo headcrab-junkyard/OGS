@@ -143,6 +143,8 @@ When the client is taking a long time to load stuff, send keepalive messages
 so the server doesn't disconnect.
 ==================
 */
+// TODO: unused?
+/*
 void CL_KeepaliveMessage ()
 {
 	float	time;
@@ -195,6 +197,7 @@ void CL_KeepaliveMessage ()
 	NET_SendMessage (cls.netchan, &cls.netchan.message);
 	SZ_Clear (&cls.netchan.message);
 }
+*/
 
 /*
 ==================
@@ -293,14 +296,14 @@ void CL_ParseServerInfo ()
 			Con_Printf("Model %s not found\n", model_precache[i]);
 			return;
 		}
-		CL_KeepaliveMessage ();
+		//CL_KeepaliveMessage (); // TODO
 	}
 
 	S_BeginPrecaching ();
 	for (i=1 ; i<numsounds ; i++)
 	{
 		cl.sound_precache[i] = S_PrecacheSound (sound_precache[i]);
-		CL_KeepaliveMessage ();
+		//CL_KeepaliveMessage (); // TODO
 	}
 	S_EndPrecaching ();
 

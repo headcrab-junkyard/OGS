@@ -20,6 +20,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 /// @file
 
+#pragma once
+
 void SCR_Init ();
 
 void SCR_UpdateScreen ();
@@ -27,14 +29,14 @@ void SCR_UpdateScreen ();
 void SCR_SizeUp ();
 void SCR_SizeDown ();
 
-void SCR_BringDownConsole ();
+void SCR_BringDownConsole (); // TODO: not present in Q2
 
 void SCR_CenterPrint (const char *str);
 
-void SCR_BeginLoadingPlaque (); // TODO
-void SCR_EndLoadingPlaque (); // TODO
+void SCR_BeginLoadingPlaque ();
+void SCR_EndLoadingPlaque ();
 
-int SCR_ModalMessage (const char *text);
+int SCR_ModalMessage (const char *text); // TODO: not present in Q2
 
 extern	float		scr_con_current;
 extern	float		scr_conlines;		// lines of console to display
@@ -56,4 +58,4 @@ extern	int			scr_copyeverything;
 
 extern qboolean		block_drawing;
 
-void SCR_UpdateWholeScreen (); // TODO
+void SCR_UpdateWholeScreen (); // TODO: not present in Q2
