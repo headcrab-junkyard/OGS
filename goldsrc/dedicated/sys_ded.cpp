@@ -3,7 +3,8 @@
 #include <cstdio>
 
 #ifdef _WIN32
-	#include "conproc.h"
+	#include <windows.h>
+	#include "win/conproc.h"
 #endif
 
 #include "engine_hlds_api.h"
@@ -12,6 +13,8 @@
 
 bool InitConsole()
 {
+// TODO
+/*
 #ifdef _WIN32
 	if(!AllocConsole())
 		Sys_Error("Couldn't create dedicated server console");
@@ -40,6 +43,7 @@ bool InitConsole()
 
 	InitConProc (hFile, heventParent, heventChild);
 #endif // _WIN32
+*/
 };
 
 int RunServer() // void?
@@ -93,7 +97,7 @@ int main(int argc, char **argv)
 	FreeConsole();
 	
 	// shutdown QHOST hooks if necessary
-	DeinitConProc();
+	//DeinitConProc(); // TODO
 #endif
 
 	// return success of application
