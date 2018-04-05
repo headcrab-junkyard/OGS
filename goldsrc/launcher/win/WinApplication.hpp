@@ -2,16 +2,15 @@
 
 #pragma once
 
-#include "IApplication.hpp"
+#include "Application.hpp"
 
-class CWinApplication : public IApplication
+class CWinApplication : public CApplication
 {
 public:
 	CWinApplication(const char *cmdline);
 	~CWinApplication();
 	
-	bool Init() override;
-	bool LoadFileSystemModule() override;
+	bool PostInit() override;
 private:
-	
+	char msCmdLine[512]{};
 };

@@ -2,16 +2,15 @@
 
 #pragma once
 
-#include "IApplication.hpp"
+#include "Application.hpp"
 
-class CLinuxApplication : public IApplication
+class CLinuxApplication : public CApplication
 {
 public:
 	CLinuxApplication(int argc, char **argv);
 	~CLinuxApplication();
 	
-	bool Init() override;
-	bool LoadFileSystemModule() override;
+	bool PostInit() override;
 private:
 	
 };

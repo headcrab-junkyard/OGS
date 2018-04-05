@@ -24,7 +24,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	//global_hInstance = hInstance;
 	//global_nCmdShow = nCmdShow;
 	
-	std::unique_ptr<IApplication> pApp = std::make_unique<CWinApplication>(lpCmdLine);
+	std::unique_ptr<CApplication> pApp = std::make_unique<CWinApplication>(lpCmdLine);
 	
-	return AppMain(pApp.get());
+	return pApp->Run();
 };
