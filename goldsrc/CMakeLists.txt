@@ -4,13 +4,17 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/../ogs-sdk/ogs
 	${CMAKE_SOURCE_DIR}/../ogs-sdk/ogs/common
 	${CMAKE_SOURCE_DIR}/../ogs-sdk/ogs/engine
+	${CMAKE_SOURCE_DIR}/../ogs-sdk/ogs/public
+	${CMAKE_SOURCE_DIR}/../goldsrc-sdk/goldsrc/common
 	${CMAKE_SOURCE_DIR}/../goldsrc-sdk/goldsrc/public
 	${OGS_ROOT}/engine
 )
 
-add_subdirectory(filesystem)
+add_subdirectory(${CMAKE_SOURCE_DIR}/../ogs-sdk ${CMAKE_BINARY_DIR}/ogs-sdk)
 
-#add_subdirectory(gameui)
+#add_subdirectory(filesystem)
+
+add_subdirectory(gameui)
 
 #add_subdirectory(render)
 
