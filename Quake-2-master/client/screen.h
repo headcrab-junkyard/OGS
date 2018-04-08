@@ -20,9 +20,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 void	SCR_DebugGraph (float value, int color);
 
-void	SCR_TouchPics (void);
+void	SCR_TouchPics ();
 
-void	SCR_RunConsole (void);
+void	SCR_RunConsole ();
 
 extern	int			sb_lines;
 
@@ -35,14 +35,14 @@ extern	char		crosshair_pic[MAX_QPATH];
 extern	int			crosshair_width, crosshair_height;
 
 void SCR_AddDirtyPoint (int x, int y);
-void SCR_DirtyScreen (void);
+void SCR_DirtyScreen ();
 
 //
 // scr_cin.c
 //
 void SCR_PlayCinematic (char *name);
-qboolean SCR_DrawCinematic (void);
-void SCR_RunCinematic (void);
-void SCR_StopCinematic (void);
-void SCR_FinishCinematic (void);
+qboolean SCR_DrawCinematic ();
+void SCR_RunCinematic ();
+void SCR_StopCinematic ();
+void SCR_FinishCinematic ();
 

@@ -641,7 +641,7 @@ void	*Sys_GetGameAPI (void *parms);
 
 void	Sys_ConsoleOutput (char *string);
 
-char	*Sys_GetClipboardData( void );
+char	*Sys_GetClipboardData();
 void	Sys_CopyProtect ();
 
 /*

@@ -60,7 +60,7 @@ V_ClearScene
 Specifies the model that will be used as the world
 ====================
 */
-void V_ClearScene (void)
+void V_ClearScene ()
 {
 	r_numdlights = 0;
 	r_numentities = 0;
@@ -148,7 +148,7 @@ V_TestParticles
 If cl_testparticles is set, create 4096 particles in the view
 ================
 */
-void V_TestParticles (void)
+void V_TestParticles ()
 {
 	particle_t	*p;
 	int			i, j;
@@ -178,7 +178,7 @@ V_TestEntities
 If cl_testentities is set, create 32 player models
 ================
 */
-void V_TestEntities (void)
+void V_TestEntities ()
 {
 	int			i, j;
 	float		f, r;
@@ -210,7 +210,7 @@ V_TestLights
 If cl_testlights is set, create 32 lights models
 ================
 */
-void V_TestLights (void)
+void V_TestLights ()
 {
 	int			i, j;
 	float		f, r;
@@ -245,7 +245,7 @@ CL_PrepRefresh
 Call before entering a new level, or after changing dlls
 =================
 */
-void CL_PrepRefresh (void)
+void CL_PrepRefresh ()
 {
 	char		mapname[32];
 	int			i;
@@ -278,7 +278,7 @@ void CL_PrepRefresh (void)
 	CL_RegisterTEntModels ();
 
 	num_cl_weaponmodels = 1;
-	strcpy(cl_weaponmodels[0], "weapon.md2");
+	strcpy(cl_weaponmodels[0], "weapon.mdl");
 
 	for (i=1 ; i<MAX_MODELS && cl.configstrings[CS_MODELS+i][0] ; i++)
 	{
@@ -380,13 +380,13 @@ float CalcFov (float fov_x, float width, float height)
 //============================================================================
 
 // gun frame debugging functions
-void V_Gun_Next_f (void)
+void V_Gun_Next_f ()
 {
 	gun_frame++;
 	Com_Printf ("frame %i\n", gun_frame);
 }
 
-void V_Gun_Prev_f (void)
+void V_Gun_Prev_f ()
 {
 	gun_frame--;
 	if (gun_frame < 0)
@@ -394,7 +394,7 @@ void V_Gun_Prev_f (void)
 	Com_Printf ("frame %i\n", gun_frame);
 }
 
-void V_Gun_Model_f (void)
+void V_Gun_Model_f ()
 {
 	char	name[MAX_QPATH];
 
@@ -403,7 +403,7 @@ void V_Gun_Model_f (void)
 		gun_model = NULL;
 		return;
 	}
-	Com_sprintf (name, sizeof(name), "models/%s/tris.md2", Cmd_Argv(1));
+	Com_sprintf (name, sizeof(name), "models/%s/tris.mdl", Cmd_Argv(1));
 	gun_model = re.RegisterModel (name);
 }
 
@@ -415,7 +415,7 @@ void V_Gun_Model_f (void)
 SCR_DrawCrosshair
 =================
 */
-void SCR_DrawCrosshair (void)
+void SCR_DrawCrosshair ()
 {
 	if (!crosshair->value)
 		return;
@@ -553,7 +553,7 @@ void V_RenderView( float stereo_separation )
 V_Viewpos_f
 =============
 */
-void V_Viewpos_f (void)
+void V_Viewpos_f ()
 {
 	Com_Printf ("(%i %i %i) : %i\n", (int)cl.refdef.vieworg[0],
 		(int)cl.refdef.vieworg[1], (int)cl.refdef.vieworg[2], 
@@ -565,7 +565,7 @@ void V_Viewpos_f (void)
 V_Init
 =============
 */
-void V_Init (void)
+void V_Init ()
 {
 	Cmd_AddCommand ("gun_next", V_Gun_Next_f);
 	Cmd_AddCommand ("gun_prev", V_Gun_Prev_f);

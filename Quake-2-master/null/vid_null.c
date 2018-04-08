@@ -1,4 +1,4 @@
-
+// vid_null.c -- null video driver to aid porting efforts
 // this assumes that one of the refs is statically linked to the executable
 
 #include "../client/client.h"
