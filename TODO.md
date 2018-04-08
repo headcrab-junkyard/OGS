@@ -23,3 +23,4 @@
 - [ ] Implement Demo API;
 - [ ] Text console;
 - [ ] Command line parser/handler;
+- [ ] pr_edict.c : PR_ExecProgram -> GetEntityInit
