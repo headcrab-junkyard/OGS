@@ -300,7 +300,7 @@ extern	FILE		*sv_fraglogfile;
 //
 // sv_main.c
 //
-void SV_Shutdown (void);
+void SV_Shutdown ();
 void SV_Frame (float time);
 void SV_FinalMessage (char *message);
 void SV_DropClient (client_t *drop);
@@ -315,60 +315,60 @@ qboolean SV_movestep (edict_t *ent, vec3_t move, qboolean relink);
 
 void SV_WriteClientdataToMessage (client_t *client, sizebuf_t *msg);
 
-void SV_MoveToGoal (void);
+void SV_MoveToGoal ();
 
-void SV_SaveSpawnparms (void);
+void SV_SaveSpawnparms ();
 
 void SV_Physics_Client (edict_t	*ent);
 
 void SV_ExecuteUserCommand (char *s);
-void SV_InitOperatorCommands (void);
+void SV_InitOperatorCommands ();
 
 void SV_SendServerinfo (client_t *client);
 void SV_ExtractFromUserinfo (client_t *cl);
 
 
-void Master_Heartbeat (void);
-void Master_Packet (void);
+void Master_Heartbeat ();
+void Master_Packet ();
 
 //
 // sv_init.c
 //
 void SV_SpawnServer (char *server);
-void SV_FlushSignon (void);
+void SV_FlushSignon ();
 
 
 //
 // sv_phys.c
 //
-void SV_ProgStartFrame (void);
-void SV_Physics (void);
+void SV_ProgStartFrame ();
+void SV_Physics ();
 void SV_CheckVelocity (edict_t *ent);
 void SV_AddGravity (edict_t *ent, float scale);
 qboolean SV_RunThink (edict_t *ent);
 void SV_Physics_Toss (edict_t *ent);
-void SV_RunNewmis (void);
+void SV_RunNewmis ();
 void SV_Impact (edict_t *e1, edict_t *e2);
-void SV_SetMoveVars(void);
+void SV_SetMoveVars();
 
 //
 // sv_send.c
 //
-void SV_SendClientMessages (void);
+void SV_SendClientMessages ();
 
 void SV_Multicast (vec3_t origin, int to);
 void SV_StartSound (edict_t *entity, int channel, char *sample, int volume, float attenuation);
 void SV_ClientPrintf (client_t *cl, int level, char *fmt, ...);
 void SV_BroadcastPrintf (int level, char *fmt, ...);
 void SV_BroadcastCommand (char *fmt, ...);
-void SV_SendMessagesToAll (void);
-void SV_FindModelNumbers (void);
+void SV_SendMessagesToAll ();
+void SV_FindModelNumbers ();
 
 //
 // sv_user.c
 //
 void SV_ExecuteClientMessage (client_t *cl);
-void SV_UserInit (void);
+void SV_UserInit ();
 void SV_TogglePause (const char *msg);
 
 
@@ -377,12 +377,12 @@ void SV_TogglePause (const char *msg);
 //
 typedef enum {RD_NONE, RD_CLIENT, RD_PACKET} redirect_t;
 void SV_BeginRedirect (redirect_t rd);
-void SV_EndRedirect (void);
+void SV_EndRedirect ();
 
 //
 // sv_ccmds.c
 //
-void SV_Status_f (void);
+void SV_Status_f ();
 
 //
 // sv_ents.c

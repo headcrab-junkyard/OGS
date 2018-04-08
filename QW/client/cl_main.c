@@ -32,49 +32,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 qboolean	noclip_anglehack;		// remnant from old quake
 
-
 cvar_t	rcon_password = {"rcon_password", "", false};
 
 cvar_t	rcon_address = {"rcon_address", ""};
 
-cvar_t	cl_timeout = {"cl_timeout", "60"};
 
-cvar_t	cl_shownet = {"cl_shownet","0"};	// can be 0, 1, or 2
-
-cvar_t	cl_sbar		= {"cl_sbar", "0", true};
-cvar_t	cl_hudswap	= {"cl_hudswap", "0", true};
-cvar_t	cl_maxfps	= {"cl_maxfps", "0", true};
-
-cvar_t	lookspring = {"lookspring","0", true};
-cvar_t	lookstrafe = {"lookstrafe","0", true};
-cvar_t	sensitivity = {"sensitivity","3", true};
-
-cvar_t	m_pitch = {"m_pitch","0.022", true};
-cvar_t	m_yaw = {"m_yaw","0.022"};
-cvar_t	m_forward = {"m_forward","1"};
-cvar_t	m_side = {"m_side","0.8"};
-
-cvar_t	entlatency = {"entlatency", "20"};
-cvar_t	cl_predict_players = {"cl_predict_players", "1"};
-cvar_t	cl_predict_players2 = {"cl_predict_players2", "1"};
-cvar_t	cl_solid_players = {"cl_solid_players", "1"};
-
-cvar_t  localid = {"localid", ""};
-
-static qboolean allowremotecmd = true;
-
-//
-// info mirrors
-//
-cvar_t	password = {"password", "", false, true};
-cvar_t	spectator = {"spectator", "", false, true};
-cvar_t	name = {"name","unnamed", true, true};
-cvar_t	team = {"team","", true, true};
-cvar_t	skin = {"skin","", true, true};
-cvar_t	topcolor = {"topcolor","0", true, true};
-cvar_t	bottomcolor = {"bottomcolor","0", true, true};
-cvar_t	rate = {"rate","2500", true, true};
-cvar_t	noaim = {"noaim","0", true, true};
 
 extern cvar_t cl_hightrack;
 
@@ -91,13 +53,11 @@ double			connect_time = -1;		// for connection retransmits
 
 netadr_t	master_adr;				// address of the master server
 
-cvar_t	host_speeds = {"host_speeds","0"};			// set for running times
-cvar_t	show_fps = {"show_fps","0"};			// set for running times
-cvar_t	developer = {"developer","0"};
+cvar_t	show_fps = {"cl_showfps","0"};			// set for running times
 
 int			fps_count;
 
-void Master_Connect_f (void);
+void Master_Connect_f ();
 
 float	server_version = 0;	// version of server we connected to
 
@@ -120,7 +80,7 @@ char soundlist_name[] =
 CL_Quit_f
 ==================
 */
-void CL_Quit_f (void)
+void CL_Quit_f ()
 {
 	if (1 /* key_dest != key_console */ /* && cls.state != ca_dedicated */)
 	{
@@ -132,43 +92,11 @@ void CL_Quit_f (void)
 }
 
 /*
-=======================
-CL_Version_f
-======================
-*/
-void CL_Version_f (void)
-{
-	Con_Printf ("Version %4.2f\n", VERSION);
-	Con_Printf ("Exe: "__TIME__" "__DATE__"\n");
-}
-
-
-
-
-/*
 ================
 CL_Connect_f
 
 ================
 */
-void CL_Connect_f (void)
-{
-	char	*server;
-
-	if (Cmd_Argc() != 2)
-	{
-		Con_Printf ("usage: connect <server>\n");
-		return;	
-	}
-	
-	server = Cmd_Argv (1);
-
-	CL_Disconnect ();
-
-	strncpy (cls.servername, server, sizeof(cls.servername)-1);
-	CL_BeginServerConnect();
-}
-
 
 /*
 =====================
@@ -178,7 +106,7 @@ CL_Rcon_f
   an unconnected command.
 =====================
 */
-void CL_Rcon_f (void)
+void CL_Rcon_f ()
 {
 	char	message[1024];
 	int		i;
@@ -227,36 +155,15 @@ void CL_Rcon_f (void)
 		, to);
 }
 
-void CL_ClearState (void)
+void CL_ClearState ()
 {
 
-	S_StopAllSounds (true);
-
-	Con_DPrintf ("Clearing memory\n");
-	D_FlushCaches ();
-	Mod_ClearAll ();
-	if (host_hunklevel)	// FIXME: check this...
-		Hunk_FreeToLowMark (host_hunklevel);
-
-	CL_ClearTEnts ();
-
-// wipe the entire cl structure
-	memset (&cl, 0, sizeof(cl));
-
-	SZ_Clear (&cls.netchan.message);
+	
 
 // clear other arrays	
 	memset (cl_efrags, 0, sizeof(cl_efrags));
 	memset (cl_dlights, 0, sizeof(cl_dlights));
 	memset (cl_lightstyle, 0, sizeof(cl_lightstyle));
-
-//
-// allocate the efrags and chain together into a free list
-//
-	cl.free_efrags = cl_efrags;
-	for (i=0 ; i<MAX_EFRAGS-1 ; i++)
-		cl.free_efrags[i].entnext = &cl.free_efrags[i+1];
-	cl.free_efrags[i].entnext = NULL;
 }
 
 void CL_Disconnect ()
@@ -285,7 +192,7 @@ void CL_Disconnect ()
 
 }
 
-void CL_Disconnect_f (void)
+void CL_Disconnect_f ()
 {
 	CL_Disconnect ();
 }
@@ -299,7 +206,7 @@ user <name or userid>
 Dump userdata / masterdata for a user
 ====================
 */
-void CL_User_f (void)
+void CL_User_f ()
 {
 	int		uid;
 	int		i;
@@ -333,7 +240,7 @@ CL_Users_f
 Dump userids for all current players
 ====================
 */
-void CL_Users_f (void)
+void CL_Users_f ()
 {
 	int		i;
 	int		c;
@@ -353,7 +260,7 @@ void CL_Users_f (void)
 	Con_Printf ("%i total users\n", c);
 }
 
-void CL_Color_f (void)
+void CL_Color_f ()
 {
 	// just for quake compatability...
 	int		top, bottom;
@@ -396,7 +303,7 @@ CL_FullServerinfo_f
 Sent by server when serverinfo changes
 ==================
 */
-void CL_FullServerinfo_f (void)
+void CL_FullServerinfo_f ()
 {
 	char *p;
 	float v;
@@ -426,7 +333,7 @@ CL_FullInfo_f
 Allow clients to change userinfo
 ==================
 */
-void CL_FullInfo_f (void)
+void CL_FullInfo_f ()
 {
 	char	key[512];
 	char	value[512];
@@ -478,7 +385,7 @@ CL_SetInfo_f
 Allow clients to change userinfo
 ==================
 */
-void CL_SetInfo_f (void)
+void CL_SetInfo_f ()
 {
 	if (Cmd_Argc() == 1)
 	{
@@ -507,7 +414,7 @@ packet <destination> <contents>
 Contents allows \n escape character
 ====================
 */
-void CL_Packet_f (void)
+void CL_Packet_f ()
 {
 	char	send[2048];
 	int		i, l;
@@ -554,7 +461,7 @@ CL_NextDemo
 Called to play the next demo in the demo loop
 =====================
 */
-void CL_NextDemo (void)
+void CL_NextDemo ()
 {
 	char	str[1024];
 
@@ -586,7 +493,7 @@ Just sent as a hint to the client that they should
 drop to full console
 =================
 */
-void CL_Changing_f (void)
+void CL_Changing_f ()
 {
 	if (cls.download)  // don't change when downloading
 		return;
@@ -605,7 +512,7 @@ CL_Reconnect_f
 The server is changing levels
 =================
 */
-void CL_Reconnect_f (void)
+void CL_Reconnect_f ()
 {
 	if (cls.download)  // don't change when downloading
 		return;
@@ -636,7 +543,7 @@ void CL_Reconnect_f (void)
 CL_ReadPackets
 =================
 */
-void CL_ReadPackets (void)
+void CL_ReadPackets ()
 {
 //	while (NET_GetPacket ())
 	while (CL_GetMessage())
@@ -693,7 +600,7 @@ void CL_ReadPackets (void)
 CL_Download_f
 =====================
 */
-void CL_Download_f (void)
+void CL_Download_f ()
 {
 	char *p, *q;
 
@@ -730,40 +637,16 @@ void CL_Download_f (void)
 	SZ_Print (&cls.netchan.message, va("download %s\n",Cmd_Argv(1)));
 }
 
-void CL_Init (void)
+void CL_Init ()
 {
-	extern	cvar_t		baseskin;
-	extern	cvar_t		noskins;
 	char st[80];
 
 	Cvar_RegisterVariable (&show_fps);
-	Cvar_RegisterVariable (&host_speeds);
-	Cvar_RegisterVariable (&developer);
-
-	Cvar_RegisterVariable (&cl_warncmd);
-	
-	Cvar_RegisterVariable (&cl_shownet);
-	Cvar_RegisterVariable (&cl_sbar);
-	Cvar_RegisterVariable (&cl_hudswap);
-	Cvar_RegisterVariable (&cl_maxfps);
-	Cvar_RegisterVariable (&cl_timeout);
-
-	Cvar_RegisterVariable (&rcon_password);
-	Cvar_RegisterVariable (&rcon_address);
-
-	
-
-	
-
-	
-
 
 	Cmd_AddCommand ("version", CL_Version_f);
 
 	Cmd_AddCommand ("changing", CL_Changing_f);
 	
-	
-
 	Cmd_AddCommand ("skins", Skin_Skins_f);
 	Cmd_AddCommand ("allskins", Skin_AllSkins_f);
 
@@ -814,62 +697,10 @@ void Host_EndGame (char *message, ...)
 	CL_Disconnect (); // only this here for qw
 }
 
-/*
-================
-Host_Error
-
-This shuts down the client and exits qwcl
-================
-*/
-void Host_Error (char *error, ...)
+void Host_WriteConfiguration ()
 {
-	va_list		argptr;
-	char		string[1024];
-	static	qboolean inerror = false;
-	
-	if (inerror)
-		Sys_Error ("Host_Error: recursively entered");
-	inerror = true;
-	
-	va_start (argptr,error);
-	vsprintf (string,error,argptr);
-	va_end (argptr);
-	Con_Printf ("Host_Error: %s\n",string);
-	
-	CL_Disconnect ();
-	cls.demonum = -1;
-
-	inerror = false;
-
-// FIXME
-	Sys_Error ("Host_Error: %s\n",string);
-}
-
-
-/*
-===============
-Host_WriteConfiguration
-
-Writes key bindings and archived cvars to config.cfg
-===============
-*/
-void Host_WriteConfiguration (void)
-{
-	FILE	*f;
-
 	if (host_initialized)
 	{
-		f = fopen (va("%s/config.cfg",com_gamedir), "w");
-		if (!f)
-		{
-			Con_Printf ("Couldn't write config.cfg.\n");
-			return;
-		}
-		
-		Key_WriteBindings (f);
-		Cvar_WriteVariables (f);
-
-		fclose (f);
 	}
 }
 
@@ -973,7 +804,7 @@ static void simple_crypt(char *buf, int len)
 		*buf++ ^= 0xff;
 }
 
-void Host_FixupModelNames(void)
+void Host_FixupModelNames()
 {
 	simple_crypt(emodel_name, sizeof(emodel_name) - 1);
 	simple_crypt(pmodel_name, sizeof(pmodel_name) - 1);
@@ -1051,7 +882,7 @@ void Host_Init (quakeparms_t *parms)
 	Con_Printf ("ÄÅÅÅÅÅÅ QuakeWorld Initialized ÅÅÅÅÅÅÇ\n");	
 }
 
-void Host_Shutdown(void)
+void Host_Shutdown()
 {
 
 	if (host_basepal)
