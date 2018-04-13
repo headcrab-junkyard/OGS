@@ -1,5 +1,5 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -19,16 +19,27 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // r_edge.c
 
-#include "quakedef.h"
 #include "r_local.h"
 
+#ifndef id386
+void R_SurfacePatch (void)
+{
+}
+
+void R_EdgeCodeStart (void)
+{
+}
+
+void R_EdgeCodeEnd (void)
+{
+}
+#endif
+
+
 #if 0
-// FIXME
 the complex cases add new polys on most lines, so dont optimize for keeping them the same
 have multiple free span lists to try to get better coherence?
 low depth complexity -- 1 to 3 or so
-
-this breaks spans at every edge, even hidden ones (bad)
 
 have a sentinal at both ends?
 #endif
@@ -50,8 +61,6 @@ espan_t	*span_p, *max_span_p;
 
 int		r_currentkey;
 
-extern	int	screenwidth;
-
 int	current_iv;
 
 int	edge_head_u_shift20, edge_tail_u_shift20;
@@ -65,6 +74,17 @@ edge_t	edge_sentinel;
 
 float	fv;
 
+static int	miplevel;
+
+float		scale_for_mip;
+int			ubasestep, errorterm, erroradjustup, erroradjustdown;
+
+// FIXME: should go away
+extern void			R_RotateBmodel (void);
+extern void			R_TransformFrustum (void);
+
+
+
 void R_GenerateSpans (void);
 void R_GenerateSpansBackward (void);
 
@@ -73,51 +93,13 @@ void R_LeadingEdgeBackwards (edge_t *edge);
 void R_TrailingEdge (surf_t *surf, edge_t *edge);
 
 
-//=============================================================================
-
-
 /*
-==============
-R_DrawCulledPolys
-==============
+===============================================================================
+
+EDGE SCANNING
+
+===============================================================================
 */
-void R_DrawCulledPolys (void)
-{
-	surf_t			*s;
-	msurface_t		*pface;
-
-	currententity = &cl_entities[0]; // TODO: = &r_worldentity
-
-	if (r_worldpolysbacktofront)
-	{
-		for (s=surface_p-1 ; s>&surfaces[1] ; s--)
-		{
-			if (!s->spans)
-				continue;
-
-			if (!(s->flags & SURF_DRAWBACKGROUND))
-			{
-				pface = (msurface_t *)s->data;
-				R_RenderPoly (pface, 15);
-			}
-		}
-	}
-	else
-	{
-		for (s = &surfaces[1] ; s<surface_p ; s++)
-		{
-			if (!s->spans)
-				continue;
-
-			if (!(s->flags & SURF_DRAWBACKGROUND))
-			{
-				pface = (msurface_t *)s->data;
-				R_RenderPoly (pface, 15);
-			}
-		}
-	}
-}
-
 
 /*
 ==============
@@ -137,7 +119,7 @@ void R_BeginEdgeFrame (void)
 	surfaces[1].flags = SURF_DRAWBACKGROUND;
 
 // put the background behind everything in the world
-	if (r_draworder.value)
+	if (sw_draworder->value)
 	{
 		pdrawfunc = R_GenerateSpansBackward;
 		surfaces[1].key = 0;
@@ -146,7 +128,7 @@ void R_BeginEdgeFrame (void)
 	else
 	{
 		pdrawfunc = R_GenerateSpans;
-		surfaces[1].key = 0x7FFFFFFF;
+		surfaces[1].key = 0x7FFfFFFF;
 		r_currentkey = 0;
 	}
 
@@ -299,7 +281,7 @@ pushback:
 R_CleanupSpan
 ==============
 */
-void R_CleanupSpan ()
+void R_CleanupSpan (void)
 {
 	surf_t	*surf;
 	int		iu;
@@ -423,9 +405,6 @@ void R_TrailingEdge (surf_t *surf, edge_t *edge)
 // start edge yet)
 	if (--surf->spanstate == 0)
 	{
-		if (surf->insubmodel)
-			r_bmodelactive--;
-
 		if (surf == surfaces[1].next)
 		{
 		// emit a span (current top going away)
@@ -462,7 +441,7 @@ void R_LeadingEdge (edge_t *edge)
 	espan_t			*span;
 	surf_t			*surf, *surf2;
 	int				iu;
-	double			fu, newzi, testzi, newzitop, newzibottom;
+	float			fu, newzi, testzi, newzitop, newzibottom;
 
 	if (edge->surfs[1])
 	{
@@ -474,9 +453,6 @@ void R_LeadingEdge (edge_t *edge)
 	// end edge)
 		if (++surf->spanstate == 1)
 		{
-			if (surf->insubmodel)
-				r_bmodelactive++;
-
 			surf2 = surfaces[1].next;
 
 			if (surf->key < surf2->key)
@@ -590,8 +566,6 @@ void R_GenerateSpans (void)
 	edge_t			*edge;
 	surf_t			*surf;
 
-	r_bmodelactive = 0;
-
 // clear active surfaces to just the background surface
 	surfaces[1].next = surfaces[1].prev = &surfaces[1];
 	surfaces[1].last_u = edge_head_u_shift20;
@@ -627,8 +601,6 @@ R_GenerateSpansBackward
 void R_GenerateSpansBackward (void)
 {
 	edge_t			*edge;
-
-	r_bmodelactive = 0;
 
 // clear active surfaces to just the background surface
 	surfaces[1].next = surfaces[1].prev = &surfaces[1];
@@ -722,16 +694,9 @@ void R_ScanEdges (void)
 
 	// flush the span list if we can't be sure we have enough spans left for
 	// the next scan
-		if (span_p >= max_span_p) // TODO: ">" for qw
+		if (span_p > max_span_p)
 		{
-			VID_UnlockBuffer ();
-			S_ExtraUpdate ();	// don't let sound get messed up if going slow
-			VID_LockBuffer ();
-		
-			if (r_drawculledpolys)
-				R_DrawCulledPolys ();
-			else
-				D_DrawSurfaces ();
+			D_DrawSurfaces ();
 
 		// clear the surface span pointers
 			for (s = &surfaces[1] ; s<surface_p ; s++)
@@ -761,10 +726,400 @@ void R_ScanEdges (void)
 	(*pdrawfunc) ();
 
 // draw whatever's left in the span list
-	if (r_drawculledpolys)
-		R_DrawCulledPolys ();
-	else
-		D_DrawSurfaces ();
+	D_DrawSurfaces ();
 }
 
+
+/*
+=========================================================================
+
+SURFACE FILLING
+
+=========================================================================
+*/
+
+msurface_t		*pface;
+surfcache_t		*pcurrentcache;
+vec3_t			transformed_modelorg;
+vec3_t			world_transformed_modelorg;
+vec3_t			local_modelorg;
+
+/*
+=============
+D_MipLevelForScale
+=============
+*/
+int D_MipLevelForScale (float scale)
+{
+	int		lmiplevel;
+
+	if (scale >= d_scalemip[0] )
+		lmiplevel = 0;
+	else if (scale >= d_scalemip[1] )
+		lmiplevel = 1;
+	else if (scale >= d_scalemip[2] )
+		lmiplevel = 2;
+	else
+		lmiplevel = 3;
+
+	if (lmiplevel < d_minmip)
+		lmiplevel = d_minmip;
+
+	return lmiplevel;
+}
+
+
+/*
+==============
+D_FlatFillSurface
+
+Simple single color fill with no texture mapping
+==============
+*/
+void D_FlatFillSurface (surf_t *surf, int color)
+{
+	espan_t	*span;
+	byte	*pdest;
+	int		u, u2;
+	
+	for (span=surf->spans ; span ; span=span->pnext)
+	{
+		pdest = (byte *)d_viewbuffer + r_screenwidth*span->v;
+		u = span->u;
+		u2 = span->u + span->count - 1;
+		for ( ; u <= u2 ; u++)
+			pdest[u] = color;
+	}
+}
+
+
+/*
+==============
+D_CalcGradients
+==============
+*/
+void D_CalcGradients (msurface_t *pface)
+{
+	mplane_t	*pplane;
+	float		mipscale;
+	vec3_t		p_temp1;
+	vec3_t		p_saxis, p_taxis;
+	float		t;
+
+	pplane = pface->plane;
+
+	mipscale = 1.0 / (float)(1 << miplevel);
+
+	TransformVector (pface->texinfo->vecs[0], p_saxis);
+	TransformVector (pface->texinfo->vecs[1], p_taxis);
+
+	t = xscaleinv * mipscale;
+	d_sdivzstepu = p_saxis[0] * t;
+	d_tdivzstepu = p_taxis[0] * t;
+
+	t = yscaleinv * mipscale;
+	d_sdivzstepv = -p_saxis[1] * t;
+	d_tdivzstepv = -p_taxis[1] * t;
+
+	d_sdivzorigin = p_saxis[2] * mipscale - xcenter * d_sdivzstepu -
+			ycenter * d_sdivzstepv;
+	d_tdivzorigin = p_taxis[2] * mipscale - xcenter * d_tdivzstepu -
+			ycenter * d_tdivzstepv;
+
+	VectorScale (transformed_modelorg, mipscale, p_temp1);
+
+	t = 0x10000*mipscale;
+	sadjust = ((fixed16_t)(DotProduct (p_temp1, p_saxis) * 0x10000 + 0.5)) -
+			((pface->texturemins[0] << 16) >> miplevel)
+			+ pface->texinfo->vecs[0][3]*t;
+	tadjust = ((fixed16_t)(DotProduct (p_temp1, p_taxis) * 0x10000 + 0.5)) -
+			((pface->texturemins[1] << 16) >> miplevel)
+			+ pface->texinfo->vecs[1][3]*t;
+
+	// PGM - changing flow speed for non-warping textures.
+	if (pface->texinfo->flags & SURF_FLOWING)
+	{
+		if(pface->texinfo->flags & SURF_WARP)
+			sadjust += 0x10000 * (-128 * ( (r_newrefdef.time * 0.25) - (int)(r_newrefdef.time * 0.25) ));
+		else
+			sadjust += 0x10000 * (-128 * ( (r_newrefdef.time * 0.77) - (int)(r_newrefdef.time * 0.77) ));
+	}
+	// PGM
+
+//
+// -1 (-epsilon) so we never wander off the edge of the texture
+//
+	bbextents = ((pface->extents[0] << 16) >> miplevel) - 1;
+	bbextentt = ((pface->extents[1] << 16) >> miplevel) - 1;
+}
+
+
+/*
+==============
+D_BackgroundSurf
+
+The grey background filler seen when there is a hole in the map
+==============
+*/
+void D_BackgroundSurf (surf_t *s)
+{
+// set up a gradient for the background surface that places it
+// effectively at infinity distance from the viewpoint
+	d_zistepu = 0;
+	d_zistepv = 0;
+	d_ziorigin = -0.9;
+
+	D_FlatFillSurface (s, (int)sw_clearcolor->value & 0xFF);
+	D_DrawZSpans (s->spans);
+}
+
+/*
+=================
+D_TurbulentSurf
+=================
+*/
+void D_TurbulentSurf (surf_t *s)
+{
+	d_zistepu = s->d_zistepu;
+	d_zistepv = s->d_zistepv;
+	d_ziorigin = s->d_ziorigin;
+
+	pface = s->msurf;
+	miplevel = 0;
+	cacheblock = pface->texinfo->image->pixels[0];
+	cachewidth = 64;
+
+	if (s->insubmodel)
+	{
+	// FIXME: we don't want to do all this for every polygon!
+	// TODO: store once at start of frame
+		currententity = s->entity;	//FIXME: make this passed in to
+									// R_RotateBmodel ()
+		VectorSubtract (r_origin, currententity->origin,
+				local_modelorg);
+		TransformVector (local_modelorg, transformed_modelorg);
+
+		R_RotateBmodel ();	// FIXME: don't mess with the frustum,
+							// make entity passed in
+	}
+
+	D_CalcGradients (pface);
+
+//============
+//PGM
+	// textures that aren't warping are just flowing. Use NonTurbulent8 instead
+	if(!(pface->texinfo->flags & SURF_WARP))
+		NonTurbulent8 (s->spans);
+	else
+		Turbulent8 (s->spans);
+//PGM
+//============
+
+	D_DrawZSpans (s->spans);
+
+	if (s->insubmodel)
+	{
+	//
+	// restore the old drawing state
+	// FIXME: we don't want to do this every time!
+	// TODO: speed up
+	//
+		currententity = NULL;	// &r_worldentity;
+		VectorCopy (world_transformed_modelorg,
+					transformed_modelorg);
+		VectorCopy (base_vpn, vpn);
+		VectorCopy (base_vup, vup);
+		VectorCopy (base_vright, vright);
+		R_TransformFrustum ();
+	}
+}
+
+/*
+==============
+D_SkySurf
+==============
+*/
+void D_SkySurf (surf_t *s)
+{
+	pface = s->msurf;
+	miplevel = 0;
+	if (!pface->texinfo->image)
+		return;
+	cacheblock = pface->texinfo->image->pixels[0];
+	cachewidth = 256;
+
+	d_zistepu = s->d_zistepu;
+	d_zistepv = s->d_zistepv;
+	d_ziorigin = s->d_ziorigin;
+
+	D_CalcGradients (pface);
+
+	D_DrawSpans16 (s->spans);
+
+// set up a gradient for the background surface that places it
+// effectively at infinity distance from the viewpoint
+	d_zistepu = 0;
+	d_zistepv = 0;
+	d_ziorigin = -0.9;
+
+	D_DrawZSpans (s->spans);
+}
+
+/*
+==============
+D_SolidSurf
+
+Normal surface cached, texture mapped surface
+==============
+*/
+void D_SolidSurf (surf_t *s)
+{
+	d_zistepu = s->d_zistepu;
+	d_zistepv = s->d_zistepv;
+	d_ziorigin = s->d_ziorigin;
+
+	if (s->insubmodel)
+	{
+	// FIXME: we don't want to do all this for every polygon!
+	// TODO: store once at start of frame
+		currententity = s->entity;	//FIXME: make this passed in to
+									// R_RotateBmodel ()
+		VectorSubtract (r_origin, currententity->origin, local_modelorg);
+		TransformVector (local_modelorg, transformed_modelorg);
+
+		R_RotateBmodel ();	// FIXME: don't mess with the frustum,
+							// make entity passed in
+	}
+	else
+		currententity = &r_worldentity;
+
+	pface = s->msurf;
+#if 1
+	miplevel = D_MipLevelForScale(s->nearzi * scale_for_mip * pface->texinfo->mipadjust);
+#else
+	{
+		float dot;
+		float normal[3];
+
+		if ( s->insubmodel )
+		{
+			VectorCopy( pface->plane->normal, normal );
+//			TransformVector( pface->plane->normal, normal);
+			dot = DotProduct( normal, vpn );
+		}
+		else
+		{
+			VectorCopy( pface->plane->normal, normal );
+			dot = DotProduct( normal, vpn );
+		}
+
+		if ( pface->flags & SURF_PLANEBACK )
+			dot = -dot;
+
+		if ( dot > 0 )
+			printf( "blah" );
+
+		miplevel = D_MipLevelForScale(s->nearzi * scale_for_mip * pface->texinfo->mipadjust);
+	}
+#endif
+
+// FIXME: make this passed in to D_CacheSurface
+	pcurrentcache = D_CacheSurface (pface, miplevel);
+
+	cacheblock = (pixel_t *)pcurrentcache->data;
+	cachewidth = pcurrentcache->width;
+
+	D_CalcGradients (pface);
+
+	D_DrawSpans16 (s->spans);
+
+	D_DrawZSpans (s->spans);
+
+	if (s->insubmodel)
+	{
+	//
+	// restore the old drawing state
+	// FIXME: we don't want to do this every time!
+	// TODO: speed up
+	//
+		VectorCopy (world_transformed_modelorg,
+					transformed_modelorg);
+		VectorCopy (base_vpn, vpn);
+		VectorCopy (base_vup, vup);
+		VectorCopy (base_vright, vright);
+		R_TransformFrustum ();
+		currententity = NULL;	//&r_worldentity;
+	}
+}
+
+/*
+=============
+D_DrawflatSurfaces
+
+To allow developers to see the polygon carving of the world
+=============
+*/
+void D_DrawflatSurfaces (void)
+{
+	surf_t			*s;
+
+	for (s = &surfaces[1] ; s<surface_p ; s++)
+	{
+		if (!s->spans)
+			continue;
+
+		d_zistepu = s->d_zistepu;
+		d_zistepv = s->d_zistepv;
+		d_ziorigin = s->d_ziorigin;
+
+		// make a stable color for each surface by taking the low
+		// bits of the msurface pointer
+		D_FlatFillSurface (s, (int)s->msurf & 0xFF);
+		D_DrawZSpans (s->spans);
+	}
+}
+
+/*
+==============
+D_DrawSurfaces
+
+Rasterize all the span lists.  Guaranteed zero overdraw.
+May be called more than once a frame if the surf list overflows (higher res)
+==============
+*/
+void D_DrawSurfaces (void)
+{
+	surf_t			*s;
+
+//	currententity = NULL;	//&r_worldentity;
+	VectorSubtract (r_origin, vec3_origin, modelorg);
+	TransformVector (modelorg, transformed_modelorg);
+	VectorCopy (transformed_modelorg, world_transformed_modelorg);
+
+	if (!sw_drawflat->value)
+	{
+		for (s = &surfaces[1] ; s<surface_p ; s++)
+		{
+			if (!s->spans)
+				continue;
+
+			r_drawnpolycount++;
+
+			if (! (s->flags & (SURF_DRAWSKYBOX|SURF_DRAWBACKGROUND|SURF_DRAWTURB) ) )
+				D_SolidSurf (s);
+			else if (s->flags & SURF_DRAWSKYBOX)
+				D_SkySurf (s);
+			else if (s->flags & SURF_DRAWBACKGROUND)
+				D_BackgroundSurf (s);
+			else if (s->flags & SURF_DRAWTURB)
+				D_TurbulentSurf (s);
+		}
+	}
+	else
+		D_DrawflatSurfaces ();
+
+	currententity = NULL;	//&r_worldentity;
+	VectorSubtract (r_origin, vec3_origin, modelorg);
+	R_TransformFrustum ();
+}
 

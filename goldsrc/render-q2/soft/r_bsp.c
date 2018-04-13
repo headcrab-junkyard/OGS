@@ -1,5 +1,5 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -19,7 +19,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // r_bsp.c
 
-#include "quakedef.h"
 #include "r_local.h"
 
 //
@@ -27,15 +26,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 qboolean		insubmodel;
 entity_t		*currententity;
-vec3_t			modelorg, base_modelorg;
-								// modelorg is the viewpoint reletive to
+vec3_t			modelorg;		// modelorg is the viewpoint reletive to
 								// the currently rendering entity
 vec3_t			r_entorigin;	// the currently rendering entity in world
 								// coordinates
 
 float			entity_rotation[3][3];
-
-vec3_t			r_worldmodelorg;
 
 int				r_currentbkey;
 
@@ -153,6 +149,8 @@ void R_RotateBmodel (void)
 /*
 ================
 R_RecursiveClipBPoly
+
+Clip a bmodel poly down the world bsp tree
 ================
 */
 void R_RecursiveClipBPoly (bedge_t *pedges, mnode_t *pnode, msurface_t *psurf)
@@ -163,6 +161,7 @@ void R_RecursiveClipBPoly (bedge_t *pedges, mnode_t *pnode, msurface_t *psurf)
 	mplane_t	*splitplane, tplane;
 	mvertex_t	*pvert, *plastvert, *ptvert;
 	mnode_t		*pn;
+	int			area;
 
 	psideedges[0] = psideedges[1] = NULL;
 
@@ -226,7 +225,7 @@ void R_RecursiveClipBPoly (bedge_t *pedges, mnode_t *pnode, msurface_t *psurf)
 		// FIXME: share the clip edge by having a winding direction flag?
 			if (numbedges >= (MAX_BMODEL_EDGES - 1))
 			{
-				Con_Printf ("Out of edges for bmodel\n");
+				ri.Con_Printf (PRINT_ALL,"Out of edges for bmodel\n");
 				return;
 			}
 
@@ -270,7 +269,7 @@ void R_RecursiveClipBPoly (bedge_t *pedges, mnode_t *pnode, msurface_t *psurf)
 	{
 		if (numbedges >= (MAX_BMODEL_EDGES - 2))
 		{
-			Con_Printf ("Out of edges for bmodel\n");
+			ri.Con_Printf (PRINT_ALL,"Out of edges for bmodel\n");
 			return;
 		}
 
@@ -301,10 +300,17 @@ void R_RecursiveClipBPoly (bedge_t *pedges, mnode_t *pnode, msurface_t *psurf)
 		// we're done with this branch if the node or leaf isn't in the PVS
 			if (pn->visframe == r_visframecount)
 			{
-				if (pn->contents < 0)
+				if (pn->contents != CONTENTS_NODE)
 				{
 					if (pn->contents != CONTENTS_SOLID)
 					{
+						if (r_newrefdef.areabits)
+						{
+							area = ((mleaf_t *)pn)->area;
+							if (! (r_newrefdef.areabits[area>>3] & (1<<(area&7)) ) )
+								continue;		// not visible
+						}
+
 						r_currentbkey = ((mleaf_t *)pn)->key;
 						R_RenderBmodelFace (psideedges[i], psurf);
 					}
@@ -323,9 +329,11 @@ void R_RecursiveClipBPoly (bedge_t *pedges, mnode_t *pnode, msurface_t *psurf)
 /*
 ================
 R_DrawSolidClippedSubmodelPolygons
+
+Bmodel crosses multiple leafs
 ================
 */
-void R_DrawSolidClippedSubmodelPolygons (model_t *pmodel)
+void R_DrawSolidClippedSubmodelPolygons (model_t *pmodel, mnode_t *topnode)
 {
 	int			i, j, lindex;
 	vec_t		dot;
@@ -350,54 +358,49 @@ void R_DrawSolidClippedSubmodelPolygons (model_t *pmodel)
 		dot = DotProduct (modelorg, pplane->normal) - pplane->dist;
 
 	// draw the polygon
-		if (((psurf->flags & SURF_PLANEBACK) && (dot < -BACKFACE_EPSILON)) ||
-			(!(psurf->flags & SURF_PLANEBACK) && (dot > BACKFACE_EPSILON)))
+		if (( !(psurf->flags & SURF_PLANEBACK) && (dot < -BACKFACE_EPSILON)) ||
+			((psurf->flags & SURF_PLANEBACK) && (dot > BACKFACE_EPSILON)))
+			continue;
+
+	// FIXME: use bounding-box-based frustum clipping info?
+
+	// copy the edges to bedges, flipping if necessary so always
+	// clockwise winding
+	// FIXME: if edges and vertices get caches, these assignments must move
+	// outside the loop, and overflow checking must be done here
+		pbverts = bverts;
+		pbedges = bedges;
+		numbverts = numbedges = 0;
+		pbedge = &bedges[numbedges];
+		numbedges += psurf->numedges;
+
+		for (j=0 ; j<psurf->numedges ; j++)
 		{
-		// FIXME: use bounding-box-based frustum clipping info?
+		   lindex = pmodel->surfedges[psurf->firstedge+j];
 
-		// copy the edges to bedges, flipping if necessary so always
-		// clockwise winding
-		// FIXME: if edges and vertices get caches, these assignments must move
-		// outside the loop, and overflow checking must be done here
-			pbverts = bverts;
-			pbedges = bedges;
-			numbverts = numbedges = 0;
-
-			if (psurf->numedges > 0)
+			if (lindex > 0)
 			{
-				pbedge = &bedges[numbedges];
-				numbedges += psurf->numedges;
-
-				for (j=0 ; j<psurf->numedges ; j++)
-				{
-				   lindex = pmodel->surfedges[psurf->firstedge+j];
-
-					if (lindex > 0)
-					{
-						pedge = &pedges[lindex];
-						pbedge[j].v[0] = &r_pcurrentvertbase[pedge->v[0]];
-						pbedge[j].v[1] = &r_pcurrentvertbase[pedge->v[1]];
-					}
-					else
-					{
-						lindex = -lindex;
-						pedge = &pedges[lindex];
-						pbedge[j].v[0] = &r_pcurrentvertbase[pedge->v[1]];
-						pbedge[j].v[1] = &r_pcurrentvertbase[pedge->v[0]];
-					}
-
-					pbedge[j].pnext = &pbedge[j+1];
-				}
-
-				pbedge[j-1].pnext = NULL;	// mark end of edges
-
-				R_RecursiveClipBPoly (pbedge, currententity->topnode, psurf);
+				pedge = &pedges[lindex];
+				pbedge[j].v[0] = &r_pcurrentvertbase[pedge->v[0]];
+				pbedge[j].v[1] = &r_pcurrentvertbase[pedge->v[1]];
 			}
 			else
 			{
-				Sys_Error ("no edges in bmodel");
+				lindex = -lindex;
+				pedge = &pedges[lindex];
+				pbedge[j].v[0] = &r_pcurrentvertbase[pedge->v[1]];
+				pbedge[j].v[1] = &r_pcurrentvertbase[pedge->v[0]];
 			}
+
+			pbedge[j].pnext = &pbedge[j+1];
 		}
+
+		pbedge[j-1].pnext = NULL;	// mark end of edges
+
+		if ( !( psurf->texinfo->flags & ( SURF_TRANS66 | SURF_TRANS33 ) ) )
+			R_RecursiveClipBPoly (pbedge, topnode, psurf);
+		else
+			R_RenderBmodelFace( pbedge, psurf );
 	}
 }
 
@@ -405,9 +408,11 @@ void R_DrawSolidClippedSubmodelPolygons (model_t *pmodel)
 /*
 ================
 R_DrawSubmodelPolygons
+
+All in one leaf
 ================
 */
-void R_DrawSubmodelPolygons (model_t *pmodel, int clipflags)
+void R_DrawSubmodelPolygons (model_t *pmodel, int clipflags, mnode_t *topnode)
 {
 	int			i;
 	vec_t		dot;
@@ -431,7 +436,7 @@ void R_DrawSubmodelPolygons (model_t *pmodel, int clipflags)
 		if (((psurf->flags & SURF_PLANEBACK) && (dot < -BACKFACE_EPSILON)) ||
 			(!(psurf->flags & SURF_PLANEBACK) && (dot > BACKFACE_EPSILON)))
 		{
-			r_currentkey = ((mleaf_t *)currententity->topnode)->key;
+			r_currentkey = ((mleaf_t *)topnode)->key;
 
 		// FIXME: use bounding-box-based frustum clipping info?
 			R_RenderFace (psurf, clipflags);
@@ -439,6 +444,8 @@ void R_DrawSubmodelPolygons (model_t *pmodel, int clipflags)
 	}
 }
 
+
+int c_drawnode;
 
 /*
 ================
@@ -451,8 +458,8 @@ void R_RecursiveWorldNode (mnode_t *node, int clipflags)
 	vec3_t		acceptpt, rejectpt;
 	mplane_t	*plane;
 	msurface_t	*surf, **mark;
+	float		d, dot;
 	mleaf_t		*pleaf;
-	double		d, dot;
 
 	if (node->contents == CONTENTS_SOLID)
 		return;		// solid
@@ -482,10 +489,8 @@ void R_RecursiveWorldNode (mnode_t *node, int clipflags)
 			
 			d = DotProduct (rejectpt, view_clipplanes[i].normal);
 			d -= view_clipplanes[i].dist;
-
 			if (d <= 0)
 				return;
-
 			acceptpt[0] = (float)node->minmaxs[pindex[3+0]];
 			acceptpt[1] = (float)node->minmaxs[pindex[3+1]];
 			acceptpt[2] = (float)node->minmaxs[pindex[3+2]];
@@ -497,11 +502,20 @@ void R_RecursiveWorldNode (mnode_t *node, int clipflags)
 				clipflags &= ~(1<<i);	// node is entirely on screen
 		}
 	}
-	
+
+c_drawnode++;
+
 // if a leaf node, draw stuff
-	if (node->contents < 0)
+	if (node->contents != -1)
 	{
 		pleaf = (mleaf_t *)node;
+
+		// check for door connected areas
+		if (r_newrefdef.areabits)
+		{
+			if (! (r_newrefdef.areabits[pleaf->area>>3] & (1<<(pleaf->area&7)) ) )
+				return;		// not visible
+		}
 
 		mark = pleaf->firstmarksurface;
 		c = pleaf->nummarksurfaces;
@@ -513,12 +527,6 @@ void R_RecursiveWorldNode (mnode_t *node, int clipflags)
 				(*mark)->visframe = r_framecount;
 				mark++;
 			} while (--c);
-		}
-
-	// deal with model fragments in this leaf
-		if (pleaf->efrags)
-		{
-			R_StoreEfrags (&pleaf->efrags);
 		}
 
 		pleaf->key = r_currentkey;
@@ -560,7 +568,7 @@ void R_RecursiveWorldNode (mnode_t *node, int clipflags)
 
 		if (c)
 		{
-			surf = cl.worldmodel->surfaces + node->firstsurface;
+			surf = r_worldmodel->surfaces + node->firstsurface;
 
 			if (dot < -BACKFACE_EPSILON)
 			{
@@ -569,27 +577,7 @@ void R_RecursiveWorldNode (mnode_t *node, int clipflags)
 					if ((surf->flags & SURF_PLANEBACK) &&
 						(surf->visframe == r_framecount))
 					{
-						if (r_drawpolys)
-						{
-							if (r_worldpolysbacktofront)
-							{
-								if (numbtofpolys < MAX_BTOFPOLYS)
-								{
-									pbtofpolys[numbtofpolys].clipflags =
-											clipflags;
-									pbtofpolys[numbtofpolys].psurf = surf;
-									numbtofpolys++;
-								}
-							}
-							else
-							{
-								R_RenderPoly (surf, clipflags);
-							}
-						}
-						else
-						{
-							R_RenderFace (surf, clipflags);
-						}
+						R_RenderFace (surf, clipflags);
 					}
 
 					surf++;
@@ -602,27 +590,7 @@ void R_RecursiveWorldNode (mnode_t *node, int clipflags)
 					if (!(surf->flags & SURF_PLANEBACK) &&
 						(surf->visframe == r_framecount))
 					{
-						if (r_drawpolys)
-						{
-							if (r_worldpolysbacktofront)
-							{
-								if (numbtofpolys < MAX_BTOFPOLYS)
-								{
-									pbtofpolys[numbtofpolys].clipflags =
-											clipflags;
-									pbtofpolys[numbtofpolys].psurf = surf;
-									numbtofpolys++;
-								}
-							}
-							else
-							{
-								R_RenderPoly (surf, clipflags);
-							}
-						}
-						else
-						{
-							R_RenderFace (surf, clipflags);
-						}
+						R_RenderFace (surf, clipflags);
 					}
 
 					surf++;
@@ -647,28 +615,23 @@ R_RenderWorld
 */
 void R_RenderWorld (void)
 {
-	int			i;
-	model_t		*clmodel;
-	btofpoly_t	btofpolys[MAX_BTOFPOLYS];
 
-	pbtofpolys = btofpolys;
+	if (!r_drawworld->value)
+		return;
+	if ( r_newrefdef.rdflags & RDF_NOWORLDMODEL )
+		return;
 
-	currententity = &cl_entities[0]; // TODO: = &r_worldentity for qw
+	c_drawnode=0;
+
+	// auto cycle the world frame for texture animation
+	r_worldentity.frame = (int)(r_newrefdef.time*2);
+	currententity = &r_worldentity;
+
 	VectorCopy (r_origin, modelorg);
-	clmodel = currententity->model;
-	r_pcurrentvertbase = clmodel->vertexes;
+	currentmodel = r_worldmodel;
+	r_pcurrentvertbase = currentmodel->vertexes;
 
-	R_RecursiveWorldNode (clmodel->nodes, 15);
-
-// if the driver wants the polygons back to front, play the visible ones back
-// in that order
-	if (r_worldpolysbacktofront)
-	{
-		for (i=numbtofpolys-1 ; i>=0 ; i--)
-		{
-			R_RenderPoly (btofpolys[i].psurf, btofpolys[i].clipflags);
-		}
-	}
+	R_RecursiveWorldNode (currentmodel->nodes, 15);
 }
 
 

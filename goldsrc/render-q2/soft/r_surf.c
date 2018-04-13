@@ -1,5 +1,5 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -19,7 +19,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // r_surf.c: surface-related refresh code
 
-#include "quakedef.h"
 #include "r_local.h"
 
 drawsurf_t	r_drawsurf;
@@ -49,159 +48,14 @@ static void	(*surfmiptable[4])(void) = {
 	R_DrawSurfaceBlock8_mip3
 };
 
+void R_BuildLightMap (void);
+extern	unsigned		blocklights[1024];	// allow some very large lightmaps
 
+float           surfscale;
+qboolean        r_cache_thrash;         // set if surface cache is thrashing
 
-unsigned		blocklights[18*18];
-
-/*
-===============
-R_AddDynamicLights
-===============
-*/
-void R_AddDynamicLights (void)
-{
-	msurface_t *surf;
-	int			lnum;
-	int			sd, td;
-	float		dist, rad, minlight;
-	vec3_t		impact, local;
-	int			s, t;
-	int			i;
-	int			smax, tmax;
-	mtexinfo_t	*tex;
-
-	surf = r_drawsurf.surf;
-	smax = (surf->extents[0]>>4)+1;
-	tmax = (surf->extents[1]>>4)+1;
-	tex = surf->texinfo;
-
-	for (lnum=0 ; lnum<MAX_DLIGHTS ; lnum++)
-	{
-		if ( !(surf->dlightbits & (1<<lnum) ) )
-			continue;		// not lit by this light
-
-		rad = cl_dlights[lnum].radius;
-		dist = DotProduct (cl_dlights[lnum].origin, surf->plane->normal) -
-				surf->plane->dist;
-		rad -= fabs(dist);
-		minlight = cl_dlights[lnum].minlight;
-		if (rad < minlight)
-			continue;
-		minlight = rad - minlight;
-
-		for (i=0 ; i<3 ; i++)
-		{
-			impact[i] = cl_dlights[lnum].origin[i] -
-					surf->plane->normal[i]*dist;
-		}
-
-		local[0] = DotProduct (impact, tex->vecs[0]) + tex->vecs[0][3];
-		local[1] = DotProduct (impact, tex->vecs[1]) + tex->vecs[1][3];
-
-		local[0] -= surf->texturemins[0];
-		local[1] -= surf->texturemins[1];
-		
-		for (t = 0 ; t<tmax ; t++)
-		{
-			td = local[1] - t*16;
-			if (td < 0)
-				td = -td;
-			for (s=0 ; s<smax ; s++)
-			{
-				sd = local[0] - s*16;
-				if (sd < 0)
-					sd = -sd;
-				if (sd > td)
-					dist = sd + (td>>1);
-				else
-					dist = td + (sd>>1);
-				if (dist < minlight)
-#ifdef QUAKE2
-				{
-					unsigned temp;
-					temp = (rad - dist)*256;
-					i = t*smax + s;
-					if (!cl_dlights[lnum].dark)
-						blocklights[i] += temp;
-					else
-					{
-						if (blocklights[i] > temp)
-							blocklights[i] -= temp;
-						else
-							blocklights[i] = 0;
-					}
-				}
-#else
-					blocklights[t*smax + s] += (rad - dist)*256;
-#endif
-			}
-		}
-	}
-}
-
-/*
-===============
-R_BuildLightMap
-
-Combine and scale multiple lightmaps into the 8.8 format in blocklights
-===============
-*/
-void R_BuildLightMap (void)
-{
-	int			smax, tmax;
-	int			t;
-	int			i, size;
-	byte		*lightmap;
-	unsigned	scale;
-	int			maps;
-	msurface_t	*surf;
-
-	surf = r_drawsurf.surf;
-
-	smax = (surf->extents[0]>>4)+1;
-	tmax = (surf->extents[1]>>4)+1;
-	size = smax*tmax;
-	lightmap = surf->samples;
-
-	if (r_fullbright.value || !cl.worldmodel->lightdata)
-	{
-		for (i=0 ; i<size ; i++)
-			blocklights[i] = 0;
-		return;
-	}
-
-// clear to ambient
-	for (i=0 ; i<size ; i++)
-		blocklights[i] = r_refdef.ambientlight<<8;
-
-
-// add all the lightmaps
-	if (lightmap)
-		for (maps = 0 ; maps < MAXLIGHTMAPS && surf->styles[maps] != 255 ;
-			 maps++)
-		{
-			scale = r_drawsurf.lightadj[maps];	// 8.8 fraction		
-			for (i=0 ; i<size ; i++)
-				blocklights[i] += lightmap[i] * scale;
-			lightmap += size;	// skip to next lightmap
-		}
-
-// add all the dynamic lights
-	if (surf->dlightframe == r_framecount)
-		R_AddDynamicLights ();
-
-// bound, invert, and shift
-	for (i=0 ; i<size ; i++)
-	{
-		t = (255*256 - (int)blocklights[i]) >> (8 - VID_CBITS);
-
-		if (t < (1 << 6))
-			t = (1 << 6);
-
-		blocklights[i] = t;
-	}
-}
-
+int         sc_size;
+surfcache_t	*sc_rover, *sc_base;
 
 /*
 ===============
@@ -210,33 +64,21 @@ R_TextureAnimation
 Returns the proper texture for a given time and base texture
 ===============
 */
-texture_t *R_TextureAnimation (texture_t *base)
+image_t *R_TextureAnimation (mtexinfo_t *tex)
 {
-	int		reletive;
-	int		count;
+	int		c;
 
-	if (currententity->frame)
+	if (!tex->next)
+		return tex->image;
+
+	c = currententity->frame % tex->numframes;
+	while (c)
 	{
-		if (base->alternate_anims)
-			base = base->alternate_anims;
-	}
-	
-	if (!base->anim_total)
-		return base;
-
-	reletive = (int)(cl.time*10) % base->anim_total;
-
-	count = 0;	
-	while (base->anim_min > reletive || base->anim_max <= reletive)
-	{
-		base = base->anim_next;
-		if (!base)
-			Sys_Error ("R_TextureAnimation: broken cycle");
-		if (++count > 100)
-			Sys_Error ("R_TextureAnimation: infinite cycle");
+		tex = tex->next;
+		c--;
 	}
 
-	return base;
+	return tex->image;
 }
 
 
@@ -254,16 +96,13 @@ void R_DrawSurface (void)
 	int				horzblockstep;
 	unsigned char	*pcolumndest;
 	void			(*pblockdrawer)(void);
-	texture_t		*mt;
+	image_t			*mt;
 
-// calculate the lightings
-	R_BuildLightMap ();
-	
 	surfrowbytes = r_drawsurf.rowbytes;
 
-	mt = r_drawsurf.texture;
+	mt = r_drawsurf.image;
 	
-	r_source = (byte *)mt + mt->offsets[r_drawsurf.surfmip];
+	r_source = mt->pixels[r_drawsurf.surfmip];
 	
 // the fractional light values should range from 0 to (VID_GRADES - 1) << 16
 // from a source range of 0 - 255
@@ -281,18 +120,9 @@ void R_DrawSurface (void)
 
 //==============================
 
-	if (r_pixbytes == 1)
-	{
-		pblockdrawer = surfmiptable[r_drawsurf.surfmip];
-	// TODO: only needs to be set when there is a display settings change
-		horzblockstep = blocksize;
-	}
-	else
-	{
-		pblockdrawer = R_DrawSurfaceBlock16;
-	// TODO: only needs to be set when there is a display settings change
-		horzblockstep = blocksize << 1;
-	}
+	pblockdrawer = surfmiptable[r_drawsurf.surfmip];
+// TODO: only needs to be set when there is a display settings change
+	horzblockstep = blocksize;
 
 	smax = mt->width >> r_drawsurf.surfmip;
 	twidth = texwidth;
@@ -534,145 +364,288 @@ void R_DrawSurfaceBlock8_mip3 (void)
 	}
 }
 
-
-/*
-================
-R_DrawSurfaceBlock16
-
-FIXME: make this work
-================
-*/
-void R_DrawSurfaceBlock16 (void)
-{
-	int				k;
-	unsigned char	*psource;
-	int				lighttemp, lightstep, light;
-	unsigned short	*prowdest;
-
-	prowdest = (unsigned short *)prowdestbase;
-
-	for (k=0 ; k<blocksize ; k++)
-	{
-		unsigned short	*pdest;
-		unsigned char	pix;
-		int				b;
-
-		psource = pbasesource;
-		lighttemp = lightright - lightleft;
-		lightstep = lighttemp >> blockdivshift;
-
-		light = lightleft;
-		pdest = prowdest;
-
-		for (b=0; b<blocksize; b++)
-		{
-			pix = *psource;
-			*pdest = vid.colormap16[(light & 0xFF00) + pix];
-			psource += sourcesstep;
-			pdest++;
-			light += lightstep;
-		}
-
-		pbasesource += sourcetstep;
-		lightright += lightrightstep;
-		lightleft += lightleftstep;
-		prowdest = (unsigned short *)((long)prowdest + surfrowbytes);
-	}
-
-	prowdestbase = prowdest;
-}
-
 #endif
 
 
 //============================================================================
 
-/*
-================
-R_GenTurbTile
-================
-*/
-void R_GenTurbTile (pixel_t *pbasetex, void *pdest)
-{
-	int		*turb;
-	int		i, j, s, t;
-	byte	*pd;
-	
-	turb = sintable + ((int)(cl.time*SPEED)&(CYCLE-1));
-	pd = (byte *)pdest;
-
-	for (i=0 ; i<TILE_SIZE ; i++)
-	{
-		for (j=0 ; j<TILE_SIZE ; j++)
-		{	
-			s = (((j << 16) + turb[i & (CYCLE-1)]) >> 16) & 63;
-			t = (((i << 16) + turb[j & (CYCLE-1)]) >> 16) & 63;
-			*pd++ = *(pbasetex + (t<<6) + s);
-		}
-	}
-}
-
 
 /*
 ================
-R_GenTurbTile16
+R_InitCaches
+
 ================
 */
-void R_GenTurbTile16 (pixel_t *pbasetex, void *pdest)
+void R_InitCaches (void)
 {
-	int				*turb;
-	int				i, j, s, t;
-	unsigned short	*pd;
+	int		size;
+	int		pix;
 
-	turb = sintable + ((int)(cl.time*SPEED)&(CYCLE-1));
-	pd = (unsigned short *)pdest;
-
-	for (i=0 ; i<TILE_SIZE ; i++)
+	// calculate size to allocate
+	if (sw_surfcacheoverride->value)
 	{
-		for (j=0 ; j<TILE_SIZE ; j++)
-		{	
-			s = (((j << 16) + turb[i & (CYCLE-1)]) >> 16) & 63;
-			t = (((i << 16) + turb[j & (CYCLE-1)]) >> 16) & 63;
-			*pd++ = d_8to16table[*(pbasetex + (t<<6) + s)];
-		}
-	}
-}
-
-
-/*
-================
-R_GenTile
-================
-*/
-void R_GenTile (msurface_t *psurf, void *pdest)
-{
-	if (psurf->flags & SURF_DRAWTURB)
-	{
-		if (r_pixbytes == 1)
-		{
-			R_GenTurbTile ((pixel_t *)
-				((byte *)psurf->texinfo->texture + psurf->texinfo->texture->offsets[0]), pdest);
-		}
-		else
-		{
-			R_GenTurbTile16 ((pixel_t *)
-				((byte *)psurf->texinfo->texture + psurf->texinfo->texture->offsets[0]), pdest);
-		}
-	}
-	else if (psurf->flags & SURF_DRAWSKY)
-	{
-		if (r_pixbytes == 1)
-		{
-			R_GenSkyTile (pdest);
-		}
-		else
-		{
-			R_GenSkyTile16 (pdest);
-		}
+		size = sw_surfcacheoverride->value;
 	}
 	else
 	{
-		Sys_Error ("Unknown tile type");
+		size = SURFCACHE_SIZE_AT_320X240;
+
+		pix = vid.width*vid.height;
+		if (pix > 64000)
+			size += (pix-64000)*3;
+	}		
+
+	// round up to page size
+	size = (size + 8191) & ~8191;
+
+	ri.Con_Printf (PRINT_ALL,"%ik surface cache\n", size/1024);
+
+	sc_size = size;
+	sc_base = (surfcache_t *)malloc(size);
+	sc_rover = sc_base;
+	
+	sc_base->next = NULL;
+	sc_base->owner = NULL;
+	sc_base->size = sc_size;
+}
+
+
+/*
+==================
+D_FlushCaches
+==================
+*/
+void D_FlushCaches (void)
+{
+	surfcache_t     *c;
+	
+	if (!sc_base)
+		return;
+
+	for (c = sc_base ; c ; c = c->next)
+	{
+		if (c->owner)
+			*c->owner = NULL;
+	}
+	
+	sc_rover = sc_base;
+	sc_base->next = NULL;
+	sc_base->owner = NULL;
+	sc_base->size = sc_size;
+}
+
+/*
+=================
+D_SCAlloc
+=================
+*/
+surfcache_t     *D_SCAlloc (int width, int size)
+{
+	surfcache_t             *new;
+	qboolean                wrapped_this_time;
+
+	if ((width < 0) || (width > 256))
+		ri.Sys_Error (ERR_FATAL,"D_SCAlloc: bad cache width %d\n", width);
+
+	if ((size <= 0) || (size > 0x10000))
+		ri.Sys_Error (ERR_FATAL,"D_SCAlloc: bad cache size %d\n", size);
+	
+	size = (int)&((surfcache_t *)0)->data[size];
+	size = (size + 3) & ~3;
+	if (size > sc_size)
+		ri.Sys_Error (ERR_FATAL,"D_SCAlloc: %i > cache size of %i",size, sc_size);
+
+// if there is not size bytes after the rover, reset to the start
+	wrapped_this_time = false;
+
+	if ( !sc_rover || (byte *)sc_rover - (byte *)sc_base > sc_size - size)
+	{
+		if (sc_rover)
+		{
+			wrapped_this_time = true;
+		}
+		sc_rover = sc_base;
+	}
+		
+// colect and free surfcache_t blocks until the rover block is large enough
+	new = sc_rover;
+	if (sc_rover->owner)
+		*sc_rover->owner = NULL;
+	
+	while (new->size < size)
+	{
+	// free another
+		sc_rover = sc_rover->next;
+		if (!sc_rover)
+			ri.Sys_Error (ERR_FATAL,"D_SCAlloc: hit the end of memory");
+		if (sc_rover->owner)
+			*sc_rover->owner = NULL;
+			
+		new->size += sc_rover->size;
+		new->next = sc_rover->next;
+	}
+
+// create a fragment out of any leftovers
+	if (new->size - size > 256)
+	{
+		sc_rover = (surfcache_t *)( (byte *)new + size);
+		sc_rover->size = new->size - size;
+		sc_rover->next = new->next;
+		sc_rover->width = 0;
+		sc_rover->owner = NULL;
+		new->next = sc_rover;
+		new->size = size;
+	}
+	else
+		sc_rover = new->next;
+	
+	new->width = width;
+// DEBUG
+	if (width > 0)
+		new->height = (size - sizeof(*new) + sizeof(new->data)) / width;
+
+	new->owner = NULL;              // should be set properly after return
+
+	if (d_roverwrapped)
+	{
+		if (wrapped_this_time || (sc_rover >= d_initial_rover))
+			r_cache_thrash = true;
+	}
+	else if (wrapped_this_time)
+	{       
+		d_roverwrapped = true;
+	}
+
+	return new;
+}
+
+
+/*
+=================
+D_SCDump
+=================
+*/
+void D_SCDump (void)
+{
+	surfcache_t             *test;
+
+	for (test = sc_base ; test ; test = test->next)
+	{
+		if (test == sc_rover)
+			ri.Con_Printf (PRINT_ALL,"ROVER:\n");
+		ri.Con_Printf (PRINT_ALL,"%p : %i bytes     %i width\n",test, test->size, test->width);
 	}
 }
+
+//=============================================================================
+
+// if the num is not a power of 2, assume it will not repeat
+
+int     MaskForNum (int num)
+{
+	if (num==128)
+		return 127;
+	if (num==64)
+		return 63;
+	if (num==32)
+		return 31;
+	if (num==16)
+		return 15;
+	return 255;
+}
+
+int D_log2 (int num)
+{
+	int     c;
+	
+	c = 0;
+	
+	while (num>>=1)
+		c++;
+	return c;
+}
+
+//=============================================================================
+
+/*
+================
+D_CacheSurface
+================
+*/
+surfcache_t *D_CacheSurface (msurface_t *surface, int miplevel)
+{
+	surfcache_t     *cache;
+
+//
+// if the surface is animating or flashing, flush the cache
+//
+	r_drawsurf.image = R_TextureAnimation (surface->texinfo);
+	r_drawsurf.lightadj[0] = r_newrefdef.lightstyles[surface->styles[0]].white*128;
+	r_drawsurf.lightadj[1] = r_newrefdef.lightstyles[surface->styles[1]].white*128;
+	r_drawsurf.lightadj[2] = r_newrefdef.lightstyles[surface->styles[2]].white*128;
+	r_drawsurf.lightadj[3] = r_newrefdef.lightstyles[surface->styles[3]].white*128;
+	
+//
+// see if the cache holds apropriate data
+//
+	cache = surface->cachespots[miplevel];
+
+	if (cache && !cache->dlight && surface->dlightframe != r_framecount
+			&& cache->image == r_drawsurf.image
+			&& cache->lightadj[0] == r_drawsurf.lightadj[0]
+			&& cache->lightadj[1] == r_drawsurf.lightadj[1]
+			&& cache->lightadj[2] == r_drawsurf.lightadj[2]
+			&& cache->lightadj[3] == r_drawsurf.lightadj[3] )
+		return cache;
+
+//
+// determine shape of surface
+//
+	surfscale = 1.0 / (1<<miplevel);
+	r_drawsurf.surfmip = miplevel;
+	r_drawsurf.surfwidth = surface->extents[0] >> miplevel;
+	r_drawsurf.rowbytes = r_drawsurf.surfwidth;
+	r_drawsurf.surfheight = surface->extents[1] >> miplevel;
+	
+//
+// allocate memory if needed
+//
+	if (!cache)     // if a texture just animated, don't reallocate it
+	{
+		cache = D_SCAlloc (r_drawsurf.surfwidth,
+						   r_drawsurf.surfwidth * r_drawsurf.surfheight);
+		surface->cachespots[miplevel] = cache;
+		cache->owner = &surface->cachespots[miplevel];
+		cache->mipscale = surfscale;
+	}
+	
+	if (surface->dlightframe == r_framecount)
+		cache->dlight = 1;
+	else
+		cache->dlight = 0;
+
+	r_drawsurf.surfdat = (pixel_t *)cache->data;
+	
+	cache->image = r_drawsurf.image;
+	cache->lightadj[0] = r_drawsurf.lightadj[0];
+	cache->lightadj[1] = r_drawsurf.lightadj[1];
+	cache->lightadj[2] = r_drawsurf.lightadj[2];
+	cache->lightadj[3] = r_drawsurf.lightadj[3];
+
+//
+// draw and light the surface texture
+//
+	r_drawsurf.surf = surface;
+
+	c_surf++;
+
+	// calculate the lightings
+	R_BuildLightMap ();
+	
+	// rasterize the surface into the cache
+	R_DrawSurface ();
+
+	return cache;
+}
+
 

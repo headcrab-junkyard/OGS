@@ -1,25 +1,8 @@
-/*
-Copyright (C) 1996-1997 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
-
-/// @file
-/// @brief Include file for asm drawing routines
+//
+// asm_draw.h
+//
+// Include file for asm drawing routines.
+//
 
 //
 // !!! note that this file must match the corresponding C structures at all
@@ -45,19 +28,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define sspan_t_u    	0
 #define sspan_t_v	    4
 #define sspan_t_count   8
-#define sspan_t_size    12
-
-// spanpackage_t structure
-// !!! if this is changed, it must be changed in d_polyset.c too !!!
-#define spanpackage_t_pdest				0
-#define spanpackage_t_pz				4
-#define spanpackage_t_count				8
-#define spanpackage_t_ptex				12
-#define spanpackage_t_sfrac				16
-#define spanpackage_t_tfrac				20
-#define spanpackage_t_light				24
-#define spanpackage_t_zi				28
-#define spanpackage_t_size				32 
+#define sspan_t_pnext	12
+#define sspan_t_size    16
 
 // edge_t structure
 // !!! if this is changed, it must be changed in r_shared.h too !!!

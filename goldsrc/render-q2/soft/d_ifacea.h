@@ -1,33 +1,13 @@
-/*
-Copyright (C) 1996-1997 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
-
-/// @file
-/// @brief Include file for asm driver interface
+//
+// d_ifacea.h
+//
+// Include file for asm driver interface.
+//
 
 //
 // !!! note that this file must match the corresponding C structures in
 // d_iface.h at all times !!!
 //
-
-// !!! if this is changed, it must be changed in r_shared.h too !!!
-#define ALIAS_ONSEAM				0x0020
 
 // !!! if this is changed, it must be changed in d_iface.h too !!!
 #define TURB_TEX_SIZE	64		// base turbulent texture size
@@ -36,9 +16,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	CYCLE	128
 
 // !!! if this is changed, it must be changed in r_shared.h too !!!
-#define	MAXHEIGHT	1024
+#define	MAXHEIGHT	1200
 
-// !!! if this is changed, it must be changed in quakedef.h too !!!
+// !!! if this is changed, it must be changed in qcommon.h too !!!
 #define CACHE_SIZE	32		// used to align key data structures
 
 // particle_t structure

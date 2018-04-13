@@ -1,5 +1,5 @@
 /*
-Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1996-1997 Id Software, Inc.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -19,821 +19,333 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // gl_mesh.c: triangle model functions
 
-#include "gl_local.h"
+#include "quakedef.h"
 
 /*
-=============================================================
+=================================================================
 
-  ALIAS MODELS
+ALIAS MODEL DISPLAY LIST GENERATION
 
-=============================================================
+=================================================================
 */
 
-#define NUMVERTEXNORMALS	162
+model_t		*aliasmodel;
+aliashdr_t	*paliashdr;
 
-float	r_avertexnormals[NUMVERTEXNORMALS][3] = {
-#include "anorms.h"
-};
+qboolean	used[8192];
 
-typedef float vec4_t[4];
+// the command list holds counts and s/t values that are valid for
+// every frame
+int		commands[8192];
+int		numcommands;
 
-static	vec4_t	s_lerped[MAX_VERTS];
-//static	vec3_t	lerped[MAX_VERTS];
+// all frames will have their vertexes rearranged and expanded
+// so they are in the order expected by the command list
+int		vertexorder[8192];
+int		numorder;
 
-vec3_t	shadevector;
-float	shadelight[3];
+int		allverts, alltris;
 
-// precalculated dot products for quantized angles
-#define SHADEDOT_QUANT 16
-float	r_avertexnormal_dots[SHADEDOT_QUANT][256] =
-#include "anormtab.h"
-;
+int		stripverts[128];
+int		striptris[128];
+int		stripcount;
 
-float	*shadedots = r_avertexnormal_dots[0];
-
-void GL_LerpVerts( int nverts, dtrivertx_t *v, dtrivertx_t *ov, dtrivertx_t *verts, float *lerp, float move[3], float frontv[3], float backv[3] )
+/*
+================
+StripLength
+================
+*/
+int	StripLength (int starttri, int startv)
 {
-	int i;
+	int			m1, m2;
+	int			j;
+	mtriangle_t	*last, *check;
+	int			k;
 
-	//PMM -- added RF_SHELL_DOUBLE, RF_SHELL_HALF_DAM
-	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM) )
+	used[starttri] = 2;
+
+	last = &triangles[starttri];
+
+	stripverts[0] = last->vertindex[(startv)%3];
+	stripverts[1] = last->vertindex[(startv+1)%3];
+	stripverts[2] = last->vertindex[(startv+2)%3];
+
+	striptris[0] = starttri;
+	stripcount = 1;
+
+	m1 = last->vertindex[(startv+2)%3];
+	m2 = last->vertindex[(startv+1)%3];
+
+	// look for a matching triangle
+nexttri:
+	for (j=starttri+1, check=&triangles[starttri+1] ; j<pheader->numtris ; j++, check++)
 	{
-		for (i=0 ; i < nverts; i++, v++, ov++, lerp+=4 )
+		if (check->facesfront != last->facesfront)
+			continue;
+		for (k=0 ; k<3 ; k++)
 		{
-			float *normal = r_avertexnormals[verts[i].lightnormalindex];
+			if (check->vertindex[k] != m1)
+				continue;
+			if (check->vertindex[ (k+1)%3 ] != m2)
+				continue;
 
-			lerp[0] = move[0] + ov->v[0]*backv[0] + v->v[0]*frontv[0] + normal[0] * POWERSUIT_SCALE;
-			lerp[1] = move[1] + ov->v[1]*backv[1] + v->v[1]*frontv[1] + normal[1] * POWERSUIT_SCALE;
-			lerp[2] = move[2] + ov->v[2]*backv[2] + v->v[2]*frontv[2] + normal[2] * POWERSUIT_SCALE; 
+			// this is the next part of the fan
+
+			// if we can't use this triangle, this tristrip is done
+			if (used[j])
+				goto done;
+
+			// the new edge
+			if (stripcount & 1)
+				m2 = check->vertindex[ (k+2)%3 ];
+			else
+				m1 = check->vertindex[ (k+2)%3 ];
+
+			stripverts[stripcount+2] = check->vertindex[ (k+2)%3 ];
+			striptris[stripcount] = j;
+			stripcount++;
+
+			used[j] = 2;
+			goto nexttri;
 		}
 	}
-	else
-	{
-		for (i=0 ; i < nverts; i++, v++, ov++, lerp+=4)
-		{
-			lerp[0] = move[0] + ov->v[0]*backv[0] + v->v[0]*frontv[0];
-			lerp[1] = move[1] + ov->v[1]*backv[1] + v->v[1]*frontv[1];
-			lerp[2] = move[2] + ov->v[2]*backv[2] + v->v[2]*frontv[2];
-		}
-	}
+done:
 
+	// clear the temp used flags
+	for (j=starttri+1 ; j<pheader->numtris ; j++)
+		if (used[j] == 2)
+			used[j] = 0;
+
+	return stripcount;
 }
 
 /*
-=============
-GL_DrawAliasFrameLerp
-
-interpolates between two frames and origins
-FIXME: batch lerp all vertexes
-=============
+===========
+FanLength
+===========
 */
-void GL_DrawAliasFrameLerp (dmdl_t *paliashdr, float backlerp)
+int	FanLength (int starttri, int startv)
 {
-	float 	l;
-	daliasframe_t	*frame, *oldframe;
-	dtrivertx_t	*v, *ov, *verts;
-	int		*order;
-	int		count;
-	float	frontlerp;
-	float	alpha;
-	vec3_t	move, delta, vectors[3];
-	vec3_t	frontv, backv;
-	int		i;
-	int		index_xyz;
-	float	*lerp;
+	int		m1, m2;
+	int		j;
+	mtriangle_t	*last, *check;
+	int		k;
 
-	frame = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames 
-		+ currententity->frame * paliashdr->framesize);
-	verts = v = frame->verts;
+	used[starttri] = 2;
 
-	oldframe = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames 
-		+ currententity->oldframe * paliashdr->framesize);
-	ov = oldframe->verts;
+	last = &triangles[starttri];
 
-	order = (int *)((byte *)paliashdr + paliashdr->ofs_glcmds);
+	stripverts[0] = last->vertindex[(startv)%3];
+	stripverts[1] = last->vertindex[(startv+1)%3];
+	stripverts[2] = last->vertindex[(startv+2)%3];
 
-//	glTranslatef (frame->translate[0], frame->translate[1], frame->translate[2]);
-//	glScalef (frame->scale[0], frame->scale[1], frame->scale[2]);
+	striptris[0] = starttri;
+	stripcount = 1;
 
-	if (currententity->flags & RF_TRANSLUCENT)
-		alpha = currententity->alpha;
-	else
-		alpha = 1.0;
+	m1 = last->vertindex[(startv+0)%3];
+	m2 = last->vertindex[(startv+2)%3];
 
-	// PMM - added double shell
-	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM) )
-		qglDisable( GL_TEXTURE_2D );
 
-	frontlerp = 1.0 - backlerp;
-
-	// move should be the delta back to the previous frame * backlerp
-	VectorSubtract (currententity->oldorigin, currententity->origin, delta);
-	AngleVectors (currententity->angles, vectors[0], vectors[1], vectors[2]);
-
-	move[0] = DotProduct (delta, vectors[0]);	// forward
-	move[1] = -DotProduct (delta, vectors[1]);	// left
-	move[2] = DotProduct (delta, vectors[2]);	// up
-
-	VectorAdd (move, oldframe->translate, move);
-
-	for (i=0 ; i<3 ; i++)
+	// look for a matching triangle
+nexttri:
+	for (j=starttri+1, check=&triangles[starttri+1] ; j<pheader->numtris ; j++, check++)
 	{
-		move[i] = backlerp*move[i] + frontlerp*frame->translate[i];
-	}
-
-	for (i=0 ; i<3 ; i++)
-	{
-		frontv[i] = frontlerp*frame->scale[i];
-		backv[i] = backlerp*oldframe->scale[i];
-	}
-
-	lerp = s_lerped[0];
-
-	GL_LerpVerts( paliashdr->num_xyz, v, ov, verts, lerp, move, frontv, backv );
-
-	if ( gl_vertex_arrays->value )
-	{
-		float colorArray[MAX_VERTS*4];
-
-		qglEnableClientState( GL_VERTEX_ARRAY );
-		qglVertexPointer( 3, GL_FLOAT, 16, s_lerped );	// padded for SIMD
-
-//		if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE ) )
-		// PMM - added double damage shell
-		if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM) )
+		if (check->facesfront != last->facesfront)
+			continue;
+		for (k=0 ; k<3 ; k++)
 		{
-			qglColor4f( shadelight[0], shadelight[1], shadelight[2], alpha );
-		}
-		else
-		{
-			qglEnableClientState( GL_COLOR_ARRAY );
-			qglColorPointer( 3, GL_FLOAT, 0, colorArray );
+			if (check->vertindex[k] != m1)
+				continue;
+			if (check->vertindex[ (k+1)%3 ] != m2)
+				continue;
 
-			//
-			// pre light everything
-			//
-			for ( i = 0; i < paliashdr->num_xyz; i++ )
-			{
-				float l = shadedots[verts[i].lightnormalindex];
+			// this is the next part of the fan
 
-				colorArray[i*3+0] = l * shadelight[0];
-				colorArray[i*3+1] = l * shadelight[1];
-				colorArray[i*3+2] = l * shadelight[2];
-			}
-		}
+			// if we can't use this triangle, this tristrip is done
+			if (used[j])
+				goto done;
 
-		if ( qglLockArraysEXT != 0 )
-			qglLockArraysEXT( 0, paliashdr->num_xyz );
+			// the new edge
+			m2 = check->vertindex[ (k+2)%3 ];
 
-		while (1)
-		{
-			// get the vertex count and primitive type
-			count = *order++;
-			if (!count)
-				break;		// done
-			if (count < 0)
-			{
-				count = -count;
-				qglBegin (GL_TRIANGLE_FAN);
-			}
-			else
-			{
-				qglBegin (GL_TRIANGLE_STRIP);
-			}
+			stripverts[stripcount+2] = m2;
+			striptris[stripcount] = j;
+			stripcount++;
 
-			// PMM - added double damage shell
-			if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM) )
-			{
-				do
-				{
-					index_xyz = order[2];
-					order += 3;
-
-					qglVertex3fv( s_lerped[index_xyz] );
-
-				} while (--count);
-			}
-			else
-			{
-				do
-				{
-					// texture coordinates come from the draw list
-					qglTexCoord2f (((float *)order)[0], ((float *)order)[1]);
-					index_xyz = order[2];
-
-					order += 3;
-
-					// normals and vertexes come from the frame list
-//					l = shadedots[verts[index_xyz].lightnormalindex];
-					
-//					qglColor4f (l* shadelight[0], l*shadelight[1], l*shadelight[2], alpha);
-					qglArrayElement( index_xyz );
-
-				} while (--count);
-			}
-			qglEnd ();
-		}
-
-		if ( qglUnlockArraysEXT != 0 )
-			qglUnlockArraysEXT();
-	}
-	else
-	{
-		while (1)
-		{
-			// get the vertex count and primitive type
-			count = *order++;
-			if (!count)
-				break;		// done
-			if (count < 0)
-			{
-				count = -count;
-				qglBegin (GL_TRIANGLE_FAN);
-			}
-			else
-			{
-				qglBegin (GL_TRIANGLE_STRIP);
-			}
-
-			if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE ) )
-			{
-				do
-				{
-					index_xyz = order[2];
-					order += 3;
-
-					qglColor4f( shadelight[0], shadelight[1], shadelight[2], alpha);
-					qglVertex3fv (s_lerped[index_xyz]);
-
-				} while (--count);
-			}
-			else
-			{
-				do
-				{
-					// texture coordinates come from the draw list
-					qglTexCoord2f (((float *)order)[0], ((float *)order)[1]);
-					index_xyz = order[2];
-					order += 3;
-
-					// normals and vertexes come from the frame list
-					l = shadedots[verts[index_xyz].lightnormalindex];
-					
-					qglColor4f (l* shadelight[0], l*shadelight[1], l*shadelight[2], alpha);
-					qglVertex3fv (s_lerped[index_xyz]);
-				} while (--count);
-			}
-
-			qglEnd ();
+			used[j] = 2;
+			goto nexttri;
 		}
 	}
+done:
 
-//	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE ) )
-	// PMM - added double damage shell
-	if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_GREEN | RF_SHELL_BLUE | RF_SHELL_DOUBLE | RF_SHELL_HALF_DAM) )
-		qglEnable( GL_TEXTURE_2D );
+	// clear the temp used flags
+	for (j=starttri+1 ; j<pheader->numtris ; j++)
+		if (used[j] == 2)
+			used[j] = 0;
+
+	return stripcount;
 }
 
 
-#if 1
 /*
-=============
-GL_DrawAliasShadow
-=============
-*/
-extern	vec3_t			lightspot;
+================
+BuildTris
 
-void GL_DrawAliasShadow (dmdl_t *paliashdr, int posenum)
+Generate a list of trifans or strips
+for the model, which holds for all frames
+================
+*/
+void BuildTris (void)
 {
-	dtrivertx_t	*verts;
-	int		*order;
-	vec3_t	point;
-	float	height, lheight;
-	int		count;
-	daliasframe_t	*frame;
+	int		i, j, k;
+	int		startv;
+	float	s, t;
+	int		len, bestlen, besttype;
+	int		bestverts[1024];
+	int		besttris[1024];
+	int		type;
 
-	lheight = currententity->origin[2] - lightspot[2];
-
-	frame = (daliasframe_t *)((byte *)paliashdr + paliashdr->ofs_frames 
-		+ currententity->frame * paliashdr->framesize);
-	verts = frame->verts;
-
-	height = 0;
-
-	order = (int *)((byte *)paliashdr + paliashdr->ofs_glcmds);
-
-	height = -lheight + 1.0;
-
-	while (1)
+	//
+	// build tristrips
+	//
+	numorder = 0;
+	numcommands = 0;
+	memset (used, 0, sizeof(used));
+	for (i=0 ; i<pheader->numtris ; i++)
 	{
-		// get the vertex count and primitive type
-		count = *order++;
-		if (!count)
-			break;		// done
-		if (count < 0)
+		// pick an unused triangle and start the trifan
+		if (used[i])
+			continue;
+
+		bestlen = 0;
+		for (type = 0 ; type < 2 ; type++)
+//	type = 1;
 		{
-			count = -count;
-			qglBegin (GL_TRIANGLE_FAN);
-		}
-		else
-			qglBegin (GL_TRIANGLE_STRIP);
-
-		do
-		{
-			// normals and vertexes come from the frame list
-/*
-			point[0] = verts[order[2]].v[0] * frame->scale[0] + frame->translate[0];
-			point[1] = verts[order[2]].v[1] * frame->scale[1] + frame->translate[1];
-			point[2] = verts[order[2]].v[2] * frame->scale[2] + frame->translate[2];
-*/
-
-			memcpy( point, s_lerped[order[2]], sizeof( point )  );
-
-			point[0] -= shadevector[0]*(point[2]+lheight);
-			point[1] -= shadevector[1]*(point[2]+lheight);
-			point[2] = height;
-//			height -= 0.001;
-			qglVertex3fv (point);
-
-			order += 3;
-
-//			verts++;
-
-		} while (--count);
-
-		qglEnd ();
-	}	
-}
-
-#endif
-
-/*
-** R_CullAliasModel
-*/
-static qboolean R_CullAliasModel( vec3_t bbox[8], entity_t *e )
-{
-	int i;
-	vec3_t		mins, maxs;
-	dmdl_t		*paliashdr;
-	vec3_t		vectors[3];
-	vec3_t		thismins, oldmins, thismaxs, oldmaxs;
-	daliasframe_t *pframe, *poldframe;
-	vec3_t angles;
-
-	paliashdr = (dmdl_t *)currentmodel->extradata;
-
-	if ( ( e->frame >= paliashdr->num_frames ) || ( e->frame < 0 ) )
-	{
-		ri.Con_Printf (PRINT_ALL, "R_CullAliasModel %s: no such frame %d\n", 
-			currentmodel->name, e->frame);
-		e->frame = 0;
-	}
-	if ( ( e->oldframe >= paliashdr->num_frames ) || ( e->oldframe < 0 ) )
-	{
-		ri.Con_Printf (PRINT_ALL, "R_CullAliasModel %s: no such oldframe %d\n", 
-			currentmodel->name, e->oldframe);
-		e->oldframe = 0;
-	}
-
-	pframe = ( daliasframe_t * ) ( ( byte * ) paliashdr + 
-		                              paliashdr->ofs_frames +
-									  e->frame * paliashdr->framesize);
-
-	poldframe = ( daliasframe_t * ) ( ( byte * ) paliashdr + 
-		                              paliashdr->ofs_frames +
-									  e->oldframe * paliashdr->framesize);
-
-	/*
-	** compute axially aligned mins and maxs
-	*/
-	if ( pframe == poldframe )
-	{
-		for ( i = 0; i < 3; i++ )
-		{
-			mins[i] = pframe->translate[i];
-			maxs[i] = mins[i] + pframe->scale[i]*255;
-		}
-	}
-	else
-	{
-		for ( i = 0; i < 3; i++ )
-		{
-			thismins[i] = pframe->translate[i];
-			thismaxs[i] = thismins[i] + pframe->scale[i]*255;
-
-			oldmins[i]  = poldframe->translate[i];
-			oldmaxs[i]  = oldmins[i] + poldframe->scale[i]*255;
-
-			if ( thismins[i] < oldmins[i] )
-				mins[i] = thismins[i];
-			else
-				mins[i] = oldmins[i];
-
-			if ( thismaxs[i] > oldmaxs[i] )
-				maxs[i] = thismaxs[i];
-			else
-				maxs[i] = oldmaxs[i];
-		}
-	}
-
-	/*
-	** compute a full bounding box
-	*/
-	for ( i = 0; i < 8; i++ )
-	{
-		vec3_t   tmp;
-
-		if ( i & 1 )
-			tmp[0] = mins[0];
-		else
-			tmp[0] = maxs[0];
-
-		if ( i & 2 )
-			tmp[1] = mins[1];
-		else
-			tmp[1] = maxs[1];
-
-		if ( i & 4 )
-			tmp[2] = mins[2];
-		else
-			tmp[2] = maxs[2];
-
-		VectorCopy( tmp, bbox[i] );
-	}
-
-	/*
-	** rotate the bounding box
-	*/
-	VectorCopy( e->angles, angles );
-	angles[YAW] = -angles[YAW];
-	AngleVectors( angles, vectors[0], vectors[1], vectors[2] );
-
-	for ( i = 0; i < 8; i++ )
-	{
-		vec3_t tmp;
-
-		VectorCopy( bbox[i], tmp );
-
-		bbox[i][0] = DotProduct( vectors[0], tmp );
-		bbox[i][1] = -DotProduct( vectors[1], tmp );
-		bbox[i][2] = DotProduct( vectors[2], tmp );
-
-		VectorAdd( e->origin, bbox[i], bbox[i] );
-	}
-
-	{
-		int p, f, aggregatemask = ~0;
-
-		for ( p = 0; p < 8; p++ )
-		{
-			int mask = 0;
-
-			for ( f = 0; f < 4; f++ )
+			for (startv =0 ; startv < 3 ; startv++)
 			{
-				float dp = DotProduct( frustum[f].normal, bbox[p] );
-
-				if ( ( dp - frustum[f].dist ) < 0 )
+				if (type == 1)
+					len = StripLength (i, startv);
+				else
+					len = FanLength (i, startv);
+				if (len > bestlen)
 				{
-					mask |= ( 1 << f );
+					besttype = type;
+					bestlen = len;
+					for (j=0 ; j<bestlen+2 ; j++)
+						bestverts[j] = stripverts[j];
+					for (j=0 ; j<bestlen ; j++)
+						besttris[j] = striptris[j];
 				}
 			}
-
-			aggregatemask &= mask;
 		}
 
-		if ( aggregatemask )
+		// mark the tris on the best strip as used
+		for (j=0 ; j<bestlen ; j++)
+			used[besttris[j]] = 1;
+
+		if (besttype == 1)
+			commands[numcommands++] = (bestlen+2);
+		else
+			commands[numcommands++] = -(bestlen+2);
+
+		for (j=0 ; j<bestlen+2 ; j++)
 		{
-			return true;
-		}
+			// emit a vertex into the reorder buffer
+			k = bestverts[j];
+			vertexorder[numorder++] = k;
 
-		return false;
+			// emit s/t coords into the commands stream
+			s = stverts[k].s;
+			t = stverts[k].t;
+			if (!triangles[besttris[0]].facesfront && stverts[k].onseam)
+				s += pheader->skinwidth / 2;	// on back side
+			s = (s + 0.5) / pheader->skinwidth;
+			t = (t + 0.5) / pheader->skinheight;
+
+			*(float *)&commands[numcommands++] = s;
+			*(float *)&commands[numcommands++] = t;
+		}
 	}
+
+	commands[numcommands++] = 0;		// end of list marker
+
+	Con_DPrintf ("%3i tri %3i vert %3i cmd\n", pheader->numtris, numorder, numcommands);
+
+	allverts += numorder;
+	alltris += pheader->numtris;
 }
+
 
 /*
-=================
-R_DrawAliasModel
-
-=================
+================
+GL_MakeAliasModelDisplayLists
+================
 */
-void R_DrawAliasModel (entity_t *e)
+void GL_MakeAliasModelDisplayLists (model_t *m, aliashdr_t *hdr)
 {
-	int			i;
-	dmdl_t		*paliashdr;
-	float		an;
-	vec3_t		bbox[8];
-	image_t		*skin;
+	int		i, j;
+	int			*cmds;
+	trivertx_t	*verts;
+	char	cache[MAX_QPATH], fullpath[MAX_OSPATH];
+	FILE	*f;
 
-	if ( !( e->flags & RF_WEAPONMODEL ) )
-	{
-		if ( R_CullAliasModel( bbox, e ) )
-			return;
-	}
-
-	if ( e->flags & RF_WEAPONMODEL )
-	{
-		if ( r_lefthand->value == 2 )
-			return;
-	}
-
-	paliashdr = (dmdl_t *)currentmodel->extradata;
+	aliasmodel = m;
+	paliashdr = hdr;	// (aliashdr_t *)Mod_Extradata (m);
 
 	//
-	// get lighting information
+	// look for a cached version
 	//
-	// PMM - rewrote, reordered to handle new shells & mixing
-	//
-	if ( currententity->flags & ( RF_SHELL_HALF_DAM | RF_SHELL_GREEN | RF_SHELL_RED | RF_SHELL_BLUE | RF_SHELL_DOUBLE ) )
-	{
-		// PMM -special case for godmode
-		if ( (currententity->flags & RF_SHELL_RED) &&
-			(currententity->flags & RF_SHELL_BLUE) &&
-			(currententity->flags & RF_SHELL_GREEN) )
-		{
-			for (i=0 ; i<3 ; i++)
-				shadelight[i] = 1.0;
-		}
-		else if ( currententity->flags & ( RF_SHELL_RED | RF_SHELL_BLUE | RF_SHELL_DOUBLE ) )
-		{
-			VectorClear (shadelight);
+	strcpy (cache, "glquake/");
+	COM_StripExtension (m->name+strlen("progs/"), cache+strlen("glquake/"));
+	strcat (cache, ".ms2");
 
-			if ( currententity->flags & RF_SHELL_RED )
-			{
-				shadelight[0] = 1.0;
-				if (currententity->flags & (RF_SHELL_BLUE|RF_SHELL_DOUBLE) )
-					shadelight[2] = 1.0;
-			}
-			else if ( currententity->flags & RF_SHELL_BLUE )
-			{
-				if ( currententity->flags & RF_SHELL_DOUBLE )
-				{
-					shadelight[1] = 1.0;
-					shadelight[2] = 1.0;
-				}
-				else
-				{
-					shadelight[2] = 1.0;
-				}
-			}
-			else if ( currententity->flags & RF_SHELL_DOUBLE )
-			{
-				shadelight[0] = 0.9;
-				shadelight[1] = 0.7;
-			}
-		}
-		else if ( currententity->flags & ( RF_SHELL_HALF_DAM | RF_SHELL_GREEN ) )
-		{
-			VectorClear (shadelight);
-			// PMM - new colors
-			if ( currententity->flags & RF_SHELL_HALF_DAM )
-			{
-				shadelight[0] = 0.56;
-				shadelight[1] = 0.59;
-				shadelight[2] = 0.45;
-			}
-			if ( currententity->flags & RF_SHELL_GREEN )
-			{
-				shadelight[1] = 1.0;
-			}
-		}
-	}
-			//PMM - ok, now flatten these down to range from 0 to 1.0.
-	//		max_shell_val = max(shadelight[0], max(shadelight[1], shadelight[2]));
-	//		if (max_shell_val > 0)
-	//		{
-	//			for (i=0; i<3; i++)
-	//			{
-	//				shadelight[i] = shadelight[i] / max_shell_val;
-	//			}
-	//		}
-	// pmm
-	else if ( currententity->flags & RF_FULLBRIGHT )
+	COM_FOpenFile (cache, &f);	
+	if (f)
 	{
-		for (i=0 ; i<3 ; i++)
-			shadelight[i] = 1.0;
+		fread (&numcommands, 4, 1, f);
+		fread (&numorder, 4, 1, f);
+		fread (&commands, numcommands * sizeof(commands[0]), 1, f);
+		fread (&vertexorder, numorder * sizeof(vertexorder[0]), 1, f);
+		fclose (f);
 	}
 	else
 	{
-		R_LightPoint (currententity->origin, shadelight);
+		//
+		// build it from scratch
+		//
+		Con_Printf ("meshing %s...\n",m->name);
 
-		// player lighting hack for communication back to server
-		// big hack!
-		if ( currententity->flags & RF_WEAPONMODEL )
+		BuildTris ();		// trifans or lists
+
+		//
+		// save out the cached version
+		//
+		sprintf (fullpath, "%s/%s", com_gamedir, cache);
+		f = fopen (fullpath, "wb");
+		if (f)
 		{
-			// pick the greatest component, which should be the same
-			// as the mono value returned by software
-			if (shadelight[0] > shadelight[1])
-			{
-				if (shadelight[0] > shadelight[2])
-					r_lightlevel->value = 150*shadelight[0];
-				else
-					r_lightlevel->value = 150*shadelight[2];
-			}
-			else
-			{
-				if (shadelight[1] > shadelight[2])
-					r_lightlevel->value = 150*shadelight[1];
-				else
-					r_lightlevel->value = 150*shadelight[2];
-			}
-
-		}
-		
-		if ( gl_monolightmap->string[0] != '0' )
-		{
-			float s = shadelight[0];
-
-			if ( s < shadelight[1] )
-				s = shadelight[1];
-			if ( s < shadelight[2] )
-				s = shadelight[2];
-
-			shadelight[0] = s;
-			shadelight[1] = s;
-			shadelight[2] = s;
+			fwrite (&numcommands, 4, 1, f);
+			fwrite (&numorder, 4, 1, f);
+			fwrite (&commands, numcommands * sizeof(commands[0]), 1, f);
+			fwrite (&vertexorder, numorder * sizeof(vertexorder[0]), 1, f);
+			fclose (f);
 		}
 	}
 
-	if ( currententity->flags & RF_MINLIGHT )
-	{
-		for (i=0 ; i<3 ; i++)
-			if (shadelight[i] > 0.1)
-				break;
-		if (i == 3)
-		{
-			shadelight[0] = 0.1;
-			shadelight[1] = 0.1;
-			shadelight[2] = 0.1;
-		}
-	}
 
-	if ( currententity->flags & RF_GLOW )
-	{	// bonus items will pulse with time
-		float	scale;
-		float	min;
+	// save the data out
 
-		scale = 0.1 * sin(r_newrefdef.time*7);
-		for (i=0 ; i<3 ; i++)
-		{
-			min = shadelight[i] * 0.8;
-			shadelight[i] += scale;
-			if (shadelight[i] < min)
-				shadelight[i] = min;
-		}
-	}
+	paliashdr->poseverts = numorder;
 
-// =================
-// PGM	ir goggles color override
-	if ( r_newrefdef.rdflags & RDF_IRGOGGLES && currententity->flags & RF_IR_VISIBLE)
-	{
-		shadelight[0] = 1.0;
-		shadelight[1] = 0.0;
-		shadelight[2] = 0.0;
-	}
-// PGM	
-// =================
+	cmds = Hunk_Alloc (numcommands * 4);
+	paliashdr->commands = (byte *)cmds - (byte *)paliashdr;
+	memcpy (cmds, commands, numcommands * 4);
 
-	shadedots = r_avertexnormal_dots[((int)(currententity->angles[1] * (SHADEDOT_QUANT / 360.0))) & (SHADEDOT_QUANT - 1)];
-	
-	an = currententity->angles[1]/180*M_PI;
-	shadevector[0] = cos(-an);
-	shadevector[1] = sin(-an);
-	shadevector[2] = 1;
-	VectorNormalize (shadevector);
-
-	//
-	// locate the proper data
-	//
-
-	c_alias_polys += paliashdr->num_tris;
-
-	//
-	// draw all the triangles
-	//
-	if (currententity->flags & RF_DEPTHHACK) // hack the depth range to prevent view model from poking into walls
-		qglDepthRange (gldepthmin, gldepthmin + 0.3*(gldepthmax-gldepthmin));
-
-	if ( ( currententity->flags & RF_WEAPONMODEL ) && ( r_lefthand->value == 1.0F ) )
-	{
-		extern void MYgluPerspective( GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar );
-
-		qglMatrixMode( GL_PROJECTION );
-		qglPushMatrix();
-		qglLoadIdentity();
-		qglScalef( -1, 1, 1 );
-	    MYgluPerspective( r_newrefdef.fov_y, ( float ) r_newrefdef.width / r_newrefdef.height,  4,  4096);
-		qglMatrixMode( GL_MODELVIEW );
-
-		qglCullFace( GL_BACK );
-	}
-
-    qglPushMatrix ();
-	e->angles[PITCH] = -e->angles[PITCH];	// sigh.
-	R_RotateForEntity (e);
-	e->angles[PITCH] = -e->angles[PITCH];	// sigh.
-
-	// select skin
-	if (currententity->skin)
-		skin = currententity->skin;	// custom player skin
-	else
-	{
-		if (currententity->skinnum >= MAX_MD2SKINS)
-			skin = currentmodel->skins[0];
-		else
-		{
-			skin = currentmodel->skins[currententity->skinnum];
-			if (!skin)
-				skin = currentmodel->skins[0];
-		}
-	}
-	if (!skin)
-		skin = r_notexture;	// fallback...
-	GL_Bind(skin->texnum);
-
-	// draw it
-
-	qglShadeModel (GL_SMOOTH);
-
-	GL_TexEnv( GL_MODULATE );
-	if ( currententity->flags & RF_TRANSLUCENT )
-	{
-		qglEnable (GL_BLEND);
-	}
-
-
-	if ( (currententity->frame >= paliashdr->num_frames) 
-		|| (currententity->frame < 0) )
-	{
-		ri.Con_Printf (PRINT_ALL, "R_DrawAliasModel %s: no such frame %d\n",
-			currentmodel->name, currententity->frame);
-		currententity->frame = 0;
-		currententity->oldframe = 0;
-	}
-
-	if ( (currententity->oldframe >= paliashdr->num_frames)
-		|| (currententity->oldframe < 0))
-	{
-		ri.Con_Printf (PRINT_ALL, "R_DrawAliasModel %s: no such oldframe %d\n",
-			currentmodel->name, currententity->oldframe);
-		currententity->frame = 0;
-		currententity->oldframe = 0;
-	}
-
-	if ( !r_lerpmodels->value )
-		currententity->backlerp = 0;
-	GL_DrawAliasFrameLerp (paliashdr, currententity->backlerp);
-
-	GL_TexEnv( GL_REPLACE );
-	qglShadeModel (GL_FLAT);
-
-	qglPopMatrix ();
-
-#if 0
-	qglDisable( GL_CULL_FACE );
-	qglPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-	qglDisable( GL_TEXTURE_2D );
-	qglBegin( GL_TRIANGLE_STRIP );
-	for ( i = 0; i < 8; i++ )
-	{
-		qglVertex3fv( bbox[i] );
-	}
-	qglEnd();
-	qglEnable( GL_TEXTURE_2D );
-	qglPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-	qglEnable( GL_CULL_FACE );
-#endif
-
-	if ( ( currententity->flags & RF_WEAPONMODEL ) && ( r_lefthand->value == 1.0F ) )
-	{
-		qglMatrixMode( GL_PROJECTION );
-		qglPopMatrix();
-		qglMatrixMode( GL_MODELVIEW );
-		qglCullFace( GL_FRONT );
-	}
-
-	if ( currententity->flags & RF_TRANSLUCENT )
-	{
-		qglDisable (GL_BLEND);
-	}
-
-	if (currententity->flags & RF_DEPTHHACK)
-		qglDepthRange (gldepthmin, gldepthmax);
-
-#if 1
-	if (gl_shadows->value && !(currententity->flags & (RF_TRANSLUCENT | RF_WEAPONMODEL)))
-	{
-		qglPushMatrix ();
-		R_RotateForEntity (e);
-		qglDisable (GL_TEXTURE_2D);
-		qglEnable (GL_BLEND);
-		qglColor4f (0,0,0,0.5);
-		GL_DrawAliasShadow (paliashdr, currententity->frame );
-		qglEnable (GL_TEXTURE_2D);
-		qglDisable (GL_BLEND);
-		qglPopMatrix ();
-	}
-#endif
-	qglColor4f (1,1,1,1);
+	verts = Hunk_Alloc (paliashdr->numposes * paliashdr->poseverts 
+		* sizeof(trivertx_t) );
+	paliashdr->posedata = (byte *)verts - (byte *)paliashdr;
+	for (i=0 ; i<paliashdr->numposes ; i++)
+		for (j=0 ; j<numorder ; j++)
+			*verts++ = poseverts[i][vertexorder[j]];
 }
-
 
