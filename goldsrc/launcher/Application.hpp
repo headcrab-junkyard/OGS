@@ -24,7 +24,7 @@ private:
 	void *mpFSLib{nullptr};
 	void *mpEngineLib{nullptr};
 	
-	CreateInterfaceFn mpFSFactory{nullptr};
+	CreateInterfaceFn mfnFSFactory{nullptr};
 	
 	IEngineAPI *mpEngine{nullptr};
 	

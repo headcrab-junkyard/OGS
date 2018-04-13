@@ -1,5 +1,6 @@
 /// @file
 
+#include <stdexcept>
 #include "Application.hpp"
 
 CApplication::CApplication() = default;
@@ -12,8 +13,7 @@ int CApplication::Run()
 		if(!Init())
 			return EXIT_FAILURE;
 		
-		//char *basedir, char *cmdline, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory
-		if(!mpEngine->Run(nullptr, ".", "", "", nullptr, mpFSFactory))
+		if(!mpEngine->Run(nullptr, ".", "", "", nullptr, mfnFSFactory))
 			return EXIT_FAILURE;
 		
 		mbRestart = false; // TODO
@@ -29,12 +29,12 @@ int CApplication::Run()
 bool CApplication::Init()
 {
 	if(!LoadFileSystemModule("filesystem_stdio"))
-		return false;
+		throw std::runtime_error(std::string("Failed to load the filesystem module!"));
 	
 	mpEngineLib = Sys_LoadModule("engine");
 	
 	if(!mpEngineLib)
-		return false;
+		throw std::runtime_error(std::string("Failed to load the engine module!"));
 	
 	auto pEngineFactory{Sys_GetFactory(mpEngineLib)};
 	
@@ -56,14 +56,20 @@ void CApplication::Shutdown()
 
 bool CApplication::LoadFileSystemModule(const char *name)
 {
+	if(!name || !*name)
+	{
+		//throw std::invalid_argument(std::string("Argument passed to CApplication::LoadFileSystemModule is invalid! (").append(name).append(")"));
+		return false;
+	};
+	
 	mpFSLib = Sys_LoadModule(name);
 	
 	if(!mpFSLib)
 		return false;
 	
-	mpFSFactory = Sys_GetFactory(mpFSLib);
+	mfnFSFactory = Sys_GetFactory(mpFSLib);
 	
-	if(!mpFSFactory)
+	if(!mfnFSFactory)
 		return false;
 	
 	return true;
