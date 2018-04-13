@@ -34,7 +34,7 @@ C_EXPORT IEngine *GetEngine()
 CEngine::CEngine() = default;
 CEngine::~CEngine() = default;
 
-bool CEngine::Load(bool dedicated, char *basedir, char *cmdline)
+bool CEngine::Load(bool dedicated, const char *basedir, const char *cmdline)
 {
 	//static quakeparms_t parms; // TODO: static?
 	

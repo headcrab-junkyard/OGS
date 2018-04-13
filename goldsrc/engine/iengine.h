@@ -5,7 +5,7 @@
 struct IEngine
 {
 	///
-	virtual bool Load(bool dedicated, char *basedir, char *cmdline) = 0;
+	virtual bool Load(bool dedicated, const char *basedir, const char *cmdline) = 0;
 	
 	///
 	virtual void Unload() = 0;
