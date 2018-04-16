@@ -13,7 +13,7 @@
 static cl_enginefunc_t gEngFuncs; // TODO: name overlap with server-side version? cl_enginefuncs in GS
 cldll_func_t cl_funcs;
 
-typedef int /*CL_DLLEXPORT*/ (*pfnF)(void *pv);
+typedef int /*CL_DLLEXPORT*/ (*pfnGetClientDLL)(void *pv);
 
 void ClientDLL_Init()
 {
@@ -246,22 +246,22 @@ void ClientDLL_ChatInputPosition(int *x, int *y)
 
 qboolean LoadClientDLLF()
 {
-	pfnF fnF = NULL;
+	pfnGetClientDLL fnGetClientDLL = NULL;
 	
 	//memcpy(&gEngFuncs, 0, sizeof(cl_enginefunc_t));
 	//memcpy(&cl_funcs, 0, sizeof(cldll_func_t));
 	
-	void *pClientDLL = Sys_LoadModule("valve/cl_dll/client"); // TODO: FS_LoadLibrary or something else that will load it from the game folder instead of app folder
+	void *pClientDLL = Sys_LoadModule("gskiller/cl_dll/client"); // TODO: FS_LoadLibrary or something else that will load it from the game folder instead of app folder
 	
 	if(!pClientDLL)
 		return false;
 	
-	fnF = (pfnF)Sys_GetExport(pClientDLL, "F"); // [BP]: Absolutely uninformative export name
+	fnGetClientDLL = (pfnGetClientDLL)Sys_GetExport(pClientDLL, "GetClientDLL");
 	
-	if(!fnF)
+	if(!fnGetClientDLL)
 		return false;
 	
-	fnF(&cl_funcs);
+	fnGetClientDLL(&cl_funcs);
 	
 	if(!cl_funcs.pfnInitialize(&gEngFuncs, CLDLL_INTERFACE_VERSION)) // TODO: So.... Are you alive?
 		return false;

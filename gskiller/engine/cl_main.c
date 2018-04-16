@@ -94,6 +94,46 @@ entity_t		*cl_visedicts[MAX_VISEDICTS];
 double			connect_time = -1;		// for connection retransmits
 
 /*
+================
+CL_Connect_f
+
+User command to connect to server
+================
+*/
+void CL_Connect_f()
+{
+	//char	name[MAX_QPATH];
+	const char *server;
+	
+	if(Cmd_Argc() != 2)
+	{
+		Con_Printf("usage: connect <server>\n");
+		return;	
+	};
+	
+	/*
+	cls.demonum = -1;		// stop demo loop in case this fails
+	
+	if (cls.demoplayback)
+	{
+		CL_StopPlayback ();
+		CL_Disconnect ();
+	};
+	*/
+	
+	//strcpy (name, Cmd_Argv(1));
+	//CL_EstablishConnection (name);
+	//Host_Reconnect_f ();
+	
+	server = Cmd_Argv(1);
+	
+	CL_Disconnect ();
+	
+	strncpy (cls.servername, server, sizeof(cls.servername)-1);
+	CL_BeginServerConnect();
+};
+
+/*
 =======================
 CL_SendConnectPacket
 
@@ -1094,10 +1134,14 @@ void CL_Init ()
 	Cvar_RegisterVariable (&noaim);
 	
 	Cmd_AddCommand ("entities", CL_PrintEntities_f);
+	
+	Cmd_AddCommand ("connect", CL_Connect_f);
 	Cmd_AddCommand ("disconnect", CL_Disconnect_f);
+	
 	Cmd_AddCommand ("record", CL_Record_f);
 	//Cmd_AddCommand ("rerecord", CL_ReRecord_f);
 	Cmd_AddCommand ("stop", CL_Stop_f);
+	
 	Cmd_AddCommand ("playdemo", CL_PlayDemo_f);
 	Cmd_AddCommand ("timedemo", CL_TimeDemo_f);
 	

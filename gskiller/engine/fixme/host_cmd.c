@@ -395,29 +395,6 @@ void Host_Reconnect_f ()
 }
 
 /*
-=====================
-Host_Connect_f
-
-User command to connect to server
-=====================
-*/
-void Host_Connect_f ()
-{
-	char	name[MAX_QPATH];
-	
-	cls.demonum = -1;		// stop demo loop in case this fails
-	if (cls.demoplayback)
-	{
-		CL_StopPlayback ();
-		CL_Disconnect ();
-	}
-	strcpy (name, Cmd_Argv(1));
-	CL_EstablishConnection (name);
-	Host_Reconnect_f ();
-}
-
-
-/*
 ===============================================================================
 
 LOAD / SAVE GAME
@@ -671,7 +648,7 @@ void Host_Loadgame_f ()
 		{	// parse an edict
 
 			ent = EDICT_NUM(entnum);
-			memset (&ent->v, 0, progs->entityfields * 4);
+			memset (&ent->v, 0, sizeof(ent->v));
 			ent->free = false;
 			ED_ParseEdict (start, ent);
 	
@@ -833,7 +810,7 @@ int LoadGamestate(char *level, char *startspot)
 		// parse an edict
 
 		ent = EDICT_NUM(entnum);
-		memset (&ent->v, 0, progs->entityfields * 4);
+		memset (&ent->v, 0, sizeof(ent->v));
 		ent->free = false;
 		ED_ParseEdict (start, ent);
 	
@@ -934,11 +911,15 @@ void Host_Name_f ()
 	MSG_WriteString (&sv.reliable_datagram, host_client->name);
 }
 
-	
-void Host_Version_f ()
+/*
+=======================
+Host_Version_f
+======================
+*/
+void Host_Version_f () // TODO: CL_Version_f?
 {
 	Con_Printf ("Version %4.2f\n", VERSION);
-	Con_Printf ("Exe: "__TIME__" "__DATE__"\n");
+	Con_Printf ("Exe: " __TIME__ " " __DATE__ "\n");
 }
 
 #ifdef IDGODS
@@ -1188,7 +1169,7 @@ void Host_Kill_f ()
 
 	if (sv_player->v.health <= 0)
 	{
-		SV_ClientPrintf ("Can't suicide -- allready dead!\n");
+		SV_ClientPrintf ("Can't suicide -- already dead!\n");
 		return;
 	}
 	
@@ -1205,7 +1186,6 @@ Host_Pause_f
 */
 void Host_Pause_f ()
 {
-	
 	if (cmd_source == src_command)
 	{
 		Cmd_ForwardToServer ();
@@ -1218,13 +1198,9 @@ void Host_Pause_f ()
 		sv.paused ^= 1;
 
 		if (sv.paused)
-		{
 			SV_BroadcastPrintf ("%s paused the game\n", pr_strings + sv_player->v.netname);
-		}
 		else
-		{
 			SV_BroadcastPrintf ("%s unpaused the game\n",pr_strings + sv_player->v.netname);
-		}
 
 	// send notification to all clients
 		MSG_WriteByte (&sv.reliable_datagram, svc_setpause);
@@ -1294,7 +1270,7 @@ void Host_Spawn_f ()
 		// set up the edict
 		ent = host_client->edict;
 
-		memset (&ent->v, 0, progs->entityfields * 4);
+		memset (&ent->v, 0, sizeof(ent->v));
 		ent->v.colormap = NUM_FOR_EDICT(ent);
 		ent->v.team = (host_client->colors & 15) + 1;
 		ent->v.netname = host_client->name - pr_strings;
@@ -1876,12 +1852,11 @@ void Host_InitCommands ()
 	Cmd_AddCommand ("restart", Host_Restart_f);
 	Cmd_AddCommand ("changelevel", Host_Changelevel_f);
 	Cmd_AddCommand ("changelevel2", Host_Changelevel2_f);
-	Cmd_AddCommand ("connect", Host_Connect_f);
 	Cmd_AddCommand ("reconnect", Host_Reconnect_f);
 	Cmd_AddCommand ("name", Host_Name_f);
 	Cmd_AddCommand ("noclip", Host_Noclip_f);
 	Cmd_AddCommand ("version", Host_Version_f);
-#ifdef IDGODS
+#ifdef HEADCRABGODS
 	Cmd_AddCommand ("please", Host_Please_f);
 #endif
 	Cmd_AddCommand ("say", Host_Say_f);

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(OpenGS)
+project(GSKiller)
 
 option(OGS_DEV "Developer Build" OFF)
 option(OGS_DEBUG "Debug Build" OFF)
@@ -24,4 +24,4 @@ if(OGS_DEV)
 	add_definitions(-DOGS_DEBUG)
 endif()
 
-add_subdirectory(goldsrc)
+add_subdirectory(gskiller)
