@@ -520,7 +520,7 @@ void ED_ParseGlobals (char *data)
 ED_NewString
 =============
 */
-char *ED_NewString (const char *string)
+char *ED_NewString (char *string)
 {
 	char	*new, *new_p;
 	int		i,l;
@@ -557,7 +557,7 @@ Used for initial level load and for savegames.
 */
 char *ED_ParseEdict (char *data, edict_t *ent)
 {
-	ddef_t		*key;
+	//ddef_t		*key;
 	qboolean	anglehack;
 	qboolean	init;
 	char		keyname[256];
@@ -618,10 +618,10 @@ if (!strcmp(com_token, "light"))
 		if (keyname[0] == '_')
 			continue;
 		
-		if (!key)
+		//if (!key)
 		{
-			Con_Printf ("'%s' is not a field\n", keyname);
-			continue;
+			//Con_Printf ("'%s' is not a field\n", keyname);
+			//continue;
 		}
 
 		if (anglehack)
@@ -661,7 +661,7 @@ void ED_LoadFromFile (char *data)
 {	
 	edict_t		*ent;
 	int			inhibit;
-	dfunction_t	*func;
+	//dfunction_t	*func;
 	
 	ent = NULL;
 	inhibit = 0;
@@ -714,9 +714,9 @@ void ED_LoadFromFile (char *data)
 		}
 
 	// look for the spawn function
-		func = ED_FindFunction ( PR_GetString(ent->v.classname) );
+		//func = ED_FindFunction ( PR_GetString(ent->v.classname) ); // TODO
 
-		if (!func)
+		//if (!func)
 		{
 			Con_Printf ("No spawn function for:\n");
 			ED_Print (ent);
@@ -724,8 +724,8 @@ void ED_LoadFromFile (char *data)
 			continue;
 		}
 
-		gGlobalVariables.self = EDICT_TO_PROG(ent);
-		PR_ExecuteProgram (func - pr_functions);
+		//gGlobalVariables.self = EDICT_TO_PROG(ent);
+		//PR_ExecuteProgram (func - pr_functions); // TODO
 	}	
 
 	Con_DPrintf ("%i entities inhibited\n", inhibit);
@@ -744,6 +744,7 @@ PR_LoadProgs
 void PR_LoadProgs () // our temporary LoadEntityDLLs
 {
 	static void *gamedll = NULL;
+	pfnGiveFnptrsToDll fnGiveFnptrsToDll = NULL;
 	pfnGetEntityAPI fnGetEntityAPI = NULL;
 	pfnGetEntityAPI2 fnGetEntityAPI2 = NULL;
 	
@@ -752,14 +753,14 @@ void PR_LoadProgs () // our temporary LoadEntityDLLs
 	if (!gamedll)
 		Sys_Error ("PR_LoadProgs: couldn't load game dll");
 
-	pr_strings = (char *)progs + progs->ofs_strings;
+	//pr_strings = (char *)progs + progs->ofs_strings; // TODO
 	
 	fnGiveFnptrsToDll = (pfnGiveFnptrsToDll)Sys_GetExport(gamedll, "GiveFnptrsToDll");
 	
 	if(!fnGiveFnptrsToDll)
 		return;
 	
-	fnGiveFnptrsToDll(&gEngFuncs, &gGlobalVariables);
+	//fnGiveFnptrsToDll(&gEngFuncs, &gGlobalVariables); // TODO
 	
 	fnGetEntityAPI = (pfnGetEntityAPI)Sys_GetExport(gamedll, "GetEntityAPI");
 	fnGetEntityAPI2 = (pfnGetEntityAPI2)Sys_GetExport(gamedll, "GetEntityAPI2");

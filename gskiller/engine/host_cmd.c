@@ -63,7 +63,7 @@ void Host_Status_f ()
 	int			minutes;
 	int			hours = 0;
 	int			j;
-	void		(*print) (char *fmt, ...);
+	void		(*print) (const char *fmt, ...);
 	
 	if (cmd_source == src_command)
 	{
@@ -79,17 +79,17 @@ void Host_Status_f ()
 
 	print ("host:    %s\n", Cvar_VariableString ("hostname"));
 	print ("version: %4.2f\n", VERSION);
-	if (tcpipAvailable)
-		print ("tcp/ip:  %s\n", my_tcpip_address);
-	if (ipxAvailable)
-		print ("ipx:     %s\n", my_ipx_address);
+	//if (tcpipAvailable) // TODO
+		//print ("tcp/ip:  %s\n", my_tcpip_address); // TODO
+	//if (ipxAvailable) // TODO
+		//print ("ipx:     %s\n", my_ipx_address); // TODO
 	print ("map:     %s\n", sv.name);
-	print ("players: %i active (%i max)\n\n", net_activeconnections, svs.maxclients);
+	//print ("players: %i active (%i max)\n\n", SV_GetClientCount(), svs.maxclients); // TODO
 	for (j=0, client = svs.clients ; j<svs.maxclients ; j++, client++)
 	{
 		if (!client->active)
 			continue;
-		seconds = (int)(net_time - client->netchan.connecttime);
+		seconds = 0; //(int)(net_time - client->netchan.connecttime); // TODO
 		minutes = seconds / 60;
 		if (minutes)
 		{
@@ -101,7 +101,7 @@ void Host_Status_f ()
 		else
 			hours = 0;
 		print ("#%-2u %-16.16s  %3i  %2i:%02i:%02i\n", j+1, client->name, (int)client->edict->v.frags, hours, minutes, seconds);
-		print ("   %s\n", client->netchan.address);
+		print ("   %s\n", client->netchan.remote_address);
 	}
 }
 
@@ -121,14 +121,14 @@ void Host_God_f ()
 		return;
 	}
 
-	if (gGlobalVariables.deathmatch && !host_client->privileged)
-		return;
+	//if (gGlobalVariables.deathmatch && !host_client->privileged) // TODO: if cheats_active?
+		//return;
 
 	sv_player->v.flags = (int)sv_player->v.flags ^ FL_GODMODE;
 	if (!((int)sv_player->v.flags & FL_GODMODE) )
-		SV_ClientPrintf ("godmode OFF\n");
+		SV_ClientPrintf (host_client, "godmode OFF\n");
 	else
-		SV_ClientPrintf ("godmode ON\n");
+		SV_ClientPrintf (host_client, "godmode ON\n");
 }
 
 void Host_Notarget_f ()
@@ -139,14 +139,14 @@ void Host_Notarget_f ()
 		return;
 	}
 
-	if (gGlobalVariables.deathmatch && !host_client->privileged)
-		return;
+	//if (gGlobalVariables.deathmatch && !host_client->privileged) // TODO: if cheats_active?
+		//return;
 
 	sv_player->v.flags = (int)sv_player->v.flags ^ FL_NOTARGET;
 	if (!((int)sv_player->v.flags & FL_NOTARGET) )
-		SV_ClientPrintf ("notarget OFF\n");
+		SV_ClientPrintf (host_client, "notarget OFF\n");
 	else
-		SV_ClientPrintf ("notarget ON\n");
+		SV_ClientPrintf (host_client, "notarget ON\n");
 }
 
 qboolean noclip_anglehack;
@@ -159,20 +159,20 @@ void Host_Noclip_f ()
 		return;
 	}
 
-	if (gGlobalVariables.deathmatch && !host_client->privileged)
-		return;
+	//if (gGlobalVariables.deathmatch && !host_client->privileged) // TODO: if cheats_active?
+		//return;
 
 	if (sv_player->v.movetype != MOVETYPE_NOCLIP)
 	{
 		noclip_anglehack = true;
 		sv_player->v.movetype = MOVETYPE_NOCLIP;
-		SV_ClientPrintf ("noclip ON\n");
+		SV_ClientPrintf (host_client, "noclip ON\n");
 	}
 	else
 	{
 		noclip_anglehack = false;
 		sv_player->v.movetype = MOVETYPE_WALK;
-		SV_ClientPrintf ("noclip OFF\n");
+		SV_ClientPrintf (host_client, "noclip OFF\n");
 	}
 }
 
@@ -191,18 +191,18 @@ void Host_Fly_f ()
 		return;
 	}
 
-	if (gGlobalVariables.deathmatch && !host_client->privileged)
-		return;
+	//if (gGlobalVariables.deathmatch && !host_client->privileged) // TODO: if cheats_active?
+		//return;
 
 	if (sv_player->v.movetype != MOVETYPE_FLY)
 	{
 		sv_player->v.movetype = MOVETYPE_FLY;
-		SV_ClientPrintf ("flymode ON\n");
+		SV_ClientPrintf (host_client, "flymode ON\n");
 	}
 	else
 	{
 		sv_player->v.movetype = MOVETYPE_WALK;
-		SV_ClientPrintf ("flymode OFF\n");
+		SV_ClientPrintf (host_client, "flymode OFF\n");
 	}
 }
 
@@ -225,7 +225,7 @@ void Host_Ping_f ()
 		return;
 	}
 
-	SV_ClientPrintf ("Client ping times:\n");
+	SV_ClientPrintf (host_client, "Client ping times:\n");
 	for (i=0, client = svs.clients ; i<svs.maxclients ; i++, client++)
 	{
 		if (!client->active)
@@ -234,7 +234,7 @@ void Host_Ping_f ()
 		for (j=0 ; j<NUM_PING_TIMES ; j++)
 			total+=client->ping_times[j];
 		total /= NUM_PING_TIMES;
-		SV_ClientPrintf ("%4i %s\n", (int)(total*1000), client->name);
+		SV_ClientPrintf (host_client, "%4i %s\n", (int)(total*1000), client->name);
 	}
 }
 
@@ -584,11 +584,9 @@ void Host_Loadgame_f ()
 	current_skill = (int)(tfloat + 0.1);
 	Cvar_SetValue ("skill", (float)current_skill);
 
-#ifdef QUAKE2
 	Cvar_SetValue ("deathmatch", 0);
 	Cvar_SetValue ("coop", 0);
-	Cvar_SetValue ("teamplay", 0);
-#endif
+	//Cvar_SetValue ("teamplay", 0);
 
 	fscanf (f, "%s\n",mapname);
 	fscanf (f, "%f\n",&time);
@@ -670,7 +668,7 @@ void Host_Loadgame_f ()
 
 	if (cls.state != ca_dedicated)
 	{
-		CL_EstablishConnection ("local");
+		//CL_EstablishConnection ("local"); // TODO
 		Host_Reconnect_f ();
 	}
 }
@@ -716,8 +714,8 @@ void SaveGamestate()
 	for (i=svs.maxclients+1 ; i<sv.num_edicts ; i++)
 	{
 		ent = EDICT_NUM(i);
-		if ((int)ent->v.flags & FL_ARCHIVE_OVERRIDE)
-			continue;
+		//if ((int)ent->v.flags & FL_ARCHIVE_OVERRIDE) // TODO
+			//continue;
 		fprintf (f, "%i\n",i);
 		ED_Write (f, ent);
 		fflush (f);
@@ -1031,7 +1029,7 @@ void Host_Say(qboolean teamonly)
 		if (teamplay.value && teamonly && client->edict->v.team != save->edict->v.team)
 			continue;
 		host_client = client;
-		SV_ClientPrintf("%s", text);
+		SV_ClientPrintf(host_client, "%s", text);
 	}
 	host_client = save;
 
@@ -1096,7 +1094,7 @@ void Host_Tell_f()
 		if (Q_strcasecmp(client->name, Cmd_Argv(1)))
 			continue;
 		host_client = client;
-		SV_ClientPrintf("%s", text);
+		SV_ClientPrintf(host_client, "%s", text);
 		break;
 	}
 	host_client = save;
@@ -1145,13 +1143,15 @@ void Host_Color_f()
 		return;
 	}
 
-	host_client->colors = playercolor;
+	host_client->topcolor = playercolor;
+	host_client->bottomcolor = playercolor;
 	host_client->edict->v.team = bottom + 1;
 
 // send notification to all clients
 	MSG_WriteByte (&sv.reliable_datagram, svc_updatecolors);
 	MSG_WriteByte (&sv.reliable_datagram, host_client - svs.clients);
-	MSG_WriteByte (&sv.reliable_datagram, host_client->colors);
+	MSG_WriteByte (&sv.reliable_datagram, host_client->topcolor);
+	MSG_WriteByte (&sv.reliable_datagram, host_client->bottomcolor);
 }
 
 /*
@@ -1169,7 +1169,7 @@ void Host_Kill_f ()
 
 	if (sv_player->v.health <= 0)
 	{
-		SV_ClientPrintf ("Can't suicide -- already dead!\n");
+		SV_ClientPrintf (host_client, "Can't suicide -- already dead!\n");
 		return;
 	}
 	
@@ -1192,7 +1192,7 @@ void Host_Pause_f ()
 		return;
 	}
 	if (!pausable.value)
-		SV_ClientPrintf ("Pause not allowed.\n");
+		SV_ClientPrintf (host_client, "Pause not allowed.\n");
 	else
 	{
 		sv.paused ^= 1;
@@ -1233,7 +1233,7 @@ void Host_PreSpawn_f ()
 	SZ_Write (&host_client->netchan.message, sv.signon.data, sv.signon.cursize);
 	MSG_WriteByte (&host_client->netchan.message, svc_signonnum);
 	MSG_WriteByte (&host_client->netchan.message, 2);
-	host_client->sendsignon = true;
+	//host_client->sendsignon = true;
 }
 
 /*
@@ -1272,7 +1272,7 @@ void Host_Spawn_f ()
 
 		memset (&ent->v, 0, sizeof(ent->v));
 		ent->v.colormap = NUM_FOR_EDICT(ent);
-		ent->v.team = (host_client->colors & 15) + 1;
+		ent->v.team = (host_client->topcolor & 15) + 1;
 		ent->v.netname = host_client->name - pr_strings;
 
 		// copy spawn parms out of the client_t
@@ -1284,12 +1284,12 @@ void Host_Spawn_f ()
 
 		gGlobalVariables.time = sv.time;
 		//gGlobalVariables.self = EDICT_TO_PROG(sv_player);
-		gEntityInterface.pfnClientConnect(sv_player);
+		gEntityInterface.pfnClientConnect(sv_player, host_client->userinfo);
 
-		if ((Sys_FloatTime() - host_client->netchan.connecttime) <= sv.time)
+		//if ((Sys_FloatTime() - host_client->netchan.connecttime) <= sv.time) // TODO
 			Sys_Printf ("%s entered the game\n", host_client->name);
 
-		gEntityInterface.pfnPutClientInServer(sv_player);	
+		gEntityInterface.pfnClientPutInServer(sv_player);	
 	}
 
 
@@ -1310,7 +1310,8 @@ void Host_Spawn_f ()
 		MSG_WriteShort (&host_client->netchan.message, client->old_frags);
 		MSG_WriteByte (&host_client->netchan.message, svc_updatecolors);
 		MSG_WriteByte (&host_client->netchan.message, i);
-		MSG_WriteByte (&host_client->netchan.message, client->colors);
+		MSG_WriteByte (&host_client->netchan.message, client->topcolor);
+		MSG_WriteByte (&host_client->netchan.message, client->bottomcolor);
 	}
 	
 // send all current light styles
@@ -1357,7 +1358,7 @@ void Host_Spawn_f ()
 
 	MSG_WriteByte (&host_client->netchan.message, svc_signonnum);
 	MSG_WriteByte (&host_client->netchan.message, 3);
-	host_client->sendsignon = true;
+	//host_client->sendsignon = true;
 }
 
 /*
@@ -1402,8 +1403,8 @@ void Host_Kick_f ()
 			return;
 		}
 	}
-	else if (gGlobalVariables.deathmatch && !host_client->privileged)
-		return;
+	//else if (gGlobalVariables.deathmatch && !host_client->privileged) // TODO: if cheats_active?
+		//return;
 
 	save = host_client;
 
@@ -1456,10 +1457,9 @@ void Host_Kick_f ()
 				message++;
 		}
 		if (message)
-			SV_ClientPrintf ("Kicked by %s: %s\n", who, message);
+			SV_DropClient (host_client, false, "Kicked by %s: %s\n", who, message);
 		else
-			SV_ClientPrintf ("Kicked by %s\n", who);
-		SV_DropClient (false);
+			SV_DropClient (host_client, false, "Kicked by %s\n", who);
 	}
 
 	host_client = save;
@@ -1482,7 +1482,6 @@ void Host_Give_f ()
 {
 	char	*t;
 	int		v, w;
-	eval_t	*val;
 
 	if (cmd_source == src_command)
 	{
@@ -1490,8 +1489,8 @@ void Host_Give_f ()
 		return;
 	}
 
-	if (gGlobalVariables.deathmatch && !host_client->privileged)
-		return;
+	//if (gGlobalVariables.deathmatch && !host_client->privileged) // TODO: if cheats_active?
+		//return;
 
 	t = Cmd_Argv(1);
 	v = atoi (Cmd_Argv(2));
@@ -1508,126 +1507,24 @@ void Host_Give_f ()
    case '7':
    case '8':
    case '9':
-      // MED 01/04/97 added hipnotic give stuff
-      if (hipnotic)
-      {
-         if (t[0] == '6')
-         {
-            if (t[1] == 'a')
-               sv_player->v.items = (int)sv_player->v.items | HIT_PROXIMITY_GUN;
-            else
-               sv_player->v.items = (int)sv_player->v.items | IT_GRENADE_LAUNCHER;
-         }
-         else if (t[0] == '9')
-            sv_player->v.items = (int)sv_player->v.items | HIT_LASER_CANNON;
-         else if (t[0] == '0')
-            sv_player->v.items = (int)sv_player->v.items | HIT_MJOLNIR;
-         else if (t[0] >= '2')
-            sv_player->v.items = (int)sv_player->v.items | (IT_SHOTGUN << (t[0] - '2'));
-      }
-      else
-      {
-         if (t[0] >= '2')
-            sv_player->v.items = (int)sv_player->v.items | (IT_SHOTGUN << (t[0] - '2'));
-      }
+        if (t[0] >= '2')
+			sv_player->v.items = (int)sv_player->v.items | (IT_SHOTGUN << (t[0] - '2'));
 		break;
 	
     case 's':
-		if (rogue)
-		{
-	        val = GetEdictFieldValue(sv_player, "ammo_shells1");
-		    if (val)
-			    val->_float = v;
-		}
-
         sv_player->v.ammo_shells = v;
         break;		
     case 'n':
-		if (rogue)
-		{
-			val = GetEdictFieldValue(sv_player, "ammo_nails1");
-			if (val)
-			{
-				val->_float = v;
-				if (sv_player->v.weapon <= IT_LIGHTNING)
-					sv_player->v.ammo_nails = v;
-			}
-		}
-		else
-		{
-			sv_player->v.ammo_nails = v;
-		}
-        break;		
-    case 'l':
-		if (rogue)
-		{
-			val = GetEdictFieldValue(sv_player, "ammo_lava_nails");
-			if (val)
-			{
-				val->_float = v;
-				if (sv_player->v.weapon > IT_LIGHTNING)
-					sv_player->v.ammo_nails = v;
-			}
-		}
+		sv_player->v.ammo_nails = v;
         break;
     case 'r':
-		if (rogue)
-		{
-			val = GetEdictFieldValue(sv_player, "ammo_rockets1");
-			if (val)
-			{
-				val->_float = v;
-				if (sv_player->v.weapon <= IT_LIGHTNING)
-					sv_player->v.ammo_rockets = v;
-			}
-		}
-		else
-		{
-			sv_player->v.ammo_rockets = v;
-		}
-        break;		
-    case 'm':
-		if (rogue)
-		{
-			val = GetEdictFieldValue(sv_player, "ammo_multi_rockets");
-			if (val)
-			{
-				val->_float = v;
-				if (sv_player->v.weapon > IT_LIGHTNING)
-					sv_player->v.ammo_rockets = v;
-			}
-		}
+		sv_player->v.ammo_rockets = v;
         break;		
     case 'h':
         sv_player->v.health = v;
         break;		
     case 'c':
-		if (rogue)
-		{
-			val = GetEdictFieldValue(sv_player, "ammo_cells1");
-			if (val)
-			{
-				val->_float = v;
-				if (sv_player->v.weapon <= IT_LIGHTNING)
-					sv_player->v.ammo_cells = v;
-			}
-		}
-		else
-		{
-			sv_player->v.ammo_cells = v;
-		}
-        break;		
-    case 'p':
-		if (rogue)
-		{
-			val = GetEdictFieldValue(sv_player, "ammo_plasma");
-			if (val)
-			{
-				val->_float = v;
-				if (sv_player->v.weapon > IT_LIGHTNING)
-					sv_player->v.ammo_cells = v;
-			}
-		}
+		sv_player->v.ammo_cells = v;
         break;		
     }
 }
@@ -1841,8 +1738,16 @@ void Host_Stopdemo_f ()
 Host_InitCommands
 ==================
 */
-void Host_InitCommands ()
+void Host_InitCommands()
 {
+	/*
+	if (COM_CheckParm ("-cheats"))
+	{
+		allow_cheats = true;
+		Info_SetValueForStarKey (svs.info, "*cheats", "ON", MAX_SERVERINFO_STRING);
+	}
+	*/
+	
 	Cmd_AddCommand ("status", Host_Status_f);
 	Cmd_AddCommand ("quit", Host_Quit_f);
 	Cmd_AddCommand ("god", Host_God_f);
