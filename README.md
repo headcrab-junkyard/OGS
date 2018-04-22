@@ -1,6 +1,13 @@
 # GoldSource Killer
 
-Clean reimplementation of the GoldSource game engine (common base for OpenGS/Magenta/ReplicaSource engines)
+>Gold Source is a version of Quake and Quake is open source so maybe that is an option for you.
+>
+>Kind regards,
+>
+>Mike
+
+Clean open source reimplementation of the GoldSource game engine  
+Based on original Quake (Id Tech 2) engine sources
 
 ## Mini-Q&A
 
@@ -16,5 +23,7 @@ This information allows you to see which function caused the crash and its locat
 (Backtrace logs don't show you the actual source code)
 
 ## License
+
+[![license](https://img.shields.io/github/license/BlackPhrase/GSKiller-9000.svg)](https://github.com/BlackPhrase/GSKiller-9000/blob/master/LICENSE.md)
 
 GNU GPL v2/3 or higher
