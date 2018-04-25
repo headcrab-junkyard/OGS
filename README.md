@@ -1,4 +1,6 @@
-# GoldSource Killer
+# OGS Engine
+
+GoldSource Engine Killer
 
 >Gold Source is a version of Quake and Quake is open source so maybe that is an option for you.
 >
