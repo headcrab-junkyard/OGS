@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(GSKiller)
+project(OGSEngine)
 
 option(OGS_DEV "Developer Build" OFF)
 option(OGS_DEBUG "Debug Build" OFF)
