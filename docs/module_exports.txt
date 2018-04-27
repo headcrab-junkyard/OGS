@@ -1,0 +1,64 @@
+// +	- means than we have exposed it from the module
+// ++	- means than we have fully implemented support for it
+
+/*
+gameui.dll
+
+VGuiModuleLoader003					-
+RunGameEngine006					-
+MusicManager001 (czero only?)		-
+GameUI007							+
+GameConsole003						+
+CareerUI001 (czero only?)			+
+*/
+
+/*
+vgui2.DLL
+
+VGUI_Panel007						-
+KeyValues003						-
+VGUI_ivgui006						-
+VGUI_System009						-
+VGUI_Surface026						-
+VGUI_Scheme009						-
+VGUI_Localize002					-
+VGUI_Localize003					-
+VGUI_InputInternal001				-
+VGUI_Input004						-
+*/
+
+/*
+hw.DLL
+
+// All these interfaces are needed only for listenserver mode
+// Used by client dll or gameui or other client side modules
+// They're unused by dedicated server
+// So if our engine will be compiled as a single dll for both
+// listenserver/dedicated modes, these interfaces will be always
+// instantiated (even if they wouldn't be used + additional mem usage)
+EngineSurface007					+
+VENGINE_GAMEUIFUNCS_VERSION001		+
+VENGINE_LAUNCHER_API_VERSION002		+
+
+VGUI_Surface026						-
+(vgui2 surface interface;
+i don't like to see it's here cause it looks 
+like we need to impl it the same manner like in 
+vgui2 lib - via the interface->impl which redirect a call to vgui1 
+impl which means we should link with vgui1 or write redirecting
+calls to vgui2)
+
+VEngineVGui001						+
+BaseUI001							+
+
+VENGINE_HLDS_API_VERSION002			+
+GameServerData001					+
+*/
+
+// Unsorted
+
+VClientVGUI001
+// Seems that this thing should be exported from the client dll via the
+// ClientFactory export func
+// "The functions in this interface are passed pointers to the VGUI2, Steam
+filesystem, hw/sw engine and GameUI DLL factories."

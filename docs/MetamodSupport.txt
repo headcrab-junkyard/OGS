@@ -1,0 +1,35 @@
+Metamod Support
+
+	class CGame
+	{
+	public:
+		CGame();
+		~CGame();
+		
+		virtual bool Init();
+		virtual void Shutdown();
+		
+		bool LoadFromFile(const tString &asPath);
+		
+		// ...
+	};
+	
+	class CMetamodGame : public CGame
+	{
+	public:
+		CMetamodGame();
+		~CMetamodGame();
+		
+		bool Init() override;
+		void Shutdown() override;
+		
+		// ...
+	};
+	
+	std::unique_ptr<CGame> mpGame;
+	
+	#ifdef METAMOD_SUPPORT
+		mpGame = std::make_unique<CMetamodGame>();
+	#else
+		mpGame = std::make_unique<CGame>();
+	#endif

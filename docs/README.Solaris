@@ -1,0 +1,60 @@
+Solaris 2 Quake / QuakeWorld
+----------------------------
+
+	COMMAND LINE FLAGS:
+	
+	+pixel_multiply 
+	
+		You can magnify the screen by using this flag:
+		
+		Ex: % quake +pixel_multiply 2
+		
+		You can also use this command (without the dash)
+		from the Quake console.  pixel_multiply is a Quake
+		cvar and is saved from session to session in the
+		config.cfg file.
+
+	-winsize <width> <height>
+
+		Set the size of the window when you start
+
+	-count_frames
+
+		See how many frames per second you're getting
+
+	GAME SETTINGS
+
+	mouse binding
+
+		You can bind and unbind the mouse to the Quake window
+		by using the Use Mouse selection in the Options menu,
+		or with the "_windowed_mouse" command in the console,
+		ex "_windowed_mouse 1" Now, moving the mouse will move
+		your player.  Use "_windowed_mouse 0" to unbind.  You
+		can bind or alias this to a key.  
+
+	Example command:
+
+		% quake.xil +pixel_multiply 2 -winsize 400 300
+
+WHAT IS "QUAKEWORLD" AND HOW DO I USE IT?
+-----------------------------------------
+
+	In a nutshell, QuakeWorld is an extension of Quake that is
+	much more user friendly.  It allows the user to dynamically
+	download changes from the server, such as new maps and new
+	weapons while inside the Quake client.  It is not directly
+	compatible with Quake (ie, you can't connect to a Quake server
+	from a QuakeWorld client) but in general it is superior to
+	Quake.  QuakeWorld also offers much smoother play over the 
+	Internet by using client prediction.  For more information,
+	check out http://www.quakeworld.net/.
+
+	In order to use it, you must make a copy of the "qw"
+	directory.  Any new stuff that is downloaded from a QuakeWorld
+	server will be stored in this directory.  All regular Quake
+	flags apply so you can use the same command line as before.
+
+	Example command:
+
+		% qwcl.xil +pixel_multiply 2 -winsize 400 300

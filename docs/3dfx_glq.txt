@@ -1,0 +1,50 @@
+
+
+
+
+5. Why does GLQuake try to connect to my Internet connection whenever
+it starts?
+
+GLQuake uses Windows networking. Auto-Dial is likely enabled in your
+Internet Control Panel or in Internet Explorer Options.  Single
+Player users: To disable Network use in GLQuake and prevent the
+network connection screen from coming up, add "-nolan" to the
+GLQUAKE.EXE command line, example:
+	GLQUAKE.EXE -nolan
+
+
+
+7. Mouse input seems jumpy, how do I fix that?
+
+From the console (hit the ~ tilde key), enter m_filter 1 <enter>
+This option can be added to the AUTOEXEC.CFG file (in the \ID1
+directory).  You may also add this option to the GLQUAKE.EXE command
+line, example:
+	GLQUAKE.EXE +m_filter 1
+
+
+
+8. While playing GLQuake the sound stutters, how do I fix it?
+
+If your sound card does not support DirectSound, you may encounter
+stuttering sound during game play.  Try adding the following value to
+the CONFIG.CFG file (in the quake\ID1 directory):
+		 _snd_mixahead ".14"
+
+
+
+9. When I hit ALT-TAB or the Windows start button to switch to another
+application why do I return to a 640x480 display?
+
+GLQuake by default needs to keep the 2D display at 640x480 while it is
+running. To return the display to your normal setting you must exit
+GLQuake.  To prevent this, add the following to the GLQUAKE.EXE command
+line options "+_windowed_mouse 1" and "-window"   example:
+	GLQUAKE.EXE +_windowed_mouse 1 -window
+
+11. GLQuake multiplayer slows down alot, how do I fix it?
+
+Add gl_playermip 2 to the AUTOEXEC.CFG file (in the \ID1 directory)
+You may however add "+gl_playermip 2" to the GLQUAKE.EXE command line,
+example:
+	GLQUAKE.EXE +gl_playermip 2
