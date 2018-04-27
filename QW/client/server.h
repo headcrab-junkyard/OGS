@@ -98,8 +98,6 @@ typedef enum
 	cs_free,		// can be reused for a new connection
 	cs_zombie,		// client has been disconnected, but don't reuse
 					// connection for a couple seconds
-	cs_connected,	// has been assigned to a client_t, but not in game yet
-	cs_spawned		// client is fully in game
 } client_state_t;
 
 typedef struct
@@ -116,23 +114,19 @@ typedef struct
 
 typedef struct client_s
 {
-	client_state_t	state;
-
 	int				spectator;			// non-interactive
 
-	qboolean		sendinfo;			// at end of frame, send info to all
-										// this prevents malicious multiple broadcasts
+	
 	float			lastnametime;		// time of last name change
 	int				lastnamecount;		// time of last name change
-	unsigned		checksum;			// checksum for calcs
 	qboolean		drop;				// lose this guy next opportunity
-	int				lossage;			// loss percentage
+	
 
 	int				userid;							// identifying number
 	char			userinfo[MAX_INFO_STRING];		// infostring
 
-	usercmd_t		lastcmd;			// for filling in big drops and partial predictions
-	double			localtime;			// of last message
+	
+	
 	int				oldbuttons;
 
 	float			maxspeed;			// localized maxspeed
@@ -141,29 +135,6 @@ typedef struct client_s
 	edict_t			*edict;				// EDICT_NUM(clientnum+1)
 	char			name[32];			// for printing to other people
 										// extracted from userinfo
-	int				messagelevel;		// for filtering printed messages
-
-	// the datagram is written to after every frame, but only cleared
-	// when it is sent out to the client.  overflow is tolerated.
-	sizebuf_t		datagram;
-	byte			datagram_buf[MAX_DATAGRAM];
-
-	// back buffers for client reliable data
-	sizebuf_t	backbuf;
-	int			num_backbuf;
-	int			backbuf_size[MAX_BACK_BUFFERS];
-	byte		backbuf_data[MAX_BACK_BUFFERS][MAX_MSGLEN];
-
-	double			connection_started;	// or time of disconnect for zombies
-	qboolean		send_message;		// set on frames a datagram arived on
-
-// spawn parms are carried from level to level
-	float			spawn_parms[NUM_SPAWN_PARMS];
-
-// client known data for deltas	
-	int				old_frags;
-	
-	int				stats[MAX_CL_STATS];
 
 
 	client_frame_t	frames[UPDATE_BACKUP];	// updates can be deltad from here
@@ -186,9 +157,6 @@ typedef struct client_s
 	qboolean		remote_snap;
  
 //===== NETWORK ============
-	int				chokecount;
-	int				delta_sequence;		// -1 = no compression
-	netchan_t		netchan;
 } client_t;
 
 // a client can leave the server in one of four ways:
@@ -201,40 +169,17 @@ typedef struct client_s
 
 
 #define	STATFRAMES	100
-typedef struct
-{
-	double	active;
-	double	idle;
-	int		count;
-	int		packets;
 
-	double	latched_active;
-	double	latched_idle;
-	int		latched_packets;
-} svstats_t;
 
-// MAX_CHALLENGES is made large to prevent a denial
-// of service attack that could cycle all of them
-// out before legitimate users connected
-#define	MAX_CHALLENGES	1024
+
 
 typedef struct
 {
-	netadr_t	adr;
-	int			challenge;
-	int			time;
-} challenge_t;
-
-typedef struct
-{
-	int			spawncount;			// number of servers spawned since start,
-									// used to check late spawns
-	client_t	clients[MAX_CLIENTS];
-	int			serverflags;		// episode completion information
+	
 	
 	double		last_heartbeat;
 	int			heartbeat_sequence;
-	svstats_t	stats;
+	
 
 	char		info[MAX_SERVERINFO_STRING];
 
@@ -244,7 +189,7 @@ typedef struct
 	sizebuf_t	log[2];
 	byte		log_buf[2][MAX_DATAGRAM];
 
-	challenge_t	challenges[MAX_CHALLENGES];	// to prevent invalid IPs from connecting
+	
 } server_static_t;
 
 //=============================================================================
@@ -253,11 +198,6 @@ typedef struct
 
 //define	EF_BRIGHTFIELD			1
 //define	EF_MUZZLEFLASH 			2
-
-#define	SPAWNFLAG_NOT_EASY			256
-#define	SPAWNFLAG_NOT_MEDIUM		512
-#define	SPAWNFLAG_NOT_HARD			1024
-#define	SPAWNFLAG_NOT_DEATHMATCH	2048
 
 #define	MULTICAST_ALL			0
 #define	MULTICAST_PHS			1
@@ -269,23 +209,11 @@ typedef struct
 
 //============================================================================
 
-extern	cvar_t	sv_mintic, sv_maxtic;
 extern	cvar_t	sv_maxspeed;
 
 extern	netadr_t	master_adr[MAX_MASTERS];	// address of the master server
 
 extern	cvar_t	spawn;
-extern	cvar_t	teamplay;
-extern	cvar_t	deathmatch;
-extern	cvar_t	fraglimit;
-extern	cvar_t	timelimit;
-
-extern	server_static_t	svs;				// persistant server info
-extern	server_t		sv;					// local server
-
-extern	client_t	*host_client;
-
-extern	edict_t		*sv_player;
 
 extern	char		localmodels[MAX_MODELS][5];	// inline model names for precache
 
@@ -367,17 +295,12 @@ void SV_FindModelNumbers ();
 //
 // sv_user.c
 //
-void SV_ExecuteClientMessage (client_t *cl);
+
 void SV_UserInit ();
 void SV_TogglePause (const char *msg);
 
 
-//
-// svonly.c
-//
-typedef enum {RD_NONE, RD_CLIENT, RD_PACKET} redirect_t;
-void SV_BeginRedirect (redirect_t rd);
-void SV_EndRedirect ();
+
 
 //
 // sv_ccmds.c

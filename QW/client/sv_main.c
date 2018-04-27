@@ -5,7 +5,7 @@ netadr_t	master_adr[MAX_MASTERS];	// address of group servers
 cvar_t	sv_mintic = {"sv_mintic","0.03"};	// bound the size of the
 cvar_t	sv_maxtic = {"sv_maxtic","0.1"};	// physics time tic 
 
-cvar_t	sv_timeout = {"sv_timeout","65"};		// seconds without any message
+
 cvar_t	zombietime = {"sv_zombietime", "2"};	// seconds to sink messages
 											// after disconnect
 
@@ -594,14 +594,13 @@ void SV_InitLocal ()
 	Cvar_RegisterVariable (&password);
 	Cvar_RegisterVariable (&spectator_password);
 
-	Cvar_RegisterVariable (&maxclients);
-	Cvar_RegisterVariable (&maxspectators);
+	Cvar_RegisterVariable (&maxplayers);
 	Cvar_RegisterVariable (&hostname);
 	Cvar_RegisterVariable (&deathmatch);
 	Cvar_RegisterVariable (&spawn);
 	Cvar_RegisterVariable (&watervis);
 
-	Cvar_RegisterVariable (&sv_timeout);
+	
 	Cvar_RegisterVariable (&zombietime);
 
 	Cvar_RegisterVariable (&sv_maxvelocity);

@@ -312,14 +312,6 @@ void SV_Map_f ()
 	}
 	strcpy (level, Cmd_Argv(1));
 
-#if 0
-	if (!strcmp (level, "e1m8"))
-	{	// QuakeWorld can't go to e1m8
-		SV_BroadcastPrintf (PRINT_HIGH, "can't go to low grav level in QuakeWorld...\n");
-		strcpy (level, "e1m5");
-	}
-#endif
-
 	// check to make sure the level exists
 	sprintf (expanded, "maps/%s.bsp", level);
 	COM_FOpenFile (expanded, &f);
@@ -858,18 +850,9 @@ void SV_SnapAll_f ()
 	}
 }
 
-/*
-==================
-SV_InitOperatorCommands
-==================
-*/
 void SV_InitOperatorCommands ()
 {
-	if (COM_CheckParm ("-cheats"))
-	{
-		sv_allow_cheats = true;
-		Info_SetValueForStarKey (svs.info, "*cheats", "ON", MAX_SERVERINFO_STRING);
-	}
+	
 
 	Cmd_AddCommand ("logfile", SV_Logfile_f);
 	Cmd_AddCommand ("fraglogfile", SV_Fraglogfile_f);
