@@ -29,6 +29,8 @@ server_static_t	svs; // persistant server info
 
 char	localmodels[MAX_MODELS][5];			// inline model names for precache
 
+cvar_t	sv_timeout = {"sv_timeout", "60"}; // seconds without any message
+
 //============================================================================
 
 /*
@@ -50,6 +52,8 @@ void SV_Init ()
 	extern	cvar_t	sv_idealpitchscale;
 	extern	cvar_t	sv_aim;
 
+	Cvar_RegisterVariable (&sv_timeout);
+	
 	Cvar_RegisterVariable (&sv_maxvelocity);
 	Cvar_RegisterVariable (&sv_gravity);
 	Cvar_RegisterVariable (&sv_friction);
@@ -103,7 +107,7 @@ void SV_ReadPackets ()
 		// check for packets from connected clients
 		for (i=0, cl=svs.clients ; i<MAX_CLIENTS ; i++,cl++)
 		{
-			if (cl->state == cs_free)
+			if (!cl->active)
 				continue;
 			if (!NET_CompareBaseAdr (net_from, cl->netchan.remote_address))
 				continue;
@@ -119,8 +123,7 @@ void SV_ReadPackets ()
 				svs.stats.packets++;
 				good = true;
 				cl->send_message = true;	// reply at end of frame
-				if (cl->state != cs_zombie)
-					SV_ExecuteClientMessage (cl);
+				SV_ExecuteClientMessage (cl);
 			}
 			break;
 		}
@@ -129,8 +132,7 @@ void SV_ReadPackets ()
 			continue;
 	
 		// packet is not from a known client
-		//	Con_Printf ("%s:sequenced packet without connection\n"
-		// ,NET_AdrToString(net_from));
+		//	Con_Printf ("%s:sequenced packet without connection\n", NET_AdrToString(net_from));
 	}
 }
 
@@ -138,7 +140,7 @@ void SV_ReadPackets ()
 ==================
 SV_CheckTimeouts
 
-If a packet has not been received from a client in timeout.value
+If a packet has not been received from a client in sv_timeout.value
 seconds, drop the conneciton.
 
 When a client is normally dropped, the client_t goes into a zombie state
@@ -153,27 +155,29 @@ void SV_CheckTimeouts()
 	float	droptime;
 	int	nclients;
 	
-	droptime = realtime - timeout.value;
+	droptime = realtime - sv_timeout.value;
 	nclients = 0;
 
 	for (i=0,cl=svs.clients ; i<MAX_CLIENTS ; i++,cl++)
 	{
-		if (cl->state == cs_connected || cl->state == cs_spawned) {
+		if (cl->connected || cl->spawned)
+		{
 			if (!cl->spectator)
 				nclients++;
-			if (cl->netchan.last_received < droptime) {
+			if (cl->netchan.last_received < droptime)
+			{
 				SV_BroadcastPrintf (PRINT_HIGH, "%s timed out\n", cl->name);
-				SV_DropClient (cl); 
-				cl->state = cs_free;	// don't bother with zombie state
+				SV_DropClient (cl, false, "Timed out"); 
+				cl->active = false;	// don't bother with zombie state
 			}
-		}
-		if (cl->state == cs_zombie && 
-			realtime - cl->connection_started > zombietime.value)
-		{
-			cl->state = cs_free;	// can now be reused
-		}
-	}
-	if (sv.paused && !nclients) {
+		};
+		
+		//if (cl->active == true && realtime - cl->connection_started > zombietime.value)
+			//cl->active = false;	// can now be reused
+	};
+	
+	if (sv.paused && !nclients)
+	{
 		// nobody left, unpause the server
 		SV_TogglePause("Pause released since no players are left.\n");
 	}
@@ -319,7 +323,7 @@ void SVC_Status ()
 	for (i=0 ; i<MAX_CLIENTS ; i++)
 	{
 		cl = &svs.clients[i];
-		if ((cl->state == cs_connected || cl->state == cs_spawned ) && !cl->spectator)
+		if ((cl->connected || cl->spawned ) && !cl->spectator)
 		{
 			top = atoi(Info_ValueForKey (cl->userinfo, "topcolor"));
 			bottom = atoi(Info_ValueForKey (cl->userinfo, "bottomcolor"));
@@ -455,7 +459,7 @@ void SVC_GetChallenge ()
 	}
 
 	// send it back
-	Netchan_OutOfBandPrint (net_from, "%c%i", S2C_CHALLENGE, svs.challenges[i].challenge);
+	Netchan_OutOfBandPrint (NS_SERVER, net_from, "%c%i", S2C_CHALLENGE, svs.challenges[i].challenge);
 }
 
 /*
@@ -515,10 +519,12 @@ void SVC_DirectConnect ()
 		return;
 	}
 
-	// check for password or spectator_password
+	// check for password
 	s = Info_ValueForKey (userinfo, "spectator");
 	if (s[0] && strcmp(s, "0"))
 	{
+		// TODO
+		/*
 		if (spectator_password.string[0] && 
 			stricmp(spectator_password.string, "none") &&
 			strcmp(spectator_password.string, s) )
@@ -527,6 +533,7 @@ void SVC_DirectConnect ()
 			Netchan_OutOfBandPrint (NS_SERVER, net_from, "%c\nrequires a spectator password\n\n", A2C_PRINT);
 			return;
 		}
+		*/
 		Info_RemoveKey (userinfo, "spectator"); // remove passwd
 		Info_SetValueForStarKey (userinfo, "*spectator", "1", MAX_INFO_STRING);
 		spectator = true;
@@ -539,7 +546,7 @@ void SVC_DirectConnect ()
 			strcmp(password.string, s) )
 		{
 			Con_Printf ("%s:password failed\n", NET_AdrToString (net_from));
-			Netchan_OutOfBandPrint (net_from, "%c\nserver requires a password\n\n", A2C_PRINT);
+			Netchan_OutOfBandPrint (NS_SERVER, net_from, "%c\nserver requires a password\n\n", A2C_PRINT);
 			return;
 		}
 		spectator = false;
@@ -570,11 +577,11 @@ void SVC_DirectConnect ()
 	// if there is allready a slot for this ip, drop it
 	for (i=0,cl=svs.clients ; i<MAX_CLIENTS ; i++,cl++)
 	{
-		if (cl->state == cs_free)
+		if (!cl->active)
 			continue;
 		if (NET_CompareBaseAdr (adr, cl->netchan.remote_address) && ( cl->netchan.qport == qport || adr.port == cl->netchan.remote_address.port ))
 		{
-			if (cl->state == cs_connected)
+			if (cl->connected)
 			{
 				Con_Printf("%s:dup connect\n", NET_AdrToString (adr));
 				userid--;
@@ -582,7 +589,7 @@ void SVC_DirectConnect ()
 			}
 
 			Con_Printf ("%s:reconnect\n", NET_AdrToString (adr));
-			SV_DropClient (cl);
+			SV_DropClient (cl, false, "reconnect");
 			break;
 		}
 	}
@@ -592,7 +599,7 @@ void SVC_DirectConnect ()
 	spectators = 0;
 	for (i=0,cl=svs.clients ; i<MAX_CLIENTS ; i++,cl++)
 	{
-		if (cl->state == cs_free)
+		if (!cl->active)
 			continue;
 		if (cl->spectator)
 			spectators++;
@@ -601,16 +608,10 @@ void SVC_DirectConnect ()
 	}
 
 	// if at server limits, refuse connection
-	if ( maxclients.value > MAX_CLIENTS )
-		Cvar_SetValue ("maxclients", MAX_CLIENTS);
+	if ( maxplayers.value > MAX_CLIENTS )
+		Cvar_SetValue ("maxplayers", MAX_CLIENTS);
 
-	if (maxspectators.value > MAX_CLIENTS)
-		Cvar_SetValue ("maxspectators", MAX_CLIENTS);
-
-	if (maxspectators.value + maxclients.value > MAX_CLIENTS)
-		Cvar_SetValue ("maxspectators", MAX_CLIENTS - maxspectators.value + maxclients.value);
-
-	if ( (spectator && spectators >= (int)maxspectators.value) || (!spectator && clients >= (int)maxclients.value) )
+	if ( (spectator && spectators >= (int)maxspectators.value) || (!spectator && clients >= (int)maxplayers.value) )
 	{
 		Con_Printf ("%s:full connect\n", NET_AdrToString (adr));
 		Netchan_OutOfBandPrint (NS_SERVER, adr, "%c\nserver is full\n\n", A2C_PRINT);
@@ -621,7 +622,7 @@ void SVC_DirectConnect ()
 	newcl = NULL;
 	for (i=0,cl=svs.clients ; i<MAX_CLIENTS ; i++,cl++)
 	{
-		if (cl->state == cs_free)
+		if (!cl->active)
 		{
 			newcl = cl;
 			break;
@@ -645,7 +646,7 @@ void SVC_DirectConnect ()
 	
 	Netchan_Setup (NS_SERVER, &newcl->netchan , adr, qport);
 
-	newcl->state = cs_connected;
+	newcl->connected = true;
 
 	newcl->datagram.allowoverflow = true;
 	newcl->datagram.data = newcl->datagram_buf;
@@ -660,16 +661,17 @@ void SVC_DirectConnect ()
 	// parse some info from the info strings
 	SV_ExtractFromUserinfo (newcl);
 
+	// TODO
 	// JACK: Init the floodprot stuff.
-	for (i=0; i<10; i++)
-		newcl->whensaid[i] = 0.0;
-	newcl->whensaidhead = 0;
-	newcl->lockedtill = 0;
+	//for (i=0; i<10; i++)
+	//	newcl->whensaid[i] = 0.0;
+	//newcl->whensaidhead = 0;
+	//newcl->lockedtill = 0;
 
 	// call the progs to get default spawn parms for the new client
 	gEntityInterface.pfnSetNewParms();
 	for (i=0 ; i<NUM_SPAWN_PARMS ; i++)
-		newcl->spawn_parms[i] = (&pr_global_struct->parm1)[i];
+		newcl->spawn_parms[i] = (&gGlobalVariables.parm1)[i];
 
 	if (newcl->spectator)
 		Con_Printf ("Spectator %s connected\n", newcl->name);
@@ -704,7 +706,6 @@ void SVC_RemoteCommand ()
 	int		i;
 	char	remaining[1024];
 
-
 	if (!Rcon_Validate ())
 	{
 		Con_Printf ("Bad rcon from %s:\n%s\n", NET_AdrToString (net_from), net_message.data+4);
@@ -727,7 +728,7 @@ void SVC_RemoteCommand ()
 			strcat (remaining, " ");
 		};
 
-		Cmd_ExecuteString (remaining);
+		Cmd_ExecuteString (remaining, src_command); // TODO: src_client?
 	}
 
 	SV_EndRedirect ();
@@ -922,7 +923,7 @@ void SV_SendServerinfo (client_t *client)
 	char			message[2048];
 
 	MSG_WriteByte (&client->netchan.message, svc_print);
-	sprintf (message, "%c\BUILD %4.2f SERVER (%i CRC)", 2, VERSION, 0 /*pr_crc*/);
+	sprintf (message, "%c\\BUILD %4.2f SERVER (%i CRC)", 2, VERSION, 0 /*pr_crc*/);
 	MSG_WriteString (&client->netchan.message,message);
 
 	MSG_WriteByte (&client->netchan.message, svc_serverinfo);
@@ -958,7 +959,7 @@ void SV_SendServerinfo (client_t *client)
 	MSG_WriteByte (&client->netchan.message, svc_signonnum);
 	MSG_WriteByte (&client->netchan.message, 1);
 
-	client->sendsignon = true;
+	client->connected = true;
 	client->spawned = false;		// need prespawn, spawn, etc
 }
 
@@ -1430,7 +1431,7 @@ qboolean SV_SendClientDatagram (client_t *client)
 // send the datagram
 	if (NET_SendUnreliableMessage (client->netchan, &msg) == -1)
 	{
-		SV_DropClient (client, true);// if the message couldn't send, kick off
+		SV_DropClient (client, true, "datagram");// if the message couldn't send, kick off
 		return false;
 	}
 	
@@ -1496,8 +1497,8 @@ void SV_SendNop (client_t *client)
 	MSG_WriteChar (&msg, svc_nop);
 
 	if (NET_SendUnreliableMessage (client->netchan, &msg) == -1)
-		SV_DropClient (client, true);	// if the message couldn't send, kick off
-	client->last_message = realtime;
+		SV_DropClient (client, true, "NOP");	// if the message couldn't send, kick off
+	//client->last_message = realtime;
 }
 
 /*
@@ -1516,13 +1517,12 @@ void SV_SendClientMessages ()
 // build individual updates
 	for (i=0, c = svs.clients ; i<svs.maxclients ; i++, c++)
 	{
-		if (!c->state)
-		//if (!c->active)
+		if (!c->active)
 			continue;
 
 		if(c->drop)
 		{
-			SV_DropClient(c, false);
+			SV_DropClient(c, false, "Dropped by the server!");
 			c->drop = false;
 			continue;
 		}
@@ -1581,7 +1581,7 @@ void SV_SendClientMessages ()
 			SZ_Clear (&c->datagram);
 			SV_BroadcastPrintf (PRINT_HIGH, "%s overflowed\n", c->name);
 			Con_Printf ("WARNING: reliable overflow for %s\n",c->name);
-			SV_DropClient (c/*, true*/);
+			SV_DropClient (c, true, "Overflowed!");
 			c->send_message = true;
 			c->netchan.cleartime = 0;	// don't choke this message
 		}
@@ -1621,7 +1621,6 @@ void SV_SendClientMessages ()
 		}
 		*/
 		
-		//if (c->state == cs_spawned) // TODO
 		if(c->spawned)
 			SV_SendClientDatagram (c);
 		else
