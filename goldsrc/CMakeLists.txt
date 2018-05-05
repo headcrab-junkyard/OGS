@@ -14,8 +14,6 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/../ogs-sdk ${CMAKE_BINARY_DIR}/ogs-sdk)
 
 add_subdirectory(gameui)
 
-#add_subdirectory(render)
-
 add_subdirectory(engine)
 
 add_subdirectory(dedicated)

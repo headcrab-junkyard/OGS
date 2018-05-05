@@ -25,11 +25,41 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 typedef struct
 {
+	double	active;
+	double	idle;
+	int		count;
+	int		packets;
+
+	double	latched_active;
+	double	latched_idle;
+	int		latched_packets;
+} svstats_t;
+
+// MAX_CHALLENGES is made large to prevent a denial
+// of service attack that could cycle all of them
+// out before legitimate users connected
+#define	MAX_CHALLENGES	1024
+
+typedef struct
+{
+	netadr_t	adr;
+	int			challenge;
+	int			time;
+} challenge_t;
+
+typedef struct
+{
+	int			spawncount;			// number of servers spawned since start, used to check late spawns
+	
 	int			maxclients;
 	int			maxclientslimit;
 	struct client_s	*clients;		// [maxclients]
 	int			serverflags;		// episode completion information
 	qboolean	changelevel_issued;	// cleared when at SV_SpawnServer
+	
+	svstats_t	stats;
+	
+	challenge_t	challenges[MAX_CHALLENGES];	// to prevent invalid IPs from connecting
 } server_static_t;
 
 //=============================================================================
@@ -85,26 +115,36 @@ typedef struct
 typedef struct client_s
 {
 	qboolean		active;				// false = client is free
-	qboolean		spawned;			// false = don't send datagrams
-	qboolean		dropasap;			// has been told to go to another level
-	qboolean		sendsignon;			// only valid before spawned
-
+	qboolean		spawned;			// client is fully in game (false = don't send datagrams)
+	qboolean connected; // has been assigned to a client_t, but not in game yet
+	qboolean		drop;			// has been told to go to another level
+	//int				lossage;			// loss percentage
+	
+	qboolean		sendinfo;			// at end of frame, send info to all
+										// this prevents malicious multiple broadcasts
+	
 	int				userid;							// identifying number
 	char			userinfo[MAX_INFO_STRING];		// infostring
-	
-	double			last_message;		// reliable messages must be sent
-										// periodically
 
-	usercmd_t		cmd;				// movement
-	vec3_t			wishdir;			// intended motion calced from cmd
+	usercmd_t		lastcmd;			// for filling in big drops and partial predictions
+	double			localtime;			// of last message
 
 	edict_t			*edict;				// EDICT_NUM(clientnum+1)
 	char			name[32];			// for printing to other people
-	int				colors;
-		
+	int				topcolor;
+	int             bottomcolor;
+	
 	float			ping_times[NUM_PING_TIMES];
 	int				num_pings;			// ping_times[num_pings%NUM_PING_TIMES]
 
+	// the datagram is written to after every frame, but only cleared
+	// when it is sent out to the client.  overflow is tolerated.
+	sizebuf_t		datagram;
+	byte			datagram_buf[MAX_DATAGRAM];
+	
+	double			connection_started;	// or time of disconnect for zombies
+	qboolean		send_message;		// set on frames a datagram arived on
+	
 // spawn parms are carried from level to level
 	float			spawn_parms[NUM_SPAWN_PARMS];
 
@@ -112,6 +152,8 @@ typedef struct client_s
 	int				old_frags;
 
 //===== NETWORK ============
+	int				chokecount;
+	int				delta_sequence;		// -1 = no compression
 	netchan_t		netchan;
 } client_t;
 
@@ -189,8 +231,23 @@ void SV_WriteClientdataToMessage (edict_t *ent, sizebuf_t *msg);
 
 void SV_MoveToGoal (edict_t *ent, float dist);
 
-void SV_CheckForNewClients ();
 void SV_RunClients ();
 void SV_SaveSpawnparms ();
 
 void SV_SpawnServer (const char *server, const char *startspot);
+
+//
+// sv_main
+//
+
+void SV_ExecuteClientMessage (client_t *cl);
+
+typedef enum
+{
+	RD_NONE,
+	RD_CLIENT,
+	RD_PACKET
+} redirect_t;
+
+void SV_BeginRedirect (redirect_t rd);
+void SV_EndRedirect ();

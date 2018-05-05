@@ -1063,6 +1063,7 @@ void CL_Init ()
 	SZ_Alloc (&cls.netchan.message, 1024);
 	
 	Info_SetValueForKey (cls.userinfo, "name", "unnamed", MAX_INFO_STRING);
+	Info_SetValueForKey (cls.userinfo, "model", "", MAX_INFO_STRING);
 	Info_SetValueForKey (cls.userinfo, "topcolor", "0", MAX_INFO_STRING);
 	Info_SetValueForKey (cls.userinfo, "bottomcolor", "0", MAX_INFO_STRING);
 	Info_SetValueForKey (cls.userinfo, "rate", "2500", MAX_INFO_STRING);
@@ -1144,6 +1145,4 @@ void CL_Init ()
 	
 	Cmd_AddCommand ("playdemo", CL_PlayDemo_f);
 	Cmd_AddCommand ("timedemo", CL_TimeDemo_f);
-	
-	//ClientDLL_HudInit(); // TODO: wrong place?
 };

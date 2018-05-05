@@ -8,7 +8,11 @@
 #include "iengine.h"
 #include "interface.h"
 
-int RunListenServer(void *instance, char *basedir, char *cmdline, char *postRestartCmdLineArgs, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory)
+qboolean gbDedicatedServer{false};
+
+char *gsPostRestartCmdLineArgs{nullptr};
+
+int RunListenServer(void *instance, const char *basedir, const char *cmdline, char *postRestartCmdLineArgs, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory)
 {
 	// TODO: Whole bunch of Sys_Init* calls
 	
@@ -35,7 +39,7 @@ public:
 	CEngineAPI();
 	~CEngineAPI();
 	
-	int Run(void *instance, char *basedir, char *cmdline, char *postRestartCmdLineArgs, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory) override;
+	int Run(void *instance, const char *basedir, const char *cmdline, char *postRestartCmdLineArgs, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory) override;
 };
 
 EXPOSE_SINGLE_INTERFACE(CEngineAPI, IEngineAPI, VENGINE_LAUNCHER_API_VERSION);
@@ -43,7 +47,7 @@ EXPOSE_SINGLE_INTERFACE(CEngineAPI, IEngineAPI, VENGINE_LAUNCHER_API_VERSION);
 CEngineAPI::CEngineAPI() = default;
 CEngineAPI::~CEngineAPI() = default;
 
-int CEngineAPI::Run(void *instance, char *basedir, char *cmdline, char *postRestartCmdLineArgs, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory)
+int CEngineAPI::Run(void *instance, const char *basedir, const char *cmdline, char *postRestartCmdLineArgs, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory)
 {
 	return RunListenServer(instance, basedir, cmdline, postRestartCmdLineArgs, launcherFactory, filesystemFactory);
 };
@@ -131,14 +135,14 @@ public:
 	CDedicatedServerAPI();
 	~CDedicatedServerAPI();
 	
-	bool Init(char *basedir, char *cmdline, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory) override;
+	bool Init(const char *basedir, const char *cmdline, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory) override;
 	int Shutdown() override;
 
 	bool RunFrame() override;
 
-	void AddConsoleText(char *text) override;
+	void AddConsoleText(const char *text) override;
 
-	void UpdateStatus(float *fps, int *nActive, int *nMaxPlayers, char *pszMap) override;
+	void UpdateStatus(float *fps, int *nActive, int *nMaxPlayers, const char *pszMap) override;
 };
 
 EXPOSE_SINGLE_INTERFACE(CDedicatedServerAPI, IDedicatedServerAPI, VENGINE_HLDS_API_VERSION);
@@ -146,7 +150,7 @@ EXPOSE_SINGLE_INTERFACE(CDedicatedServerAPI, IDedicatedServerAPI, VENGINE_HLDS_A
 CDedicatedServerAPI::CDedicatedServerAPI() = default;
 CDedicatedServerAPI::~CDedicatedServerAPI() = default;
 
-bool CDedicatedServerAPI::Init(char *basedir, char *cmdline, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory)
+bool CDedicatedServerAPI::Init(const char *basedir, const char *cmdline, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory)
 {
 	if(!gpEngine->Load(true, basedir, cmdline))
 		return false;
@@ -167,11 +171,12 @@ bool CDedicatedServerAPI::RunFrame()
 	return false;
 };
 
-void CDedicatedServerAPI::AddConsoleText(char *text)
+void CDedicatedServerAPI::AddConsoleText(const char *text)
 {
 	Cbuf_AddText(text);
 };
 
-void CDedicatedServerAPI::UpdateStatus(float *fps, int *nActive, int *nMaxPlayers, char *pszMap)
+void CDedicatedServerAPI::UpdateStatus(float *fps, int *nActive, int *nMaxPlayers, const char *pszMap)
 {
+	//Host_UpdateStatus(fps, nActive, nMaxPlayers, pszMap);
 };

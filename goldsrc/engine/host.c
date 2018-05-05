@@ -889,6 +889,12 @@ void Host_Init (quakeparms_t *parms)
 #ifdef _WIN32 // on non win32, mouse comes before video for security reasons
 		IN_Init ();
 #endif
+	
+		// GUI should be initialized before the client dll
+		//GUI_Init();
+		
+		// Initialize the client dll now
+		ClientDLL_Init();
 	}
 
 	Cbuf_InsertText ("exec valve.rc\n");
@@ -923,11 +929,14 @@ void Host_Shutdown()
 	}
 	isdown = true;
 
-// keep Con_Printf from trying to update the screen
+	// keep Con_Printf from trying to update the screen
 	scr_disabled_for_loading = true; // TODO: revisit
 
 	Host_WriteConfiguration (); 
 
+	ClientDLL_Shutdown();
+	//GUI_Shutdown();
+	
 	CDAudio_Shutdown ();
 	NET_Shutdown ();
 	S_Shutdown();
