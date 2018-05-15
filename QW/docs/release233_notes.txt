@@ -2,10 +2,6 @@
 QuakeWorld 2.33 Test Release
 ----------------------------
 
-QuakeWorld 2.33 is a test release to address several issues that have
-come to light in the QuakeWorld community.  Several different DoS
-(Denial Of Service) attacks have surfaced that need addressed.
-
 This test release contains both a new client and server to address these
 problems.  This release is currently compatible with 2.30 servers and clients,
 but this will not be true once the test period has completed.  The next

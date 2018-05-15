@@ -1,22 +1,4 @@
-/*
-Copyright (C) 1996-1997 Id Software, Inc.
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
 #include <sys/types.h>
 #include <sys/timeb.h>
 #include "qwsvdef.h"
@@ -26,11 +8,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 cvar_t	sys_nostdout = {"sys_nostdout","0"};
 
-/*
-================
-Sys_FileTime
-================
-*/
+
 int	Sys_FileTime (char *path)
 {
 	FILE	*f;
@@ -45,26 +23,10 @@ int	Sys_FileTime (char *path)
 	return -1;
 }
 
-/*
-================
-Sys_mkdir
-================
-*/
-void Sys_mkdir (char *path)
-{
-	_mkdir(path);
-}
 
 
-/*
-================
-Sys_Error
-================
-*/
 void Sys_Error (char *error, ...)
 {
-	va_list		argptr;
-	char		text[1024];
 
 	va_start (argptr,error);
 	vsprintf (text, error,argptr);
@@ -77,11 +39,7 @@ void Sys_Error (char *error, ...)
 }
 
 
-/*
-================
-Sys_DoubleTime
-================
-*/
+
 double Sys_DoubleTime (void)
 {
 	double t;
@@ -98,11 +56,7 @@ double Sys_DoubleTime (void)
 }
 
 
-/*
-================
-Sys_ConsoleInput
-================
-*/
+
 char *Sys_ConsoleInput (void)
 {
 	static char	text[256];

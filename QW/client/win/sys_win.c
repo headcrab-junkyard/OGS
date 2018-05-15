@@ -94,7 +94,11 @@ int filelength (FILE *f)
 	return end;
 }
 
-
+/*
+================
+Sys_FileTime
+================
+*/
 int	Sys_FileTime (char *path)
 {
 	FILE	*f;
@@ -118,6 +122,11 @@ int	Sys_FileTime (char *path)
 	return retval;
 }
 
+/*
+================
+Sys_mkdir
+================
+*/
 void Sys_mkdir (char *path)
 {
 	_mkdir (path);
@@ -225,12 +234,15 @@ void Sys_Init (void)
 		WinNT = false;
 }
 
-
+/*
+================
+Sys_Error
+================
+*/
 void Sys_Error (char *error, ...)
 {
 	va_list		argptr;
-	char		text[1024], text2[1024];
-	DWORD		dummy;
+	char		text[1024];
 
 	Host_Shutdown ();
 
@@ -369,6 +381,11 @@ void Sys_InitFloatTime (void)
 
 #endif
 
+/*
+================
+Sys_DoubleTime
+================
+*/
 double Sys_DoubleTime (void)
 {
 	static DWORD starttime;
@@ -393,6 +410,11 @@ double Sys_DoubleTime (void)
 	return (now - starttime) / 1000.0;
 }
 
+/*
+================
+Sys_ConsoleInput
+================
+*/
 char *Sys_ConsoleInput (void)
 {
 	static char	text[256];
