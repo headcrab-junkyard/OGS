@@ -5,6 +5,7 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/../ogs-sdk/ogs/common
 	${CMAKE_SOURCE_DIR}/../ogs-sdk/ogs/engine
 	${CMAKE_SOURCE_DIR}/../ogs-sdk/ogs/public
+	${OGS_ROOT}/public
 	${OGS_ROOT}/engine
 )
 

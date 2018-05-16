@@ -1,4 +1,4 @@
-project(gskiller-dedicated)
+project(ogs-dedicated)
 
 file(GLOB PROJECT_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/*.cpp

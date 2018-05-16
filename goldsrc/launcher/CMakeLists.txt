@@ -1,4 +1,4 @@
-project(gskiller-launcher)
+project(ogs-launcher)
 
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}
