@@ -21,15 +21,26 @@
 #include "quakedef.h"
 #include "vgui_int.h"
 
+CEGUI::OpenGLRenderer *gpRenderer{nullptr};
+
 void VGui_Startup()
 {
-	// TODO
+	*gpRenderer = CEGUI::OpenGLRenderer::bootstrapSystem();
 };
 
 void VGui_Shutdown()
 {
-	// TODO
+	//CEGUI::System::destroy();
+	//CEGUI::OpenGLRenderer::destroy(gpRenderer);
+	CEGUI::OpenGLRenderer::destroySystem();
 };
+
+/*
+void VGui_Frame()
+{
+	CEGUI::System::renderAllGUIContexts();
+};
+*/
 
 void VGui_ViewportPaintBackground(int extents[4])
 {
