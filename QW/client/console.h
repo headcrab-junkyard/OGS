@@ -47,14 +47,7 @@ void Con_DrawCharacter (int cx, int line, int num);
 void Con_CheckResize ();
 void Con_Init ();
 void Con_DrawConsole (int lines);
-void Con_Print (const char *txt);
-void Con_Printf (const char *fmt, ...);
-void Con_DPrintf (const char *fmt, ...);
-void Con_SafePrintf (const char *fmt, ...);
-void Con_Clear_f ();
-void Con_DrawNotify ();
-void Con_ClearNotify ();
-void Con_ToggleConsole_f ();
+
 
 void Con_NotifyBox (const char *text);	// during startup for sound / cd warnings
 
