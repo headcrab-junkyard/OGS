@@ -50,8 +50,28 @@ cvar_t  sys_linerefresh = {"sys_linerefresh","0"};// set for entity display
 // General routines
 // =======================================================================
 
+/*
+============
+Sys_FileTime
 
+returns -1 if not present
+============
+*/
+int	Sys_FileTime (char *path)
+{
+	struct	stat	buf;
+	
+	if (stat (path,&buf) == -1)
+		return -1;
+	
+	return buf.st_mtime;
+}
 
+/*
+================
+Sys_Printf
+================
+*/
 void Sys_Printf (const char *fmt, ...)
 {
 	va_list		argptr;
@@ -75,6 +95,29 @@ void Sys_Printf (const char *fmt, ...)
 			putc(*p, stdout);
 }
 
+/*
+================
+Sys_Error
+================
+*/
+void Sys_Error (char *error, ...)
+{
+	va_list		argptr;
+	char		string[1024];
+	
+	va_start (argptr,error);
+	vsprintf (string,error,argptr);
+	va_end (argptr);
+	printf ("Fatal error: %s\n",string);
+	
+	exit (1);
+}
+
+/*
+================
+Sys_Quit
+================
+*/
 void Sys_Quit ()
 {
 	Host_Shutdown();
@@ -82,21 +125,56 @@ void Sys_Quit ()
 	exit(0);
 }
 
+/*
+=============
+Sys_Init
+
+Quake calls this so the system can register variables before host_hunklevel
+is marked
+=============
+*/
 void Sys_Init()
 {
 #if id386
 	Sys_SetFPCW();
 #endif
+
+	//Cvar_RegisterVariable (&sys_nostdout);
+	//Cvar_RegisterVariable (&sys_extrasleep);
 }
 
+/*
+================
+Sys_DoubleTime
+================
+*/
+double Sys_FloatTime (void)
+{
+	struct timeval tp;
+	struct timezone tzp;
+	static int		secbase;
 
+	gettimeofday(&tp, &tzp);
+	
+	if (!secbase)
+	{
+		secbase = tp.tv_sec;
+		return tp.tv_usec/1000000.0;
+	}
+	
+	return (tp.tv_sec - secbase) + tp.tv_usec/1000000.0;
+}
 
+/*
+============
+Sys_mkdir
+
+============
+*/
 void Sys_mkdir (const char *path)
 {
     mkdir (path, 0777);
 }
-
-
 
 int Sys_FileWrite (int handle, void *src, int count)
 {
@@ -140,6 +218,11 @@ char *Sys_ConsoleInput()
 
 int		skipframes;
 
+/*
+=============
+main
+=============
+*/
 int main (int c, char **v)
 {
 

@@ -1960,7 +1960,7 @@ void VID_NumModes_f ()
 VID_DescribeMode_f
 =================
 */
-void VID_DescribeMode_f (void)
+void VID_DescribeMode_f ()
 {
 	int		modenum;
 	
@@ -1975,7 +1975,7 @@ void VID_DescribeMode_f (void)
 VID_DescribeModes_f
 =================
 */
-void VID_DescribeModes_f (void)
+void VID_DescribeModes_f ()
 {
 	int			i, lnummodes;
 	char		*pinfo;
@@ -2014,7 +2014,7 @@ void VID_DescribeModes_f (void)
 VID_TestMode_f
 =================
 */
-void VID_TestMode_f (void)
+void VID_TestMode_f ()
 {
 	int		modenum;
 	double	testduration;
@@ -2039,7 +2039,7 @@ void VID_TestMode_f (void)
 VID_Windowed_f
 =================
 */
-void VID_Windowed_f (void)
+void VID_Windowed_f ()
 {
 
 	VID_SetMode ((int)vid_windowed_mode.value, vid_curpal);
@@ -2051,7 +2051,7 @@ void VID_Windowed_f (void)
 VID_Fullscreen_f
 =================
 */
-void VID_Fullscreen_f (void)
+void VID_Fullscreen_f ()
 {
 
 	VID_SetMode ((int)vid_fullscreen_mode.value, vid_curpal);
@@ -2062,7 +2062,7 @@ void VID_Fullscreen_f (void)
 VID_Minimize_f
 =================
 */
-void VID_Minimize_f (void)
+void VID_Minimize_f ()
 {
 
 // we only support minimizing windows; if you're fullscreen,
@@ -2078,7 +2078,7 @@ void VID_Minimize_f (void)
 VID_ForceMode_f
 =================
 */
-void VID_ForceMode_f (void)
+void VID_ForceMode_f ()
 {
 	int		modenum;
 	double	testduration;
@@ -2217,7 +2217,7 @@ void	VID_Init (unsigned char *palette)
 }
 
 
-void	VID_Shutdown (void)
+void	VID_Shutdown ()
 {
 	HDC				hdc;
 	int				dummy;
@@ -3010,6 +3010,7 @@ LONG WINAPI MainWndProc (
 				IN_MouseEvent (temp);
 			}
 			break;
+
 		// JACK: This is the mouse wheel with the Intellimouse
 		// Its delta is either positive or neg, and we generate the proper
 		// Event.
@@ -3087,7 +3088,7 @@ LONG WINAPI MainWndProc (
 }
 
 
-extern void M_Menu_Options_f (void);
+extern void M_Menu_Options_f ();
 extern void M_Print (int cx, int cy, char *str);
 extern void M_PrintWhite (int cx, int cy, char *str);
 extern void M_DrawCharacter (int cx, int line, int num);
@@ -3116,7 +3117,7 @@ static modedesc_t	modedescs[MAX_MODEDESCS];
 VID_MenuDraw
 ================
 */
-void VID_MenuDraw (void)
+void VID_MenuDraw ()
 {
 	qpic_t		*p;
 	char		*ptr;
@@ -3312,7 +3313,6 @@ void VID_MenuKey (int key)
 		break;
 
 	case K_LEFTARROW:
-
 		S_LocalSound ("misc/menu1.wav");
 		vid_line = ((vid_line / VID_ROW_SIZE) * VID_ROW_SIZE) +
 				   ((vid_line + 2) % VID_ROW_SIZE);

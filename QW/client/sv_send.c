@@ -94,24 +94,10 @@ void SV_EndRedirect ()
 	sv_redirected = RD_NONE;
 }
 
-
-/*
-================
-Con_Printf
-
-Handles cursor positioning, line wrapping, etc
-================
-*/
-#define	MAXPRINTMSG	4096
-// FIXME: make a buffer size safe vsprintf?
 void Con_Printf (char *fmt, ...)
 {
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
-	
-	va_start (argptr,fmt);
-	vsprintf (msg,fmt,argptr);
-	va_end (argptr);
 
 	// add to redirected message
 	if (sv_redirected)
@@ -125,28 +111,6 @@ void Con_Printf (char *fmt, ...)
 	Sys_Printf ("%s", msg);	// also echo to debugging console
 	if (sv_logfile)
 		fprintf (sv_logfile, "%s", msg);
-}
-
-/*
-================
-Con_DPrintf
-
-A Con_Printf that only shows up if the "developer" cvar is set
-================
-*/
-void Con_DPrintf (char *fmt, ...)
-{
-	va_list		argptr;
-	char		msg[MAXPRINTMSG];
-
-	if (!developer.value)
-		return;
-
-	va_start (argptr,fmt);
-	vsprintf (msg,fmt,argptr);
-	va_end (argptr);
-	
-	Con_Printf ("%s", msg);
 }
 
 /*
@@ -347,8 +311,7 @@ Larger attenuations will drop off.  (max 4 attenuation)
 
 ==================
 */  
-void SV_StartSound (edict_t *entity, int channel, char *sample, int volume,
-    float attenuation)
+void SV_StartSound (edict_t *entity, int channel, char *sample, int volume, float attenuation)
 {       
     int         sound_num;
     int			field_mask;
@@ -444,18 +407,12 @@ void SV_FindModelNumbers ()
 {
 	int		i;
 
-	sv_nailmodel = -1;
-	sv_supernailmodel = -1;
 	sv_playermodel = -1;
 
 	for (i=0 ; i<MAX_MODELS ; i++)
 	{
 		if (!sv.model_precache[i])
 			break;
-		if (!strcmp(sv.model_precache[i],"progs/spike.mdl"))
-			sv_nailmodel = i;
-		if (!strcmp(sv.model_precache[i],"progs/s_spike.mdl"))
-			sv_supernailmodel = i;
 		if (!strcmp(sv.model_precache[i],"progs/player.mdl"))
 			sv_playermodel = i;
 	}

@@ -453,6 +453,7 @@ void R_DrawParticles (void)
 	float			time1;
 	float			dvel;
 	float			frametime;
+
 #ifdef GLQUAKE
 	unsigned char	*at;
 	unsigned char	theAlpha;
@@ -539,7 +540,6 @@ void R_DrawParticles (void)
 		glVertex3f (p->org[0] + up[0]*scale, p->org[1] + up[1]*scale, p->org[2] + up[2]*scale);
 		glTexCoord2f (0,1);
 		glVertex3f (p->org[0] + right[0]*scale, p->org[1] + right[1]*scale, p->org[2] + right[2]*scale);
-
 #else
 		D_DrawParticle (p);
 #endif

@@ -1,34 +1,10 @@
-/*
-Copyright (C) 1996-1997 Id Software, Inc.
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
-#include <sys/types.h>
-#include "qwsvdef.h"
 
 #ifdef NeXT
 #include <libc.h>
 #endif
 
 #if defined(__linux__) || defined(sun)
-#include <sys/stat.h>
-#include <unistd.h>
-#include <sys/time.h>
-#include <errno.h>
 #else
 #include <sys/dir.h>
 #endif
@@ -46,101 +22,23 @@ qboolean	stdin_ready;
 ===============================================================================
 */
 
-/*
-============
-Sys_FileTime
-
-returns -1 if not present
-============
-*/
-int	Sys_FileTime (char *path)
-{
-	struct	stat	buf;
-	
-	if (stat (path,&buf) == -1)
-		return -1;
-	
-	return buf.st_mtime;
-}
-
-
-/*
-============
-Sys_mkdir
-
-============
-*/
 void Sys_mkdir (char *path)
 {
 	if (mkdir (path, 0777) != -1)
 		return;
 	if (errno != EEXIST)
-		Sys_Error ("mkdir %s: %s",path, strerror(errno)); 
+		Sys_Error ("mkdir %s: %s",path, strerror(errno));
 }
 
-
-/*
-================
-Sys_DoubleTime
-================
-*/
-double Sys_DoubleTime (void)
-{
-	struct timeval tp;
-	struct timezone tzp;
-	static int		secbase;
-
-	gettimeofday(&tp, &tzp);
-	
-	if (!secbase)
-	{
-		secbase = tp.tv_sec;
-		return tp.tv_usec/1000000.0;
-	}
-	
-	return (tp.tv_sec - secbase) + tp.tv_usec/1000000.0;
-}
-
-/*
-================
-Sys_Error
-================
-*/
-void Sys_Error (char *error, ...)
-{
-	va_list		argptr;
-	char		string[1024];
-	
-	va_start (argptr,error);
-	vsprintf (string,error,argptr);
-	va_end (argptr);
-	printf ("Fatal error: %s\n",string);
-	
-	exit (1);
-}
-
-/*
-================
-Sys_Printf
-================
-*/
 void Sys_Printf (char *fmt, ...)
 {
-	va_list		argptr;
 	static char		text[2048];
-	unsigned char		*p;
-
-	va_start (argptr,fmt);
-	vsprintf (text,fmt,argptr);
-	va_end (argptr);
-
-	if (strlen(text) > sizeof(text))
-		Sys_Error("memory overwrite in Sys_Printf");
 
     if (sys_nostdout.value)
         return;
 
-	for (p = (unsigned char *)text; *p; p++) {
+	for (p = (unsigned char *)text; *p; p++)
+	{
 		*p &= 0x7f;
 		if ((*p > 128 || *p < 32) && *p != 10 && *p != 13 && *p != 9)
 			printf("[%02x]", *p);
@@ -151,11 +49,7 @@ void Sys_Printf (char *fmt, ...)
 }
 
 
-/*
-================
-Sys_Quit
-================
-*/
+
 void Sys_Quit (void)
 {
 	exit (0);		// appkit isn't running
@@ -193,25 +87,7 @@ char *Sys_ConsoleInput (void)
 	return text;
 }
 
-/*
-=============
-Sys_Init
 
-Quake calls this so the system can register variables before host_hunklevel
-is marked
-=============
-*/
-void Sys_Init (void)
-{
-	Cvar_RegisterVariable (&sys_nostdout);
-	Cvar_RegisterVariable (&sys_extrasleep);
-}
-
-/*
-=============
-main
-=============
-*/
 void main(int argc, char *argv[])
 {
 	double			time, oldtime, newtime;

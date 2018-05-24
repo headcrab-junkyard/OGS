@@ -2,26 +2,16 @@
 
 netadr_t	master_adr[MAX_MASTERS];	// address of group servers
 
-cvar_t	sv_mintic = {"sv_mintic","0.03"};	// bound the size of the
-cvar_t	sv_maxtic = {"sv_maxtic","0.1"};	// physics time tic 
-
-
-cvar_t	zombietime = {"sv_zombietime", "2"};	// seconds to sink messages
-											// after disconnect
+//cvar_t	zombietime = {"sv_zombietime", "2"};	// seconds to sink messages after disconnect
 
 cvar_t	rcon_password = {"rcon_password", ""};	// password for remote server commands
-cvar_t	password = {"password", ""};	// password for entering the game
-cvar_t	spectator_password = {"spectator_password", ""};	// password for entering as a sepctator
+cvar_t	password = {"sv_password", ""};	// password for entering the game
 
 cvar_t	allow_download = {"sv_allow_download", "1"};
 cvar_t	allow_download_skins = {"sv_allow_download_skins", "1"};
 cvar_t	allow_download_models = {"sv_allow_download_models", "1"};
 cvar_t	allow_download_sounds = {"sv_allow_download_sounds", "1"};
 cvar_t	allow_download_maps = {"sv_allow_download_maps", "1"};
-
-cvar_t sv_highchars = {"sv_highchars", "1"};
-
-cvar_t sv_phs = {"sv_phs", "1"};
 
 cvar_t pausable	= {"pausable", "1"};
 
@@ -32,12 +22,8 @@ cvar_t pausable	= {"pausable", "1"};
 cvar_t	fraglimit = {"fraglimit","0",false,true};
 cvar_t	timelimit = {"timelimit","0",false,true};
 cvar_t	teamplay = {"teamplay","0",false,true};
-cvar_t	samelevel = {"samelevel","0", false, true};
 cvar_t	maxclients = {"maxclients","8", false, true};
-cvar_t	maxspectators = {"maxspectators","8", false, true};
 cvar_t	deathmatch = {"deathmatch","1", false, true};			// 0, 1, or 2
-cvar_t	spawn = {"spawn","0", false, true};
-cvar_t	watervis = {"watervis", "0", false, true};
 
 cvar_t	hostname = {"hostname","unnamed", false, true};
 
@@ -273,108 +259,6 @@ void SV_FullClientUpdateToClient (client_t *client, client_t *cl)
 		SV_FullClientUpdate (client, &cl->netchan.message);
 }
 
-
-/*
-==============================================================================
-
-CONNECTIONLESS COMMANDS
-
-==============================================================================
-*/
-
-
-/*
-==============================================================================
-
-PACKET FILTERING
- 
-
-You can add or remove addresses from the filter list with:
-
-addip <ip>
-removeip <ip>
-
-The ip address is specified in dot format, and any unspecified digits will match any value, so you can specify an entire class C network with "addip 192.246.40".
-
-Removeip will only remove an address specified exactly the same way.  You cannot addip a subnet, then removeip a single host.
-
-listip
-Prints the current list of filters.
-
-writeip
-Dumps "addip <ip>" commands to listip.cfg so it can be execed at a later date.  The filter lists are not saved and restored by default, because I beleive it would cause too much confusion.
-
-filterban <0 or 1>
-
-If 1 (the default), then ip addresses matching the current list will be prohibited from entering the game.  This is the default setting.
-
-If 0, then only addresses matching the list will be allowed.  This lets you easily set up a private game, or a game that only allows players from your local network.
-
-
-==============================================================================
-*/
-
-
-typedef struct
-{
-	unsigned	mask;
-	unsigned	compare;
-} ipfilter_t;
-
-#define	MAX_IPFILTERS	1024
-
-ipfilter_t	ipfilters[MAX_IPFILTERS];
-int			numipfilters;
-
-cvar_t	filterban = {"filterban", "1"};
-
-/*
-=================
-StringToFilter
-=================
-*/
-qboolean StringToFilter (char *s, ipfilter_t *f)
-{
-	char	num[128];
-	int		i, j;
-	byte	b[4];
-	byte	m[4];
-	
-	for (i=0 ; i<4 ; i++)
-	{
-		b[i] = 0;
-		m[i] = 0;
-	}
-	
-	for (i=0 ; i<4 ; i++)
-	{
-		if (*s < '0' || *s > '9')
-		{
-			Con_Printf ("Bad filter address: %s\n", s);
-			return false;
-		}
-		
-		j = 0;
-		while (*s >= '0' && *s <= '9')
-		{
-			num[j++] = *s++;
-		}
-		num[j] = 0;
-		b[i] = atoi(num);
-		if (b[i] != 0)
-			m[i] = 255;
-
-		if (!*s)
-			break;
-		s++;
-	}
-	
-	f->mask = *(unsigned *)m;
-	f->compare = *(unsigned *)b;
-	
-	return true;
-}
-
 /*
 =================
 SV_AddIP_f
@@ -476,41 +360,9 @@ void SV_WriteIP_f ()
 	fclose (f);
 }
 
-/*
-=================
-SV_SendBan
-=================
-*/
-void SV_SendBan ()
-{
-	char		data[128];
 
-	data[0] = data[1] = data[2] = data[3] = 0xff;
-	data[4] = A2C_PRINT;
-	data[5] = 0;
-	strcat (data, "\nbanned.\n");
-	
-	NET_SendPacket (strlen(data), data, net_from);
-}
 
-/*
-=================
-SV_FilterPacket
-=================
-*/
-qboolean SV_FilterPacket ()
-{
-	int		i;
-	unsigned	in;
-	
-	in = *(unsigned *)net_from.ip;
 
-	for (i=0 ; i<numipfilters ; i++)
-		if ( (in & ipfilters[i].mask) == ipfilters[i].compare)
-			return filterban.value;
-
-	return !filterban.value;
-}
 
 //============================================================================
 
@@ -522,19 +374,16 @@ SV_CheckVars
 */
 void SV_CheckVars ()
 {
-	static char *pw, *spw;
+	static char *pw;
 	int			v;
 
-	if (password.string == pw && spectator_password.string == spw)
+	if (password.string == pw)
 		return;
 	pw = password.string;
-	spw = spectator_password.string;
 
 	v = 0;
 	if (pw && pw[0] && strcmp(pw, "none"))
 		v |= 1;
-	if (spw && spw[0] && strcmp(spw, "none"))
-		v |= 2;
 
 	Con_Printf ("Updated needpass.\n");
 	if (!v)
@@ -592,16 +441,10 @@ void SV_InitLocal ()
 	
 	Cvar_RegisterVariable (&rcon_password);
 	Cvar_RegisterVariable (&password);
-	Cvar_RegisterVariable (&spectator_password);
 
 	Cvar_RegisterVariable (&maxplayers);
 	Cvar_RegisterVariable (&hostname);
 	Cvar_RegisterVariable (&deathmatch);
-	Cvar_RegisterVariable (&spawn);
-	Cvar_RegisterVariable (&watervis);
-
-	
-	Cvar_RegisterVariable (&zombietime);
 
 	Cvar_RegisterVariable (&sv_maxvelocity);
 	Cvar_RegisterVariable (&sv_gravity);
@@ -616,17 +459,13 @@ void SV_InitLocal ()
 
 	Cvar_RegisterVariable (&sv_aim);
 
-	Cvar_RegisterVariable (&filterban);
+	Cvar_RegisterVariable (&sv_filterban);
 	
 	Cvar_RegisterVariable (&allow_download);
 	Cvar_RegisterVariable (&allow_download_skins);
 	Cvar_RegisterVariable (&allow_download_models);
 	Cvar_RegisterVariable (&allow_download_sounds);
 	Cvar_RegisterVariable (&allow_download_maps);
-
-	Cvar_RegisterVariable (&sv_highchars);
-
-	Cvar_RegisterVariable (&sv_phs);
 
 	Cvar_RegisterVariable (&pausable);
 
@@ -722,126 +561,6 @@ void Master_Shutdown ()
 		}
 }
 
-/*
-=================
-SV_ExtractFromUserinfo
-
-Pull specific info from a newly changed userinfo string
-into a more C freindly form.
-=================
-*/
-void SV_ExtractFromUserinfo (client_t *cl)
-{
-	char	*val, *p, *q;
-	int		i;
-	client_t	*client;
-	int		dupc = 1;
-	char	newname[80];
-
-
-	// name for C code
-	val = Info_ValueForKey (cl->userinfo, "name");
-
-	// trim user name
-	strncpy(newname, val, sizeof(newname) - 1);
-	newname[sizeof(newname) - 1] = 0;
-
-	for (p = newname; (*p == ' ' || *p == '\r' || *p == '\n') && *p; p++)
-		;
-
-	if (p != newname && !*p) {
-		//white space only
-		strcpy(newname, "unnamed");
-		p = newname;
-	}
-
-	if (p != newname && *p) {
-		for (q = newname; *p; *q++ = *p++)
-			;
-		*q = 0;
-	}
-	for (p = newname + strlen(newname) - 1; p != newname && (*p == ' ' || *p == '\r' || *p == '\n') ; p--)
-		;
-	p[1] = 0;
-
-	if (strcmp(val, newname)) {
-		Info_SetValueForKey (cl->userinfo, "name", newname, MAX_INFO_STRING);
-		val = Info_ValueForKey (cl->userinfo, "name");
-	}
-
-	if (!val[0] || !stricmp(val, "console")) {
-		Info_SetValueForKey (cl->userinfo, "name", "unnamed", MAX_INFO_STRING);
-		val = Info_ValueForKey (cl->userinfo, "name");
-	}
-
-	// check to see if another user by the same name exists
-	while (1) {
-		for (i=0, client = svs.clients ; i<MAX_CLIENTS ; i++, client++) {
-			if (client->state != cs_spawned || client == cl)
-				continue;
-			if (!stricmp(client->name, val))
-				break;
-		}
-		if (i != MAX_CLIENTS) { // dup name
-			if (strlen(val) > sizeof(cl->name) - 1)
-				val[sizeof(cl->name) - 4] = 0;
-			p = val;
-
-			if (val[0] == '(')
-				if (val[2] == ')')
-					p = val + 3;
-				else if (val[3] == ')')
-					p = val + 4;
-
-			sprintf(newname, "(%d)%-.40s", dupc++, p);
-			Info_SetValueForKey (cl->userinfo, "name", newname, MAX_INFO_STRING);
-			val = Info_ValueForKey (cl->userinfo, "name");
-		} else
-			break;
-	}
-	
-	if (strncmp(val, cl->name, strlen(cl->name))) {
-		if (!sv.paused) {
-			if (!cl->lastnametime || realtime - cl->lastnametime > 5) {
-				cl->lastnamecount = 0;
-				cl->lastnametime = realtime;
-			} else if (cl->lastnamecount++ > 4) {
-				SV_BroadcastPrintf (PRINT_HIGH, "%s was kicked for name spam\n", cl->name);
-				SV_ClientPrintf (cl, PRINT_HIGH, "You were kicked from the game for name spamming\n");
-				SV_DropClient (cl); 
-				return;
-			}
-		}
-				
-		if (cl->state >= cs_spawned && !cl->spectator)
-			SV_BroadcastPrintf (PRINT_HIGH, "%s changed name to %s\n", cl->name, val);
-	}
-
-
-	strncpy (cl->name, val, sizeof(cl->name)-1);	
-
-	// rate command
-	val = Info_ValueForKey (cl->userinfo, "rate");
-	if (strlen(val))
-	{
-		i = atoi(val);
-		if (i < 500)
-			i = 500;
-		if (i > 10000)
-			i = 10000;
-		cl->netchan.rate = 1.0/i;
-	}
-
-	// msg command
-	val = Info_ValueForKey (cl->userinfo, "msg");
-	if (strlen(val))
-	{
-		cl->messagelevel = atoi(val);
-	}
-
-}
-
-
 //============================================================================
 
 /*
@@ -874,15 +593,12 @@ void SV_Init (quakeparms_t *parms)
 	COM_AddParm ("-game");
 	COM_AddParm ("qw");
 
-	if (COM_CheckParm ("-minmemory"))
-		parms->memsize = MINIMUM_MEMORY;
-
 	if (parms->memsize < MINIMUM_MEMORY)
 		SV_Error ("Only %4.1f megs of memory reported, can't execute game", parms->memsize / (float)0x100000);
 
 	SV_InitLocal ();
-	Sys_Init ();
-	Pmove_Init ();
+	
+	
 	
 // process command line arguments
 	Cmd_StuffCmds_f ();

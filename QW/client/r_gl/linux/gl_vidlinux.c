@@ -170,7 +170,7 @@ void keyhandler(int scancode, int state)
 
 }
 
-void VID_Shutdown(void)
+void VID_Shutdown()
 {
 	if (!fc)
 		return;
@@ -188,7 +188,7 @@ void signal_handler(int sig)
 	exit(0);
 }
 
-void InitSig(void)
+void InitSig()
 {
 	signal(SIGHUP, signal_handler);
 	signal(SIGINT, signal_handler);
@@ -291,7 +291,7 @@ void	VID_SetPalette (unsigned char *palette)
 GL_Init
 ===============
 */
-void GL_Init (void)
+void GL_Init ()
 {
 	gl_vendor = glGetString (GL_VENDOR);
 	Con_Printf ("GL_VENDOR: %s\n", gl_vendor);
@@ -347,13 +347,13 @@ void GL_BeginRendering (int *x, int *y, int *width, int *height)
 }
 
 
-void GL_EndRendering (void)
+void GL_EndRendering ()
 {
 	glFlush();
 	fxMesaSwapBuffers();
 }
 
-void Init_KBD(void)
+void Init_KBD()
 {
 	int i;
 
@@ -494,7 +494,7 @@ int findres(int *width, int *height)
 	return GR_RESOLUTION_640x480;
 }
 
-qboolean VID_Is8bit(void)
+qboolean VID_Is8bit()
 {
 	return is8bit;
 }
@@ -527,7 +527,7 @@ void VID_Init8bitPalette()
 #else
 extern void gl3DfxSetPaletteEXT(GLuint *pal);
 
-void VID_Init8bitPalette(void) 
+void VID_Init8bitPalette() 
 {
 	// Check for 8bit Extensions and initialize them.
 	int i;
@@ -644,13 +644,13 @@ void VID_Init(unsigned char *palette)
 	vid.recalc_refdef = 1;				// force a surface cache flush
 }
 
-void Sys_SendKeyEvents(void)
+void Sys_SendKeyEvents()
 {
 	if (UseKeyboard)
 		while (keyboard_update());
 }
 
-void Force_CenterView_f (void)
+void Force_CenterView_f ()
 {
 	cl.viewangles[PITCH] = 0;
 }
@@ -663,7 +663,7 @@ void mousehandler(int buttonstate, int dx, int dy)
 	my += dy;
 }
 
-void IN_Init(void)
+void IN_Init()
 {
 
 	int mtype;
@@ -704,7 +704,7 @@ void IN_Init(void)
 
 }
 
-void IN_Shutdown(void)
+void IN_Shutdown()
 {
 	if (UseMouse)
 		mouse_close();
@@ -715,7 +715,7 @@ void IN_Shutdown(void)
 IN_Commands
 ===========
 */
-void IN_Commands (void)
+void IN_Commands ()
 {
 	if (UseMouse)
 	{

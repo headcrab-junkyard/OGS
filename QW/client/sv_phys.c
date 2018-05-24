@@ -623,20 +623,6 @@ if (l > 1.0/64)
 
 }
 
-
-/*
-=============
-SV_Physics_None
-
-Non moving objects can only think
-=============
-*/
-void SV_Physics_None (edict_t *ent)
-{
-// regular thinking
-	SV_RunThink (ent);
-}
-
 /*
 =============
 SV_Physics_Noclip
@@ -818,15 +804,6 @@ void SV_Physics_Step (edict_t *ent)
 }
 
 //============================================================================
-
-void SV_ProgStartFrame (void)
-{
-// let the progs know that a new frame has started
-	pr_global_struct->self = EDICT_TO_PROG(sv.edicts);
-	pr_global_struct->other = EDICT_TO_PROG(sv.edicts);
-	pr_global_struct->time = sv.time;
-	PR_ExecuteProgram (pr_global_struct->StartFrame);
-}
 
 /*
 ================
