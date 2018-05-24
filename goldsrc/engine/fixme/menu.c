@@ -22,48 +22,174 @@
 #include "winquake.h"
 #endif
 
-void (*vid_menudrawfn)(void);
+void (*vid_menudrawfn)();
 void (*vid_menukeyfn)(int key);
 
 enum {m_none, m_main, m_singleplayer, m_load, m_save, m_multiplayer, m_setup, m_net, m_options, m_video, m_keys, m_help, m_quit, m_serialconfig, m_modemconfig, m_lanconfig, m_gameoptions, m_search, m_slist} m_state;
 
-void M_Menu_Main_f (void);
-	void M_Menu_SinglePlayer_f (void);
-		void M_Menu_Load_f (void);
-		void M_Menu_Save_f (void);
-	void M_Menu_MultiPlayer_f (void);
-		void M_Menu_Setup_f (void);
-		void M_Menu_Net_f (void);
-	void M_Menu_Options_f (void);
-		void M_Menu_Keys_f (void);
-		void M_Menu_Video_f (void);
-	void M_Menu_Help_f (void);
-	void M_Menu_Quit_f (void);
-void M_Menu_SerialConfig_f (void);
-	void M_Menu_ModemConfig_f (void);
-void M_Menu_LanConfig_f (void);
-void M_Menu_GameOptions_f (void);
-void M_Menu_Search_f (void);
-void M_Menu_ServerList_f (void);
+void M_Menu_Main_f ();
+	void M_Menu_SinglePlayer_f ();
+		void M_Menu_Load_f ();
+		void M_Menu_Save_f ();
+	void M_Menu_MultiPlayer_f ();
+		void M_Menu_Setup_f ();
+		void M_Menu_Net_f ();
+	void M_Menu_Options_f ();
+		void M_Menu_Keys_f ();
+		void M_Menu_Video_f ();
+	void M_Menu_Help_f ();
+	void M_Menu_Quit_f ();
+void M_Menu_SerialConfig_f ();
+	void M_Menu_ModemConfig_f ();
+void M_Menu_LanConfig_f ();
+void M_Menu_GameOptions_f ();
+void M_Menu_Search_f ();
+void M_Menu_ServerList_f ();
 
-void M_Main_Draw (void);
-	void M_SinglePlayer_Draw (void);
-		void M_Load_Draw (void);
-		void M_Save_Draw (void);
-	void M_MultiPlayer_Draw (void);
-		void M_Setup_Draw (void);
-		void M_Net_Draw (void);
-	void M_Options_Draw (void);
-		void M_Keys_Draw (void);
-		void M_Video_Draw (void);
-	void M_Help_Draw (void);
-	void M_Quit_Draw (void);
-void M_SerialConfig_Draw (void);
-	void M_ModemConfig_Draw (void);
-void M_LanConfig_Draw (void);
-void M_GameOptions_Draw (void);
-void M_Search_Draw (void);
-void M_ServerList_Draw (void);
+class CMenuMain
+{
+public:
+	void Draw();
+	void Key(int key);
+};
+
+class CMenuSinglePlayer
+{
+public:
+	void Draw();
+	void Key(int key);
+};
+
+class CMenuLoad
+{
+public:
+	void Draw();
+	void Key(int key);
+};
+
+class CMenuSave
+{
+public:
+	void Draw();
+	void Key(int key);
+};
+
+class CMenuMultiPlayer
+{
+public:
+	void Draw();
+	void Key(int key);
+};
+
+class CMenuSetup
+{
+public:
+	void Draw();
+	void Key(int key);
+};
+
+class CMenuNet
+{
+public:
+	void Draw();
+	void Key(int key);
+};
+
+class CMenuOptions
+{
+public:
+	void Draw();
+	void Key(int key);
+};
+
+class CMenuKeys
+{
+public:
+	void Draw();
+	void Key(int key);
+};
+
+class CMenuVideo
+{
+public:
+	void Draw();
+	void Key(int key);
+};
+
+class CMenuHelp
+{
+public:
+	void Draw();
+	void Key(int key);
+};
+
+class CMenuQuit
+{
+public:
+	void Draw();
+	void Key(int key);
+};
+
+class CMenuSerialConfig
+{
+public:
+	void Draw();
+	void Key(int key);
+};
+
+class CMenuModemConfig
+{
+public:
+	void Draw();
+	void Key(int key);
+};
+
+class CMenuLanConfig
+{
+public:
+	void Draw();
+	void Key(int key);
+};
+
+class CMenuGameOptions
+{
+public:
+	void Draw();
+	void Key(int key);
+};
+
+class CMenuSearch
+{
+public:
+	void Draw();
+	void Key(int key);
+};
+
+class CMenuServerList
+{
+public:
+	void Draw();
+	void Key(int key);
+};
+
+void M_Main_Draw ();
+	void M_SinglePlayer_Draw ();
+		void M_Load_Draw ();
+		void M_Save_Draw ();
+	void M_MultiPlayer_Draw ();
+		void M_Setup_Draw ();
+		void M_Net_Draw ();
+	void M_Options_Draw ();
+		void M_Keys_Draw ();
+		void M_Video_Draw ();
+	void M_Help_Draw ();
+	void M_Quit_Draw ();
+void M_SerialConfig_Draw ();
+	void M_ModemConfig_Draw ();
+void M_LanConfig_Draw ();
+void M_GameOptions_Draw ();
+void M_Search_Draw ();
+void M_ServerList_Draw ();
 
 void M_Main_Key (int key);
 	void M_SinglePlayer_Key (int key);
@@ -99,7 +225,7 @@ char		m_return_reason [32];
 #define	IPXConfig		(m_net_cursor == 2)
 #define	TCPIPConfig		(m_net_cursor == 3)
 
-void M_ConfigureNetSubsystem(void);
+void M_ConfigureNetSubsystem();
 
 /*
 ================
@@ -113,7 +239,7 @@ void M_DrawCharacter (int cx, int line, int num)
 	Draw_Character ( cx + ((vid.width - 320)>>1), line, num);
 }
 
-void M_Print (int cx, int cy, char *str)
+void M_Print (int cx, int cy, const char *str)
 {
 	while (*str)
 	{
@@ -123,7 +249,7 @@ void M_Print (int cx, int cy, char *str)
 	}
 }
 
-void M_PrintWhite (int cx, int cy, char *str)
+void M_PrintWhite (int cx, int cy, const char *str)
 {
 	while (*str)
 	{
@@ -241,7 +367,7 @@ int m_save_demonum;
 M_ToggleMenu_f
 ================
 */
-void M_ToggleMenu_f (void)
+void M_ToggleMenu_f ()
 {
 	m_entersound = true;
 
@@ -274,7 +400,7 @@ int	m_main_cursor;
 #define	MAIN_ITEMS	5
 
 
-void M_Menu_Main_f (void)
+void M_Menu_Main_f ()
 {
 	if (key_dest != key_menu)
 	{
@@ -287,7 +413,7 @@ void M_Menu_Main_f (void)
 }
 
 
-void M_Main_Draw (void)
+void M_Main_Draw ()
 {
 	int		f;
 	qpic_t	*p;
@@ -362,7 +488,7 @@ int	m_singleplayer_cursor;
 #define	SINGLEPLAYER_ITEMS	3
 
 
-void M_Menu_SinglePlayer_f (void)
+void M_Menu_SinglePlayer_f ()
 {
 	key_dest = key_menu;
 	m_state = m_singleplayer;
@@ -370,7 +496,7 @@ void M_Menu_SinglePlayer_f (void)
 }
 
 
-void M_SinglePlayer_Draw (void)
+void M_SinglePlayer_Draw ()
 {
 	int		f;
 	qpic_t	*p;
@@ -442,7 +568,7 @@ int		load_cursor;		// 0 < load_cursor < MAX_SAVEGAMES
 char	m_filenames[MAX_SAVEGAMES][SAVEGAME_COMMENT_LENGTH+1];
 int		loadable[MAX_SAVEGAMES];
 
-void M_ScanSaves (void)
+void M_ScanSaves ()
 {
 	int		i, j;
 	char	name[MAX_OSPATH];
@@ -470,7 +596,7 @@ void M_ScanSaves (void)
 	}
 }
 
-void M_Menu_Load_f (void)
+void M_Menu_Load_f ()
 {
 	m_entersound = true;
 	m_state = m_load;
@@ -479,7 +605,7 @@ void M_Menu_Load_f (void)
 }
 
 
-void M_Menu_Save_f (void)
+void M_Menu_Save_f ()
 {
 	if (!sv.active)
 		return;
@@ -494,7 +620,7 @@ void M_Menu_Save_f (void)
 }
 
 
-void M_Load_Draw (void)
+void M_Load_Draw ()
 {
 	int		i;
 	qpic_t	*p;
@@ -510,7 +636,7 @@ void M_Load_Draw (void)
 }
 
 
-void M_Save_Draw (void)
+void M_Save_Draw ()
 {
 	int		i;
 	qpic_t	*p;
@@ -607,7 +733,7 @@ int	m_multiplayer_cursor;
 #define	MULTIPLAYER_ITEMS	3
 
 
-void M_Menu_MultiPlayer_f (void)
+void M_Menu_MultiPlayer_f ()
 {
 	key_dest = key_menu;
 	m_state = m_multiplayer;
@@ -615,7 +741,7 @@ void M_Menu_MultiPlayer_f (void)
 }
 
 
-void M_MultiPlayer_Draw (void)
+void M_MultiPlayer_Draw ()
 {
 	int		f;
 	qpic_t	*p;
@@ -691,7 +817,7 @@ int		setup_bottom;
 
 #define	NUM_SETUP_CMDS	5
 
-void M_Menu_Setup_f (void)
+void M_Menu_Setup_f ()
 {
 	key_dest = key_menu;
 	m_state = m_setup;
@@ -703,7 +829,7 @@ void M_Menu_Setup_f (void)
 }
 
 
-void M_Setup_Draw (void)
+void M_Setup_Draw ()
 {
 	qpic_t	*p;
 
@@ -881,7 +1007,7 @@ char *net_helpMessage [] =
   " Area Network.          "
 };
 
-void M_Menu_Net_f (void)
+void M_Menu_Net_f ()
 {
 	key_dest = key_menu;
 	m_state = m_net;
@@ -895,7 +1021,7 @@ void M_Menu_Net_f (void)
 }
 
 
-void M_Net_Draw (void)
+void M_Net_Draw ()
 {
 	int		f;
 	qpic_t	*p;
@@ -1045,7 +1171,7 @@ again:
 
 int		options_cursor;
 
-void M_Menu_Options_f (void)
+void M_Menu_Options_f ()
 {
 	key_dest = key_menu;
 	m_state = m_options;
@@ -1174,7 +1300,7 @@ void M_DrawCheckbox (int x, int y, int on)
 		M_Print (x, y, "off");
 }
 
-void M_Options_Draw (void)
+void M_Options_Draw ()
 {
 	float		r;
 	qpic_t	*p;
@@ -1338,7 +1464,7 @@ char *bindnames[][2] =
 int		keys_cursor;
 int		bind_grab;
 
-void M_Menu_Keys_f (void)
+void M_Menu_Keys_f ()
 {
 	key_dest = key_menu;
 	m_state = m_keys;
@@ -1391,7 +1517,7 @@ void M_UnbindCommand (char *command)
 }
 
 
-void M_Keys_Draw (void)
+void M_Keys_Draw ()
 {
 	int		i, l;
 	int		keys[2];
@@ -1505,7 +1631,7 @@ void M_Keys_Key (int k)
 //=============================================================================
 /* VIDEO MENU */
 
-void M_Menu_Video_f (void)
+void M_Menu_Video_f ()
 {
 	key_dest = key_menu;
 	m_state = m_video;
@@ -1513,7 +1639,7 @@ void M_Menu_Video_f (void)
 }
 
 
-void M_Video_Draw (void)
+void M_Video_Draw ()
 {
 	(*vid_menudrawfn) ();
 }
@@ -1531,7 +1657,7 @@ int		help_page;
 #define	NUM_HELP_PAGES	6
 
 
-void M_Menu_Help_f (void)
+void M_Menu_Help_f ()
 {
 	key_dest = key_menu;
 	m_state = m_help;
@@ -1541,7 +1667,7 @@ void M_Menu_Help_f (void)
 
 
 
-void M_Help_Draw (void)
+void M_Help_Draw ()
 {
 	M_DrawPic (0, 0, Draw_CachePic ( va("gfx/help%i.lmp", help_page)) );
 }
@@ -1625,7 +1751,7 @@ char *quitMessage [] =
 };
 #endif
 
-void M_Menu_Quit_f (void)
+void M_Menu_Quit_f ()
 {
 	if (m_state == m_quit)
 		return;
@@ -1670,7 +1796,7 @@ void M_Quit_Key (int key)
 }
 
 
-void M_Quit_Draw (void)
+void M_Quit_Draw ()
 {
 	if (wasInMenus)
 	{
@@ -1729,7 +1855,7 @@ int		serialConfig_irq ;
 int		serialConfig_baud;
 char	serialConfig_phone[16];
 
-void M_Menu_SerialConfig_f (void)
+void M_Menu_SerialConfig_f ()
 {
 	int		n;
 	int		port;
@@ -1770,7 +1896,7 @@ void M_Menu_SerialConfig_f (void)
 }
 
 
-void M_SerialConfig_Draw (void)
+void M_SerialConfig_Draw ()
 {
 	qpic_t	*p;
 	int		basex;
@@ -2013,7 +2139,7 @@ char	modemConfig_clear [16];
 char	modemConfig_init [32];
 char	modemConfig_hangup [16];
 
-void M_Menu_ModemConfig_f (void)
+void M_Menu_ModemConfig_f ()
 {
 	key_dest = key_menu;
 	m_state = m_modemconfig;
@@ -2022,7 +2148,7 @@ void M_Menu_ModemConfig_f (void)
 }
 
 
-void M_ModemConfig_Draw (void)
+void M_ModemConfig_Draw ()
 {
 	qpic_t	*p;
 	int		basex;
@@ -2184,7 +2310,7 @@ int 	lanConfig_port;
 char	lanConfig_portname[6];
 char	lanConfig_joinname[22];
 
-void M_Menu_LanConfig_f (void)
+void M_Menu_LanConfig_f ()
 {
 	key_dest = key_menu;
 	m_state = m_lanconfig;
@@ -2206,7 +2332,7 @@ void M_Menu_LanConfig_f (void)
 }
 
 
-void M_LanConfig_Draw (void)
+void M_LanConfig_Draw ()
 {
 	qpic_t	*p;
 	int		basex;
@@ -2432,57 +2558,6 @@ level_t		levels[] =
 	{"dm6", "The Dark Zone"}
 };
 
-//MED 01/06/97 added hipnotic levels
-level_t     hipnoticlevels[] =
-{
-   {"start", "Command HQ"},  // 0
-
-   {"hip1m1", "The Pumping Station"},          // 1
-   {"hip1m2", "Storage Facility"},
-   {"hip1m3", "The Lost Mine"},
-   {"hip1m4", "Research Facility"},
-   {"hip1m5", "Military Complex"},
-
-   {"hip2m1", "Ancient Realms"},          // 6
-   {"hip2m2", "The Black Cathedral"},
-   {"hip2m3", "The Catacombs"},
-   {"hip2m4", "The Crypt"},
-   {"hip2m5", "Mortum's Keep"},
-   {"hip2m6", "The Gremlin's Domain"},
-
-   {"hip3m1", "Tur Torment"},       // 12
-   {"hip3m2", "Pandemonium"},
-   {"hip3m3", "Limbo"},
-   {"hip3m4", "The Gauntlet"},
-
-   {"hipend", "Armagon's Lair"},       // 16
-
-   {"hipdm1", "The Edge of Oblivion"}           // 17
-};
-
-//PGM 01/07/97 added rogue levels
-//PGM 03/02/97 added dmatch level
-level_t		roguelevels[] =
-{
-	{"start",	"Split Decision"},
-	{"r1m1",	"Deviant's Domain"},
-	{"r1m2",	"Dread Portal"},
-	{"r1m3",	"Judgement Call"},
-	{"r1m4",	"Cave of Death"},
-	{"r1m5",	"Towers of Wrath"},
-	{"r1m6",	"Temple of Pain"},
-	{"r1m7",	"Tomb of the Overlord"},
-	{"r2m1",	"Tempus Fugit"},
-	{"r2m2",	"Elemental Fury I"},
-	{"r2m3",	"Elemental Fury II"},
-	{"r2m4",	"Curse of Osiris"},
-	{"r2m5",	"Wizard's Keep"},
-	{"r2m6",	"Blood Sacrifice"},
-	{"r2m7",	"Last Bastion"},
-	{"r2m8",	"Source of Evil"},
-	{"ctf1",    "Division of Change"}
-};
-
 typedef struct
 {
 	char	*description;
@@ -2501,34 +2576,13 @@ episode_t	episodes[] =
 	{"Deathmatch Arena", 32, 6}
 };
 
-//MED 01/06/97  added hipnotic episodes
-episode_t   hipnoticepisodes[] =
-{
-   {"Scourge of Armagon", 0, 1},
-   {"Fortress of the Dead", 1, 5},
-   {"Dominion of Darkness", 6, 6},
-   {"The Rift", 12, 4},
-   {"Final Level", 16, 1},
-   {"Deathmatch Arena", 17, 1}
-};
-
-//PGM 01/07/97 added rogue episodes
-//PGM 03/02/97 added dmatch episode
-episode_t	rogueepisodes[] =
-{
-	{"Introduction", 0, 1},
-	{"Hell's Fortress", 1, 7},
-	{"Corridors of Time", 8, 8},
-	{"Deathmatch Arena", 16, 1}
-};
-
 int	startepisode;
 int	startlevel;
 int maxplayers;
 qboolean m_serverInfoMessage = false;
 double m_serverInfoMessageTime;
 
-void M_Menu_GameOptions_f (void)
+void M_Menu_GameOptions_f ()
 {
 	key_dest = key_menu;
 	m_state = m_gameoptions;
@@ -2544,7 +2598,7 @@ int gameoptions_cursor_table[] = {40, 56, 64, 72, 80, 88, 96, 112, 120};
 #define	NUM_GAMEOPTIONS	9
 int		gameoptions_cursor;
 
-void M_GameOptions_Draw (void)
+void M_GameOptions_Draw ()
 {
 	qpic_t	*p;
 	int		x;
@@ -2628,14 +2682,7 @@ void M_GameOptions_Draw (void)
       M_Print (160, 112, episodes[startepisode].description);
 
 	M_Print (0, 120, "           Level");
-   //MED 01/06/97 added hipnotic episodes
-   if (hipnotic)
-   {
-      M_Print (160, 120, hipnoticlevels[hipnoticepisodes[startepisode].firstLevel + startlevel].description);
-      M_Print (160, 128, hipnoticlevels[hipnoticepisodes[startepisode].firstLevel + startlevel].name);
-   }
-   //PGM 01/07/97 added rogue episodes
-   else if (rogue)
+   if (rogue)
    {
       M_Print (160, 120, roguelevels[rogueepisodes[startepisode].firstLevel + startlevel].description);
       M_Print (160, 128, roguelevels[rogueepisodes[startepisode].firstLevel + startlevel].name);
@@ -2730,14 +2777,7 @@ void M_NetStart_Change (int dir)
 
 	case 7:
 		startepisode += dir;
-	//MED 01/06/97 added hipnotic count
-		if (hipnotic)
-			count = 6;
-	//PGM 01/07/97 added rogue count
-	//PGM 03/02/97 added 1 for dmatch episode
-		else if (rogue)
-			count = 4;
-		else if (registered.value)
+		if (registered.value)
 			count = 7;
 		else
 			count = 2;
@@ -2753,14 +2793,7 @@ void M_NetStart_Change (int dir)
 
 	case 8:
 		startlevel += dir;
-    //MED 01/06/97 added hipnotic episodes
-		if (hipnotic)
-			count = hipnoticepisodes[startepisode].levels;
-	//PGM 01/06/97 added hipnotic episodes
-		else if (rogue)
-			count = rogueepisodes[startepisode].levels;
-		else
-			count = episodes[startepisode].levels;
+		count = episodes[startepisode].levels;
 
 		if (startlevel < 0)
 			startlevel = count - 1;
@@ -2838,7 +2871,7 @@ void M_GameOptions_Key (int key)
 qboolean	searchComplete = false;
 double		searchCompleteTime;
 
-void M_Menu_Search_f (void)
+void M_Menu_Search_f ()
 {
 	key_dest = key_menu;
 	m_state = m_search;
@@ -2851,7 +2884,7 @@ void M_Menu_Search_f (void)
 }
 
 
-void M_Search_Draw (void)
+void M_Search_Draw ()
 {
 	qpic_t	*p;
 	int x;
@@ -2898,7 +2931,7 @@ void M_Search_Key (int key)
 int		slist_cursor;
 qboolean slist_sorted;
 
-void M_Menu_ServerList_f (void)
+void M_Menu_ServerList_f ()
 {
 	key_dest = key_menu;
 	m_state = m_slist;
@@ -2910,7 +2943,7 @@ void M_Menu_ServerList_f (void)
 }
 
 
-void M_ServerList_Draw (void)
+void M_ServerList_Draw ()
 {
 	int		n;
 	char	string [64];
@@ -2999,7 +3032,7 @@ void M_ServerList_Key (int k)
 /* Menu Subsystem */
 
 
-void M_Init (void)
+void M_Init ()
 {
 	Cmd_AddCommand ("togglemenu", M_ToggleMenu_f);
 
@@ -3017,7 +3050,7 @@ void M_Init (void)
 }
 
 
-void M_Draw (void)
+void M_Draw ()
 {
 	if (m_state == m_none || key_dest != key_menu)
 		return;
@@ -3215,7 +3248,7 @@ void M_Keydown (int key)
 }
 
 
-void M_ConfigureNetSubsystem(void)
+void M_ConfigureNetSubsystem()
 {
 // enable/disable net systems to match desired config
 

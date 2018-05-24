@@ -1162,7 +1162,6 @@ void GL_Upload8_EXT (byte *data, int width, int height,  qboolean mipmap, qboole
 	}
 done: ;
 
-
 	if (mipmap)
 	{
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
@@ -1221,6 +1220,7 @@ static	unsigned	trans[640*480];		// FIXME, temporary
  		GL_Upload8_EXT (data, width, height, mipmap, alpha);
  		return;
 	}
+
 	GL_Upload32 (trans, width, height, mipmap, alpha);
 }
 

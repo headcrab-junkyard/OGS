@@ -52,13 +52,14 @@ typedef struct
 	unsigned		conheight;
 	int				maxwarpwidth;
 	int				maxwarpheight;
-	pixel_t			*direct;		// direct drawing to framebuffer, if not
-									//  NULL
+	pixel_t			*direct;		// direct drawing to framebuffer, if not nullptr
 } viddef_t;
 
 extern	viddef_t	vid;				// global video state
+
 extern	unsigned short	d_8to16table[256];
 extern	unsigned	d_8to24table[256];
+
 extern void (*vid_menudrawfn)();
 extern void (*vid_menukeyfn)(int key);
 
@@ -80,8 +81,15 @@ void	VID_Update (vrect_t *rects);
 // flushes the given rectangles from the view buffer to the screen
 
 int VID_SetMode (int modenum, unsigned char *palette);
-// sets the mode; only used by the Quake engine for resetting to mode 0 (the
+// sets the mode; only used by the engine for resetting to mode 0 (the
 // base mode) on memory allocation failures
 
 void VID_HandlePause (qboolean pause);
 // called only on Win32, when pause happens, so the mouse can be released
+
+//void VID_LockBuffer();
+//void VID_UnlockBuffer();
+
+#ifdef GLQUAKE
+//qboolean VID_Is8bit();
+#endif

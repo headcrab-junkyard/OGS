@@ -681,9 +681,9 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	oldtime = Sys_FloatTime ();
 
     // main window message loop
-	while (1)
+	while (1) // TODO: true
 	{
-		
+		Host_Frame (0.1);
 	}
 }
 */

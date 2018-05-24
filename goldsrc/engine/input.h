@@ -37,3 +37,5 @@ void IN_Move (usercmd_t *cmd);
 void IN_ClearStates (); // not present in Q2
 // restores all button and position states to defaults
 
+void IN_ModeChanged (); // QW
+// called whenever screen dimensions change

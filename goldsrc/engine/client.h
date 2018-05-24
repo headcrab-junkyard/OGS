@@ -343,6 +343,8 @@ extern	cvar_t	m_side;
 
 extern	client_state_t	cl;
 
+extern	playermove_t g_clmove;
+
 // FIXME, allocate dynamically
 extern	efrag_t			cl_efrags[MAX_EFRAGS];
 extern	entity_t		cl_entities[MAX_EDICTS];

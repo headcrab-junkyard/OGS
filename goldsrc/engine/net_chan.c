@@ -76,8 +76,8 @@ to the new value before sending out any replies.
 
 int		net_drop;
 
-cvar_t	showpackets = {"showpackets", "0"};
-cvar_t	showdrop = {"showdrop", "0"};
+cvar_t	net_showpackets = {"net_showpackets", "0"};
+cvar_t	net_showdrop = {"net_showdrop", "0"};
 cvar_t	qport = {"qport", "0"};
 
 /*
@@ -97,8 +97,8 @@ void Netchan_Init ()
 	port = ((int)(getpid()+getuid()*1000) * time(NULL)) & 0xffff;
 #endif
 
-	Cvar_RegisterVariable (&showpackets);
-	Cvar_RegisterVariable (&showdrop);
+	Cvar_RegisterVariable (&net_showpackets);
+	Cvar_RegisterVariable (&net_showdrop);
 	Cvar_RegisterVariable (&qport);
 	Cvar_SetValue("qport", port);
 }
@@ -124,11 +124,11 @@ void Netchan_OutOfBand (int net_socket, netadr_t adr, int length, byte *data)
 	MSG_WriteLong (&send, -1);	// -1 sequence means out of band
 	SZ_Write (&send, data, length);
 
-// send the datagram
+	// send the datagram
+//#ifndef SERVERONLY
 	//zoid, no input in demo playback mode
-#ifndef SERVERONLY
-	if (!cls.demoplayback)
-#endif
+	//if (!cls.demoplayback)
+//#endif
 		NET_SendPacket (net_socket, send.cursize, send.data, adr);
 }
 
@@ -269,9 +269,8 @@ void Netchan_Transmit (netchan_t *chan, int length, byte *data)
 	MSG_WriteLong (&send, w2);
 
 	// send the qport if we are a client
-#ifndef SERVERONLY
-	MSG_WriteShort (&send, cls.qport);
-#endif
+	if (chan->sock == NS_CLIENT)
+		MSG_WriteShort (&send, cls.qport);
 
 // copy the reliable message to the packet first
 	if (send_reliable)
@@ -289,16 +288,17 @@ void Netchan_Transmit (netchan_t *chan, int length, byte *data)
 	chan->outgoing_size[i] = send.cursize;
 	chan->outgoing_time[i] = realtime;
 
+//#ifndef SERVERONLY
 	//zoid, no input in demo playback mode
-#ifndef SERVERONLY
-	if (!cls.demoplayback)
-#endif
+	//if (!cls.demoplayback)
+//#endif
 		NET_SendPacket (chan->sock, send.cursize, send.data, chan->remote_address);
 
 	if (chan->cleartime < realtime)
 		chan->cleartime = realtime + send.cursize*chan->rate;
 	else
 		chan->cleartime += send.cursize*chan->rate;
+
 #ifdef SERVERONLY
 	if (ServerPaused())
 		chan->cleartime = realtime;
@@ -326,9 +326,9 @@ qboolean Netchan_Process (netchan_t *chan)
 {
 	unsigned		sequence, sequence_ack;
 	unsigned		reliable_ack, reliable_message;
-#ifdef SERVERONLY
+
 	int			qport;
-#endif
+
 	int i;
 
 	if (
@@ -344,9 +344,8 @@ qboolean Netchan_Process (netchan_t *chan)
 	sequence_ack = MSG_ReadLong ();
 
 	// read the qport if we are a server
-#ifdef SERVERONLY
-	qport = MSG_ReadShort ();
-#endif
+	if (chan->sock == NS_SERVER)
+		qport = MSG_ReadShort ();
 
 	reliable_message = sequence >> 31;
 	reliable_ack = sequence_ack >> 31;

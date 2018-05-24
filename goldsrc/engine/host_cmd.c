@@ -1167,7 +1167,7 @@ void Host_Kill_f ()
 
 	if (sv_player->v.health <= 0)
 	{
-		SV_ClientPrintf (host_client, "Can't suicide -- already dead!\n");
+		SV_ClientPrintf (host_client, /*PRINT_HIGH,*/ "Can't suicide -- already dead!\n");
 		return;
 	}
 	
@@ -1189,6 +1189,7 @@ void Host_Pause_f ()
 		Cmd_ForwardToServer ();
 		return;
 	}
+	
 	if (!pausable.value)
 		SV_ClientPrintf (host_client, "Pause not allowed.\n");
 	else

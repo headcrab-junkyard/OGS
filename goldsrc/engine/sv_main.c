@@ -23,7 +23,7 @@
 #include "quakedef.h"
 
 server_t		sv; // local server
-server_static_t	svs; // persistant server info
+server_static_t	svs; // persistent server info
 
 char	localmodels[MAX_MODELS][5];			// inline model names for precache
 
@@ -65,6 +65,133 @@ void SV_Init ()
 
 	for (i=0 ; i<MAX_MODELS ; i++)
 		sprintf (localmodels[i], "*%i", i);
+}
+
+/*
+=================
+SV_SendBan
+=================
+*/
+void SV_SendBan ()
+{
+	char		data[128];
+
+	data[0] = data[1] = data[2] = data[3] = 0xff;
+	data[4] = A2C_PRINT;
+	data[5] = 0;
+	strcat (data, "\nbanned.\n");
+	
+	NET_SendPacket (strlen(data), data, net_from);
+}
+
+/*
+==============================================================================
+
+PACKET FILTERING
+ 
+
+You can add or remove addresses from the filter list with:
+
+addip <ip>
+removeip <ip>
+
+The ip address is specified in dot format, and any unspecified digits will match any value, so you can specify an entire class C network with "addip 192.246.40".
+
+Removeip will only remove an address specified exactly the same way.  You cannot addip a subnet, then removeip a single host.
+
+listip
+Prints the current list of filters.
+
+writeip
+Dumps "addip <ip>" commands to listip.cfg so it can be execed at a later date.  The filter lists are not saved and restored by default, because I beleive it would cause too much confusion.
+
+sv_filterban <0 or 1>
+
+If 1 (the default), then ip addresses matching the current list will be prohibited from entering the game.  This is the default setting.
+
+If 0, then only addresses matching the list will be allowed.  This lets you easily set up a private game, or a game that only allows players from your local network.
+
+
+==============================================================================
+*/
+
+typedef struct
+{
+	unsigned	mask;
+	unsigned	compare;
+} ipfilter_t;
+
+#define	MAX_IPFILTERS	1024
+
+ipfilter_t	ipfilters[MAX_IPFILTERS];
+int			numipfilters;
+
+cvar_t	sv_filterban = {"sv_filterban", "1"};
+
+/*
+=================
+StringToFilter
+=================
+*/
+qboolean StringToFilter (char *s, ipfilter_t *f)
+{
+	char	num[128];
+	int		i, j;
+	byte	b[4];
+	byte	m[4];
+	
+	for (i=0 ; i<4 ; i++)
+	{
+		b[i] = 0;
+		m[i] = 0;
+	}
+	
+	for (i=0 ; i<4 ; i++)
+	{
+		if (*s < '0' || *s > '9')
+		{
+			Con_Printf ("Bad filter address: %s\n", s);
+			return false;
+		}
+		
+		j = 0;
+		while (*s >= '0' && *s <= '9')
+		{
+			num[j++] = *s++;
+		}
+		num[j] = 0;
+		b[i] = atoi(num);
+		if (b[i] != 0)
+			m[i] = 255;
+
+		if (!*s)
+			break;
+		s++;
+	}
+	
+	f->mask = *(unsigned *)m;
+	f->compare = *(unsigned *)b;
+	
+	return true;
+}
+
+/*
+=================
+SV_FilterPacket
+=================
+*/
+qboolean SV_FilterPacket ()
+{
+	int		i;
+	unsigned	in;
+	
+	in = *(unsigned *)net_from.ip;
+
+	for (i=0 ; i<numipfilters ; i++)
+		if ( (in & ipfilters[i].mask) == ipfilters[i].compare)
+			return sv_filterban.value;
+
+	return !sv_filterban.value;
 }
 
 /*
@@ -1401,6 +1528,125 @@ void SV_WriteClientdataToMessage (edict_t *ent, sizebuf_t *msg)
 }
 
 /*
+=================
+SV_ExtractFromUserinfo
+
+Pull specific info from a newly changed userinfo string
+into a more C freindly form.
+=================
+*/
+void SV_ExtractFromUserinfo (client_t *cl)
+{
+	char	*val, *p, *q;
+	int		i;
+	client_t	*client;
+	int		dupc = 1;
+	char	newname[80];
+
+
+	// name for C code
+	val = Info_ValueForKey (cl->userinfo, "name");
+
+	// trim user name
+	strncpy(newname, val, sizeof(newname) - 1);
+	newname[sizeof(newname) - 1] = 0;
+
+	for (p = newname; (*p == ' ' || *p == '\r' || *p == '\n') && *p; p++)
+		;
+
+	if (p != newname && !*p) {
+		//white space only
+		strcpy(newname, "unnamed");
+		p = newname;
+	}
+
+	if (p != newname && *p) {
+		for (q = newname; *p; *q++ = *p++)
+			;
+		*q = 0;
+	}
+	for (p = newname + strlen(newname) - 1; p != newname && (*p == ' ' || *p == '\r' || *p == '\n') ; p--)
+		;
+	p[1] = 0;
+
+	if (strcmp(val, newname)) {
+		Info_SetValueForKey (cl->userinfo, "name", newname, MAX_INFO_STRING);
+		val = Info_ValueForKey (cl->userinfo, "name");
+	}
+
+	if (!val[0] || !stricmp(val, "console")) {
+		Info_SetValueForKey (cl->userinfo, "name", "unnamed", MAX_INFO_STRING);
+		val = Info_ValueForKey (cl->userinfo, "name");
+	}
+
+	// check to see if another user by the same name exists
+	while (1) {
+		for (i=0, client = svs.clients ; i<MAX_CLIENTS ; i++, client++) {
+			if (client->state != cs_spawned || client == cl)
+				continue;
+			if (!stricmp(client->name, val))
+				break;
+		}
+		if (i != MAX_CLIENTS) { // dup name
+			if (strlen(val) > sizeof(cl->name) - 1)
+				val[sizeof(cl->name) - 4] = 0;
+			p = val;
+
+			if (val[0] == '(')
+				if (val[2] == ')')
+					p = val + 3;
+				else if (val[3] == ')')
+					p = val + 4;
+
+			sprintf(newname, "(%d)%-.40s", dupc++, p);
+			Info_SetValueForKey (cl->userinfo, "name", newname, MAX_INFO_STRING);
+			val = Info_ValueForKey (cl->userinfo, "name");
+		} else
+			break;
+	}
+	
+	if (strncmp(val, cl->name, strlen(cl->name))) {
+		if (!sv.paused) {
+			if (!cl->lastnametime || realtime - cl->lastnametime > 5) {
+				cl->lastnamecount = 0;
+				cl->lastnametime = realtime;
+			} else if (cl->lastnamecount++ > 4) {
+				SV_BroadcastPrintf (PRINT_HIGH, "%s was kicked for name spam\n", cl->name);
+				SV_ClientPrintf (cl, PRINT_HIGH, "You were kicked from the game for name spamming\n");
+				SV_DropClient (cl); 
+				return;
+			}
+		}
+				
+		if (cl->state >= cs_spawned && !cl->spectator)
+			SV_BroadcastPrintf (PRINT_HIGH, "%s changed name to %s\n", cl->name, val);
+	}
+
+
+	strncpy (cl->name, val, sizeof(cl->name)-1);	
+
+	// rate command
+	val = Info_ValueForKey (cl->userinfo, "rate");
+	if (strlen(val))
+	{
+		i = atoi(val);
+		if (i < 500)
+			i = 500;
+		if (i > 10000)
+			i = 10000;
+		cl->netchan.rate = 1.0/i;
+	}
+
+	// msg command
+	val = Info_ValueForKey (cl->userinfo, "msg");
+	if (strlen(val))
+	{
+		cl->messagelevel = atoi(val);
+	}
+
+}
+
+/*
 =======================
 SV_SendClientDatagram
 =======================
@@ -1717,6 +1963,27 @@ void SV_CreateBaseline ()
 	}
 }
 
+/*
+=================
+SV_BroadcastCommand
+
+Sends text to all active clients
+=================
+*/
+void SV_BroadcastCommand (const char *fmt, ...)
+{
+	va_list		argptr;
+	char		string[1024];
+	
+	if (!sv.state)
+		return;
+	va_start (argptr,fmt);
+	vsprintf (string, fmt,argptr);
+	va_end (argptr);
+
+	MSG_WriteByte (&sv.reliable_datagram, svc_stufftext);
+	MSG_WriteString (&sv.reliable_datagram, string);
+}
 
 /*
 ================

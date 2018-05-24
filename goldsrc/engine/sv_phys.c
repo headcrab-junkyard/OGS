@@ -1035,7 +1035,6 @@ void SV_WalkMove (edict_t *ent)
 	}
 }
 
-
 /*
 ================
 SV_Physics_Client
@@ -1132,7 +1131,6 @@ void SV_Physics_None (edict_t *ent)
 	SV_RunThink (ent);
 }
 
-#ifdef QUAKE2
 /*
 =============
 SV_Physics_Follow
@@ -1147,7 +1145,6 @@ void SV_Physics_Follow (edict_t *ent)
 	VectorAdd (PROG_TO_EDICT(ent->v.aiment)->v.origin, ent->v.v_angle, ent->v.origin);
 	SV_LinkEdict (ent, true);
 }
-#endif
 
 /*
 =============
@@ -1298,10 +1295,8 @@ void SV_Physics_Toss (edict_t *ent)
 	
 	if (ent->v.movetype == MOVETYPE_BOUNCE)
 		backoff = 1.5;
-#ifdef QUAKE2
 	else if (ent->v.movetype == MOVETYPE_BOUNCEMISSILE)
 		backoff = 2.0;
-#endif
 	else
 		backoff = 1;
 
@@ -1497,8 +1492,6 @@ void SV_Physics ()
 	edict_t	*ent;
 
 // let the progs know that a new frame has started
-	gGlobalVariables.self = EDICT_TO_PROG(sv.edicts);
-	gGlobalVariables.other = EDICT_TO_PROG(sv.edicts);
 	gGlobalVariables.time = sv.time;
 	gEntityInterface.pfnStartFrame();
 
@@ -1524,19 +1517,15 @@ void SV_Physics ()
 			SV_Physics_Pusher (ent);
 		else if (ent->v.movetype == MOVETYPE_NONE)
 			SV_Physics_None (ent);
-#ifdef QUAKE2
 		else if (ent->v.movetype == MOVETYPE_FOLLOW)
 			SV_Physics_Follow (ent);
-#endif
 		else if (ent->v.movetype == MOVETYPE_NOCLIP)
 			SV_Physics_Noclip (ent);
 		else if (ent->v.movetype == MOVETYPE_STEP)
 			SV_Physics_Step (ent);
 		else if (ent->v.movetype == MOVETYPE_TOSS 
 		|| ent->v.movetype == MOVETYPE_BOUNCE
-#ifdef QUAKE2
 		|| ent->v.movetype == MOVETYPE_BOUNCEMISSILE
-#endif
 		|| ent->v.movetype == MOVETYPE_FLY
 		|| ent->v.movetype == MOVETYPE_FLYMISSILE)
 			SV_Physics_Toss (ent);
@@ -1549,7 +1538,6 @@ void SV_Physics ()
 
 	sv.time += host_frametime;
 }
-
 
 #ifdef QUAKE2
 trace_t SV_Trace_Toss (edict_t *ent, edict_t *ignore)

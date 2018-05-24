@@ -65,13 +65,19 @@ cvar_t  localid = {"localid", ""};
 //
 cvar_t	password = {"password", "", FCVAR_USERINFO};
 cvar_t	spectator = {"spectator", "", FCVAR_USERINFO};
+cvar_t	model = {"model","", FCVAR_ARCHIVE | FCVAR_USERINFO};
 cvar_t	name = {"name","unnamed", FCVAR_ARCHIVE | FCVAR_USERINFO};
 cvar_t	team = {"team","", FCVAR_ARCHIVE | FCVAR_USERINFO};
 cvar_t	skin = {"skin","", FCVAR_ARCHIVE | FCVAR_USERINFO};
 cvar_t	topcolor = {"topcolor","0", FCVAR_ARCHIVE | FCVAR_USERINFO};
 cvar_t	bottomcolor = {"bottomcolor","0", FCVAR_ARCHIVE | FCVAR_USERINFO};
 cvar_t	rate = {"rate","2500", FCVAR_ARCHIVE | FCVAR_USERINFO};
-cvar_t	noaim = {"noaim","0", FCVAR_ARCHIVE | FCVAR_USERINFO};
+
+cvar_t	cl_dlmax = {"cl_dlmax","80", FCVAR_ARCHIVE | FCVAR_USERINFO};
+cvar_t	cl_lc = {"cl_lc","1", FCVAR_ARCHIVE | FCVAR_USERINFO};
+cvar_t	cl_lw = {"cl_lw","1", FCVAR_ARCHIVE | FCVAR_USERINFO};
+cvar_t	cl_updaterate = {"cl_updaterate","30", FCVAR_ARCHIVE | FCVAR_USERINFO};
+cvar_t	cl_autowepswitch = {"_cl_autowepswitch","1", FCVAR_ARCHIVE | FCVAR_USERINFO};
 
 static qboolean allowremotecmd = true; // TODO: purpose?
 
@@ -80,7 +86,7 @@ client_state_t	cl;
 
 // FIXME: put these on hunk?
 efrag_t			cl_efrags[MAX_EFRAGS];
-entity_t		cl_entities[MAX_EDICTS]; // TODO: dynamic-sized
+entity_t		cl_entities[MAX_EDICTS]; // TODO: dynamically-sized
 entity_t		cl_static_entities[MAX_STATIC_ENTITIES];
 lightstyle_t	cl_lightstyle[MAX_LIGHTSTYLES];
 dlight_t		cl_dlights[MAX_DLIGHTS];
@@ -100,7 +106,7 @@ User command to connect to server
 */
 void CL_Connect_f()
 {
-	//char	name[MAX_QPATH];
+	//char	server[MAX_QPATH];
 	const char *server;
 	
 	if(Cmd_Argc() != 2)
@@ -119,10 +125,7 @@ void CL_Connect_f()
 	};
 	*/
 	
-	//strcpy (name, Cmd_Argv(1));
-	//CL_EstablishConnection (name);
-	//Host_Reconnect_f ();
-	
+	//strcpy (server, Cmd_Argv(1));
 	server = Cmd_Argv(1);
 	
 	CL_Disconnect ();
@@ -1130,7 +1133,6 @@ void CL_Init ()
 	Cvar_RegisterVariable (&topcolor);
 	Cvar_RegisterVariable (&bottomcolor);
 	Cvar_RegisterVariable (&rate);
-	Cvar_RegisterVariable (&noaim);
 	
 	Cmd_AddCommand ("entities", CL_PrintEntities_f);
 	

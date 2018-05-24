@@ -58,9 +58,9 @@ byte		*host_colormap;
 
 cvar_t	host_framerate = {"host_framerate","0"};	// set for slow motion
 cvar_t	host_speeds = {"host_speeds","0"};			// set for running times
+cvar_t	host_profile = {"host_profile","0"};
 
 cvar_t	sys_ticrate = {"sys_ticrate","0.05"};
-cvar_t	serverprofile = {"serverprofile","0"}; // TODO: host_profile
 
 cvar_t	fraglimit = {"fraglimit","0",false,true};
 cvar_t	timelimit = {"timelimit","0",false,true};
@@ -215,9 +215,9 @@ void Host_InitLocal ()
 	
 	Cvar_RegisterVariable (&host_framerate);
 	Cvar_RegisterVariable (&host_speeds);
+	Cvar_RegisterVariable (&host_profile);
 
 	Cvar_RegisterVariable (&sys_ticrate);
-	Cvar_RegisterVariable (&serverprofile);
 
 	Cvar_RegisterVariable (&fraglimit);
 	Cvar_RegisterVariable (&timelimit);
@@ -314,29 +314,6 @@ void SV_BroadcastPrintf (const char *fmt, ...)
 			MSG_WriteByte (&svs.clients[i].netchan.message, svc_print);
 			MSG_WriteString (&svs.clients[i].netchan.message, string);
 		}
-}
-
-// TODO: move to sv_main (or sv_send)
-/*
-=================
-SV_BroadcastCommand
-
-Sends text to all active clients
-=================
-*/
-void SV_BroadcastCommand (const char *fmt, ...)
-{
-	va_list		argptr;
-	char		string[1024];
-	
-	if (!sv.state)
-		return;
-	va_start (argptr,fmt);
-	vsprintf (string, fmt,argptr);
-	va_end (argptr);
-
-	MSG_WriteByte (&sv.reliable_datagram, svc_stufftext);
-	MSG_WriteString (&sv.reliable_datagram, string);
 }
 
 /*
@@ -710,7 +687,7 @@ void Host_Frame (float time)
 	static int		timecount;
 	int		i, c, m;
 
-	if (!serverprofile.value)
+	if (!host_profile.value)
 	{
 		_Host_Frame (time);
 		return;
@@ -736,7 +713,7 @@ void Host_Frame (float time)
 			c++;
 	}
 
-	Con_Printf ("serverprofile: %2i clients %2i msec\n",  c,  m);
+	Con_Printf ("host_profile: %2i clients %2i msec\n",  c,  m);
 }
 
 //============================================================================
@@ -834,7 +811,11 @@ void Host_Init (quakeparms_t *parms)
 	//Host_InitVCR (parms);
 	COM_Init (parms->basedir); // TODO: no basedir?
 	Host_InitLocal ();
-	W_LoadWadFile ("gfx.wad");
+	//Sys_Init ();
+	
+	W_LoadWadFile("gfx.wad");
+	W_LoadWadFile("fonts.wad");
+	
 	Key_Init ();
 	Con_Init ();
 	M_Init ();	
@@ -843,7 +824,8 @@ void Host_Init (quakeparms_t *parms)
 	NET_Init ();
 	Netchan_Init();
 	SV_Init ();
-
+	//Pmove_Init ();
+	
 	Con_Printf ("Protocol version %d\n", PROTOCOL_VERSION);
 	//Con_Printf ("Exe version %s/%s (%s)\n", TODO); // Exe version 1.1.2.2/Stdio (tfc)
 	//Con_Printf ("Exe build: " __TIME__ " " __DATE__ "(%d)\n", buildnum()); // TODO

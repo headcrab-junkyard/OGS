@@ -60,7 +60,7 @@ bool CEngine::Load(bool dedicated, const char *basedir, const char *cmdline)
 	
 	//mParms. =;
 	
-	//parms.memsize = 8*1024*1024;
+	//parms.memsize = 8*1024*1024; // TODO: 5861376 in QW
 	//parms.membase = malloc (parms.memsize);
 	//parms.basedir = ".";
 	

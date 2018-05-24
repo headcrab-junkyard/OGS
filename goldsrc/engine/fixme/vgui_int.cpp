@@ -25,6 +25,10 @@ CEGUI::OpenGLRenderer *gpRenderer{nullptr};
 
 void VGui_Startup()
 {
+	// TODO
+	// * CEGUI::OpenGLRenderer for r_gl
+	// * CEGUI::OpenGL3Renderer for r_gl3
+	
 	*gpRenderer = CEGUI::OpenGLRenderer::bootstrapSystem();
 };
 

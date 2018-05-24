@@ -726,6 +726,7 @@ void R_DrawParticles (void)
 #else
 		D_DrawParticle (p);
 #endif
+
 		p->org[0] += p->vel[0]*frametime;
 		p->org[1] += p->vel[1]*frametime;
 		p->org[2] += p->vel[2]*frametime;

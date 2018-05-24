@@ -1309,7 +1309,6 @@ R_DrawWorld
 void R_DrawWorld (void)
 {
 	entity_t	ent;
-	int			i;
 
 	memset (&ent, 0, sizeof(ent));
 	ent.model = cl.worldmodel;
