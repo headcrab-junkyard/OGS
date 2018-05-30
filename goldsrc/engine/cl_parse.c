@@ -20,7 +20,7 @@
 
 #include "quakedef.h"
 
-char *svc_strings[] =
+char *svc_strings[] = // TODO
 {
 	"svc_bad",
 	"svc_nop",
@@ -711,6 +711,57 @@ void CL_ParseStaticSound ()
 	S_StaticSound (cl.sound_precache[sound_num], org, vol, atten);
 }
 
+void CL_Parse_Version()
+{
+	int i = MSG_ReadLong ();
+	if (i != PROTOCOL_VERSION)
+		Host_Error ("CL_Parse_Version: Server is protocol %i instead of %i\n", i, PROTOCOL_VERSION);
+};
+
+/*
+==============
+CL_UpdateUserinfo
+==============
+*/
+void CL_ProcessUserInfo (int slot, player_info_t *player)
+{
+	strncpy (player->name, Info_ValueForKey (player->userinfo, "name"), sizeof(player->name)-1);
+	
+	player->topcolor = atoi(Info_ValueForKey (player->userinfo, "topcolor"));
+	player->bottomcolor = atoi(Info_ValueForKey (player->userinfo, "bottomcolor"));
+	
+	if (Info_ValueForKey (player->userinfo, "*spectator")[0])
+		player->spectator = true;
+	else
+		player->spectator = false;
+
+	if (cls.state == ca_active)
+		Skin_Find (player);
+
+	Sbar_Changed ();
+	CL_NewTranslation (slot);
+};
+
+/*
+==============
+CL_UpdateUserinfo
+==============
+*/
+void CL_UpdateUserinfo ()
+{
+	int		slot;
+	player_info_t	*player;
+
+	slot = MSG_ReadByte ();
+	if (slot >= MAX_CLIENTS)
+		Host_EndGame ("CL_ParseServerMessage: svc_updateuserinfo > MAX_SCOREBOARD");
+
+	player = &cl.players[slot];
+	player->userid = MSG_ReadLong ();
+	strncpy (player->userinfo, MSG_ReadString(), sizeof(player->userinfo)-1);
+
+	CL_ProcessUserInfo (slot, player);
+};
 
 #define SHOWNET(x) if(cl_shownet.value==2)Con_Printf ("%3i:%s\n", msg_readcount-1, x);
 
@@ -767,60 +818,41 @@ void CL_ParseServerMessage ()
 		default:
 			Host_Error ("CL_ParseServerMessage: Illegible server message\n");
 			break;
-			
 		case svc_nop:
 //			Con_Printf ("svc_nop\n");
 			break;
-			
+		case svc_disconnect:
+			Host_EndGame ("Server disconnected\n");
+		case svc_event:
+			// TODO
+			break;
+		case svc_version:
+			CL_Parse_Version();
+			break;
+		case svc_setview:
+			cl.viewentity = MSG_ReadShort ();
+			break;
+		case svc_sound:
+			CL_ParseStartSoundPacket();
+			break;
 		case svc_time:
 			cl.mtime[1] = cl.mtime[0];
 			cl.mtime[0] = MSG_ReadFloat ();			
 			break;
-			
-		case svc_clientdata:
-			i = MSG_ReadShort ();
-			CL_ParseClientdata (i);
-			break;
-		
-		case svc_version:
-			i = MSG_ReadLong ();
-			if (i != PROTOCOL_VERSION)
-				Host_Error ("CL_ParseServerMessage: Server is protocol %i instead of %i\n", i, PROTOCOL_VERSION);
-			break;
-			
-		case svc_disconnect:
-			Host_EndGame ("Server disconnected\n");
-
 		case svc_print:
 			Con_Printf ("%s", MSG_ReadString ());
 			break;
-			
-		case svc_centerprint:
-			SCR_CenterPrint (MSG_ReadString ());
-			break;
-			
 		case svc_stufftext:
 			Cbuf_AddText (MSG_ReadString ());
 			break;
-			
-		case svc_damage:
-			V_ParseDamage ();
-			break;
-			
-		case svc_serverinfo:
-			CL_ParseServerInfo ();
-			vid.recalc_refdef = true;	// leave intermission full screen
-			break;
-			
 		case svc_setangle:
 			for (i=0 ; i<3 ; i++)
 				cl.viewangles[i] = MSG_ReadAngle ();
 			break;
-			
-		case svc_setview:
-			cl.viewentity = MSG_ReadShort ();
+		case svc_serverinfo:
+			CL_ParseServerInfo ();
+			vid.recalc_refdef = true;	// leave intermission full screen
 			break;
-					
 		case svc_lightstyle:
 			i = MSG_ReadByte ();
 			if (i >= MAX_LIGHTSTYLES)
@@ -828,16 +860,183 @@ void CL_ParseServerMessage ()
 			Q_strcpy (cl_lightstyle[i].map,  MSG_ReadString());
 			cl_lightstyle[i].length = Q_strlen(cl_lightstyle[i].map);
 			break;
-			
-		case svc_sound:
-			CL_ParseStartSoundPacket();
+		case svc_updateuserinfo:
+			CL_UpdateUserinfo();
 			break;
-			
+		case svc_deltadescription:
+			// TODO
+			break;
+		case svc_clientdata:
+			i = MSG_ReadShort ();
+			CL_ParseClientdata (i);
+			break;
 		case svc_stopsound:
 			i = MSG_ReadShort();
 			S_StopSound(i>>3, i&7);
 			break;
-		
+		case svc_pings:
+			// TODO
+			break;
+		case svc_particle:
+			R_ParseParticleEffect ();
+			break;
+		case svc_damage:
+			V_ParseDamage ();
+			break;
+		case svc_spawnstatic:
+			CL_ParseStatic ();
+			break;	
+		case svc_event_reliable:
+			// TODO
+			break;
+		case svc_spawnbaseline:
+			i = MSG_ReadShort ();
+			// must use CL_EntityNum() to force cl.num_entities up
+			CL_ParseBaseline (CL_EntityNum(i));
+			break;
+		case svc_tempentity:
+			CL_ParseTEnt ();
+			break;
+		case svc_setpause:
+			{
+				cl.paused = MSG_ReadByte ();
+
+				if (cl.paused)
+				{
+					CDAudio_Pause ();
+#ifdef _WIN32
+					VID_HandlePause (true);
+#endif
+				}
+				else
+				{
+					CDAudio_Resume ();
+#ifdef _WIN32
+					VID_HandlePause (false);
+#endif
+				}
+			}
+			break;
+		case svc_signonnum:
+			i = MSG_ReadByte ();
+			if (i <= cls.signon)
+				Host_Error ("Received signon %i when at %i", i, cls.signon);
+			cls.signon = i;
+			CL_SignonReply ();
+			break;
+		case svc_centerprint:
+			SCR_CenterPrint (MSG_ReadString ());
+			break;
+		case svc_killedmonster:
+			cl.stats[STAT_MONSTERS]++;
+			break;
+		case svc_foundsecret:
+			cl.stats[STAT_SECRETS]++;
+			break;
+		case svc_spawnstaticsound:
+			CL_ParseStaticSound ();
+			break;
+		case svc_intermission:
+			cl.intermission = 1;
+			cl.completed_time = cl.time;
+			vid.recalc_refdef = true;	// go to full screen
+			break;
+		case svc_finale:
+			cl.intermission = 2;
+			cl.completed_time = cl.time;
+			vid.recalc_refdef = true;	// go to full screen
+			SCR_CenterPrint (MSG_ReadString ());			
+			break;
+		case svc_cdtrack:
+			cl.cdtrack = MSG_ReadByte ();
+			cl.looptrack = MSG_ReadByte ();
+			if ( (cls.demoplayback || cls.demorecording) && (cls.forcetrack != -1) )
+				CDAudio_Play ((byte)cls.forcetrack, true);
+			else
+				CDAudio_Play ((byte)cl.cdtrack, true);
+			break;
+		case svc_restore:
+			// TODO
+			break;
+		case svc_cutscene:
+			cl.intermission = 3;
+			cl.completed_time = cl.time;
+			vid.recalc_refdef = true;	// go to full screen
+			SCR_CenterPrint (MSG_ReadString ());			
+			break;
+		case svc_weaponanim:
+			//CL_WeaponAnim(MSG_ReadByte(), MSG_ReadByte()); // TODO
+			break;
+		case svc_decalname:
+			// TODO
+			break;
+		case svc_roomtype:
+			// TODO
+			break;
+		case svc_addangle:
+			// TODO
+			break;
+		case svc_newusermsg:
+			// TODO
+			break;
+		case svc_packetentities:
+			CL_ParsePacketEntities(false);
+			break;
+		case svc_deltapacketentities:
+			CL_ParsePacketEntities(true);
+			break;
+		case svc_choke:
+			// TODO
+			break;
+		case svc_resourcelist:
+			// TODO
+			break;
+		case svc_newmovevars:
+			// TODO
+			break;
+		case svc_resourcerequest:
+			// TODO
+			break;
+		case svc_customization:
+			// TODO
+			break;
+		case svc_crosshairangle:
+			// TODO
+			break;
+		case svc_soundfade:
+			// TODO
+			break;
+		case svc_filetxferfailed:
+			// TODO
+			break;
+		case svc_hltv:
+			// TODO
+			break;
+		case svc_director:
+			// TODO
+			break;
+		case svc_voiceinit:
+			// TODO
+			break;
+		case svc_voicedata:
+			// TODO
+			break;
+		case svc_sendextrainfo:
+			// TODO
+			break;
+		case svc_timescale:
+			// TODO
+			break;
+		case svc_resourcelocation:
+			// TODO
+			break;
+		case svc_sendcvarvalue:
+			// TODO
+			break;
+		case svc_sendcvarvalue2:
+			// TODO
+			break;
+		/* TODO: Original Quake protocol remnants unused in GS
 		case svc_updatename:
 			Sbar_Changed ();
 			i = MSG_ReadByte ();
@@ -862,59 +1061,6 @@ void CL_ParseServerMessage ()
 			cl.scores[i].colors = MSG_ReadByte ();
 			CL_NewTranslation (i);
 			break;
-			
-		case svc_particle:
-			R_ParseParticleEffect ();
-			break;
-
-		case svc_spawnbaseline:
-			i = MSG_ReadShort ();
-			// must use CL_EntityNum() to force cl.num_entities up
-			CL_ParseBaseline (CL_EntityNum(i));
-			break;
-		case svc_spawnstatic:
-			CL_ParseStatic ();
-			break;			
-		case svc_temp_entity:
-			CL_ParseTEnt ();
-			break;
-
-		case svc_setpause:
-			{
-				cl.paused = MSG_ReadByte ();
-
-				if (cl.paused)
-				{
-					CDAudio_Pause ();
-#ifdef _WIN32
-					VID_HandlePause (true);
-#endif
-				}
-				else
-				{
-					CDAudio_Resume ();
-#ifdef _WIN32
-					VID_HandlePause (false);
-#endif
-				}
-			}
-			break;
-			
-		case svc_signonnum:
-			i = MSG_ReadByte ();
-			if (i <= cls.signon)
-				Host_Error ("Received signon %i when at %i", i, cls.signon);
-			cls.signon = i;
-			CL_SignonReply ();
-			break;
-
-		case svc_killedmonster:
-			cl.stats[STAT_MONSTERS]++;
-			break;
-
-		case svc_foundsecret:
-			cl.stats[STAT_SECRETS]++;
-			break;
 
 		case svc_updatestat:
 			i = MSG_ReadByte ();
@@ -922,43 +1068,11 @@ void CL_ParseServerMessage ()
 				Sys_Error ("svc_updatestat: %i is invalid", i);
 			cl.stats[i] = MSG_ReadLong ();;
 			break;
-			
-		case svc_spawnstaticsound:
-			CL_ParseStaticSound ();
-			break;
-
-		case svc_cdtrack:
-			cl.cdtrack = MSG_ReadByte ();
-			cl.looptrack = MSG_ReadByte ();
-			if ( (cls.demoplayback || cls.demorecording) && (cls.forcetrack != -1) )
-				CDAudio_Play ((byte)cls.forcetrack, true);
-			else
-				CDAudio_Play ((byte)cl.cdtrack, true);
-			break;
-
-		case svc_intermission:
-			cl.intermission = 1;
-			cl.completed_time = cl.time;
-			vid.recalc_refdef = true;	// go to full screen
-			break;
-
-		case svc_finale:
-			cl.intermission = 2;
-			cl.completed_time = cl.time;
-			vid.recalc_refdef = true;	// go to full screen
-			SCR_CenterPrint (MSG_ReadString ());			
-			break;
-
-		case svc_cutscene:
-			cl.intermission = 3;
-			cl.completed_time = cl.time;
-			vid.recalc_refdef = true;	// go to full screen
-			SCR_CenterPrint (MSG_ReadString ());			
-			break;
 
 		case svc_sellscreen:
 			Cmd_ExecuteString ("help", src_command);
 			break;
+		*/
 		}
 	}
 }
