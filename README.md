@@ -42,8 +42,16 @@ For more information about the project you can visit its official [Wiki](https:/
 This information allows you to see which function caused the crash and its location in source code. 
 (Backtrace logs don't show you the actual source code)
 
+**Q: Will the engine be able to run my precious (%MODNAME%)?**
+**A:** Nope, HLSDK EULA expects that any modification created using it will be used only by the original 
+GoldSrc engine. Technically, it still might be possible to interconnect the reimplemented engine with original mods written 
+using HLSDK, but that's at your own risk. I'm not planning to reimplement the game code for this engine. I'm also thinking about 
+preventing the engine from supporting game/client dlls loading and just contain stubs for them inside the engine, 
+can't say for sure now, but I doubt that anyone else decides to rewrite the game code for this engine, so it probably end up being used 
+as a tech demo of the GoldSrc showcasing its features using some recreated HL Alpha maps
+
 ## License
 
-[![license](https://img.shields.io/github/license/BlackPhrase/OGS.svg)](https://github.com/BlackPhrase/OGS/blob/master/LICENSE.md)
+[![license](https://img.shields.io/github/license/BlackPhrase/OGS.svg)](https://github.com/BlackPhrase/OGS/blob/master/LICENSE)
 
-GNU GPL v2/3 or higher
+GNU GPL v3+
