@@ -18,13 +18,11 @@
 
 /// @file
 
-#include <memory>
-
 #include "LinuxApplication.hpp"
 
 int main(int argc, char **argv)
 {
-	std::unique_ptr<CApplication> pApp = std::make_unique<CLinuxApplication>(argc, argv);
+	CApplication App(argc, argv);
 	
-	return pApp->Run();
+	return App.Run();
 };

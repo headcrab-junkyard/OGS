@@ -19,8 +19,6 @@
 
 /// @file
 
-#include <memory>
-
 #include <windows.h>
 
 #include "WinApplication.hpp"
@@ -43,7 +41,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	//global_hInstance = hInstance;
 	//global_nCmdShow = nCmdShow;
 	
-	std::unique_ptr<CApplication> pApp = std::make_unique<CWinApplication>(lpCmdLine);
+	CApplication App(lpCmdLine);
 	
-	return pApp->Run();
+	return App.Run();
 };
