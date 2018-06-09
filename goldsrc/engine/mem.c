@@ -17,18 +17,26 @@
  */
 
 /// @file
-/// @brief dynamic memory management functions
 
-#pragma once
+#include "quakedef.h"
+#include "mem.h"
 
-/// Allocate memory block
-void *Mem_Alloc(size_t size);
+void *Mem_Alloc(size_t size)
+{
+	return malloc(size);
+};
 
-/// Allocate number * size bytes and zero it
-void *Mem_Calloc(int number, size_t size);
+void *Mem_Calloc(int number, size_t size)
+{
+	return calloc((size_t)number, size);
+};
 
-/// Reallocate memory block
-void *Mem_Realloc(void *ptr, size_t size);
+void *Mem_Realloc(void *ptr, size_t size)
+{
+	return realloc(ptr, size);
+};
 
-/// Deallocate memory block
-void Mem_Free(void *ptr);
+void Mem_Free(void *ptr)
+{
+	free(ptr);
+};
