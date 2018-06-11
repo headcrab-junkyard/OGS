@@ -21,14 +21,6 @@
 //#include "quakedef.h" // TODO
 #include "sys_engine.h"
 
-#ifdef _WIN32
-	#define EXPORT [[dllexport]]
-#else
-	#define EXPORT [[visibility("default")]]
-#endif
-
-#define C_EXPORT extern "C" EXPORT
-
 // TODO: temp
 #define PAUSE_SLEEP		50				// sleep time on pause or minimization
 #define NOT_FOCUS_SLEEP	20				// sleep time when not focus
@@ -40,14 +32,6 @@ IEngine *gpEngine = &gEngine; // eng
 #ifdef _WIN32
 qboolean ActiveApp, Minimized;
 #endif
-
-/*
-C_EXPORT IEngine *GetEngine()
-{
-	static CEngine Engine;
-	return &Engine;
-};
-*/
 
 CEngine::CEngine() = default;
 CEngine::~CEngine() = default;
@@ -93,24 +77,10 @@ void SleepUntilInput(int time)
 
 void CEngine::Frame()
 {
-	static double time, oldtime, newtime;
-	
-	if (isDedicated)
-	{
-		newtime = Sys_FloatTime ();
-		time = newtime - oldtime;
-
-		while (time < sys_ticrate.value )
-		{
-			Sys_Sleep();
-			newtime = Sys_FloatTime ();
-			time = newtime - oldtime;
-		}
-	}
-	else
+	if(!isDedicated)
 	{
 #ifdef _WIN32
-	// yield the CPU for a little while when paused, minimized, or not the focus
+		// yield the CPU for a little while when paused, minimized, or not the focus
 		//if ((cl.paused && (!ActiveApp && !DDActive)) || Minimized || block_drawing) // TODO
 		{
 			SleepUntilInput (PAUSE_SLEEP);
@@ -119,11 +89,21 @@ void CEngine::Frame()
 		//else if (!ActiveApp && !DDActive) // TODO
 			SleepUntilInput (NOT_FOCUS_SLEEP);
 #endif // _WIN32
-
-		newtime = Sys_FloatTime ();
-		time = newtime - oldtime;
+	};
+	
+	newtime = Sys_FloatTime();
+	frametime = newtime - oldtime;
+	
+	if(isDedicated)
+	{
+		while (frametime < sys_ticrate.value )
+		{
+			Sys_Sleep();
+			newtime = Sys_FloatTime ();
+			frametime = newtime - oldtime;
+		};
 	};
 
-	Host_Frame (time);
+	Host_Frame (frametime);
 	oldtime = newtime;
 };

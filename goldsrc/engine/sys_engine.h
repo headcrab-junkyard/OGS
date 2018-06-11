@@ -35,4 +35,8 @@ public:
 	void Frame() override;
 private:
 	quakeparms_t mParms{};
+	
+	double newtime{0.0};
+	double oldtime{0.0};
+	double frametime{0.0};
 };
