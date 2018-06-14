@@ -25,7 +25,7 @@ EXPOSE_SINGLE_INTERFACE(CDedicatedExports, IDedicatedExports, VENGINE_DEDICATEDE
 CDedicatedExports::CDedicatedExports() = default;
 CDedicatedExports::~CDedicatedExports() = default;
 
-void CDedicatedExports::Sys_Printf(char *text)
+void CDedicatedExports::Sys_Printf(const char *text)
 {
 	if(!text || !*text)
 		return;

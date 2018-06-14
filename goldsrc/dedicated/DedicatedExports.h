@@ -28,5 +28,5 @@ public:
 	CDedicatedExports();
 	~CDedicatedExports();
 	
-	void Sys_Printf(char *text) override;
+	void Sys_Printf(const char *text) override;
 };
