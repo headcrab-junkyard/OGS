@@ -19,7 +19,7 @@
 /// @file
 
 #include "quakedef.h"
-#include "IFileSystem.hpp"
+#include "public/FileSystem.h"
 
 IFileSystem *gpFileSystem{nullptr};
 
@@ -33,7 +33,7 @@ void FileSystem_Init(char *basedir, void *filesystemFactory)
 	if(!filesystemFactory)
 		return;
 	
-	gpFileSystem = (IFileSystem*)(((CreateInterfaceFn)filesystemFactory)(OGS_FILESYSTEM_INTERFACE_VERSION, nullptr)); // TODO: FILESYSTEM_INTERFACE_VERSION
+	gpFileSystem = (IFileSystem*)(((CreateInterfaceFn)filesystemFactory)(FILESYSTEM_INTERFACE_VERSION, nullptr));
 	
 	if(!gpFileSystem)
 		return;
@@ -63,7 +63,7 @@ void FS_AddSearchPath(const char *pPath, const char *pathID)
 	gpFileSystem->AddSearchPath(pPath, pathID);
 };
 
-bool FS_RemoveSearchPath(const char *pPath)
+qboolean FS_RemoveSearchPath(const char *pPath)
 {
 	return gpFileSystem->RemoveSearchPath(pPath);
 };
@@ -78,12 +78,12 @@ void FS_CreateDirHierarchy(const char *path, const char *pathID)
 	gpFileSystem->CreateDirHierarchy(path, pathID);
 };
 
-bool FS_FileExists(const char *pFileName)
+qboolean FS_FileExists(const char *pFileName)
 {
 	return gpFileSystem->FileExists(pFileName);
 };
 
-bool FS_IsDirectory(const char *pFileName)
+qboolean FS_IsDirectory(const char *pFileName)
 {
 	return gpFileSystem->IsDirectory(pFileName);
 };
@@ -113,7 +113,7 @@ unsigned int FS_Size(FileHandle_t file)
 	return gpFileSystem->Size(file);
 };
 
-unsigned int FS_Size(const char *pFileName) // TODO: FS_FileSize? C doesn't support function overloading so this won't work otherwise
+unsigned int FS_FileSize(const char *pFileName)
 {
 	return gpFileSystem->Size(pFileName);
 };
@@ -128,7 +128,7 @@ void FS_FileTimeToString(char *pStrip, int maxCharsIncludingTerminator, long fil
 	return gpFileSystem->FileTimeToString(pStrip, maxCharsIncludingTerminator, fileTime);
 };
 
-bool FS_IsOk(FileHandle_t file)
+qboolean FS_IsOk(FileHandle_t file)
 {
 	return gpFileSystem->IsOk(file);
 };
@@ -138,7 +138,7 @@ void FS_Flush(FileHandle_t file)
 	gpFileSystem->Flush(file);
 };
 
-bool FS_EndOfFile(FileHandle_t file)
+qboolean FS_EndOfFile(FileHandle_t file)
 {
 	return gpFileSystem->EndOfFile(file);
 };
@@ -164,7 +164,7 @@ int FS_FPrintf(FileHandle_t file, char *pFormat, ...)
 	return gpFileSystem->FPrintf(file, pFormat);
 };
 
-void *FS_GetReadBuffer(FileHandle_t file, int *outBufferSize, bool failIfNotInCache)
+void *FS_GetReadBuffer(FileHandle_t file, int *outBufferSize, qboolean failIfNotInCache)
 {
 	return gpFileSystem->GetReadBuffer(file, outBufferSize, failIfNotInCache);
 };
@@ -184,7 +184,7 @@ const char *FS_FindNext(FileFindHandle_t handle)
 	return gpFileSystem->FindNext(handle);
 };
 
-bool FS_FindIsDirectory(FileFindHandle_t handle)
+qboolean FS_FindIsDirectory(FileFindHandle_t handle)
 {
 	return gpFileSystem->FindIsDirectory(handle);
 };
@@ -204,17 +204,24 @@ const char *FS_GetLocalPath(const char *pFileName, char *pLocalPath, int localPa
 	return gpFileSystem->GetLocalPath(pFileName, pLocalPath, localPathBufferSize);
 };
 
-char *FS_ParseFile(char *pFileBytes, char *pToken, bool *pWasQuoted)
+char *FS_ParseFile(char *pFileBytes, char *pToken, qboolean *pWasQuoted)
 {
-	return gpFileSystem->ParseFile(pFileBytes, pToken, pWasQuoted);
+	bool bWasQuoted;
+	
+	auto sResult{gpFileSystem->ParseFile(pFileBytes, pToken, &bWasQuoted)};
+	
+	if(pWasQuoted)
+		*pWasQuoted = bWasQuoted;
+	
+	return sResult;
 };
 
-bool FS_FullPathToRelativePath(const char *pFullpath, char *pRelative)
+qboolean FS_FullPathToRelativePath(const char *pFullpath, char *pRelative)
 {
 	return gpFileSystem->FullPathToRelativePath(pFullpath, pRelative);
 };
 
-bool FS_GetCurrentDirectory(char *pDirectory, int maxlen)
+qboolean FS_GetCurrentDirectory(char *pDirectory, int maxlen)
 {
 	return gpFileSystem->GetCurrentDirectory(pDirectory, maxlen);
 };
@@ -269,7 +276,7 @@ void FS_GetInterfaceVersion(char *p, int maxlen)
 	gpFileSystem->GetInterfaceVersion(p, maxlen);
 };
 
-bool FS_IsFileImmediatelyAvailable(const char *pFileName)
+qboolean FS_IsFileImmediatelyAvailable(const char *pFileName)
 {
 	return gpFileSystem->IsFileImmediatelyAvailable(pFileName);
 };
@@ -279,22 +286,25 @@ WaitForResourcesHandle_t FS_WaitForResources(const char *resourcelist)
 	return gpFileSystem->WaitForResources(resourcelist);
 };
 
-bool FS_GetWaitForResourcesProgress(WaitForResourcesHandle_t handle, float *progress, bool *complete)
+// TODO
+/*
+qboolean FS_GetWaitForResourcesProgress(WaitForResourcesHandle_t handle, float *progress, qboolean *complete)
 {
 	return gpFileSystem->GetWaitForResourcesProgress(handle, progress, complete);
 };
+*/
 
 void FS_CancelWaitForResources(WaitForResourcesHandle_t handle)
 {
 	gpFileSystem->CancelWaitForResources(handle);
 };
 
-bool FS_IsAppReadyForOfflinePlay(int appID)
+qboolean FS_IsAppReadyForOfflinePlay(int appID)
 {
 	return gpFileSystem->IsAppReadyForOfflinePlay(appID);
 };
 
-bool FS_AddPackFile(const char *fullpath, const char *pathID)
+qboolean FS_AddPackFile(const char *fullpath, const char *pathID)
 {
 	return gpFileSystem->AddPackFile(fullpath, pathID);
 };
@@ -319,6 +329,7 @@ FILE IO
 ===============================================================================
 */
 
+/*
 int FS_FileOpenRead(const char *path, int *hndl)
 {
 	return 0; // TODO
@@ -353,6 +364,7 @@ int FS_FileTime(const char *path)
 {
 	return gpFileSystem->GetFileTime(path);
 };
+*/
 
 void FS_mkdir(const char *path)
 {

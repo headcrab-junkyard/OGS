@@ -46,6 +46,9 @@ typedef enum
 	FILESYSTEM_WARNING_REPORTALLACCESS ///< Report all open/close events to console (SLOW!!!!)
 } FileWarningLevel_t;
 
+typedef void *FileHandle_t;
+typedef int FileFindHandle_t;
+typedef int WaitForResourcesHandle_t;
 
 ////////////
 // TODO: here or somewhere else?????
@@ -62,14 +65,14 @@ void FileSystem_Shutdown();
 void FS_RemoveAllSearchPaths();
 
 void FS_AddSearchPath(const char *pPath, const char *pathID);
-bool FS_RemoveSearchPath(const char *pPath);
+qboolean FS_RemoveSearchPath(const char *pPath);
 
 void FS_RemoveFile(const char *pRelativePath, const char *pathID);
 
 void FS_CreateDirHierarchy(const char *path, const char *pathID);
 
-bool FS_FileExists(const char *pFileName);
-bool FS_IsDirectory(const char *pFileName);
+qboolean FS_FileExists(const char *pFileName);
+qboolean FS_IsDirectory(const char *pFileName);
 
 FileHandle_t FS_Open(const char *pFileName, const char *pOptions, const char *pathID);
 void FS_Close(FileHandle_t file);
@@ -78,38 +81,38 @@ void FS_Seek(FileHandle_t file, int pos, FileSystemSeek_t seekType);
 unsigned int FS_Tell(FileHandle_t file);
 
 unsigned int FS_Size(FileHandle_t file);
-unsigned int FS_Size(const char *pFileName); // TODO: FS_FileSize? C doesn't support function overloading so this won't work otherwise
+unsigned int FS_FileSize(const char *pFileName);
 
 long FS_GetFileTime(const char *pFileName);
 void FS_FileTimeToString(char *pStrip, int maxCharsIncludingTerminator, long fileTime);
 
-bool FS_IsOk(FileHandle_t file);
+qboolean FS_IsOk(FileHandle_t file);
 
 void FS_Flush(FileHandle_t file);
-bool FS_EndOfFile(FileHandle_t file);
+qboolean FS_EndOfFile(FileHandle_t file);
 
 int FS_Read(void *pOutput, int size, FileHandle_t file);
 int FS_Write(void const *pInput, int size, FileHandle_t file); // void const
 char *FS_ReadLine(char *pOutput, int maxChars, FileHandle_t file);
 int FS_FPrintf(FileHandle_t file, char *pFormat, ...);
 
-void *FS_GetReadBuffer(FileHandle_t file, int *outBufferSize, bool failIfNotInCache);
+void *FS_GetReadBuffer(FileHandle_t file, int *outBufferSize, qboolean failIfNotInCache);
 void FS_ReleaseReadBuffer(FileHandle_t file, void *readBuffer);
 
 const char *FS_FindFirst(const char *pWildCard, FileFindHandle_t *pHandle, const char *pathID);
 const char *FS_FindNext(FileFindHandle_t handle);
-bool FS_FindIsDirectory(FileFindHandle_t handle);
+qboolean FS_FindIsDirectory(FileFindHandle_t handle);
 void FS_FindClose(FileFindHandle_t handle);
 
 void FS_GetLocalCopy(const char *pFileName);
 
 const char *FS_GetLocalPath(const char *pFileName, char *pLocalPath, int localPathBufferSize);
 
-char *FS_ParseFile(char *pFileBytes, char *pToken, bool *pWasQuoted);
+char *FS_ParseFile(char *pFileBytes, char *pToken, qboolean *pWasQuoted);
 
-bool FS_FullPathToRelativePath(const char *pFullpath, char *pRelative);
+qboolean FS_FullPathToRelativePath(const char *pFullpath, char *pRelative);
 
-bool FS_GetCurrentDirectory(char *pDirectory, int maxlen);
+qboolean FS_GetCurrentDirectory(char *pDirectory, int maxlen);
 
 void FS_PrintOpenedFiles();
 
@@ -128,15 +131,15 @@ int FS_SetVBuf(FileHandle_t stream, char *buffer, int mode, long size);
 
 void FS_GetInterfaceVersion(char *p, int maxlen);
 
-bool FS_IsFileImmediatelyAvailable(const char *pFileName);
+qboolean FS_IsFileImmediatelyAvailable(const char *pFileName);
 
 WaitForResourcesHandle_t FS_WaitForResources(const char *resourcelist);
-bool FS_GetWaitForResourcesProgress(WaitForResourcesHandle_t handle, float *progress, bool *complete);
+qboolean FS_GetWaitForResourcesProgress(WaitForResourcesHandle_t handle, float *progress, qboolean *complete);
 void FS_CancelWaitForResources(WaitForResourcesHandle_t handle);
 
-bool FS_IsAppReadyForOfflinePlay(int appID);
+qboolean FS_IsAppReadyForOfflinePlay(int appID);
 
-bool FS_AddPackFile(const char *fullpath, const char *pathID);
+qboolean FS_AddPackFile(const char *fullpath, const char *pathID);
 
 FileHandle_t FS_OpenFromCacheForRead(const char *pFileName, const char *pOptions, const char *pathID);
 
