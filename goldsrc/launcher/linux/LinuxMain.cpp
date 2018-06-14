@@ -22,7 +22,7 @@
 
 int main(int argc, char **argv)
 {
-	CApplication App(argc, argv);
+	CLinuxApplication App(argc, argv);
 	
 	return App.Run();
 };

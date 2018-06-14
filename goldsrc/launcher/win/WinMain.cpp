@@ -41,7 +41,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	//global_hInstance = hInstance;
 	//global_nCmdShow = nCmdShow;
 	
-	CApplication App(lpCmdLine);
+	CWinApplication App(lpCmdLine);
 	
 	return App.Run();
 };
