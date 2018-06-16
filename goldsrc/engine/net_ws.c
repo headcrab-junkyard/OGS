@@ -20,7 +20,10 @@
 /// @file
 
 #include "quakedef.h"
+
+#ifdef _WIN32
 #include "winquake.h"
+#endif
 
 netadr_t	net_local_adr;
 
@@ -31,7 +34,11 @@ int			net_socket;
 #define	MAX_UDP_PACKET	(MAX_MSGLEN*2)	// one more than msg + header
 byte		net_message_buffer[MAX_UDP_PACKET];
 
+#ifdef _WIN32
 WSADATA		winsockdata;
+#endif
+
+// TODO: contains win-specific code
 
 //=============================================================================
 
@@ -163,7 +170,7 @@ qboolean NET_IsClientLegal(netadr_t *adr)
 
 //=============================================================================
 
-qboolean NET_GetPacket ()
+qboolean NET_GetPacket(netsrc_t sock, netadr_t *net_from, sizebuf_t *message)
 {
 	int 	ret;
 	struct sockaddr_in	from;
@@ -171,28 +178,28 @@ qboolean NET_GetPacket ()
 
 	fromlen = sizeof(from);
 	ret = recvfrom (net_socket, (char *)net_message_buffer, sizeof(net_message_buffer), 0, (struct sockaddr *)&from, &fromlen);
-	SockadrToNetadr (&from, &net_from);
+	SockadrToNetadr (&from, net_from);
 
 	if (ret == -1)
 	{
-		int errno = WSAGetLastError();
+		int err = WSAGetLastError();
 
-		if (errno == WSAEWOULDBLOCK)
+		if (err == WSAEWOULDBLOCK)
 			return false;
-		if (errno == WSAEMSGSIZE) {
+		if (err == WSAEMSGSIZE) {
 			Con_Printf ("Warning:  Oversize packet from %s\n",
-				NET_AdrToString (net_from));
+				NET_AdrToString (*net_from));
 			return false;
 		}
 
 
-		Sys_Error ("NET_GetPacket: %s", strerror(errno));
+		Sys_Error ("NET_GetPacket: %s", strerror(err));
 	}
 
 	net_message.cursize = ret;
 	if (ret == sizeof(net_message_buffer) )
 	{
-		Con_Printf ("Oversize packet from %s\n", NET_AdrToString (net_from));
+		Con_Printf ("Oversize packet from %s\n", NET_AdrToString (*net_from));
 		return false;
 	}
 
@@ -201,7 +208,7 @@ qboolean NET_GetPacket ()
 
 //=============================================================================
 
-void NET_SendPacket (int length, void *data, netadr_t to)
+void NET_SendPacket (netsrc_t sock, int length, void *data, netadr_t to)
 {
 	int ret;
 	struct sockaddr_in	addr;
@@ -222,7 +229,7 @@ void NET_SendPacket (int length, void *data, netadr_t to)
 			Con_DPrintf("NET_SendPacket Warning: %i\n", err);
 		else
 #endif
-			Con_Printf ("NET_SendPacket ERROR: %i\n", errno);
+			Con_Printf ("NET_SendPacket ERROR: %i\n", err);
 	}
 }
 

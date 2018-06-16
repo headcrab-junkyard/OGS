@@ -158,7 +158,7 @@ void V_ParseDamage (void)
 	vec3_t	from;
 	int		i;
 	vec3_t	forward, right, up;
-	entity_t	*ent;
+	cl_entity_t	*ent;
 	float	side;
 	float	count;
 	
@@ -601,7 +601,7 @@ V_BoundOffsets
 */
 void V_BoundOffsets (void)
 {
-	entity_t	*ent;
+	cl_entity_t	*ent;
 	
 	ent = &cl_entities[cl.viewentity];
 
@@ -675,7 +675,7 @@ V_CalcIntermissionRefdef
 */
 void V_CalcIntermissionRefdef (void)
 {
-	entity_t	*ent, *view;
+	cl_entity_t	*ent, *view;
 	float		old;
 
 // ent is the player model (visible when out of body)
@@ -702,7 +702,7 @@ V_CalcRefdef
 */
 void V_CalcRefdef (void)
 {
-	entity_t	*ent, *view;
+	cl_entity_t	*ent, *view;
 	int			i;
 	vec3_t		forward, right, up;
 	vec3_t		angles;

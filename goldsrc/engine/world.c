@@ -277,7 +277,6 @@ void SV_TouchLinks ( edict_t *ent, areanode_t *node )
 {
 	link_t		*l, *next;
 	edict_t		*touch;
-	int			old_self, old_other;
 
 // touch linked edicts
 	for (l = node->trigger_edicts.next ; l != &node->trigger_edicts ; l = next)
@@ -296,16 +295,8 @@ void SV_TouchLinks ( edict_t *ent, areanode_t *node )
 		|| ent->v.absmax[2] < touch->v.absmin[2] )
 			continue;
 
-		old_self = gGlobalVariables.self;
-		old_other = gGlobalVariables.other;
-
-		gGlobalVariables.self = EDICT_TO_PROG(touch);
-		gGlobalVariables.other = EDICT_TO_PROG(ent);
 		gGlobalVariables.time = sv.time;
 		gEntityInterface.pfnTouch(touch, ent);
-
-		gGlobalVariables.self = old_self;
-		gGlobalVariables.other = old_other;
 	}
 	
 // recurse down both sides

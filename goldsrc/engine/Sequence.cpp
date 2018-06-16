@@ -18,24 +18,29 @@
 
 /// @file
 
+#include "quakedef.h"
 #include "Sequence.h"
 
 // TODO
 
-sequenceEntry_s *SequenceGet(const char *fileName, const char* entryName)
+sequenceEntry_s *SequenceGet(const char *sFileName, const char *sEntryName)
 {
+	// TODO
 	return nullptr;
 };
 
-void Sequence_ParseFile(const char *fileName, qboolean isGlobal)
+void Sequence_ParseFile(const char *sFileName, qboolean bIsGlobal)
 {
+	// TODO
 };
 
-void Sequence_OnLevelLoad(const char *mapName)
+void Sequence_OnLevelLoad(const char *sMapName)
 {
+	// TODO
 };
 
-sentenceEntry_s *SequencePickSentence(const char *groupName, int pickMethod, int *picked)
+sentenceEntry_s *SequencePickSentence(const char *sGroupName, int nPickMethod, int *pPicked)
 {
+	// TODO
 	return nullptr;
 };

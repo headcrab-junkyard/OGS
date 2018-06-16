@@ -286,7 +286,7 @@ typedef struct
 	int			num_entities;	// held in cl_entities array
 	int			num_statics;	// held in cl_staticentities array
 	
-	entity_t	viewent;			// the gun model
+	cl_entity_t	viewent;			// the gun model
 
 	// all player information
 	player_info_t	players[MAX_CLIENTS];
@@ -343,15 +343,16 @@ extern	cvar_t	m_side;
 
 extern	client_state_t	cl;
 
+typedef struct playermove_s playermove_t; // TODO
 extern	playermove_t g_clmove;
 
 // FIXME, allocate dynamically
 extern	efrag_t			cl_efrags[MAX_EFRAGS];
-extern	entity_t		cl_entities[MAX_EDICTS];
-extern	entity_t		cl_static_entities[MAX_STATIC_ENTITIES];
+extern	cl_entity_t		cl_entities[MAX_EDICTS];
+extern	cl_entity_t		cl_static_entities[MAX_STATIC_ENTITIES];
 extern	lightstyle_t	cl_lightstyle[MAX_LIGHTSTYLES];
 extern	dlight_t		cl_dlights[MAX_DLIGHTS];
-extern	entity_t		cl_temp_entities[MAX_TEMP_ENTITIES];
+extern	cl_entity_t		cl_temp_entities[MAX_TEMP_ENTITIES];
 extern	beam_t			cl_beams[MAX_BEAMS];
 
 //=============================================================================
@@ -382,7 +383,7 @@ void CL_CheckForResend();
 
 #define			MAX_VISEDICTS	256
 extern	int				cl_numvisedicts;
-extern	entity_t		*cl_visedicts[MAX_VISEDICTS];
+extern	cl_entity_t		*cl_visedicts[MAX_VISEDICTS];
 
 //
 // cl_input

@@ -43,16 +43,7 @@ Special thanks
 
 In order to run WinQuake, you must first have Quake installed.
 Assuming Quake is installed in the standard directory, c:\quake,
-unzip the WinQuake zip file into c:\quake.  The following files
-from the zip file must be present in order for WQ to run:
-
-winquake.exe
-pmpro16.dll
-pmpro32.dll
-wdir16.dll
-wdir32.dll
-wdirnop.com
-wdirnop.pif
+unzip the WinQuake zip file into c:\quake.
 
 Then you can run WinQuake by making c:\quake the current directory,
 typing "winquake" and pressing the Enter key.  Alternatively, you can
@@ -1080,22 +1071,6 @@ properly.
 
 Fixed bug where running -dedicated reset part of config.cfg to
 defaults.
-
-
-*** WinQuake 0.991 ***
-
-Fixed problem with pre-1.07 (DOS) clients connecting to WinQuake.
-
-Got rid of "Starting Quake..." dialog when running -dedicated.
-
-Added -novbeaf switch to turn off VBE/AF support in case of problems,
-and updated documentation.
-
-Corrected SciTech's U.S. Mail address in documentation.
-
-Added joystick bug decriptions and workarounds.
-
-
 
 ------------------
 | Special thanks |

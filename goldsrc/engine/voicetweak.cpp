@@ -17,40 +17,52 @@
  */
 
 /// @file
+/// @brief voicetweak interface implementation
 
 #include "quakedef.h"
+#include "ivoicetweak.h"
 
-netadr_t net_from;
-sizebuf_t net_message;
+qboolean gbInVoiceTweakMode{false};
 
-void NET_Init()
+float gVoiceTweakControlMap[VoiceTweakControl]{0.0f};
+
+static int Voice_StartVoiceTweakMode()
 {
+	// TODO
+	gbInVoiceTweakMode = true;
+	return 0;
 };
 
-void NET_Shutdown()
+static void Voice_EndVoiceTweakMode()
 {
+	// TODO
+	gbInVoiceTweakMode = false;
 };
 
-qboolean NET_GetPacket(netsrc_t sock, netadr_t *net_from, sizebuf_t *net_message)
+static void Voice_SetControlFloat(VoiceTweakControl aeControl, float afValue)
 {
-	return true;
+	// TODO
+	gVoiceTweakControlMap[aeControl] = afValue;
 };
 
-void NET_SendPacket(netsrc_t sock, int length, void *data, netadr_t to)
+static float Voice_GetControlFloat(VoiceTweakControl aeControl)
 {
+	// TODO
+	return gVoiceTweakControlMap[aeControl];
 };
 
-qboolean NET_CompareAdr(netadr_t a, netadr_t b)
+static int Voice_GetSpeakingVolume()
 {
-	return true;
+	return 0; // TODO
 };
 
-char *NET_AdrToString(netadr_t a)
+IVoiceTweak gVoiceTweak =
 {
-	return NULL;
-};
-
-qboolean NET_StringToAdr(char *s, netadr_t *a)
-{
-	return true;
+	Voice_StartVoiceTweakMode,
+	Voice_EndVoiceTweakMode,
+	
+	Voice_SetControlFloat,
+	Voice_GetControlFloat,
+	
+	Voice_GetSpeakingVolume
 };

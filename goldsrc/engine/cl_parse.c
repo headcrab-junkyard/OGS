@@ -75,7 +75,7 @@ CL_EntityNum
 This error checks and tracks the total number of entities
 ===============
 */
-entity_t	*CL_EntityNum (int num)
+cl_entity_t	*CL_EntityNum (int num)
 {
 	if (num >= cl.num_entities)
 	{
@@ -335,7 +335,7 @@ void CL_ParseUpdate (int bits)
 	model_t		*model;
 	int			modnum;
 	qboolean	forcelink;
-	entity_t	*ent;
+	cl_entity_t	*ent;
 	int			num;
 	int			skin;
 
@@ -442,45 +442,45 @@ if (bits&(1<<i))
 		ent->effects = ent->baseline.effects;
 
 // shift the known values for interpolation
-	VectorCopy (ent->msg_origins[0], ent->msg_origins[1]);
-	VectorCopy (ent->msg_angles[0], ent->msg_angles[1]);
+	VectorCopy (ent->ph[0].origin, ent->ph[1].origin);
+	VectorCopy (ent->ph[0].angles, ent->ph[1].angles);
 
 	if (bits & U_ORIGIN1)
-		ent->msg_origins[0][0] = MSG_ReadCoord ();
+		ent->ph[0].origin[0] = MSG_ReadCoord ();
 	else
-		ent->msg_origins[0][0] = ent->baseline.origin[0];
+		ent->ph[0].origin[0] = ent->baseline.origin[0];
 	if (bits & U_ANGLE1)
-		ent->msg_angles[0][0] = MSG_ReadAngle();
+		ent->ph[0].angles[0] = MSG_ReadAngle();
 	else
-		ent->msg_angles[0][0] = ent->baseline.angles[0];
+		ent->ph[0].angles[0] = ent->baseline.angles[0];
 
 	if (bits & U_ORIGIN2)
-		ent->msg_origins[0][1] = MSG_ReadCoord ();
+		ent->ph[0].origin[1] = MSG_ReadCoord ();
 	else
-		ent->msg_origins[0][1] = ent->baseline.origin[1];
+		ent->ph[0].origin[1] = ent->baseline.origin[1];
 	if (bits & U_ANGLE2)
-		ent->msg_angles[0][1] = MSG_ReadAngle();
+		ent->ph[0].angles[1] = MSG_ReadAngle();
 	else
-		ent->msg_angles[0][1] = ent->baseline.angles[1];
+		ent->ph[0].angles[1] = ent->baseline.angles[1];
 
 	if (bits & U_ORIGIN3)
-		ent->msg_origins[0][2] = MSG_ReadCoord ();
+		ent->ph[0].origin[2] = MSG_ReadCoord ();
 	else
-		ent->msg_origins[0][2] = ent->baseline.origin[2];
+		ent->ph[0].origin[2] = ent->baseline.origin[2];
 	if (bits & U_ANGLE3)
-		ent->msg_angles[0][2] = MSG_ReadAngle();
+		ent->ph[0].angles[2] = MSG_ReadAngle();
 	else
-		ent->msg_angles[0][2] = ent->baseline.angles[2];
+		ent->ph[0].angles[2] = ent->baseline.angles[2];
 
 	if ( bits & U_NOLERP )
 		ent->forcelink = true;
 
 	if ( forcelink )
 	{	// didn't have an update last message
-		VectorCopy (ent->msg_origins[0], ent->msg_origins[1]);
-		VectorCopy (ent->msg_origins[0], ent->origin);
-		VectorCopy (ent->msg_angles[0], ent->msg_angles[1]);
-		VectorCopy (ent->msg_angles[0], ent->angles);
+		VectorCopy (ent->ph[0].origin, ent->ph[1].origin);
+		VectorCopy (ent->ph[0].origin, ent->origin);
+		VectorCopy (ent->ph[0].angles, ent->ph[1].angles);
+		VectorCopy (ent->ph[0].angles, ent->angles);
 		ent->forcelink = true;
 	}
 }
@@ -490,7 +490,7 @@ if (bits&(1<<i))
 CL_ParseBaseline
 ==================
 */
-void CL_ParseBaseline (entity_t *ent)
+void CL_ParseBaseline (cl_entity_t *ent)
 {
 	int			i;
 	
@@ -669,7 +669,7 @@ CL_ParseStatic
 */
 void CL_ParseStatic ()
 {
-	entity_t *ent;
+	cl_entity_t *ent;
 	int		i;
 		
 	i = cl.num_statics;
@@ -735,8 +735,9 @@ void CL_ProcessUserInfo (int slot, player_info_t *player)
 	else
 		player->spectator = false;
 
-	if (cls.state == ca_active)
-		Skin_Find (player);
+	// TODO
+	//if (cls.state == ca_active)
+		//Skin_Find (player);
 
 	Sbar_Changed ();
 	CL_NewTranslation (slot);

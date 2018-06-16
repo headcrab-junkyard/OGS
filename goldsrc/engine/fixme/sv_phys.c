@@ -136,8 +136,6 @@ qboolean SV_RunThink (edict_t *ent)
 								// by a trigger with a local time.
 	ent->v.nextthink = 0;
 	gGlobalVariables.time = thinktime;
-	gGlobalVariables.self = EDICT_TO_PROG(ent);
-	gGlobalVariables.other = EDICT_TO_PROG(sv.edicts);
 	gEntityInterface.pfnThink(ent);
 	return !ent->free;
 }
@@ -151,28 +149,16 @@ Two entities have touched, so run their touch functions
 */
 void SV_Impact (edict_t *e1, edict_t *e2)
 {
-	//int		old_self, old_other;
-	
-	//old_self = gGlobalVariables.self;
-	//old_other = gGlobalVariables.other;
-	
 	gGlobalVariables.time = sv.time;
 	if (/*e1->v.touch &&*/ e1->v.solid != SOLID_NOT) // TODO
 	{
-		//gGlobalVariables.self = EDICT_TO_PROG(e1);
-		//gGlobalVariables.other = EDICT_TO_PROG(e2);
 		gEntityInterface.pfnTouch(e1, e2);
 	}
 	
 	if (/*e2->v.touch &&*/ e2->v.solid != SOLID_NOT) // TODO
 	{
-		//gGlobalVariables.self = EDICT_TO_PROG(e2);
-		//gGlobalVariables.other = EDICT_TO_PROG(e1);
 		gEntityInterface.pfnTouch(e2, e1);
 	}
-
-	//gGlobalVariables.self = old_self;
-	//gGlobalVariables.other = old_other;
 }
 
 
@@ -528,8 +514,6 @@ void SV_PushMove (edict_t *pusher, float movetime)
 			// otherwise, just stay in place until the obstacle is gone
 			if (gEntityInterface.pfnBlocked)
 			{
-				//gGlobalVariables.self = EDICT_TO_PROG(pusher);
-				//gGlobalVariables.other = EDICT_TO_PROG(check);
 				gEntityInterface.pfnBlocked(pusher, check);
 			}
 			
@@ -659,8 +643,6 @@ void SV_PushRotate (edict_t *pusher, float movetime)
 
 			// if the pusher has a "blocked" function, call it
 			// otherwise, just stay in place until the obstacle is gone
-			//gGlobalVariables.self = EDICT_TO_PROG(pusher);
-			//gGlobalVariables.other = EDICT_TO_PROG(check);
 			gEntityInterface.pfnBlocked(pusher, check);
 			
 		// move back any entities we already moved
@@ -720,8 +702,6 @@ void SV_Physics_Pusher (edict_t *ent)
 	{
 		ent->v.nextthink = 0;
 		gGlobalVariables.time = sv.time;
-		gGlobalVariables.self = EDICT_TO_PROG(ent);
-		gGlobalVariables.other = EDICT_TO_PROG(sv.edicts);
 		gEntityInterface.pfnThink(ent);
 		if (ent->free)
 			return;
@@ -1051,7 +1031,6 @@ void SV_Physics_Client (edict_t	*ent, int num)
 // call standard client pre-think
 //	
 	gGlobalVariables.time = sv.time;
-	//gGlobalVariables.self = EDICT_TO_PROG(ent);
 	gEntityInterface.pfnPlayerPreThink(ent);
 	
 //
@@ -1112,7 +1091,6 @@ void SV_Physics_Client (edict_t	*ent, int num)
 	SV_LinkEdict (ent, true);
 
 	gGlobalVariables.time = sv.time;
-	//gGlobalVariables.self = EDICT_TO_PROG(ent);
 	gEntityInterface.pfnPlayerPostThink(ent);
 }
 

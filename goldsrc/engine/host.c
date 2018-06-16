@@ -385,15 +385,9 @@ void SV_DropClient (client_t *drop, qboolean crash, char *fmt, ...)
 	{
 		if (!client->active)
 			continue;
-		MSG_WriteByte (&client->netchan.message, svc_updatename);
+		MSG_WriteByte (&client->netchan.message, svc_updateuserinfo);
 		MSG_WriteByte (&client->netchan.message, drop - svs.clients);
-		MSG_WriteString (&client->netchan.message, "");
-		MSG_WriteByte (&client->netchan.message, svc_updatefrags);
-		MSG_WriteByte (&client->netchan.message, drop - svs.clients);
-		MSG_WriteShort (&client->netchan.message, 0);
-		MSG_WriteByte (&client->netchan.message, svc_updatecolors);
-		MSG_WriteByte (&client->netchan.message, drop - svs.clients);
-		MSG_WriteByte (&client->netchan.message, 0);
+		// TODO
 	}
 }
 

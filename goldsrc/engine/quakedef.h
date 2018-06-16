@@ -22,6 +22,8 @@
 
 #pragma once
 
+#define QUAKEDEF_H
+
 //#define	GLTEST			// experimental stuff
 
 #define	QUAKE_GAME			// as opposed to utilities
@@ -44,6 +46,7 @@
 #include <stdlib.h>
 #include <setjmp.h>
 //#include <ctype.h>
+//#include <time.h>
 
 #if defined(_WIN32) && !defined(WINDED)
 

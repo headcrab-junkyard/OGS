@@ -21,7 +21,7 @@
 #include "quakedef.h"
 
 int			num_temp_entities;
-entity_t	cl_temp_entities[MAX_TEMP_ENTITIES];
+cl_entity_t	cl_temp_entities[MAX_TEMP_ENTITIES];
 beam_t		cl_beams[MAX_BEAMS];
 
 sfx_t			*cl_sfx_wizhit;
@@ -297,9 +297,9 @@ void CL_ParseTEnt (void)
 CL_NewTempEntity
 =================
 */
-entity_t *CL_NewTempEntity (void)
+cl_entity_t *CL_NewTempEntity (void)
 {
-	entity_t	*ent;
+	cl_entity_t	*ent;
 
 	if (cl_numvisedicts == MAX_VISEDICTS)
 		return NULL;
@@ -327,7 +327,7 @@ void CL_UpdateTEnts (void)
 	beam_t		*b;
 	vec3_t		dist, org;
 	float		d;
-	entity_t	*ent;
+	cl_entity_t	*ent;
 	float		yaw, pitch;
 	float		forward;
 

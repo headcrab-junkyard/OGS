@@ -130,7 +130,7 @@ int PM_PointContents (vec3_t p)
 	hull_t		*hull;
 	int			num;
 
-	hull = &pmove.physents[0].model->hulls[0];
+	hull = &pmove->physents[0].model->hulls[0];
 
 	num = hull->firstclipnode;
 
@@ -319,12 +319,12 @@ qboolean PM_TestPlayerPosition (vec3_t pos)
 	vec3_t		mins, maxs, test;
 	hull_t		*hull;
 
-	for (i=0 ; i< pmove.numphysent ; i++)
+	for (i=0 ; i< pmove->numphysent ; i++)
 	{
-		pe = &pmove.physents[i];
+		pe = &pmove->physents[i];
 	// get the clipping hull
 		if (pe->model)
-			hull = &pmove.physents[i].model->hulls[1];
+			hull = &pmove->physents[i].model->hulls[1];
 		else
 		{
 			VectorSubtract (pe->mins, player_maxs, mins);
@@ -362,12 +362,12 @@ pmtrace_t PM_PlayerMove (vec3_t start, vec3_t end)
 	total.ent = -1;
 	VectorCopy (end, total.endpos);
 
-	for (i=0 ; i< pmove.numphysent ; i++)
+	for (i=0 ; i< pmove->numphysent ; i++)
 	{
-		pe = &pmove.physents[i];
+		pe = &pmove->physents[i];
 	// get the clipping hull
 		if (pe->model)
-			hull = &pmove.physents[i].model->hulls[1];
+			hull = &pmove->physents[i].model->hulls[1];
 		else
 		{
 			VectorSubtract (pe->mins, player_maxs, mins);

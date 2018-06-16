@@ -101,7 +101,71 @@ void Con_Clear_f ()
 		Q_memset (con_text, ' ', CON_TEXTSIZE);
 }
 
-						
+/*
+================
+Con_Dump_f
+
+Save the console contents out to a file
+================
+*/
+void Con_Dump_f ()
+{
+	int		l, x;
+	char	*line;
+	FileHandle_t *f;
+	char	buffer[1024];
+	char	name[MAX_OSPATH];
+
+	if (Cmd_Argc() != 2)
+	{
+		Con_Printf ("usage: condump <filename>\n");
+		return;
+	};
+
+	Q_sprintf (name, sizeof(name), "%s/%s.txt", FS_Gamedir(), Cmd_Argv(1));
+
+	Con_Printf ("Dumped console text to %s.\n", name);
+	FS_CreatePath (name);
+	f = FS_FileOpen (name, "w");
+	if (!f)
+	{
+		Con_Printf ("ERROR: couldn't open.\n");
+		return;
+	}
+
+	// skip empty lines
+	for (l = con_current - con_totallines + 1 ; l <= con_current ; l++)
+	{
+		line = con_text + (l%con_totallines)*con_linewidth;
+		for (x=0 ; x<con_linewidth ; x++)
+			if (line[x] != ' ')
+				break;
+		if (x != con_linewidth)
+			break;
+	}
+
+	// write the remaining lines
+	buffer[con_linewidth] = 0;
+	for ( ; l <= con_current ; l++)
+	{
+		line = con_text + (l%con_totallines)*con_linewidth;
+		strncpy (buffer, line, con_linewidth);
+		for (x=con_linewidth-1 ; x>=0 ; x--)
+		{
+			if (buffer[x] == ' ')
+				buffer[x] = 0;
+			else
+				break;
+		}
+		for (x=0; buffer[x]; x++)
+			buffer[x] &= 0x7f;
+
+		FS_FPrintf (f, "%s\n", buffer);
+	}
+
+	FS_FileClose (f);
+}
+
 /*
 ================
 Con_ClearNotify
@@ -115,7 +179,6 @@ void Con_ClearNotify ()
 		con_times[i] = 0;
 }
 
-						
 /*
 ================
 Con_MessageMode_f
@@ -129,7 +192,6 @@ void Con_MessageMode_f ()
 	team_message = false;
 }
 
-						
 /*
 ================
 Con_MessageMode2_f
@@ -141,7 +203,6 @@ void Con_MessageMode2_f ()
 	team_message = true;
 }
 
-						
 /*
 ================
 Con_CheckResize
@@ -241,6 +302,7 @@ void Con_Init ()
 	Cmd_AddCommand ("messagemode", Con_MessageMode_f);
 	Cmd_AddCommand ("messagemode2", Con_MessageMode2_f);
 	Cmd_AddCommand ("clear", Con_Clear_f);
+	Cmd_AddCommand ("condump", Con_Dump_f);
 	con_initialized = true;
 }
 
@@ -395,6 +457,8 @@ void Con_Printf (const char *fmt, ...)
 		
 	if (cls.state == ca_dedicated)
 		return;		// no graphics mode
+	
+	GameConsole_Print(msg); // TODO: VguiWrap2_ConPrintf(msg);
 
 // write it to the scrollable buffer
 	Con_Print (msg);

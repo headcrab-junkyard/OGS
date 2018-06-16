@@ -86,13 +86,13 @@ client_state_t	cl;
 
 // FIXME: put these on hunk?
 efrag_t			cl_efrags[MAX_EFRAGS];
-entity_t		cl_entities[MAX_EDICTS]; // TODO: dynamically-sized
-entity_t		cl_static_entities[MAX_STATIC_ENTITIES];
+cl_entity_t		cl_entities[MAX_EDICTS]; // TODO: dynamically-sized
+cl_entity_t		cl_static_entities[MAX_STATIC_ENTITIES];
 lightstyle_t	cl_lightstyle[MAX_LIGHTSTYLES];
 dlight_t		cl_dlights[MAX_DLIGHTS];
 
 int				cl_numvisedicts;
-entity_t		*cl_visedicts[MAX_VISEDICTS];
+cl_entity_t		*cl_visedicts[MAX_VISEDICTS];
 
 // TODO: cls.connect_time?
 double			connect_time = -1;		// for connection retransmits
@@ -437,7 +437,7 @@ CL_PrintEntities_f
 */
 void CL_PrintEntities_f ()
 {
-	entity_t	*ent;
+	cl_entity_t	*ent;
 	int			i;
 	
 	for (i=0,ent=cl_entities ; i<cl.num_entities ; i++,ent++)
@@ -630,7 +630,7 @@ CL_RelinkEntities
 */
 void CL_RelinkEntities ()
 {
-	entity_t	*ent;
+	cl_entity_t	*ent;
 	int			i, j;
 	float		frac, f, d;
 	vec3_t		delta;
@@ -688,15 +688,15 @@ void CL_RelinkEntities ()
 		if (ent->forcelink)
 		{	// the entity was not updated in the last message
 			// so move to the final spot
-			VectorCopy (ent->msg_origins[0], ent->origin);
-			VectorCopy (ent->msg_angles[0], ent->angles);
+			VectorCopy (ent->ph[0].origin, ent->origin);
+			VectorCopy (ent->ph[0].angles, ent->angles);
 		}
 		else
 		{	// if the delta is large, assume a teleport and don't lerp
 			f = frac;
 			for (j=0 ; j<3 ; j++)
 			{
-				delta[j] = ent->msg_origins[0][j] - ent->msg_origins[1][j];
+				delta[j] = ent->ph[0].origin[j] - ent->ph[1].origin[j];
 				if (delta[j] > 100 || delta[j] < -100)
 					f = 1;		// assume a teleportation, not a motion
 			}
@@ -704,14 +704,14 @@ void CL_RelinkEntities ()
 		// interpolate the origin and angles
 			for (j=0 ; j<3 ; j++)
 			{
-				ent->origin[j] = ent->msg_origins[1][j] + f*delta[j];
+				ent->origin[j] = ent->ph[1].origin[j] + f*delta[j];
 
-				d = ent->msg_angles[0][j] - ent->msg_angles[1][j];
+				d = ent->ph[0].angles[j] - ent->ph[1].angles[j];
 				if (d > 180)
 					d -= 360;
 				else if (d < -180)
 					d += 360;
-				ent->angles[j] = ent->msg_angles[1][j] + f*d;
+				ent->angles[j] = ent->ph[1].angles[j] + f*d;
 			}
 			
 		}

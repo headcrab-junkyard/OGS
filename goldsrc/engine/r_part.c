@@ -64,7 +64,7 @@ void R_InitParticles (void)
 }
 
 #ifdef QUAKE2
-void R_DarkFieldParticles (entity_t *ent)
+void R_DarkFieldParticles (cl_entity_t *ent)
 {
 	int			i, j, k;
 	particle_t	*p;
@@ -120,7 +120,7 @@ vec3_t	avelocity = {23, 7, 3};
 float	partstep = 0.01;
 float	timescale = 0.01;
 
-void R_EntityParticles (entity_t *ent)
+void R_EntityParticles (cl_entity_t *ent)
 {
 	int			count;
 	int			i;
