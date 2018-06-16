@@ -42,18 +42,18 @@ public:
 	void CreateDirHierarchy(const char *path, const char *pathID) override;
 
 	bool FileExists(const char *pFileName) override;
-	bool IsDirectory(const char *pFileName) override;
+	bool IsDirectory(const char *sFileName) override;
 
-	FileHandle_t Open(const char *pFileName, const char *pOptions, const char *pathID) override;
+	FileHandle_t Open(const char *sFileName, const char *pOptions, const char *pathID) override;
 	void Close(FileHandle_t file) override;
 
 	void Seek(FileHandle_t file, int pos, FileSystemSeek_t seekType) override;
 	unsigned int Tell(FileHandle_t file) override;
 
 	unsigned int Size(FileHandle_t file) override;
-	unsigned int Size(const char *pFileName) override;
+	unsigned int Size(const char *sFileName) override;
 
-	long GetFileTime(const char *pFileName) override;
+	long GetFileTime(const char *sFileName) override;
 	void FileTimeToString(char *pStrip, int maxCharsIncludingTerminator, long fileTime) override;
 
 	bool IsOk(FileHandle_t file) override;
@@ -69,30 +69,31 @@ public:
 	void *GetReadBuffer(FileHandle_t file, int *outBufferSize, bool failIfNotInCache) override;
 	void ReleaseReadBuffer(FileHandle_t file, void *readBuffer) override;
 
-	const char *FindFirst(const char *pWildCard, FileFindHandle_t *pHandle, const char *pathID) override;
+	const char *FindFirst(const char *sWildCard, FileFindHandle_t *pHandle, const char *sPathID) override;
 	const char *FindNext(FileFindHandle_t handle) override;
+	
 	bool FindIsDirectory(FileFindHandle_t handle) override;
 	void FindClose(FileFindHandle_t handle) override;
 
-	void GetLocalCopy(const char *pFileName) override;
+	void GetLocalCopy(const char *sFileName) override;
 
-	const char *GetLocalPath(const char *pFileName, char *pLocalPath, int localPathBufferSize) override;
+	const char *GetLocalPath(const char *sFileName, char *pLocalPath, int localPathBufferSize) override;
 
 	char *ParseFile(char *pFileBytes, char *pToken, bool *pWasQuoted) override;
 
-	bool FullPathToRelativePath(const char *pFullpath, char *pRelative) override;
+	bool FullPathToRelativePath(const char *sFullpath, char *pRelative) override;
 
-	bool GetCurrentDirectory(char *pDirectory, int maxlen) override;
+	bool GetCurrentDirectory(char *sDirectory, int maxlen) override;
 
 	void PrintOpenedFiles() override;
 
 	void SetWarningFunc(void (*pfnWarning)(const char *fmt, ...)) override;
 	void SetWarningLevel(FileWarningLevel_t level) override;
 
-	void LogLevelLoadStarted(const char *name) override;
-	void LogLevelLoadFinished(const char *name) override;
+	void LogLevelLoadStarted(const char *sName) override;
+	void LogLevelLoadFinished(const char *sName) override;
 	
-	int HintResourceNeed(const char *hintlist, int forgetEverything) override;
+	int HintResourceNeed(const char *sHintList, int nForgetEverything) override;
 	
 	int PauseResourcePreloading() override;
 	int ResumeResourcePreloading() override;
@@ -101,19 +102,19 @@ public:
 	
 	void GetInterfaceVersion(char *p, int maxlen) override;
 	
-	bool IsFileImmediatelyAvailable(const char *pFileName) override;
+	bool IsFileImmediatelyAvailable(const char *sFileName) override;
 
-	WaitForResourcesHandle_t WaitForResources(const char *resourcelist) override;
+	WaitForResourcesHandle_t WaitForResources(const char *sResourceList) override;
 	bool GetWaitForResourcesProgress(WaitForResourcesHandle_t handle,
 	                                 float *progress /* out */,
 	                                 bool *complete /* out */) override;
 	void CancelWaitForResources(WaitForResourcesHandle_t handle) override;
 
-	bool IsAppReadyForOfflinePlay(int appID) override;
+	bool IsAppReadyForOfflinePlay(int nAppID) override;
 
-	bool AddPackFile(const char *fullpath, const char *pathID) override;
+	bool AddPackFile(const char *sFullPath, const char *sPathID) override;
 
-	FileHandle_t OpenFromCacheForRead(const char *pFileName, const char *pOptions, const char *pathID) override;
+	FileHandle_t OpenFromCacheForRead(const char *sFileName, const char *sOptions, const char *sPathID) override;
 
-	void AddSearchPathNoWrite(const char *pPath, const char *pathID) override;
+	void AddSearchPathNoWrite(const char *sPath, const char *sPathID) override;
 };

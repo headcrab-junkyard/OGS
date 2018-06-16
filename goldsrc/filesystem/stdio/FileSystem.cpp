@@ -21,6 +21,7 @@
 #include <cstdio>
 #include <cstdarg>
 #include <cstring>
+#include <sys/stat.h>
 #include "FileSystem.hpp"
 
 #ifdef _DEBUG
@@ -124,7 +125,7 @@ void CFileSystem::Close(FileHandle_t file)
 void CFileSystem::Seek(FileHandle_t file, int pos, FileSystemSeek_t seekType)
 {
 	TRACE_LOG("CFileSystem::Seek(%d, %d, %d)", file, pos, seekType);
-	lseek((FILE*)file, pos, SEEK_SET);
+	fseek((FILE*)file, pos, SEEK_SET);
 };
 
 unsigned int CFileSystem::Tell(FileHandle_t file)
@@ -184,19 +185,19 @@ void CFileSystem::Flush(FileHandle_t file)
 bool CFileSystem::EndOfFile(FileHandle_t file)
 {
 	TRACE_LOG("CFileSystem::EndOfFile(%d)", file);
-	return eof((FILE*)file);
+	return feof((FILE*)file);
 };
 
 int CFileSystem::Read(void *pOutput, int size, FileHandle_t file)
 {
 	TRACE_LOG("CFileSystem::Read(%p, %d, %d)", pOutput, size, file);
-	return fread((FILE*)file, pOutput, size);
+	return fread(pOutput, sizeof(char), size, (FILE*)file);
 };
 
 int CFileSystem::Write(void const *pInput, int size, FileHandle_t file)
 {
 	TRACE_LOG("CFileSystem::Write(%p, %d, %d)", pInput, size, file);
-	return fwrite((FILE*)file, pInput, size);
+	return fwrite(pInput, sizeof(char), size, (FILE*)file);
 };
 
 char *CFileSystem::ReadLine(char *pOutput, int maxChars, FileHandle_t file)
@@ -225,13 +226,13 @@ void CFileSystem::ReleaseReadBuffer(FileHandle_t file, void *readBuffer)
 const char *CFileSystem::FindFirst(const char *pWildCard, FileFindHandle_t *pHandle, const char *pathID)
 {
 	TRACE_LOG("CFileSystem::FindFirst(%s, %p, %d)", pWildCard, pHandle, pathID);
-	return Sys_FindFirst(pathID, 0, 0);
+	return ""; // TODO: Sys_FindFirst(pathID, 0, 0);
 };
 
 const char *CFileSystem::FindNext(FileFindHandle_t handle)
 {
 	TRACE_LOG("CFileSystem::FindNext(%d)", handle);
-	return Sys_FindNext(handle, 0, 0);
+	return ""; // TODO: Sys_FindNext(handle, 0, 0);
 };
 
 bool CFileSystem::FindIsDirectory(FileFindHandle_t handle)
@@ -243,7 +244,7 @@ bool CFileSystem::FindIsDirectory(FileFindHandle_t handle)
 void CFileSystem::FindClose(FileFindHandle_t handle)
 {
 	TRACE_LOG("CFileSystem::FindClose(%d)", handle);
-	Sys_FindClose(handle);
+	// TODO: Sys_FindClose(handle);
 };
 
 void CFileSystem::GetLocalCopy(const char *pFileName)
