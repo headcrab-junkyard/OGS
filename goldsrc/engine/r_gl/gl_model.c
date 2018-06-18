@@ -1837,3 +1837,27 @@ void Mod_Print (void)
 }
 
 
+// STUDIOMODEL WIP
+
+/*
+================
+Mod_LoadStudioModel
+================
+*/
+/*
+void Mod_LoadStudioModel(model_t *mod, void *buffer)
+{
+	int version;
+	dstudiomodel_t *pin;
+	mstudiomodel_t *pstudiomdl;
+	
+	pin = (dstudiomodel_t*)buffer;
+	
+	version = LittleLong(pin->version);
+	
+	if(version != STUDIO_VERSION)
+		Sys_Error("Boom!");
+		
+	mod->type = mod_studio;
+};
+*/
