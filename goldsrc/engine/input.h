@@ -22,20 +22,20 @@
 
 #pragma once
 
-void IN_Init ();
+void IN_Init();
 
-void IN_Shutdown ();
+void IN_Shutdown();
 
-void IN_Commands ();
+void IN_Commands();
 // oportunity for devices to stick commands on the script buffer
 
 //void IN_Frame (); // Q2
 
-void IN_Move (usercmd_t *cmd);
+void IN_Move(usercmd_t *cmd);
 // add additional movement on top of the keyboard move cmd
 
-void IN_ClearStates (); // not present in Q2
+void IN_ClearStates(); // not present in Q2
 // restores all button and position states to defaults
 
-void IN_ModeChanged (); // QW
+void IN_ModeChanged(); // QW
 // called whenever screen dimensions change

@@ -28,15 +28,16 @@ class CEngine final : public IEngine
 public:
 	CEngine();
 	~CEngine();
-	
+
 	bool Load(bool dedicated, const char *basedir, const char *cmdline) override;
 	void Unload() override;
-	
+
 	void Frame() override;
+
 private:
 	quakeparms_t mParms{};
-	
-	double newtime{0.0};
-	double oldtime{0.0};
-	double frametime{0.0};
+
+	double newtime{ 0.0 };
+	double oldtime{ 0.0 };
+	double frametime{ 0.0 };
 };

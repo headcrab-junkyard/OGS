@@ -24,18 +24,18 @@
 #include "pm_defs.h"
 #include "pm_movevars.h"
 
-extern	playermove_t *pmove;
+extern playermove_t *pmove;
 
-extern	int		onground;
-extern	int		waterlevel;
-extern	int		watertype;
+extern int onground;
+extern int waterlevel;
+extern int watertype;
 
-void PlayerMove ();
+void PlayerMove();
 
 void PM_Init(playermove_t *ppmove);
 
-int PM_HullPointContents (hull_t *hull, int num, vec3_t p);
+int PM_HullPointContents(hull_t *hull, int num, vec3_t p);
 
-int PM_PointContents (vec3_t point);
-qboolean PM_TestPlayerPosition (vec3_t point);
-pmtrace_t PM_PlayerMove (vec3_t start, vec3_t stop);
+int PM_PointContents(vec3_t point);
+qboolean PM_TestPlayerPosition(vec3_t point);
+pmtrace_t PM_PlayerMove(vec3_t start, vec3_t stop);

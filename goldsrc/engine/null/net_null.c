@@ -23,22 +23,16 @@
 netadr_t net_from;
 sizebuf_t net_message;
 
-void NET_Init()
-{
-};
+void NET_Init(){};
 
-void NET_Shutdown()
-{
-};
+void NET_Shutdown(){};
 
 qboolean NET_GetPacket(netsrc_t sock, netadr_t *net_from, sizebuf_t *net_message)
 {
 	return true;
 };
 
-void NET_SendPacket(netsrc_t sock, int length, void *data, netadr_t to)
-{
-};
+void NET_SendPacket(netsrc_t sock, int length, void *data, netadr_t to){};
 
 qboolean NET_CompareAdr(netadr_t a, netadr_t b)
 {

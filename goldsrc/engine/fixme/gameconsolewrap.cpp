@@ -21,7 +21,7 @@
 #include "quakedef.h"
 #include "GameUI/IGameConsole.h"
 
-IGameConsole *gpGameConsole{nullptr};
+IGameConsole *gpGameConsole{ nullptr };
 
 //void GameConsole_Initialize();
 
@@ -47,14 +47,14 @@ bool GameConsole_IsVisible()
 {
 	if(gpGameConsole)
 		return gpGameConsole->IsConsoleVisible();
-	
+
 	return false;
 };
 
 void GameConsole_Printf(const char *format, ...)
 {
 	// TODO
-	
+
 	if(gpGameConsole)
 		gpGameConsole->Printf(msg);
 };
@@ -62,7 +62,7 @@ void GameConsole_Printf(const char *format, ...)
 void GameConsole_DPrintf(const char *format, ...)
 {
 	// TODO
-	
+
 	if(gpGameConsole)
 		gpGameConsole->DPrintf(msg);
 };

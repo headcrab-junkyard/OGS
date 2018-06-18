@@ -22,9 +22,9 @@
 #include "quakedef.h"
 #include "ivoicetweak.h"
 
-qboolean gbInVoiceTweakMode{false};
+qboolean gbInVoiceTweakMode{ false };
 
-float gVoiceTweakControlMap[VoiceTweakControl]{0.0f};
+float gVoiceTweakControlMap[VoiceTweakControl]{ 0.0f };
 
 static int Voice_StartVoiceTweakMode()
 {
@@ -58,11 +58,11 @@ static int Voice_GetSpeakingVolume()
 
 IVoiceTweak gVoiceTweak =
 {
-	Voice_StartVoiceTweakMode,
-	Voice_EndVoiceTweakMode,
-	
-	Voice_SetControlFloat,
-	Voice_GetControlFloat,
-	
-	Voice_GetSpeakingVolume
+  Voice_StartVoiceTweakMode,
+  Voice_EndVoiceTweakMode,
+
+  Voice_SetControlFloat,
+  Voice_GetControlFloat,
+
+  Voice_GetSpeakingVolume
 };

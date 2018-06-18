@@ -29,13 +29,11 @@ sequenceEntry_s *SequenceGet(const char *sFileName, const char *sEntryName)
 	return nullptr;
 };
 
-void Sequence_ParseFile(const char *sFileName, qboolean bIsGlobal)
-{
+void Sequence_ParseFile(const char *sFileName, qboolean bIsGlobal){
 	// TODO
 };
 
-void Sequence_OnLevelLoad(const char *sMapName)
-{
+void Sequence_OnLevelLoad(const char *sMapName){
 	// TODO
 };
 

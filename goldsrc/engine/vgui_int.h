@@ -22,8 +22,7 @@
 #pragma once
 
 //#ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 //#endif
 
 void VGui_Startup();

@@ -26,28 +26,28 @@
 #include "iengine.h"
 #include "interface.h"
 
-qboolean gbDedicatedServer{false};
+qboolean gbDedicatedServer{ false };
 
-char *gsPostRestartCmdLineArgs{nullptr};
+char *gsPostRestartCmdLineArgs{ nullptr };
 
 int RunListenServer(void *instance, const char *basedir, const char *cmdline, char *postRestartCmdLineArgs, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory)
 {
 	// TODO: Whole bunch of Sys_Init* calls
-	
+
 	// TODO: CWindowManager::CreateGameWindow(); // IGame::CreateGameWindow
-	
+
 	if(!gpEngine->Load(false, basedir, cmdline))
 		return EXIT_FAILURE;
-	
+
 	while(true)
 		gpEngine->Frame();
-	
+
 	gpEngine->Unload();
-	
+
 	// TODO: CWindowManager::DestroyGameWindow(); // IGame::DestroyGameWindow
-	
+
 	// TODO: Whole bunch of Sys_Shutdown* calls
-	
+
 	return EXIT_SUCCESS;
 };
 
@@ -56,7 +56,7 @@ class CEngineAPI final : public IEngineAPI
 public:
 	CEngineAPI();
 	~CEngineAPI();
-	
+
 	int Run(void *instance, const char *basedir, const char *cmdline, char *postRestartCmdLineArgs, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory) override;
 };
 
@@ -77,7 +77,7 @@ class CGameUIFuncs final : public IGameUIFuncs
 public:
 	CGameUIFuncs();
 	~CGameUIFuncs();
-	
+
 	bool IsKeyDown(char const *keyname, bool &isdown) override;
 
 	const char *Key_NameForKey(int keynum) override;
@@ -89,8 +89,8 @@ public:
 	void GetCurrentVideoMode(int *wide, int *tall, int *bpp) override;
 
 	void GetCurrentRenderer(char *name, int namelen,
-	                                int *windowed, int *hdmodels,
-	                                int *addons_folder, int *vid_level) override;
+	                        int *windowed, int *hdmodels,
+	                        int *addons_folder, int *vid_level) override;
 	//void GetCurrentRenderer(char *name, int namelen, int *windowed) override;
 
 	bool IsConnectedToVACSecureServer() override;
@@ -123,17 +123,11 @@ vgui2::KeyCode CGameUIFuncs::GetVGUI2KeyCodeForBind(const char *bind)
 	return vgui2::KeyCode::KEY_NONE;
 };
 
-void CGameUIFuncs::GetVideoModes(struct vmode_s **liststart, int *count)
-{
-};
+void CGameUIFuncs::GetVideoModes(struct vmode_s **liststart, int *count){};
 
-void CGameUIFuncs::GetCurrentVideoMode(int *wide, int *tall, int *bpp)
-{
-};
+void CGameUIFuncs::GetCurrentVideoMode(int *wide, int *tall, int *bpp){};
 
-void CGameUIFuncs::GetCurrentRenderer(char *name, int namelen, int *windowed, int *hdmodels, int *addons_folder, int *vid_level)
-{
-};
+void CGameUIFuncs::GetCurrentRenderer(char *name, int namelen, int *windowed, int *hdmodels, int *addons_folder, int *vid_level){};
 
 bool CGameUIFuncs::IsConnectedToVACSecureServer()
 {
@@ -152,7 +146,7 @@ class CDedicatedServerAPI final : public IDedicatedServerAPI
 public:
 	CDedicatedServerAPI();
 	~CDedicatedServerAPI();
-	
+
 	bool Init(const char *basedir, const char *cmdline, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory) override;
 	int Shutdown() override;
 
@@ -172,14 +166,14 @@ bool CDedicatedServerAPI::Init(const char *basedir, const char *cmdline, CreateI
 {
 	if(!gpEngine->Load(true, basedir, cmdline))
 		return false;
-	
+
 	return true;
 };
 
 int CDedicatedServerAPI::Shutdown()
 {
 	gpEngine->Unload();
-	
+
 	return 0;
 };
 
@@ -194,7 +188,6 @@ void CDedicatedServerAPI::AddConsoleText(const char *text)
 	Cbuf_AddText(text);
 };
 
-void CDedicatedServerAPI::UpdateStatus(float *fps, int *nActive, int *nMaxPlayers, const char *pszMap)
-{
+void CDedicatedServerAPI::UpdateStatus(float *fps, int *nActive, int *nMaxPlayers, const char *pszMap){
 	//Host_UpdateStatus(fps, nActive, nMaxPlayers, pszMap);
 };

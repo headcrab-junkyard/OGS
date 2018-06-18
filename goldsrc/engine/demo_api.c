@@ -37,15 +37,14 @@ int DemoAPI_IsTimeDemo()
 	return cls.timedemo;
 };
 
-void DemoAPI_WriteBuffer(int size, byte *buffer)
-{
+void DemoAPI_WriteBuffer(int size, byte *buffer){
 	// TODO
 };
 
 demo_api_t demoapi =
 {
-	DemoAPI_IsRecording,
-	DemoAPI_IsPlayingback,
-	DemoAPI_IsTimeDemo,
-	DemoAPI_WriteBuffer
+  DemoAPI_IsRecording,
+  DemoAPI_IsPlayingback,
+  DemoAPI_IsTimeDemo,
+  DemoAPI_WriteBuffer
 };

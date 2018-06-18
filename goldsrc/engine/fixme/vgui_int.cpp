@@ -21,14 +21,14 @@
 #include "quakedef.h"
 #include "vgui_int.h"
 
-CEGUI::OpenGLRenderer *gpRenderer{nullptr};
+CEGUI::OpenGLRenderer *gpRenderer{ nullptr };
 
 void VGui_Startup()
 {
 	// TODO
 	// * CEGUI::OpenGLRenderer for r_gl
 	// * CEGUI::OpenGL3Renderer for r_gl3
-	
+
 	*gpRenderer = CEGUI::OpenGLRenderer::bootstrapSystem();
 };
 
@@ -46,19 +46,18 @@ void VGui_Frame()
 };
 */
 
-void VGui_ViewportPaintBackground(int extents[4])
-{
+void VGui_ViewportPaintBackground(int extents[4]){
 	// TODO
 };
 
 void VGui_ConsolePrint(const char *text)
 {
 	// TODO: something else?
-	
+
 	ClientDLL_ConsolePrint(text);
-	
+
 	Con_Print(text);
-	
+
 	//VGuiWrap_ConsolePrint(text);
 	//VGuiWrap2_ConsolePrint(text);
 };

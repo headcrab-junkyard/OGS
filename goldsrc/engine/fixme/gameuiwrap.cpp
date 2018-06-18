@@ -15,18 +15,18 @@
  * You should have received a copy of the GNU General Public License
  * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 /// @file
 
 #include "quakedef.h"
 #include "GameUI/IGameUI.h"
 
-void *gpGameUILib{nullptr};
-IGameUI *gpGameUI{nullptr};
+void *gpGameUILib{ nullptr };
+IGameUI *gpGameUI{ nullptr };
 
 extern IGameConsole *gpGameConsole;
 
-ICareerUI *gpCareerUI{nullptr};
+ICareerUI *gpCareerUI{ nullptr };
 
 void UnloadGameUIModule()
 {
@@ -40,21 +40,21 @@ void UnloadGameUIModule()
 void LoadGameUIModule()
 {
 	UnloadGameUIModule();
-	
+
 	gpGameUILib = Sys_LoadModule("gameui");
-	
+
 	if(!gpGameUILib)
 		return;
-	
-	auto fnGameUIFactory{Sys_GetFactory(gpGameUILib)};
-	
+
+	auto fnGameUIFactory{ Sys_GetFactory(gpGameUILib) };
+
 	if(!fnGameUIFactory)
 		return;
-	
+
 	gpGameUI = fnGameUIFactory(GAMEUI_INTERFACE_VERSION, nullptr);
 	gpGameConsole = fnGameUIFactory(GAMECONSOLE_INTERFACE_VERSION, nullptr);
 	gpCareerUI = fnGameUIFactory(CAREERUI_INTERFACE_VERSION, nullptr);
-	
+
 	if(!gpGameUI || !gpGameConsole || !gpCareerUI)
 		return;
 };
@@ -67,7 +67,7 @@ int GameUI_ActivateGameUI()
 {
 	if(gpGameUI)
 		return gpGameUI->ActivateGameUI();
-	
+
 	return 0;
 };
 
@@ -75,7 +75,7 @@ int GameUI_ActivateDemoUI()
 {
 	if(gpGameUI)
 		return gpGameUI->ActivateDemoUI();
-	
+
 	return 0;
 };
 
@@ -83,7 +83,7 @@ int GameUI_HasExclusiveInput()
 {
 	if(gpGameUI)
 		return gpGameUI->HasExclusiveInput();
-	
+
 	return 0;
 };
 
@@ -111,7 +111,7 @@ bool GameUI_IsGameUIActive()
 {
 	if(gpGameUI)
 		return gpGameUI->IsGameUIActive();
-	
+
 	return false;
 };
 
@@ -137,7 +137,7 @@ int GameUI_ContinueProgressBar(int progressPoint, float progressFraction)
 {
 	if(gpGameUI)
 		return gpGameUI->ContinueProgressBar(progressPoint, progressFraction);
-	
+
 	return 0;
 };
 
@@ -151,7 +151,7 @@ int GameUI_SetProgressBarStatusText(const char *statusText)
 {
 	if(gpGameUI)
 		return gpGameUI->SetProgressBarStatusText(statusText);
-	
+
 	return 0;
 };
 

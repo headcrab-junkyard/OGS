@@ -22,50 +22,50 @@
 #include "quakedef.h"
 #include "winquake.h"
 
-cvar_t	cl_nopred = {"cl_nopred","0"};
-cvar_t	cl_pushlatency = {"pushlatency","-999"};
+cvar_t cl_nopred = { "cl_nopred", "0" };
+cvar_t cl_pushlatency = { "pushlatency", "-999" };
 
-extern	frame_t		*view_frame;
+extern frame_t *view_frame;
 
 /*
 ===================
 CL_CheckPredictionError
 ===================
 */
-void CL_CheckPredictionError ()
+void CL_CheckPredictionError()
 {
-	int		frame;
-	int		delta[3];
-	int		i;
-	int		len;
+	int frame;
+	int delta[3];
+	int i;
+	int len;
 
-	if (!cl_predict->value || (cl.frame.playerstate.pmove.pm_flags & PMF_NO_PREDICTION))
+	if(!cl_predict->value || (cl.frame.playerstate.pmove.pm_flags & PMF_NO_PREDICTION))
 		return;
 
 	// calculate the last usercmd_t we sent that the server has processed
 	frame = cls.netchan.incoming_acknowledged;
-	frame &= (CMD_BACKUP-1);
+	frame &= (CMD_BACKUP - 1);
 
 	// compare what the server returned with what we had predicted it to be
-	VectorSubtract (cl.frame.playerstate.pmove.origin, cl.predicted_origins[frame], delta);
+	VectorSubtract(cl.frame.playerstate.pmove.origin, cl.predicted_origins[frame], delta);
 
 	// save the prediction error for interpolation
 	len = abs(delta[0]) + abs(delta[1]) + abs(delta[2]);
-	if (len > 640)	// 80 world units
-	{	// a teleport or something
-		VectorClear (cl.prediction_error);
+	if(len > 640) // 80 world units
+	{             // a teleport or something
+		VectorClear(cl.prediction_error);
 	}
 	else
 	{
-		if (cl_showmiss->value && (delta[0] || delta[1] || delta[2]) )
-			Com_Printf ("prediction miss on %i: %i\n", cl.frame.serverframe, 
-			delta[0] + delta[1] + delta[2]);
+		if(cl_showmiss->value && (delta[0] || delta[1] || delta[2]))
+			Com_Printf("prediction miss on %i: %i\n", cl.frame.serverframe,
+			           delta[0] + delta[1] + delta[2]);
 
-		VectorCopy (cl.frame.playerstate.pmove.origin, cl.predicted_origins[frame]);
+		VectorCopy(cl.frame.playerstate.pmove.origin, cl.predicted_origins[frame]);
 
 		// save for error itnerpolation
-		for (i=0 ; i<3 ; i++)
-			cl.prediction_error[i] = delta[i]*0.125;
+		for(i = 0; i < 3; i++)
+			cl.prediction_error[i] = delta[i] * 0.125;
 	}
 }
 
@@ -78,26 +78,26 @@ try nudging slightly on all axis to
 allow for the cut precision of the net coordinates
 =================
 */
-void CL_NudgePosition ()
+void CL_NudgePosition()
 {
-	vec3_t	base;
-	int		x, y;
+	vec3_t base;
+	int x, y;
 
-	if (PM_HullPointContents (&cl.model_precache[1]->hulls[1], 0, pmove.origin) == CONTENTS_EMPTY)
+	if(PM_HullPointContents(&cl.model_precache[1]->hulls[1], 0, pmove.origin) == CONTENTS_EMPTY)
 		return;
 
-	VectorCopy (pmove.origin, base);
-	for (x=-1 ; x<=1 ; x++)
+	VectorCopy(pmove.origin, base);
+	for(x = -1; x <= 1; x++)
 	{
-		for (y=-1 ; y<=1 ; y++)
+		for(y = -1; y <= 1; y++)
 		{
-			pmove.origin[0] = base[0] + x * 1.0/8;
-			pmove.origin[1] = base[1] + y * 1.0/8;
-			if (PM_HullPointContents (&cl.model_precache[1]->hulls[1], 0, pmove.origin) == CONTENTS_EMPTY)
+			pmove.origin[0] = base[0] + x * 1.0 / 8;
+			pmove.origin[1] = base[1] + y * 1.0 / 8;
+			if(PM_HullPointContents(&cl.model_precache[1]->hulls[1], 0, pmove.origin) == CONTENTS_EMPTY)
 				return;
 		}
 	}
-	Con_DPrintf ("CL_NudgePosition: stuck\n");
+	Con_DPrintf("CL_NudgePosition: stuck\n");
 }
 
 /*
@@ -105,26 +105,26 @@ void CL_NudgePosition ()
 CL_PredictUsercmd
 ==============
 */
-void CL_PredictUsercmd (player_state_t *from, player_state_t *to, usercmd_t *u, qboolean spectator) // TODO: player_state_t should be local_state_t
+void CL_PredictUsercmd(player_state_t *from, player_state_t *to, usercmd_t *u, qboolean spectator) // TODO: player_state_t should be local_state_t
 {
 	// split up very long moves
-	if (u->msec > 50)
+	if(u->msec > 50)
 	{
-		player_state_t	temp;
-		usercmd_t	split;
+		player_state_t temp;
+		usercmd_t split;
 
 		split = *u;
 		split.msec /= 2;
 
-		CL_PredictUsercmd (from, &temp, &split, spectator);
-		CL_PredictUsercmd (&temp, to, &split, spectator);
+		CL_PredictUsercmd(from, &temp, &split, spectator);
+		CL_PredictUsercmd(&temp, to, &split, spectator);
 		return;
 	}
 
-	VectorCopy (from->origin, pmove.origin);
-//	VectorCopy (from->viewangles, pmove.angles);
-	VectorCopy (u->angles, pmove.angles);
-	VectorCopy (from->velocity, pmove.velocity);
+	VectorCopy(from->origin, pmove.origin);
+	//	VectorCopy (from->viewangles, pmove.angles);
+	VectorCopy(u->angles, pmove.angles);
+	VectorCopy(from->velocity, pmove.velocity);
 
 	pmove.oldbuttons = from->oldbuttons;
 	pmove.waterjumptime = from->waterjumptime;
@@ -133,14 +133,14 @@ void CL_PredictUsercmd (player_state_t *from, player_state_t *to, usercmd_t *u, 
 
 	pmove.cmd = *u;
 
-	PlayerMove ();
-//for (i=0 ; i<3 ; i++)
-//pmove.origin[i] = ((int)(pmove.origin[i]*8))*0.125;
+	PlayerMove();
+	//for (i=0 ; i<3 ; i++)
+	//pmove.origin[i] = ((int)(pmove.origin[i]*8))*0.125;
 	to->waterjumptime = pmove.waterjumptime;
 	to->oldbuttons = pmove.cmd.buttons;
-	VectorCopy (pmove.origin, to->origin);
-	VectorCopy (pmove.angles, to->viewangles);
-	VectorCopy (pmove.velocity, to->velocity);
+	VectorCopy(pmove.origin, to->origin);
+	VectorCopy(pmove.angles, to->viewangles);
+	VectorCopy(pmove.velocity, to->velocity);
 	to->onground = onground;
 
 	to->weaponframe = from->weaponframe;
@@ -151,101 +151,97 @@ void CL_PredictUsercmd (player_state_t *from, player_state_t *to, usercmd_t *u, 
 CL_PredictMove
 ==============
 */
-void CL_PredictMove ()
+void CL_PredictMove()
 {
-	int			i;
-	float		f;
-	frame_t		*from, *to = NULL;
-	int			oldphysent;
+	int i;
+	float f;
+	frame_t *from, *to = NULL;
+	int oldphysent;
 
-	if (cl_pushlatency.value > 0)
-		Cvar_Set ("pushlatency", "0");
+	if(cl_pushlatency.value > 0)
+		Cvar_Set("pushlatency", "0");
 
-	if (cl.paused)
+	if(cl.paused)
 		return;
 
-	cl.time = realtime - cls.latency - cl_pushlatency.value*0.001;
-	if (cl.time > realtime)
+	cl.time = realtime - cls.latency - cl_pushlatency.value * 0.001;
+	if(cl.time > realtime)
 		cl.time = realtime;
 
-	if (cl.intermission)
+	if(cl.intermission)
 		return;
 
-	if (!cl.validsequence)
+	if(!cl.validsequence)
 		return;
 
-	if (cls.netchan.outgoing_sequence - cls.netchan.incoming_sequence >= UPDATE_BACKUP-1)
+	if(cls.netchan.outgoing_sequence - cls.netchan.incoming_sequence >= UPDATE_BACKUP - 1)
 		return;
 
-	VectorCopy (cl.viewangles, cl.simangles);
+	VectorCopy(cl.viewangles, cl.simangles);
 
 	// this is the last frame received from the server
 	from = &cl.frames[cls.netchan.incoming_sequence & UPDATE_MASK];
 
 	// we can now render a frame
-	if (cls.state == ca_onserver)
+	if(cls.state == ca_onserver)
 	{
 		// first update is the final signon stage
 		cls.state = ca_active;
 	}
 
-	if (cl_nopred.value)
+	if(cl_nopred.value)
 	{
-		VectorCopy (from->playerstate[cl.playernum].velocity, cl.simvel);
-		VectorCopy (from->playerstate[cl.playernum].origin, cl.simorg);
+		VectorCopy(from->playerstate[cl.playernum].velocity, cl.simvel);
+		VectorCopy(from->playerstate[cl.playernum].origin, cl.simorg);
 		return;
 	}
 
 	// predict forward until cl.time <= to->senttime
 	oldphysent = pmove.numphysent;
-	CL_SetSolidPlayers (cl.playernum);
+	CL_SetSolidPlayers(cl.playernum);
 
-//	to = &cl.frames[cls.netchan.incoming_sequence & UPDATE_MASK];
+	//	to = &cl.frames[cls.netchan.incoming_sequence & UPDATE_MASK];
 
-	for (i=1 ; i<UPDATE_BACKUP-1 && cls.netchan.incoming_sequence+i <
-			cls.netchan.outgoing_sequence; i++)
+	for(i = 1; i < UPDATE_BACKUP - 1 && cls.netchan.incoming_sequence + i < cls.netchan.outgoing_sequence; i++)
 	{
-		to = &cl.frames[(cls.netchan.incoming_sequence+i) & UPDATE_MASK];
-		CL_PredictUsercmd (&from->playerstate[cl.playernum]
-			, &to->playerstate[cl.playernum], &to->cmd, cl.spectator);
-		if (to->senttime >= cl.time)
+		to = &cl.frames[(cls.netchan.incoming_sequence + i) & UPDATE_MASK];
+		CL_PredictUsercmd(&from->playerstate[cl.playernum], &to->playerstate[cl.playernum], &to->cmd, cl.spectator);
+		if(to->senttime >= cl.time)
 			break;
 		from = to;
 	}
 
 	pmove.numphysent = oldphysent;
 
-	if (i == UPDATE_BACKUP-1 || !to)
-		return;		// net hasn't deliver packets in a long time...
+	if(i == UPDATE_BACKUP - 1 || !to)
+		return; // net hasn't deliver packets in a long time...
 
 	// now interpolate some fraction of the final frame
-	if (to->senttime == from->senttime)
+	if(to->senttime == from->senttime)
 		f = 0;
 	else
 	{
 		f = (cl.time - from->senttime) / (to->senttime - from->senttime);
 
-		if (f < 0)
+		if(f < 0)
 			f = 0;
-		if (f > 1)
+		if(f > 1)
 			f = 1;
 	}
 
-	for (i=0 ; i<3 ; i++)
-		if ( fabs(from->playerstate[cl.playernum].origin[i] - to->playerstate[cl.playernum].origin[i]) > 128)
-		{	// teleported, so don't lerp
-			VectorCopy (to->playerstate[cl.playernum].velocity, cl.simvel);
-			VectorCopy (to->playerstate[cl.playernum].origin, cl.simorg);
+	for(i = 0; i < 3; i++)
+		if(fabs(from->playerstate[cl.playernum].origin[i] - to->playerstate[cl.playernum].origin[i]) > 128)
+		{ // teleported, so don't lerp
+			VectorCopy(to->playerstate[cl.playernum].velocity, cl.simvel);
+			VectorCopy(to->playerstate[cl.playernum].origin, cl.simorg);
 			return;
 		}
-		
-	for (i=0 ; i<3 ; i++)
+
+	for(i = 0; i < 3; i++)
 	{
-		cl.simorg[i] = from->playerstate[cl.playernum].origin[i] 
-			+ f*(to->playerstate[cl.playernum].origin[i] - from->playerstate[cl.playernum].origin[i]);
-		cl.simvel[i] = from->playerstate[cl.playernum].velocity[i] 
-			+ f*(to->playerstate[cl.playernum].velocity[i] - from->playerstate[cl.playernum].velocity[i]);
-	}		
+		cl.simorg[i] = from->playerstate[cl.playernum].origin[i] + f * (to->playerstate[cl.playernum].origin[i] - from->playerstate[cl.playernum].origin[i]);
+		cl.simvel[i] = from->playerstate[cl.playernum].velocity[i] + f * (to->playerstate[cl.playernum].velocity[i] - from->playerstate[cl.playernum].velocity[i]);
+	}
 }
 
 /*
@@ -253,8 +249,8 @@ void CL_PredictMove ()
 CL_InitPrediction
 ==============
 */
-void CL_InitPrediction ()
+void CL_InitPrediction()
 {
-	Cvar_RegisterVariable (&cl_pushlatency);
-	Cvar_RegisterVariable (&cl_nopred);
+	Cvar_RegisterVariable(&cl_pushlatency);
+	Cvar_RegisterVariable(&cl_nopred);
 }

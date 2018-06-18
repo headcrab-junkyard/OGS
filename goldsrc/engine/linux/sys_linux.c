@@ -40,14 +40,14 @@
 
 #include "quakedef.h"
 
-qboolean			isDedicated;
+qboolean isDedicated;
 
 int nostdout = 0;
 
 char *basedir = ".";
 char *cachedir = "/tmp";
 
-cvar_t  sys_linerefresh = {"sys_linerefresh","0"};// set for entity display
+cvar_t sys_linerefresh = { "sys_linerefresh", "0" }; // set for entity display
 
 // =======================================================================
 // General routines
@@ -104,43 +104,42 @@ void Sys_Printf (char *fmt, ...)
 }
 */
 
-void Sys_Quit ()
+void Sys_Quit()
 {
 	Host_Shutdown();
-    fcntl (0, F_SETFL, fcntl (0, F_GETFL, 0) & ~FNDELAY);
+	fcntl(0, F_SETFL, fcntl(0, F_GETFL, 0) & ~FNDELAY);
 
 	fflush(stdout);
 	exit(0);
 }
 
-void Sys_Error (const char *error, ...)
-{ 
-    va_list     argptr;
-    char        string[1024];
+void Sys_Error(const char *error, ...)
+{
+	va_list argptr;
+	char string[1024];
 
-// change stdin to non blocking
-    fcntl (0, F_SETFL, fcntl (0, F_GETFL, 0) & ~FNDELAY);
-    
-    va_start (argptr,error);
-    vsprintf (string,error,argptr);
-    va_end (argptr);
+	// change stdin to non blocking
+	fcntl(0, F_SETFL, fcntl(0, F_GETFL, 0) & ~FNDELAY);
+
+	va_start(argptr, error);
+	vsprintf(string, error, argptr);
+	va_end(argptr);
 	fprintf(stderr, "Error: %s\n", string);
 
-	Host_Shutdown ();
-	exit (1);
+	Host_Shutdown();
+	exit(1);
+}
 
-} 
+void Sys_Warn(const char *warning, ...)
+{
+	va_list argptr;
+	char string[1024];
 
-void Sys_Warn (const char *warning, ...)
-{ 
-    va_list     argptr;
-    char        string[1024];
-    
-    va_start (argptr,warning);
-    vsprintf (string,warning,argptr);
-    va_end (argptr);
+	va_start(argptr, warning);
+	vsprintf(string, warning, argptr);
+	va_end(argptr);
 	fprintf(stderr, "Warning: %s", string);
-} 
+}
 
 /*
 ============
@@ -149,101 +148,97 @@ Sys_FileTime
 returns -1 if not present
 ============
 */
-int	Sys_FileTime (const char *path)
+int Sys_FileTime(const char *path)
 {
-	struct	stat	buf;
-	
-	if (stat (path,&buf) == -1)
+	struct stat buf;
+
+	if(stat(path, &buf) == -1)
 		return -1;
-	
+
 	return buf.st_mtime;
 }
 
-int Sys_FileOpenRead (const char *path, int *handle)
+int Sys_FileOpenRead(const char *path, int *handle)
 {
-	int	h;
-	struct stat	fileinfo;
-    
-	
-	h = open (path, O_RDONLY, 0666);
+	int h;
+	struct stat fileinfo;
+
+	h = open(path, O_RDONLY, 0666);
 	*handle = h;
-	if (h == -1)
+	if(h == -1)
 		return -1;
-	
-	if (fstat (h,&fileinfo) == -1)
-		Sys_Error ("Error fstating %s", path);
+
+	if(fstat(h, &fileinfo) == -1)
+		Sys_Error("Error fstating %s", path);
 
 	return fileinfo.st_size;
 }
 
-int Sys_FileOpenWrite (const char *path)
+int Sys_FileOpenWrite(const char *path)
 {
-	int     handle;
+	int handle;
 
-	umask (0);
-	
-	handle = open(path,O_RDWR | O_CREAT | O_TRUNC
-	, 0666);
+	umask(0);
 
-	if (handle == -1)
-		Sys_Error ("Error opening %s: %s", path,strerror(errno));
+	handle = open(path, O_RDWR | O_CREAT | O_TRUNC, 0666);
+
+	if(handle == -1)
+		Sys_Error("Error opening %s: %s", path, strerror(errno));
 
 	return handle;
 }
 
 void Sys_DebugLog(const char *file, const char *fmt, ...)
 {
-    va_list argptr; 
-    static char data[1024];
-    int fd;
-    
-    va_start(argptr, fmt);
-    vsprintf(data, fmt, argptr);
-    va_end(argptr);
-//    fd = open(file, O_WRONLY | O_BINARY | O_CREAT | O_APPEND, 0666);
-    fd = open(file, O_WRONLY | O_CREAT | O_APPEND, 0666);
-    write(fd, data, strlen(data));
-    close(fd);
+	va_list argptr;
+	static char data[1024];
+	int fd;
+
+	va_start(argptr, fmt);
+	vsprintf(data, fmt, argptr);
+	va_end(argptr);
+	//    fd = open(file, O_WRONLY | O_BINARY | O_CREAT | O_APPEND, 0666);
+	fd = open(file, O_WRONLY | O_CREAT | O_APPEND, 0666);
+	write(fd, data, strlen(data));
+	close(fd);
 }
 
 void Sys_EditFile(const char *filename)
 {
-
 	char cmd[256];
 	char *term;
 	char *editor;
 
 	term = getenv("TERM");
-	if (term && !strcmp(term, "xterm"))
+	if(term && !strcmp(term, "xterm"))
 	{
 		editor = getenv("VISUAL");
-		if (!editor)
+		if(!editor)
 			editor = getenv("EDITOR");
-		if (!editor)
+		if(!editor)
 			editor = getenv("EDIT");
-		if (!editor)
+		if(!editor)
 			editor = "vi";
 		sprintf(cmd, "xterm -e %s %s", editor, filename);
 		system(cmd);
 	}
-
 }
 
-double Sys_FloatTime ()
+double Sys_FloatTime()
 {
-    struct timeval tp;
-    struct timezone tzp; 
-    static int      secbase; 
-    
-    gettimeofday(&tp, &tzp);  
+	struct timeval tp;
+	struct timezone tzp;
+	static int secbase;
 
-    if (!secbase)
-    {
-        secbase = tp.tv_sec;
-        return tp.tv_usec/1000000.0;
-    }
+	gettimeofday(&tp, &tzp);
 
-    return (tp.tv_sec - secbase) + tp.tv_usec/1000000.0;
+	if(!secbase)
+	{
+		secbase = tp.tv_sec;
+		return tp.tv_usec / 1000000.0;
+	}
+
+	return (tp.tv_sec - secbase) + tp.tv_usec / 1000000.0;
 }
 
 // =======================================================================
@@ -254,7 +249,7 @@ static volatile int oktogo;
 
 void alarm_handler(int x)
 {
-	oktogo=1;
+	oktogo = 1;
 }
 
 void Sys_LineRefresh()
@@ -263,29 +258,30 @@ void Sys_LineRefresh()
 
 void floating_point_exception_handler(int whatever)
 {
-//	Sys_Warn("floating point exception\n");
+	//	Sys_Warn("floating point exception\n");
 	signal(SIGFPE, floating_point_exception_handler);
 }
 
 char *Sys_ConsoleInput()
 {
-    static char text[256];
-    int     len;
-	fd_set	fdset;
-    struct timeval timeout;
+	static char text[256];
+	int len;
+	fd_set fdset;
+	struct timeval timeout;
 
-	if (cls.state == ca_dedicated) {
+	if(cls.state == ca_dedicated)
+	{
 		FD_ZERO(&fdset);
 		FD_SET(0, &fdset); // stdin
 		timeout.tv_sec = 0;
 		timeout.tv_usec = 0;
-		if (select (1, &fdset, NULL, NULL, &timeout) == -1 || !FD_ISSET(0, &fdset))
+		if(select(1, &fdset, NULL, NULL, &timeout) == -1 || !FD_ISSET(0, &fdset))
 			return NULL;
 
-		len = read (0, text, sizeof(text));
-		if (len < 1)
+		len = read(0, text, sizeof(text));
+		if(len < 1)
 			return NULL;
-		text[len-1] = 0;    // rip off the /n and terminate
+		text[len - 1] = 0; // rip off the /n and terminate
 
 		return text;
 	}
@@ -293,11 +289,11 @@ char *Sys_ConsoleInput()
 }
 
 #if !id386
-void Sys_HighFPPrecision ()
+void Sys_HighFPPrecision()
 {
 }
 
-void Sys_LowFPPrecision ()
+void Sys_LowFPPrecision()
 {
 }
 #endif
@@ -381,22 +377,19 @@ int main (int c, char **v)
 Sys_MakeCodeWriteable
 ================
 */
-void Sys_MakeCodeWriteable (unsigned long startaddr, unsigned long length)
+void Sys_MakeCodeWriteable(unsigned long startaddr, unsigned long length)
 {
-
 	int r;
 	unsigned long addr;
 	int psize = getpagesize();
 
-	addr = (startaddr & ~(psize-1)) - psize;
+	addr = (startaddr & ~(psize - 1)) - psize;
 
-//	fprintf(stderr, "writable code %lx(%lx)-%lx, length=%lx\n", startaddr,
-//			addr, startaddr+length, length);
+	//	fprintf(stderr, "writable code %lx(%lx)-%lx, length=%lx\n", startaddr,
+	//			addr, startaddr+length, length);
 
-	r = mprotect((char*)addr, length + startaddr - addr + psize, 7);
+	r = mprotect((char *)addr, length + startaddr - addr + psize, 7);
 
-	if (r < 0)
-    		Sys_Error("Protection change failed\n");
-
+	if(r < 0)
+		Sys_Error("Protection change failed\n");
 }
-

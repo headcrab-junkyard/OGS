@@ -26,60 +26,55 @@
 #include "resource.h"
 #include "conproc.h"
 
-#define MINIMUM_WIN_MEMORY		0x0880000
-#define MAXIMUM_WIN_MEMORY		0x1000000
+#define MINIMUM_WIN_MEMORY 0x0880000
+#define MAXIMUM_WIN_MEMORY 0x1000000
 
-#define CONSOLE_ERROR_TIMEOUT	60.0	// # of seconds to wait on Sys_Error running dedicated before exiting
+#define CONSOLE_ERROR_TIMEOUT 60.0 // # of seconds to wait on Sys_Error running dedicated before exiting
 
+int starttime;
 
+qboolean isDedicated;
+static qboolean sc_return_on_enter = false;
+HANDLE hinput, houtput;
 
-int			starttime;
+static char *tracking_tag = "Clams & Mooses";
 
+static HANDLE tevent;
+static HANDLE hFile;
+static HANDLE heventParent;
+static HANDLE heventChild;
 
-qboolean			isDedicated;
-static qboolean		sc_return_on_enter = false;
-HANDLE				hinput, houtput;
+void MaskExceptions();
+void Sys_InitFloatTime();
+void Sys_PushFPCW_SetHigh();
+void Sys_PopFPCW();
 
-static char			*tracking_tag = "Clams & Mooses";
-
-static HANDLE	tevent;
-static HANDLE	hFile;
-static HANDLE	heventParent;
-static HANDLE	heventChild;
-
-void MaskExceptions ();
-void Sys_InitFloatTime ();
-void Sys_PushFPCW_SetHigh ();
-void Sys_PopFPCW ();
-
-volatile int					sys_checksum;
-
+volatile int sys_checksum;
 
 /*
 ================
 Sys_PageIn
 ================
 */
-void Sys_PageIn (void *ptr, int size)
+void Sys_PageIn(void *ptr, int size)
 {
-	byte	*x;
-	int		j, m, n;
+	byte *x;
+	int j, m, n;
 
-// touch all the memory to make sure it's there. The 16-page skip is to
-// keep Win 95 from thinking we're trying to page ourselves in (we are
-// doing that, of course, but there's no reason we shouldn't)
+	// touch all the memory to make sure it's there. The 16-page skip is to
+	// keep Win 95 from thinking we're trying to page ourselves in (we are
+	// doing that, of course, but there's no reason we shouldn't)
 	x = (byte *)ptr;
 
-	for (n=0 ; n<4 ; n++)
+	for(n = 0; n < 4; n++)
 	{
-		for (m=0 ; m<(size - 16 * 0x1000) ; m += 4)
+		for(m = 0; m < (size - 16 * 0x1000); m += 4)
 		{
 			sys_checksum += *(int *)&x[m];
 			sys_checksum += *(int *)&x[m + 16 * 0x1000];
 		}
 	}
 }
-
 
 /*
 ===============================================================================
@@ -89,14 +84,14 @@ FILE IO
 ===============================================================================
 */
 
-int		findhandle ()
+int findhandle()
 {
-	int		i;
-	
-	for (i=1 ; i<MAX_HANDLES ; i++)
-		if (!sys_handles[i])
+	int i;
+
+	for(i = 1; i < MAX_HANDLES; i++)
+		if(!sys_handles[i])
 			return i;
-	Sys_Error ("out of handles");
+	Sys_Error("out of handles");
 	return -1;
 }
 
@@ -105,37 +100,37 @@ int		findhandle ()
 filelength
 ================
 */
-int filelength (FILE *f)
+int filelength(FILE *f)
 {
-	int		pos;
-	int		end;
-	int		t;
+	int pos;
+	int end;
+	int t;
 
-	t = VID_ForceUnlockedAndReturnState ();
+	t = VID_ForceUnlockedAndReturnState();
 
-	pos = ftell (f);
-	fseek (f, 0, SEEK_END);
-	end = ftell (f);
-	fseek (f, pos, SEEK_SET);
+	pos = ftell(f);
+	fseek(f, 0, SEEK_END);
+	end = ftell(f);
+	fseek(f, pos, SEEK_SET);
 
-	VID_ForceLockState (t);
+	VID_ForceLockState(t);
 
 	return end;
 }
 
-int Sys_FileOpenRead (char *path, int *hndl)
+int Sys_FileOpenRead(char *path, int *hndl)
 {
-	FILE	*f;
-	int		i, retval;
-	int		t;
+	FILE *f;
+	int i, retval;
+	int t;
 
-	t = VID_ForceUnlockedAndReturnState ();
+	t = VID_ForceUnlockedAndReturnState();
 
-	i = findhandle ();
+	i = findhandle();
 
 	f = fopen(path, "rb");
 
-	if (!f)
+	if(!f)
 	{
 		*hndl = -1;
 		retval = -1;
@@ -147,80 +142,80 @@ int Sys_FileOpenRead (char *path, int *hndl)
 		retval = filelength(f);
 	}
 
-	VID_ForceLockState (t);
+	VID_ForceLockState(t);
 
 	return retval;
 }
 
-int Sys_FileOpenWrite (char *path)
+int Sys_FileOpenWrite(char *path)
 {
-	FILE	*f;
-	int		i;
-	int		t;
+	FILE *f;
+	int i;
+	int t;
 
-	t = VID_ForceUnlockedAndReturnState ();
-	
-	i = findhandle ();
+	t = VID_ForceUnlockedAndReturnState();
+
+	i = findhandle();
 
 	f = fopen(path, "wb");
-	if (!f)
-		Sys_Error ("Error opening %s: %s", path,strerror(errno));
+	if(!f)
+		Sys_Error("Error opening %s: %s", path, strerror(errno));
 	sys_handles[i] = f;
-	
-	VID_ForceLockState (t);
+
+	VID_ForceLockState(t);
 
 	return i;
 }
 
-void Sys_FileClose (int handle)
+void Sys_FileClose(int handle)
 {
-	int		t;
+	int t;
 
-	t = VID_ForceUnlockedAndReturnState ();
-	fclose (sys_handles[handle]);
+	t = VID_ForceUnlockedAndReturnState();
+	fclose(sys_handles[handle]);
 	sys_handles[handle] = NULL;
-	VID_ForceLockState (t);
+	VID_ForceLockState(t);
 }
 
-void Sys_FileSeek (int handle, int position)
+void Sys_FileSeek(int handle, int position)
 {
-	int		t;
+	int t;
 
-	t = VID_ForceUnlockedAndReturnState ();
-	fseek (sys_handles[handle], position, SEEK_SET);
-	VID_ForceLockState (t);
+	t = VID_ForceUnlockedAndReturnState();
+	fseek(sys_handles[handle], position, SEEK_SET);
+	VID_ForceLockState(t);
 }
 
-int Sys_FileRead (int handle, void *dest, int count)
+int Sys_FileRead(int handle, void *dest, int count)
 {
-	int		t, x;
+	int t, x;
 
-	t = VID_ForceUnlockedAndReturnState ();
-	x = fread (dest, 1, count, sys_handles[handle]);
-	VID_ForceLockState (t);
+	t = VID_ForceUnlockedAndReturnState();
+	x = fread(dest, 1, count, sys_handles[handle]);
+	VID_ForceLockState(t);
 	return x;
 }
 
-int Sys_FileWrite (int handle, void *data, int count)
+int Sys_FileWrite(int handle, void *data, int count)
 {
-	int		t, x;
+	int t, x;
 
-	t = VID_ForceUnlockedAndReturnState ();
-	x = fwrite (data, 1, count, sys_handles[handle]);
-	VID_ForceLockState (t);
+	t = VID_ForceUnlockedAndReturnState();
+	x = fwrite(data, 1, count, sys_handles[handle]);
+	VID_ForceLockState(t);
 	return x;
 }
 
-int	Sys_FileTime (char *path)
+int Sys_FileTime(char *path)
 {
-	FILE	*f;
-	int		t, retval;
+	FILE *f;
+	int t, retval;
 
-	t = VID_ForceUnlockedAndReturnState ();
-	
+	t = VID_ForceUnlockedAndReturnState();
+
 	f = fopen(path, "rb");
 
-	if (f)
+	if(f)
 	{
 		fclose(f);
 		retval = 1;
@@ -229,8 +224,8 @@ int	Sys_FileTime (char *path)
 	{
 		retval = -1;
 	}
-	
-	VID_ForceLockState (t);
+
+	VID_ForceLockState(t);
 	return retval;
 }
 
@@ -247,125 +242,123 @@ SYSTEM IO
 Sys_MakeCodeWriteable
 ================
 */
-void Sys_MakeCodeWriteable (unsigned long startaddr, unsigned long length)
+void Sys_MakeCodeWriteable(unsigned long startaddr, unsigned long length)
 {
-	DWORD  flOldProtect;
+	DWORD flOldProtect;
 
-	if (!VirtualProtect((LPVOID)startaddr, length, PAGE_READWRITE, &flOldProtect))
-   		Sys_Error("Protection change failed\n");
+	if(!VirtualProtect((LPVOID)startaddr, length, PAGE_READWRITE, &flOldProtect))
+		Sys_Error("Protection change failed\n");
 }
-
 
 #ifndef _M_IX86
 
-void Sys_SetFPCW ()
+void Sys_SetFPCW()
 {
 }
 
-void Sys_PushFPCW_SetHigh ()
+void Sys_PushFPCW_SetHigh()
 {
 }
 
-void Sys_PopFPCW ()
+void Sys_PopFPCW()
 {
 }
 
-void MaskExceptions ()
+void MaskExceptions()
 {
 }
 
 #endif
 
-void Sys_Error (char *error, ...)
+void Sys_Error(char *error, ...)
 {
-	va_list		argptr;
-	char		text[1024], text2[1024];
-	char		*text3 = "Press Enter to exit\n";
-	char		*text4 = "***********************************\n";
-	char		*text5 = "\n";
-	DWORD		dummy;
-	double		starttime;
-	static int	in_sys_error0 = 0;
-	static int	in_sys_error1 = 0;
-	static int	in_sys_error2 = 0;
-	static int	in_sys_error3 = 0;
+	va_list argptr;
+	char text[1024], text2[1024];
+	char *text3 = "Press Enter to exit\n";
+	char *text4 = "***********************************\n";
+	char *text5 = "\n";
+	DWORD dummy;
+	double starttime;
+	static int in_sys_error0 = 0;
+	static int in_sys_error1 = 0;
+	static int in_sys_error2 = 0;
+	static int in_sys_error3 = 0;
 
-	if (!in_sys_error3)
+	if(!in_sys_error3)
 	{
 		in_sys_error3 = 1;
-		VID_ForceUnlockedAndReturnState ();
+		VID_ForceUnlockedAndReturnState();
 	}
 
-	va_start (argptr, error);
-	vsprintf (text, error, argptr);
-	va_end (argptr);
+	va_start(argptr, error);
+	vsprintf(text, error, argptr);
+	va_end(argptr);
 
-	if (isDedicated)
+	if(isDedicated)
 	{
-		va_start (argptr, error);
-		vsprintf (text, error, argptr);
-		va_end (argptr);
+		va_start(argptr, error);
+		vsprintf(text, error, argptr);
+		va_end(argptr);
 
-		sprintf (text2, "ERROR: %s\n", text);
-		WriteFile (houtput, text5, strlen (text5), &dummy, NULL);
-		WriteFile (houtput, text4, strlen (text4), &dummy, NULL);
-		WriteFile (houtput, text2, strlen (text2), &dummy, NULL);
-		WriteFile (houtput, text3, strlen (text3), &dummy, NULL);
-		WriteFile (houtput, text4, strlen (text4), &dummy, NULL);
+		sprintf(text2, "ERROR: %s\n", text);
+		WriteFile(houtput, text5, strlen(text5), &dummy, NULL);
+		WriteFile(houtput, text4, strlen(text4), &dummy, NULL);
+		WriteFile(houtput, text2, strlen(text2), &dummy, NULL);
+		WriteFile(houtput, text3, strlen(text3), &dummy, NULL);
+		WriteFile(houtput, text4, strlen(text4), &dummy, NULL);
 
+		starttime = Sys_FloatTime();
+		sc_return_on_enter = true; // so Enter will get us out of here
 
-		starttime = Sys_FloatTime ();
-		sc_return_on_enter = true;	// so Enter will get us out of here
-
-		while (!Sys_ConsoleInput () &&
-				((Sys_FloatTime () - starttime) < CONSOLE_ERROR_TIMEOUT))
+		while(!Sys_ConsoleInput() &&
+		      ((Sys_FloatTime() - starttime) < CONSOLE_ERROR_TIMEOUT))
 		{
 		}
 	}
 	else
 	{
-	// switch to windowed so the message box is visible, unless we already
-	// tried that and failed
-		if (!in_sys_error0)
+		// switch to windowed so the message box is visible, unless we already
+		// tried that and failed
+		if(!in_sys_error0)
 		{
 			in_sys_error0 = 1;
-			VID_SetDefaultMode ();
+			VID_SetDefaultMode();
 			MessageBox(NULL, text, "Engine Error",
-					   MB_OK | MB_SETFOREGROUND | MB_ICONSTOP);
+			           MB_OK | MB_SETFOREGROUND | MB_ICONSTOP);
 		}
 		else
 		{
 			MessageBox(NULL, text, "Double Engine Error",
-					   MB_OK | MB_SETFOREGROUND | MB_ICONSTOP);
+			           MB_OK | MB_SETFOREGROUND | MB_ICONSTOP);
 		}
 	}
 
-	if (!in_sys_error1)
+	if(!in_sys_error1)
 	{
 		in_sys_error1 = 1;
-		Host_Shutdown ();
+		Host_Shutdown();
 	}
 
-// shut down QHOST hooks if necessary
-	if (!in_sys_error2)
+	// shut down QHOST hooks if necessary
+	if(!in_sys_error2)
 	{
 		in_sys_error2 = 1;
-		DeinitConProc ();
+		DeinitConProc();
 	}
 
-	exit (1);
+	exit(1);
 }
 
-void Sys_Quit ()
+void Sys_Quit()
 {
-	VID_ForceUnlockedAndReturnState ();
+	VID_ForceUnlockedAndReturnState();
 
 	Host_Shutdown();
 
-	if (tevent)
-		CloseHandle (tevent);	
+	if(tevent)
+		CloseHandle(tevent);
 
-	exit (0);
+	exit(0);
 }
 
 /*
@@ -373,33 +366,33 @@ void Sys_Quit ()
 Sys_FloatTime
 ================
 */
-double Sys_FloatTime ()
+double Sys_FloatTime()
 {
-	static int			sametimecount;
-	static unsigned int	oldtime;
-	static int			first = 1;
-	LARGE_INTEGER		PerformanceCount;
-	unsigned int		temp, t2;
-	double				time;
+	static int sametimecount;
+	static unsigned int oldtime;
+	static int first = 1;
+	LARGE_INTEGER PerformanceCount;
+	unsigned int temp, t2;
+	double time;
 
-	Sys_PushFPCW_SetHigh ();
+	Sys_PushFPCW_SetHigh();
 
-	QueryPerformanceCounter (&PerformanceCount);
+	QueryPerformanceCounter(&PerformanceCount);
 
 	temp = ((unsigned int)PerformanceCount.LowPart >> lowshift) |
-		   ((unsigned int)PerformanceCount.HighPart << (32 - lowshift));
+	((unsigned int)PerformanceCount.HighPart << (32 - lowshift));
 
-	if (first)
+	if(first)
 	{
 		oldtime = temp;
 		first = 0;
 	}
 	else
 	{
-	// check for turnover or backward time
-		if ((temp <= oldtime) && ((oldtime - temp) < 0x10000000))
+		// check for turnover or backward time
+		if((temp <= oldtime) && ((oldtime - temp) < 0x10000000))
 		{
-			oldtime = temp;	// so we can't get stuck
+			oldtime = temp; // so we can't get stuck
 		}
 		else
 		{
@@ -410,11 +403,11 @@ double Sys_FloatTime ()
 
 			curtime += time;
 
-			if (curtime == lastcurtime)
+			if(curtime == lastcurtime)
 			{
 				sametimecount++;
 
-				if (sametimecount > 100000)
+				if(sametimecount > 100000)
 				{
 					curtime += 1.0;
 					sametimecount = 0;
@@ -429,83 +422,81 @@ double Sys_FloatTime ()
 		}
 	}
 
-	Sys_PopFPCW ();
+	Sys_PopFPCW();
 
-    return curtime;
+	return curtime;
 }
 
-char *Sys_ConsoleInput ()
+char *Sys_ConsoleInput()
 {
-	static char	text[256];
-	static int		len;
-	INPUT_RECORD	recs[1024];
-	int		count;
-	int		i, dummy;
-	int		ch, numread, numevents;
+	static char text[256];
+	static int len;
+	INPUT_RECORD recs[1024];
+	int count;
+	int i, dummy;
+	int ch, numread, numevents;
 
-	if (!isDedicated)
+	if(!isDedicated)
 		return NULL;
 
-
-	for ( ;; )
+	for(;;)
 	{
-		if (!GetNumberOfConsoleInputEvents (hinput, &numevents))
-			Sys_Error ("Error getting # of console events");
+		if(!GetNumberOfConsoleInputEvents(hinput, &numevents))
+			Sys_Error("Error getting # of console events");
 
-		if (numevents <= 0)
+		if(numevents <= 0)
 			break;
 
-		if (!ReadConsoleInput(hinput, recs, 1, &numread))
-			Sys_Error ("Error reading console input");
+		if(!ReadConsoleInput(hinput, recs, 1, &numread))
+			Sys_Error("Error reading console input");
 
-		if (numread != 1)
-			Sys_Error ("Couldn't read console input");
+		if(numread != 1)
+			Sys_Error("Couldn't read console input");
 
-		if (recs[0].EventType == KEY_EVENT)
+		if(recs[0].EventType == KEY_EVENT)
 		{
-			if (!recs[0].Event.KeyEvent.bKeyDown)
+			if(!recs[0].Event.KeyEvent.bKeyDown)
 			{
 				ch = recs[0].Event.KeyEvent.uChar.AsciiChar;
 
-				switch (ch)
+				switch(ch)
 				{
-					case '\r':
-						WriteFile(houtput, "\r\n", 2, &dummy, NULL);	
+				case '\r':
+					WriteFile(houtput, "\r\n", 2, &dummy, NULL);
 
-						if (len)
-						{
-							text[len] = 0;
-							len = 0;
-							return text;
-						}
-						else if (sc_return_on_enter)
-						{
+					if(len)
+					{
+						text[len] = 0;
+						len = 0;
+						return text;
+					}
+					else if(sc_return_on_enter)
+					{
 						// special case to allow exiting from the error handler on Enter
-							text[0] = '\r';
-							len = 0;
-							return text;
-						}
+						text[0] = '\r';
+						len = 0;
+						return text;
+					}
 
-						break;
+					break;
 
-					case '\b':
-						WriteFile(houtput, "\b \b", 3, &dummy, NULL);	
-						if (len)
-						{
-							len--;
-						}
-						break;
+				case '\b':
+					WriteFile(houtput, "\b \b", 3, &dummy, NULL);
+					if(len)
+					{
+						len--;
+					}
+					break;
 
-					default:
-						if (ch >= ' ')
-						{
-							WriteFile(houtput, &ch, 1, &dummy, NULL);	
-							text[len] = ch;
-							len = (len + 1) & 0xff;
-						}
+				default:
+					if(ch >= ' ')
+					{
+						WriteFile(houtput, &ch, 1, &dummy, NULL);
+						text[len] = ch;
+						len = (len + 1) & 0xff;
+					}
 
-						break;
-
+					break;
 				}
 			}
 		}
@@ -514,28 +505,27 @@ char *Sys_ConsoleInput ()
 	return NULL;
 }
 
-void Sys_Sleep ()
+void Sys_Sleep()
 {
-	Sleep (1);
+	Sleep(1);
 }
 
-void Sys_SendKeyEvents ()
+void Sys_SendKeyEvents()
 {
-    MSG        msg;
+	MSG msg;
 
-	while (PeekMessage (&msg, NULL, 0, 0, PM_NOREMOVE))
+	while(PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
 	{
-	// we always update if there are any event, even if we're paused
+		// we always update if there are any event, even if we're paused
 		scr_skipupdate = 0;
 
-		if (!GetMessage (&msg, NULL, 0, 0))
-			Sys_Quit ();
+		if(!GetMessage(&msg, NULL, 0, 0))
+			Sys_Quit();
 
-      	TranslateMessage (&msg);
-      	DispatchMessage (&msg);
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
 	}
 }
-
 
 /*
 ==============================================================================
@@ -545,13 +535,11 @@ void Sys_SendKeyEvents ()
 ==============================================================================
 */
 
-
 /*
 ==================
 WinMain
 ==================
 */
-
 
 /*
 char		*argv[MAX_NUM_ARGVS];

@@ -26,23 +26,23 @@
 //
 extern int con_totallines;
 extern int con_backscroll;
-extern	qboolean con_forcedup;	// because no entities to refresh
+extern qboolean con_forcedup; // because no entities to refresh
 extern qboolean con_initialized;
 extern byte *con_chars;
-extern	int	con_notifylines;		// scan lines to clear for notify lines
+extern int con_notifylines; // scan lines to clear for notify lines
 
-void Con_DrawCharacter (int cx, int line, int num);
+void Con_DrawCharacter(int cx, int line, int num);
 
-void Con_CheckResize ();
-void Con_Init ();
-void Con_DrawConsole (int lines, qboolean drawinput);
-void Con_Print (const char *txt);
-void Con_Printf (const char *fmt, ...);
-void Con_DPrintf (const char *fmt, ...);
-void Con_SafePrintf (const char *fmt, ...);
-void Con_Clear_f ();
-void Con_DrawNotify ();
-void Con_ClearNotify ();
-void Con_ToggleConsole_f ();
+void Con_CheckResize();
+void Con_Init();
+void Con_DrawConsole(int lines, qboolean drawinput);
+void Con_Print(const char *txt);
+void Con_Printf(const char *fmt, ...);
+void Con_DPrintf(const char *fmt, ...);
+void Con_SafePrintf(const char *fmt, ...);
+void Con_Clear_f();
+void Con_DrawNotify();
+void Con_ClearNotify();
+void Con_ToggleConsole_f();
 
-void Con_NotifyBox (const char *text);	// during startup for sound / cd warnings
+void Con_NotifyBox(const char *text); // during startup for sound / cd warnings

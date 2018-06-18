@@ -28,7 +28,7 @@ public:
 	CRender();
 	~CRender();
 
-	bool Init(CreateInterfaceFn afnEngineFactory, void *ahInstance, void *apWnd/*, void *apWndProc*/) override;
+	bool Init(CreateInterfaceFn afnEngineFactory, void *ahInstance, void *apWnd /*, void *apWndProc*/) override;
 	void Shutdown() override;
 
 	void AppActivate(bool abActivate) override;

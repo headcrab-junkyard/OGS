@@ -29,7 +29,7 @@ class CVideoMode_OpenGL final : public IVideoMode
 public:
 	CVideoMode_OpenGL();
 	~CVideoMode_OpenGL();
-	
+
 	void Init(void *pvInstance);
 };
 

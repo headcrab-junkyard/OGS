@@ -31,7 +31,7 @@ SYSTEM IO
 ===============================================================================
 */
 
-void Sys_MakeCodeWriteable (unsigned long startaddr, unsigned long length)
+void Sys_MakeCodeWriteable(unsigned long startaddr, unsigned long length)
 {
 }
 
@@ -41,59 +41,59 @@ void Sys_DebugLog(char *file, char *fmt, ...)
 }
 */
 
-void Sys_Error (const char *error, ...)
+void Sys_Error(const char *error, ...)
 {
-	va_list         argptr;
+	va_list argptr;
 
-	printf ("Sys_Error: ");
-	va_start (argptr,error);
-	vprintf (error,argptr);
-	va_end (argptr);
-	printf ("\n");
+	printf("Sys_Error: ");
+	va_start(argptr, error);
+	vprintf(error, argptr);
+	va_end(argptr);
+	printf("\n");
 
-	exit (1);
+	exit(1);
 }
 
-void Sys_Printf (const char *fmt, ...)
+void Sys_Printf(const char *fmt, ...)
 {
-	va_list         argptr;
-	
-	va_start (argptr,fmt);
-	vprintf (fmt,argptr);
-	va_end (argptr);
+	va_list argptr;
+
+	va_start(argptr, fmt);
+	vprintf(fmt, argptr);
+	va_end(argptr);
 }
 
-void Sys_Quit ()
+void Sys_Quit()
 {
-	exit (0);
+	exit(0);
 }
 
-double Sys_FloatTime ()
+double Sys_FloatTime()
 {
 	static double t;
-	
+
 	t += 0.1;
-	
+
 	return t;
 }
 
-char *Sys_ConsoleInput ()
+char *Sys_ConsoleInput()
 {
 	return NULL;
 }
 
-void Sys_Sleep ()
+void Sys_Sleep()
 {
 }
 
-void Sys_SendKeyEvents ()
+void Sys_SendKeyEvents()
 {
 }
 
-void Sys_HighFPPrecision ()
+void Sys_HighFPPrecision()
 {
 }
 
-void Sys_LowFPPrecision ()
+void Sys_LowFPPrecision()
 {
 }

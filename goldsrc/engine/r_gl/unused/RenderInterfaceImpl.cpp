@@ -30,7 +30,7 @@ IFileSystem *gpFileSystem = nullptr;
 CRender::CRender() = default;
 CRender::~CRender() = default;
 
-bool CRender::Init(CreateInterfaceFn afnEngineFactory, void *ahInstance, void *apWnd/*, void *apWndProc*/)
+bool CRender::Init(CreateInterfaceFn afnEngineFactory, void *ahInstance, void *apWnd /*, void *apWndProc*/)
 {
 	gpFileSystem = (IFileSystem *)afnEngineFactory(FILESYSTEM_INTERFACE_VERSION, nullptr);
 
@@ -41,7 +41,7 @@ bool CRender::Init(CreateInterfaceFn afnEngineFactory, void *ahInstance, void *a
 	// If it's valid then use it (might be passed from launcher code)
 	// Otherwise create it ourself
 	// Note: Mb better to always create a window in engine/video module and pass it's ptr here?
-	R_Init(ahInstance, apWnd/*, apWndProc*/);
+	R_Init(ahInstance, apWnd /*, apWndProc*/);
 	return true;
 };
 

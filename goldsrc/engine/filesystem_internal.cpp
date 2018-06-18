@@ -21,20 +21,20 @@
 #include "quakedef.h"
 #include "public/FileSystem.h"
 
-IFileSystem *gpFileSystem{nullptr};
+IFileSystem *gpFileSystem{ nullptr };
 
 void FileSystem_Init(char *basedir, void *filesystemFactory)
 {
 	// TODO
-	
+
 	if(!basedir || !*basedir)
 		return;
-	
+
 	if(!filesystemFactory)
 		return;
-	
-	gpFileSystem = (IFileSystem*)(((CreateInterfaceFn)filesystemFactory)(FILESYSTEM_INTERFACE_VERSION, nullptr));
-	
+
+	gpFileSystem = (IFileSystem *)(((CreateInterfaceFn)filesystemFactory)(FILESYSTEM_INTERFACE_VERSION, nullptr));
+
 	if(!gpFileSystem)
 		return;
 };
@@ -42,7 +42,7 @@ void FileSystem_Init(char *basedir, void *filesystemFactory)
 void FileSystem_Shutdown()
 {
 	// TODO
-	
+
 	gpFileSystem = nullptr;
 };
 
@@ -207,12 +207,12 @@ const char *FS_GetLocalPath(const char *pFileName, char *pLocalPath, int localPa
 char *FS_ParseFile(char *pFileBytes, char *pToken, qboolean *pWasQuoted)
 {
 	bool bWasQuoted;
-	
-	auto sResult{gpFileSystem->ParseFile(pFileBytes, pToken, &bWasQuoted)};
-	
+
+	auto sResult{ gpFileSystem->ParseFile(pFileBytes, pToken, &bWasQuoted) };
+
 	if(pWasQuoted)
 		*pWasQuoted = bWasQuoted;
-	
+
 	return sResult;
 };
 
@@ -368,10 +368,10 @@ int FS_FileTime(const char *path)
 
 void FS_mkdir(const char *path)
 {
-	// TODO: if not dedicated?
+// TODO: if not dedicated?
 
 #ifdef _WIN32
-	//_mkdir(path); // TODO
+//_mkdir(path); // TODO
 #else
 	mkdir(path, 0777);
 #endif

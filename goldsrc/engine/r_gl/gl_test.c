@@ -23,89 +23,86 @@
 
 typedef struct
 {
-	plane_t	*plane;
-	vec3_t	origin;
-	vec3_t	normal;
-	vec3_t	up;
-	vec3_t	right;
-	vec3_t	reflect;
-	float	length;
+	plane_t *plane;
+	vec3_t origin;
+	vec3_t normal;
+	vec3_t up;
+	vec3_t right;
+	vec3_t reflect;
+	float length;
 } puff_t;
 
-#define	MAX_PUFFS	64
+#define MAX_PUFFS 64
 
-puff_t	puffs[MAX_PUFFS];
+puff_t puffs[MAX_PUFFS];
 
-
-void Test_Init (void)
+void Test_Init(void)
 {
 }
 
-
-
-plane_t	junk;
-plane_t	*HitPlane (vec3_t start, vec3_t end)
+plane_t junk;
+plane_t *HitPlane(vec3_t start, vec3_t end)
 {
-	trace_t		trace;
+	trace_t trace;
 
-// fill in a default trace
-	memset (&trace, 0, sizeof(trace_t));
+	// fill in a default trace
+	memset(&trace, 0, sizeof(trace_t));
 	trace.fraction = 1;
 	trace.allsolid = true;
-	VectorCopy (end, trace.endpos);
+	VectorCopy(end, trace.endpos);
 
-	SV_RecursiveHullCheck (cl.worldmodel->hulls, 0, 0, 1, start, end, &trace);
+	SV_RecursiveHullCheck(cl.worldmodel->hulls, 0, 0, 1, start, end, &trace);
 
 	junk = trace.plane;
 	return &junk;
 }
 
-void Test_Spawn (vec3_t origin)
+void Test_Spawn(vec3_t origin)
 {
-	int		i;
-	puff_t	*p;
-	vec3_t	temp;
-	vec3_t	normal;
-	vec3_t	incoming;
-	plane_t	*plane;
-	float	d;
+	int i;
+	puff_t *p;
+	vec3_t temp;
+	vec3_t normal;
+	vec3_t incoming;
+	plane_t *plane;
+	float d;
 
-	for (i=0,p=puffs ; i<MAX_PUFFS ; i++,p++)
+	for(i = 0, p = puffs; i < MAX_PUFFS; i++, p++)
 	{
-		if (p->length <= 0)
+		if(p->length <= 0)
 			break;
 	}
-	if (i == MAX_PUFFS)
+	if(i == MAX_PUFFS)
 		return;
 
-	VectorSubtract (r_refdef.vieworg, origin, incoming);
-	VectorSubtract (origin, incoming, temp);
-	plane = HitPlane (r_refdef.vieworg, temp);
+	VectorSubtract(r_refdef.vieworg, origin, incoming);
+	VectorSubtract(origin, incoming, temp);
+	plane = HitPlane(r_refdef.vieworg, temp);
 
-	VectorNormalize (incoming);
-	d = DotProduct (incoming, plane->normal);
-	VectorSubtract (vec3_origin, incoming, p->reflect);
-	VectorMA (p->reflect, d*2, plane->normal, p->reflect);
+	VectorNormalize(incoming);
+	d = DotProduct(incoming, plane->normal);
+	VectorSubtract(vec3_origin, incoming, p->reflect);
+	VectorMA(p->reflect, d * 2, plane->normal, p->reflect);
 
-	VectorCopy (origin, p->origin);
-	VectorCopy (plane->normal, p->normal);
+	VectorCopy(origin, p->origin);
+	VectorCopy(plane->normal, p->normal);
 
-	CrossProduct (incoming, p->normal, p->up);
+	CrossProduct(incoming, p->normal, p->up);
 
-	CrossProduct (p->up, p->normal, p->right);
+	CrossProduct(p->up, p->normal, p->right);
 
 	p->length = 8;
 }
 
-void DrawPuff (puff_t *p)
+void DrawPuff(puff_t *p)
 {
-	vec3_t	pts[2][3];
-	int		i, j;
-	float	s, d;
+	vec3_t pts[2][3];
+	int i, j;
+	float s, d;
 
-	for (i=0 ; i<2 ; i++)
+	for(i = 0; i < 2; i++)
 	{
-		if (i == 1)
+		if(i == 1)
 		{
 			s = 6;
 			d = p->length;
@@ -116,15 +113,15 @@ void DrawPuff (puff_t *p)
 			d = 0;
 		}
 
-		for (j=0 ; j<3 ; j++)
+		for(j = 0; j < 3; j++)
 		{
-			pts[i][0][j] = p->origin[j] + p->up[j]*s + p->reflect[j]*d;
-			pts[i][1][j] = p->origin[j] + p->right[j]*s + p->reflect[j]*d;
-			pts[i][2][j] = p->origin[j] + -p->right[j]*s + p->reflect[j]*d;
+			pts[i][0][j] = p->origin[j] + p->up[j] * s + p->reflect[j] * d;
+			pts[i][1][j] = p->origin[j] + p->right[j] * s + p->reflect[j] * d;
+			pts[i][2][j] = p->origin[j] + -p->right[j] * s + p->reflect[j] * d;
 		}
 	}
 
-	glColor3f (1, 0, 0);
+	glColor3f(1, 0, 0);
 
 #if 0
 	glBegin (GL_LINES);
@@ -145,36 +142,35 @@ void DrawPuff (puff_t *p)
 	glEnd ();
 #endif
 
-	glBegin (GL_QUADS);
-	for (i=0 ; i<3 ; i++)
+	glBegin(GL_QUADS);
+	for(i = 0; i < 3; i++)
 	{
-		j = (i+1)%3;
-		glVertex3fv (pts[0][j]);
-		glVertex3fv (pts[1][j]);
-		glVertex3fv (pts[1][i]);
-		glVertex3fv (pts[0][i]);
+		j = (i + 1) % 3;
+		glVertex3fv(pts[0][j]);
+		glVertex3fv(pts[1][j]);
+		glVertex3fv(pts[1][i]);
+		glVertex3fv(pts[0][i]);
 	}
-	glEnd ();
+	glEnd();
 
-	glBegin (GL_TRIANGLES);
-	glVertex3fv (pts[1][0]);
-	glVertex3fv (pts[1][1]);
-	glVertex3fv (pts[1][2]);
-	glEnd ();
+	glBegin(GL_TRIANGLES);
+	glVertex3fv(pts[1][0]);
+	glVertex3fv(pts[1][1]);
+	glVertex3fv(pts[1][2]);
+	glEnd();
 
-	p->length -= host_frametime*2;
+	p->length -= host_frametime * 2;
 }
 
-
-void Test_Draw (void)
+void Test_Draw(void)
 {
-	int		i;
-	puff_t	*p;
+	int i;
+	puff_t *p;
 
-	for (i=0, p=puffs ; i<MAX_PUFFS ; i++,p++)
+	for(i = 0, p = puffs; i < MAX_PUFFS; i++, p++)
 	{
-		if (p->length > 0)
-			DrawPuff (p);
+		if(p->length > 0)
+			DrawPuff(p);
 	}
 }
 

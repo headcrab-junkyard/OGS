@@ -22,75 +22,74 @@
 
 #include "quakedef.h"
 
-cvar_t bgmvolume = {"bgmvolume", "1", true};
-cvar_t volume = {"volume", "0.7", true};
- 
-void S_Init ()
+cvar_t bgmvolume = { "bgmvolume", "1", true };
+cvar_t volume = { "volume", "0.7", true };
+
+void S_Init()
 {
 }
 
-void S_AmbientOff ()
+void S_AmbientOff()
 {
 }
 
-void S_AmbientOn ()
+void S_AmbientOn()
 {
 }
 
-void S_Shutdown ()
+void S_Shutdown()
 {
 }
 
-void S_TouchSound (const char *sample)
+void S_TouchSound(const char *sample)
 {
 }
 
-void S_ClearBuffer ()
+void S_ClearBuffer()
 {
 }
 
-void S_StaticSound (sfx_t *sfx, vec3_t origin, float vol, float attenuation)
+void S_StaticSound(sfx_t *sfx, vec3_t origin, float vol, float attenuation)
 {
 }
 
-void S_StartSound (int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float fvol,  float attenuation)
+void S_StartSound(int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float fvol, float attenuation)
 {
 }
 
-void S_StopSound (int entnum, int entchannel)
+void S_StopSound(int entnum, int entchannel)
 {
 }
 
-sfx_t *S_PrecacheSound (const char *sample)
+sfx_t *S_PrecacheSound(const char *sample)
 {
 	return NULL;
 }
 
-void S_ClearPrecache ()
+void S_ClearPrecache()
 {
 }
 
-void S_Update (vec3_t origin, vec3_t v_forward, vec3_t v_right, vec3_t v_up)
-{	
-}
-
-void S_StopAllSounds (qboolean clear)
+void S_Update(vec3_t origin, vec3_t v_forward, vec3_t v_right, vec3_t v_up)
 {
 }
 
-void S_BeginPrecaching ()
+void S_StopAllSounds(qboolean clear)
 {
 }
 
-void S_EndPrecaching ()
+void S_BeginPrecaching()
 {
 }
 
-void S_ExtraUpdate ()
+void S_EndPrecaching()
 {
 }
 
-void S_LocalSound (const char *s)
+void S_ExtraUpdate()
 {
 }
 
+void S_LocalSound(const char *s)
+{
+}
