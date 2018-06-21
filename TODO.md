@@ -24,3 +24,5 @@
 - [ ] Text console;
 - [ ] pr_edict.c : GetEntityInit
 - [ ] Command line parser/handler;
+- [ ] pr_edict.c(?): IndexOfEdict
+- [ ] sizebuf_s flags: FSB_ALLOWOVERFLOW
