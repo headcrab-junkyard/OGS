@@ -861,6 +861,7 @@ void Host_Changelevel2_f()
 Host_Name_f
 ======================
 */
+/*
 void Host_Name_f()
 {
 	char *newName;
@@ -898,6 +899,7 @@ void Host_Name_f()
 	MSG_WriteByte(&sv.reliable_datagram, host_client - svs.clients);
 	MSG_WriteString(&sv.reliable_datagram, host_client->name);
 }
+*/
 
 /*
 =======================
@@ -1091,6 +1093,7 @@ void Host_Tell_f()
 Host_Color_f
 ==================
 */
+/*
 void Host_Color_f()
 {
 	int top, bottom;
@@ -1138,6 +1141,7 @@ void Host_Color_f()
 	MSG_WriteByte(&sv.reliable_datagram, host_client->topcolor);
 	MSG_WriteByte(&sv.reliable_datagram, host_client->bottomcolor);
 }
+*/
 
 /*
 ==================
@@ -1159,7 +1163,6 @@ void Host_Kill_f()
 	}
 
 	gGlobalVariables.time = sv.time;
-	//gGlobalVariables.self = EDICT_TO_PROG(sv_player);
 	gEntityInterface.pfnClientKill(sv_player);
 }
 
@@ -1217,129 +1220,6 @@ void Host_PreSpawn_f()
 	SZ_Write(&host_client->netchan.message, sv.signon.data, sv.signon.cursize);
 	MSG_WriteByte(&host_client->netchan.message, svc_signonnum);
 	MSG_WriteByte(&host_client->netchan.message, 2);
-	//host_client->sendsignon = true;
-}
-
-/*
-==================
-Host_Spawn_f
-==================
-*/
-void Host_Spawn_f()
-{
-	int i;
-	client_t *client;
-	edict_t *ent;
-
-	if(cmd_source == src_command)
-	{
-		Con_Printf("spawn is not valid from the console\n");
-		return;
-	}
-
-	if(host_client->spawned)
-	{
-		Con_Printf("Spawn not valid -- allready spawned\n");
-		return;
-	}
-
-	// run the entrance script
-	if(sv.loadgame)
-	{ // loaded games are fully inited allready
-		// if this is the last client to be connected, unpause
-		sv.paused = false;
-	}
-	else
-	{
-		// set up the edict
-		ent = host_client->edict;
-
-		memset(&ent->v, 0, sizeof(ent->v));
-		ent->v.colormap = NUM_FOR_EDICT(ent);
-		ent->v.team = (host_client->topcolor & 15) + 1;
-		ent->v.netname = host_client->name - pr_strings;
-
-		// copy spawn parms out of the client_t
-
-		for(i = 0; i < NUM_SPAWN_PARMS; i++)
-			(&gGlobalVariables.parm1)[i] = host_client->spawn_parms[i];
-
-		// call the spawn function
-
-		gGlobalVariables.time = sv.time;
-		//gGlobalVariables.self = EDICT_TO_PROG(sv_player);
-		gEntityInterface.pfnClientConnect(sv_player, host_client->userinfo);
-
-		//if ((Sys_FloatTime() - host_client->netchan.connecttime) <= sv.time) // TODO
-		Sys_Printf("%s entered the game\n", host_client->name);
-
-		gEntityInterface.pfnClientPutInServer(sv_player);
-	}
-
-	// send all current names, colors, and frag counts
-	SZ_Clear(&host_client->netchan.message);
-
-	// send time of update
-	MSG_WriteByte(&host_client->netchan.message, svc_time);
-	MSG_WriteFloat(&host_client->netchan.message, sv.time);
-
-	for(i = 0, client = svs.clients; i < svs.maxclients; i++, client++)
-	{
-		MSG_WriteByte(&host_client->netchan.message, svc_updatename);
-		MSG_WriteByte(&host_client->netchan.message, i);
-		MSG_WriteString(&host_client->netchan.message, client->name);
-		MSG_WriteByte(&host_client->netchan.message, svc_updatefrags);
-		MSG_WriteByte(&host_client->netchan.message, i);
-		MSG_WriteShort(&host_client->netchan.message, client->old_frags);
-		MSG_WriteByte(&host_client->netchan.message, svc_updatecolors);
-		MSG_WriteByte(&host_client->netchan.message, i);
-		MSG_WriteByte(&host_client->netchan.message, client->topcolor);
-		MSG_WriteByte(&host_client->netchan.message, client->bottomcolor);
-	}
-
-	// send all current light styles
-	for(i = 0; i < MAX_LIGHTSTYLES; i++)
-	{
-		MSG_WriteByte(&host_client->netchan.message, svc_lightstyle);
-		MSG_WriteByte(&host_client->netchan.message, (char)i);
-		MSG_WriteString(&host_client->netchan.message, sv.lightstyles[i]);
-	}
-
-	//
-	// send some stats
-	//
-	MSG_WriteByte(&host_client->netchan.message, svc_updatestat);
-	MSG_WriteByte(&host_client->netchan.message, STAT_TOTALSECRETS);
-	MSG_WriteLong(&host_client->netchan.message, gGlobalVariables.total_secrets);
-
-	MSG_WriteByte(&host_client->netchan.message, svc_updatestat);
-	MSG_WriteByte(&host_client->netchan.message, STAT_TOTALMONSTERS);
-	MSG_WriteLong(&host_client->netchan.message, gGlobalVariables.total_monsters);
-
-	MSG_WriteByte(&host_client->netchan.message, svc_updatestat);
-	MSG_WriteByte(&host_client->netchan.message, STAT_SECRETS);
-	MSG_WriteLong(&host_client->netchan.message, gGlobalVariables.found_secrets);
-
-	MSG_WriteByte(&host_client->netchan.message, svc_updatestat);
-	MSG_WriteByte(&host_client->netchan.message, STAT_MONSTERS);
-	MSG_WriteLong(&host_client->netchan.message, gGlobalVariables.killed_monsters);
-
-	//
-	// send a fixangle
-	// Never send a roll angle, because savegames can catch the server
-	// in a state where it is expecting the client to correct the angle
-	// and it won't happen if the game was just loaded, so you wind up
-	// with a permanent head tilt
-	ent = EDICT_NUM(1 + (host_client - svs.clients));
-	MSG_WriteByte(&host_client->netchan.message, svc_setangle);
-	for(i = 0; i < 2; i++)
-		MSG_WriteAngle(&host_client->netchan.message, ent->v.angles[i]);
-	MSG_WriteAngle(&host_client->netchan.message, 0);
-
-	SV_WriteClientdataToMessage(sv_player, &host_client->netchan.message);
-
-	MSG_WriteByte(&host_client->netchan.message, svc_signonnum);
-	MSG_WriteByte(&host_client->netchan.message, 3);
 	//host_client->sendsignon = true;
 }
 
@@ -1712,6 +1592,55 @@ void Host_Stopdemo_f()
 //=============================================================================
 
 /*
+====================
+SV_SetMaster_f
+
+Make a master server current
+====================
+*/
+void SV_SetMaster_f () // TODO: Master_SetMaster_f
+{
+	// TODO
+/*
+	char	data[2];
+	int		i;
+
+	memset (&master_adr, 0, sizeof(master_adr));
+
+	for (i=1 ; i<Cmd_Argc() ; i++)
+	{
+		if (!strcmp(Cmd_Argv(i), "none") || !NET_StringToAdr (Cmd_Argv(i), &master_adr[i-1]))
+		{
+			Con_Printf ("Setting nomaster mode.\n");
+			return;
+		}
+		if (master_adr[i-1].port == 0)
+			master_adr[i-1].port = BigShort (27000);
+
+		Con_Printf ("Master server at %s\n", NET_AdrToString (master_adr[i-1]));
+
+		Con_Printf ("Sending a ping.\n");
+
+		data[0] = A2A_PING;
+		data[1] = 0;
+		NET_SendPacket (NS_SERVER, 2, data, master_adr[i-1]);
+	}
+
+	svs.last_heartbeat = -99999;
+*/
+}
+
+/*
+==================
+SV_Heartbeat_f
+==================
+*/
+void SV_Heartbeat_f () // TODO: Master_Heartbeat_f
+{
+	//svs.last_heartbeat = -9999; // TODO
+}
+
+/*
 ==================
 Host_InitCommands
 ==================
@@ -1728,6 +1657,7 @@ void Host_InitCommands()
 
 	Cmd_AddCommand("status", Host_Status_f);
 	Cmd_AddCommand("quit", Host_Quit_f);
+	Cmd_AddCommand("exit", Host_Quit_f);
 	Cmd_AddCommand("god", Host_God_f);
 	Cmd_AddCommand("notarget", Host_Notarget_f);
 	Cmd_AddCommand("fly", Host_Fly_f);
@@ -1736,7 +1666,7 @@ void Host_InitCommands()
 	Cmd_AddCommand("changelevel", Host_Changelevel_f);
 	Cmd_AddCommand("changelevel2", Host_Changelevel2_f);
 	Cmd_AddCommand("reconnect", Host_Reconnect_f);
-	Cmd_AddCommand("name", Host_Name_f);
+	//Cmd_AddCommand("name", Host_Name_f); // TODO
 	Cmd_AddCommand("noclip", Host_Noclip_f);
 	Cmd_AddCommand("version", Host_Version_f);
 #ifdef HEADCRABGODS
@@ -1745,10 +1675,9 @@ void Host_InitCommands()
 	Cmd_AddCommand("say", Host_Say_f);
 	Cmd_AddCommand("say_team", Host_Say_Team_f);
 	Cmd_AddCommand("tell", Host_Tell_f);
-	Cmd_AddCommand("color", Host_Color_f);
+	//Cmd_AddCommand("color", Host_Color_f); // TODO
 	Cmd_AddCommand("kill", Host_Kill_f);
 	Cmd_AddCommand("pause", Host_Pause_f);
-	Cmd_AddCommand("spawn", Host_Spawn_f);
 	Cmd_AddCommand("begin", Host_Begin_f);
 	Cmd_AddCommand("prespawn", Host_PreSpawn_f);
 	Cmd_AddCommand("kick", Host_Kick_f);
@@ -1767,4 +1696,7 @@ void Host_InitCommands()
 	Cmd_AddCommand("viewprev", Host_Viewprev_f);
 
 	Cmd_AddCommand("mcache", Mod_Print);
+	
+	Cmd_AddCommand ("setmaster", SV_SetMaster_f);
+	Cmd_AddCommand ("heartbeat", SV_Heartbeat_f);
 }
