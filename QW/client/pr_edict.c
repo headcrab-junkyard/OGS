@@ -58,18 +58,7 @@ void ED_ClearEdict (edict_t *e)
 	e->free = false;
 }
 
-/*
-=================
-ED_Alloc
-
-Either finds a free edict, or allocates a new one.
-Try to avoid reusing an entity that was recently freed, because it
-can cause the client to think the entity morphed into something else
-instead of being removed and recreated, which can cause interpolated
-angles and bad trails.
-=================
-*/
-edict_t *ED_Alloc (void)
+edict_t *ED_Alloc ()
 {
 	int			i;
 	edict_t		*e;
@@ -100,35 +89,6 @@ edict_t *ED_Alloc (void)
 
 	return e;
 }
-
-/*
-=================
-ED_Free
-
-Marks the edict as free
-FIXME: walk all entities and NULL out references to this entity
-=================
-*/
-void ED_Free (edict_t *ed)
-{
-	SV_UnlinkEdict (ed);		// unlink from world bsp
-
-	ed->free = true;
-	ed->v.model = 0;
-	ed->v.takedamage = 0;
-	ed->v.modelindex = 0;
-	ed->v.colormap = 0;
-	ed->v.skin = 0;
-	ed->v.frame = 0;
-	VectorCopy (vec3_origin, ed->v.origin);
-	VectorCopy (vec3_origin, ed->v.angles);
-	ed->v.nextthink = -1;
-	ed->v.solid = 0;
-	
-	ed->freetime = sv.time;
-}
-
-//===========================================================================
 
 /*
 ============
@@ -309,54 +269,8 @@ char *PR_ValueString (etype_t type, eval_t *val)
 	return line;
 }
 
-/*
-============
-PR_UglyValueString
 
-Returns a string describing *data in a type specific manner
-Easier to parse than PR_ValueString
-=============
-*/
-char *PR_UglyValueString (etype_t type, eval_t *val)
-{
-	static char	line[256];
-	ddef_t		*def;
-	dfunction_t	*f;
-	
-	type &= ~DEF_SAVEGLOBAL;
 
-	switch (type)
-	{
-	case ev_string:
-		sprintf (line, "%s", PR_GetString(val->string));
-		break;
-	case ev_entity:	
-		sprintf (line, "%i", NUM_FOR_EDICT(PROG_TO_EDICT(val->edict)));
-		break;
-	case ev_function:
-		f = pr_functions + val->function;
-		sprintf (line, "%s", PR_GetString(f->s_name));
-		break;
-	case ev_field:
-		def = ED_FieldAtOfs ( val->_int );
-		sprintf (line, "%s", PR_GetString(def->s_name));
-		break;
-	case ev_void:
-		sprintf (line, "void");
-		break;
-	case ev_float:
-		sprintf (line, "%f", val->_float);
-		break;
-	case ev_vector:
-		sprintf (line, "%f %f %f", val->vector[0], val->vector[1], val->vector[2]);
-		break;
-	default:
-		sprintf (line, "bad type %i", type);
-		break;
-	}
-	
-	return line;
-}
 
 /*
 ============
@@ -413,13 +327,7 @@ char *PR_GlobalStringNoContents (int ofs)
 }
 
 
-/*
-=============
-ED_Print
 
-For debugging
-=============
-*/
 void ED_Print (edict_t *ed)
 {
 	int		l;
@@ -462,65 +370,15 @@ void ED_Print (edict_t *ed)
 	}
 }
 
-/*
-=============
-ED_Write
 
-For savegames
-=============
-*/
-void ED_Write (FILE *f, edict_t *ed)
-{
-	ddef_t	*d;
-	int		*v;
-	int		i, j;
-	char	*name;
-	int		type;
 
-	fprintf (f, "{\n");
-
-	if (ed->free)
-	{
-		fprintf (f, "}\n");
-		return;
-	}
-	
-	for (i=1 ; i<progs->numfielddefs ; i++)
-	{
-		d = &pr_fielddefs[i];
-		name = PR_GetString(d->s_name);
-		if (name[strlen(name)-2] == '_')
-			continue;	// skip _x, _y, _z vars
-			
-		v = (int *)((char *)&ed->v + d->ofs*4);
-
-	// if the value is still all 0, skip the field
-		type = d->type & ~DEF_SAVEGLOBAL;
-		for (j=0 ; j<type_size[type] ; j++)
-			if (v[j])
-				break;
-		if (j == type_size[type])
-			continue;
-	
-		fprintf (f,"\"%s\" ",name);
-		fprintf (f,"\"%s\"\n", PR_UglyValueString(d->type, (eval_t *)v));		
-	}
-
-	fprintf (f, "}\n");
-}
 
 void ED_PrintNum (int ent)
 {
 	ED_Print (EDICT_NUM(ent));
 }
 
-/*
-=============
-ED_PrintEdicts
 
-For debugging, prints all the entities in the current server
-=============
-*/
 void ED_PrintEdicts ()
 {
 	int		i;
@@ -549,83 +407,11 @@ void ED_PrintEdict_f (void)
 	ED_PrintNum (i);
 }
 
-/*
-=============
-ED_Count
 
-For debugging
-=============
-*/
-void ED_Count ()
-{
-	int		i;
-	edict_t	*ent;
-	int		active, models, solid, step;
 
-	active = models = solid = step = 0;
-	for (i=0 ; i<sv.num_edicts ; i++)
-	{
-		ent = EDICT_NUM(i);
-		if (ent->free)
-			continue;
-		active++;
-		if (ent->v.solid)
-			solid++;
-		if (ent->v.model)
-			models++;
-		if (ent->v.movetype == MOVETYPE_STEP)
-			step++;
-	}
 
-	Con_Printf ("num_edicts:%3i\n", sv.num_edicts);
-	Con_Printf ("active    :%3i\n", active);
-	Con_Printf ("view      :%3i\n", models);
-	Con_Printf ("touch     :%3i\n", solid);
-	Con_Printf ("step      :%3i\n", step);
 
-}
 
-/*
-==============================================================================
-
-					ARCHIVING GLOBALS
-
-FIXME: need to tag constants, doesn't really work
-==============================================================================
-*/
-
-/*
-=============
-ED_WriteGlobals
-=============
-*/
-void ED_WriteGlobals (FILE *f)
-{
-	ddef_t		*def;
-	int			i;
-	char		*name;
-	int			type;
-
-	fprintf (f,"{\n");
-	for (i=0 ; i<progs->numglobaldefs ; i++)
-	{
-		def = &pr_globaldefs[i];
-		type = def->type;
-		if ( !(def->type & DEF_SAVEGLOBAL) )
-			continue;
-		type &= ~DEF_SAVEGLOBAL;
-
-		if (type != ev_string
-		&& type != ev_float
-		&& type != ev_entity)
-			continue;
-
-		name = PR_GetString(def->s_name);
-		fprintf (f,"\"%s\" ", name);
-		fprintf (f,"\"%s\"\n", PR_UglyValueString(type, (eval_t *)&pr_globals[def->ofs]));		
-	}
-	fprintf (f,"}\n");
-}
 
 /*
 =============
@@ -668,39 +454,6 @@ void ED_ParseGlobals (char *data)
 	}
 }
 
-//============================================================================
-
-
-/*
-=============
-ED_NewString
-=============
-*/
-char *ED_NewString (char *string)
-{
-	char	*new, *new_p;
-	int		i,l;
-	
-	l = strlen(string) + 1;
-	new = Hunk_Alloc (l);
-	new_p = new;
-
-	for (i=0 ; i< l ; i++)
-	{
-		if (string[i] == '\\' && i < l-1)
-		{
-			i++;
-			if (string[i] == 'n')
-				*new_p++ = '\n';
-			else
-				*new_p++ = '\\';
-		}
-		else
-			*new_p++ = string[i];
-	}
-	
-	return new;
-}
 
 
 /*
@@ -863,22 +616,6 @@ sprintf (com_token, "0 %s 0", temp);
 	return data;
 }
 
-
-/*
-================
-ED_LoadFromFile
-
-The entities are directly placed in the array, rather than allocated with
-ED_Alloc, because otherwise an error loading the map would have entity
-number references out of order.
-
-Creates a server's entity / program execution context by
-parsing textual entity definitions out of an ent file.
-
-Used for both fresh maps and savegame loads.  A fresh map would also need
-to call ED_CallSpawnFunctions () to let the objects initialize themselves.
-================
-*/
 void ED_LoadFromFile (char *data)
 {	
 	edict_t		*ent;

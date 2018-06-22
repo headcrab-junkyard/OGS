@@ -46,75 +46,7 @@ host_client and sv_player will be valid.
 ============================================================
 */
 
-/*
-================
-SV_New_f
 
-Sends the first message from the server to a connected client.
-This will be sent on the initial connection and upon each server load.
-================
-*/
-void SV_New_f ()
-{
-	char		*gamedir;
-	int			playernum;
-
-	if (host_client->state == cs_spawned)
-		return;
-
-	host_client->state = cs_connected;
-	host_client->connection_started = realtime;
-
-	// send the info about the new client to all connected clients
-//	SV_FullClientUpdate (host_client, &sv.reliable_datagram);
-//	host_client->sendinfo = true;
-
-	gamedir = Info_ValueForKey (svs.info, "*gamedir");
-	if (!gamedir[0])
-		gamedir = "qw";
-
-//NOTE:  This doesn't go through ClientReliableWrite since it's before the user
-//spawns.  These functions are written to not overflow
-	if (host_client->num_backbuf) {
-		Con_Printf("WARNING %s: [SV_New] Back buffered (%d0, clearing", host_client->name, host_client->netchan.message.cursize); 
-		host_client->num_backbuf = 0;
-		SZ_Clear(&host_client->netchan.message);
-	}
-
-	// send the serverdata
-	MSG_WriteByte (&host_client->netchan.message, svc_serverdata);
-	MSG_WriteLong (&host_client->netchan.message, PROTOCOL_VERSION);
-	MSG_WriteLong (&host_client->netchan.message, svs.spawncount);
-	MSG_WriteString (&host_client->netchan.message, gamedir);
-
-	playernum = NUM_FOR_EDICT(host_client->edict)-1;
-	if (host_client->spectator)
-		playernum |= 128;
-	MSG_WriteByte (&host_client->netchan.message, playernum);
-
-	// send full levelname
-	MSG_WriteString (&host_client->netchan.message, PR_GetString(sv.edicts->v.message));
-
-	// send the movevars
-	MSG_WriteFloat(&host_client->netchan.message, movevars.gravity);
-	MSG_WriteFloat(&host_client->netchan.message, movevars.stopspeed);
-	MSG_WriteFloat(&host_client->netchan.message, movevars.maxspeed);
-	MSG_WriteFloat(&host_client->netchan.message, movevars.spectatormaxspeed);
-	MSG_WriteFloat(&host_client->netchan.message, movevars.accelerate);
-	MSG_WriteFloat(&host_client->netchan.message, movevars.airaccelerate);
-	MSG_WriteFloat(&host_client->netchan.message, movevars.wateraccelerate);
-	MSG_WriteFloat(&host_client->netchan.message, movevars.friction);
-	MSG_WriteFloat(&host_client->netchan.message, movevars.waterfriction);
-	MSG_WriteFloat(&host_client->netchan.message, movevars.entgravity);
-
-	// send music
-	MSG_WriteByte (&host_client->netchan.message, svc_cdtrack);
-	MSG_WriteByte (&host_client->netchan.message, sv.edicts->v.sounds);
-
-	// send server info string
-	MSG_WriteByte (&host_client->netchan.message, svc_stufftext);
-	MSG_WriteString (&host_client->netchan.message, va("fullserverinfo \"%s\"\n", svs.info) );
-}
 
 /*
 ==================
@@ -287,16 +219,8 @@ void SV_PreSpawn_f ()
 	}
 }
 
-/*
-==================
-SV_Spawn_f
-==================
-*/
 void SV_Spawn_f ()
 {
-	int		i;
-	client_t	*client;
-	edict_t	*ent;
 	eval_t *val;
 	int n;
 
@@ -306,13 +230,7 @@ void SV_Spawn_f ()
 		return;
 	}
 
-// handle the case of a level changing while a client was connecting
-	if ( atoi(Cmd_Argv(1)) != svs.spawncount )
-	{
-		Con_Printf ("SV_Spawn_f from different level\n");
-		SV_New_f ();
-		return;
-	}
+
 
 	n = atoi(Cmd_Argv(2));
 
@@ -427,49 +345,18 @@ void SV_Begin_f ()
 	unsigned pmodel = 0, emodel = 0;
 	int		i;
 
-	if (host_client->state == cs_spawned)
+	if (host_client->spawned)
 		return; // don't begin again
 
-	host_client->state = cs_spawned;
-	
-	// handle the case of a level changing while a client was connecting
-	if ( atoi(Cmd_Argv(1)) != svs.spawncount )
-	{
-		Con_Printf ("SV_Begin_f from different level\n");
-		SV_New_f ();
-		return;
-	}
+	host_client->spawned = true;
 
 	if (host_client->spectator)
 	{
-		SV_SpawnSpectator ();
-
-		if (SpectatorConnect) {
-			// copy spawn parms out of the client_t
-			for (i=0 ; i< NUM_SPAWN_PARMS ; i++)
-				(&pr_global_struct->parm1)[i] = host_client->spawn_parms[i];
-	
-			// call the spawn function
-			pr_global_struct->time = sv.time;
-			pr_global_struct->self = EDICT_TO_PROG(sv_player);
-			PR_ExecuteProgram (SpectatorConnect);
-		}
+		
 	}
 	else
 	{
-		// copy spawn parms out of the client_t
-		for (i=0 ; i< NUM_SPAWN_PARMS ; i++)
-			(&pr_global_struct->parm1)[i] = host_client->spawn_parms[i];
-
-		// call the spawn function
-		pr_global_struct->time = sv.time;
-		pr_global_struct->self = EDICT_TO_PROG(sv_player);
-		PR_ExecuteProgram (pr_global_struct->ClientConnect);
-
-		// actually spawn the player
-		pr_global_struct->time = sv.time;
-		pr_global_struct->self = EDICT_TO_PROG(sv_player);
-		PR_ExecuteProgram (pr_global_struct->PutClientInServer);	
+		// client connection code
 	}
 
 	// clear the net statistics, because connecting gives a bogus picture
@@ -1105,7 +992,6 @@ ucmd_t ucmds[] =
 	{"soundlist", SV_Soundlist_f},
 	{"prespawn", SV_PreSpawn_f},
 	{"spawn", SV_Spawn_f},
-	{"begin", SV_Begin_f},
 
 	{"drop", SV_Drop_f},
 	{"pings", SV_Pings_f},
@@ -1147,6 +1033,7 @@ void SV_ExecuteUserCommand (char *s)
 
 	SV_BeginRedirect (RD_CLIENT);
 
+	// TODO: Cmd_ExecuteString here instead of this
 	for (u=ucmds ; u->name ; u++)
 		if (!strcmp (Cmd_Argv(0), u->name) )
 		{

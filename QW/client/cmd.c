@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 
-void Cmd_ForwardToServer (void);
+void Cmd_ForwardToServer ();
 
 #define	MAX_ALIAS_NAME	32
 
@@ -49,7 +49,7 @@ next frame.  This allows commands like:
 bind g "impulse 5 ; +attack ; wait ; -attack ; impulse 2"
 ============
 */
-void Cmd_Wait_f (void)
+void Cmd_Wait_f ()
 {
 	cmd_wait = true;
 }
@@ -65,24 +65,12 @@ void Cmd_Wait_f (void)
 sizebuf_t	cmd_text;
 byte		cmd_text_buf[8192];
 
-/*
-============
-Cbuf_Init
-============
-*/
-void Cbuf_Init (void)
+void Cbuf_Init ()
 {
 	cmd_text.data = cmd_text_buf;
 	cmd_text.maxsize = sizeof(cmd_text_buf);
 }
 
-/*
-============
-Cbuf_AddText
-
-Adds command text at the end of the buffer
-============
-*/
 void Cbuf_AddText (char *text)
 {
 	int		l;
@@ -98,16 +86,6 @@ void Cbuf_AddText (char *text)
 	SZ_Write (&cmd_text, text, Q_strlen (text));
 }
 
-
-/*
-============
-Cbuf_InsertText
-
-Adds command text immediately after the current command
-Adds a \n to the text
-FIXME: actually change the command buffer to do less copying
-============
-*/
 void Cbuf_InsertText (char *text)
 {
 	char	*temp;
@@ -136,63 +114,6 @@ void Cbuf_InsertText (char *text)
 }
 
 /*
-============
-Cbuf_Execute
-============
-*/
-void Cbuf_Execute (void)
-{
-	int		i;
-	char	*text;
-	char	line[1024];
-	int		quotes;
-	
-	while (cmd_text.cursize)
-	{
-// find a \n or ; line break
-		text = (char *)cmd_text.data;
-
-		quotes = 0;
-		for (i=0 ; i< cmd_text.cursize ; i++)
-		{
-			if (text[i] == '"')
-				quotes++;
-			if ( !(quotes&1) &&  text[i] == ';')
-				break;	// don't break if inside a quoted string
-			if (text[i] == '\n')
-				break;
-		}
-			
-				
-		memcpy (line, text, i);
-		line[i] = 0;
-		
-// delete the text from the command buffer and move remaining commands down
-// this is necessary because commands (exec, alias) can insert data at the
-// beginning of the text buffer
-
-		if (i == cmd_text.cursize)
-			cmd_text.cursize = 0;
-		else
-		{
-			i++;
-			cmd_text.cursize -= i;
-			Q_memcpy (text, text+i, cmd_text.cursize);
-		}
-
-// execute the command line
-		Cmd_ExecuteString (line, src_command);
-		
-		if (cmd_wait)
-		{	// skip out while text still remains in buffer, leaving it
-			// for next frame
-			cmd_wait = false;
-			break;
-		}
-	}
-}
-
-/*
 ==============================================================================
 
 						SCRIPT COMMANDS
@@ -200,17 +121,7 @@ void Cbuf_Execute (void)
 ==============================================================================
 */
 
-/*
-===============
-Cmd_StuffCmds_f
-
-Adds command line parameters as script statements
-Commands lead with a +, and continue until a - or another +
-quake +prog jctest.qp +cmd amlev1
-quake -nosound +cmd amlev1
-===============
-*/
-void Cmd_StuffCmds_f (void)
+void Cmd_StuffCmds_f ()
 {
 	int		i, j;
 	int		s;
@@ -268,13 +179,7 @@ void Cmd_StuffCmds_f (void)
 	Z_Free (build);
 }
 
-
-/*
-===============
-Cmd_Exec_f
-===============
-*/
-void Cmd_Exec_f (void)
+void Cmd_Exec_f ()
 {
 	char	*f;
 	int		mark;
@@ -300,23 +205,6 @@ void Cmd_Exec_f (void)
 	Hunk_FreeToLowMark (mark);
 }
 
-
-/*
-===============
-Cmd_Echo_f
-
-Just prints the rest of the line to the console
-===============
-*/
-void Cmd_Echo_f (void)
-{
-	int		i;
-	
-	for (i=1 ; i<Cmd_Argc() ; i++)
-		Con_Printf ("%s ",Cmd_Argv(i));
-	Con_Printf ("\n");
-}
-
 /*
 ===============
 Cmd_Alias_f
@@ -325,16 +213,8 @@ Creates a new command that executes a command string (possibly ; seperated)
 ===============
 */
 
-char *CopyString (char *in)
-{
-	char	*out;
-	
-	out = Z_Malloc (strlen(in)+1);
-	strcpy (out, in);
-	return out;
-}
 
-void Cmd_Alias_f (void)
+void Cmd_Alias_f ()
 {
 	cmdalias_t	*a;
 	char		cmd[1024];
@@ -388,48 +268,12 @@ void Cmd_Alias_f (void)
 	a->value = CopyString (cmd);
 }
 
-/*
-=============================================================================
-
-					COMMAND EXECUTION
-
-=============================================================================
-*/
-
-typedef struct cmd_function_s
-{
-	struct cmd_function_s	*next;
-	char					*name;
-	xcommand_t				function;
-} cmd_function_t;
-
-
 #define	MAX_ARGS		80
-
-static	int			cmd_argc;
-static	char		*cmd_argv[MAX_ARGS];
-static	char		*cmd_null_string = "";
-static	char		*cmd_args = NULL;
 
 
 
 static	cmd_function_t	*cmd_functions;		// possible commands to execute
 
-/*
-============
-Cmd_Argc
-============
-*/
-int		Cmd_Argc (void)
-{
-	return cmd_argc;
-}
-
-/*
-============
-Cmd_Argv
-============
-*/
 char	*Cmd_Argv (int arg)
 {
 	if ( arg >= cmd_argc )
@@ -451,14 +295,6 @@ char		*Cmd_Args (void)
 	return cmd_args;
 }
 
-
-/*
-============
-Cmd_TokenizeString
-
-Parses the given string into command line tokens.
-============
-*/
 void Cmd_TokenizeString (char *text)
 {
 	int		i;
@@ -501,15 +337,8 @@ void Cmd_TokenizeString (char *text)
 			cmd_argc++;
 		}
 	}
-	
 }
 
-
-/*
-============
-Cmd_AddCommand
-============
-*/
 void	Cmd_AddCommand (char *cmd_name, xcommand_t function)
 {
 	cmd_function_t	*cmd;
@@ -541,31 +370,8 @@ void	Cmd_AddCommand (char *cmd_name, xcommand_t function)
 	cmd_functions = cmd;
 }
 
-/*
-============
-Cmd_Exists
-============
-*/
-qboolean	Cmd_Exists (char *cmd_name)
-{
-	cmd_function_t	*cmd;
-
-	for (cmd=cmd_functions ; cmd ; cmd=cmd->next)
-	{
-		if (!Q_strcmp (cmd_name,cmd->name))
-			return true;
-	}
-
-	return false;
-}
 
 
-
-/*
-============
-Cmd_CompleteCommand
-============
-*/
 char *Cmd_CompleteCommand (char *partial)
 {
 	cmd_function_t	*cmd;
@@ -655,15 +461,8 @@ void Cmd_ForwardToServer (void)
 }
 #endif
 
-/*
-============
-Cmd_ExecuteString
 
-A complete command line has been parsed, so try to execute it
-FIXME: lookupnoadd the token to speed search?
-============
-*/
-void	Cmd_ExecuteString (char *text)
+void	Cmd_ExecuteString (const char *text)
 {	
 	cmd_function_t	*cmd;
 	cmdalias_t		*a;
@@ -705,27 +504,6 @@ void	Cmd_ExecuteString (char *text)
 
 
 
-/*
-================
-Cmd_CheckParm
-
-Returns the position (1 to argc-1) in the command's argument list
-where the given parameter apears, or 0 if not present
-================
-*/
-int Cmd_CheckParm (char *parm)
-{
-	int i;
-	
-	if (!parm)
-		Sys_Error ("Cmd_CheckParm: NULL");
-
-	for (i = 1; i < Cmd_Argc (); i++)
-		if (! Q_strcasecmp (parm, Cmd_Argv (i)))
-			return i;
-			
-	return 0;
-}
 
 /*
 ============

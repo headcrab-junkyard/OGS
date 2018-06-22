@@ -259,110 +259,6 @@ void SV_FullClientUpdateToClient (client_t *client, client_t *cl)
 		SV_FullClientUpdate (client, &cl->netchan.message);
 }
 
-/*
-=================
-SV_AddIP_f
-=================
-*/
-void SV_AddIP_f ()
-{
-	int		i;
-	
-	for (i=0 ; i<numipfilters ; i++)
-		if (ipfilters[i].compare == 0xffffffff)
-			break;		// free spot
-	if (i == numipfilters)
-	{
-		if (numipfilters == MAX_IPFILTERS)
-		{
-			Con_Printf ("IP filter list is full\n");
-			return;
-		}
-		numipfilters++;
-	}
-	
-	if (!StringToFilter (Cmd_Argv(1), &ipfilters[i]))
-		ipfilters[i].compare = 0xffffffff;
-}
-
-/*
-=================
-SV_RemoveIP_f
-=================
-*/
-void SV_RemoveIP_f ()
-{
-	ipfilter_t	f;
-	int			i, j;
-
-	if (!StringToFilter (Cmd_Argv(1), &f))
-		return;
-	for (i=0 ; i<numipfilters ; i++)
-		if (ipfilters[i].mask == f.mask
-		&& ipfilters[i].compare == f.compare)
-		{
-			for (j=i+1 ; j<numipfilters ; j++)
-				ipfilters[j-1] = ipfilters[j];
-			numipfilters--;
-			Con_Printf ("Removed.\n");
-			return;
-		}
-	Con_Printf ("Didn't find %s.\n", Cmd_Argv(1));
-}
-
-/*
-=================
-SV_ListIP_f
-=================
-*/
-void SV_ListIP_f ()
-{
-	int		i;
-	byte	b[4];
-
-	Con_Printf ("Filter list:\n");
-	for (i=0 ; i<numipfilters ; i++)
-	{
-		*(unsigned *)b = ipfilters[i].compare;
-		Con_Printf ("%3i.%3i.%3i.%3i\n", b[0], b[1], b[2], b[3]);
-	}
-}
-
-/*
-=================
-SV_WriteIP_f
-=================
-*/
-void SV_WriteIP_f ()
-{
-	FILE	*f;
-	char	name[MAX_OSPATH];
-	byte	b[4];
-	int		i;
-
-	sprintf (name, "%s/listip.cfg", com_gamedir);
-
-	Con_Printf ("Writing %s.\n", name);
-
-	f = fopen (name, "wb");
-	if (!f)
-	{
-		Con_Printf ("Couldn't open %s\n", name);
-		return;
-	}
-	
-	for (i=0 ; i<numipfilters ; i++)
-	{
-		*(unsigned *)b = ipfilters[i].compare;
-		fprintf (f, "addip %i.%i.%i.%i\n", b[0], b[1], b[2], b[3]);
-	}
-	
-	fclose (f);
-}
-
-
-
-
 
 //============================================================================
 
@@ -468,11 +364,6 @@ void SV_InitLocal ()
 	Cvar_RegisterVariable (&allow_download_maps);
 
 	Cvar_RegisterVariable (&pausable);
-
-	Cmd_AddCommand ("addip", SV_AddIP_f);
-	Cmd_AddCommand ("removeip", SV_RemoveIP_f);
-	Cmd_AddCommand ("listip", SV_ListIP_f);
-	Cmd_AddCommand ("writeip", SV_WriteIP_f);
 
 	for (i=0 ; i<MAX_MODELS ; i++)
 		sprintf (localmodels[i], "*%i", i);

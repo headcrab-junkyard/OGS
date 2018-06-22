@@ -19,26 +19,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // sv_phys.c
 
-#include "qwsvdef.h"
-
-/*
-
-
-pushmove objects do not obey gravity, and do not interact with each other or trigger fields, but block normal movement and push normal objects when they move.
-
-onground is set for toss objects when they come to a complete rest.  it is set for steping or walking objects 
-
-doors, plats, etc are SOLID_BSP, and MOVETYPE_PUSH
-bonus items are SOLID_TRIGGER touch, and MOVETYPE_TOSS
-corpses are SOLID_NOT and MOVETYPE_TOSS
-crates are SOLID_BBOX and MOVETYPE_TOSS
-walking monsters are SOLID_SLIDEBOX and MOVETYPE_STEP
-flying/floating monsters are SOLID_SLIDEBOX and MOVETYPE_FLY
-
-solid_edge items only clip against bsp models.
-
-*/
-
 cvar_t	sv_maxvelocity = {"sv_maxvelocity","2000"}; 
 
 cvar_t	sv_gravity			 = { "sv_gravity", "800"};    
@@ -61,7 +41,7 @@ void SV_Physics_Toss (edict_t *ent);
 SV_CheckAllEnts
 ================
 */
-void SV_CheckAllEnts (void)
+void SV_CheckAllEnts ()
 {
 	int			e;
 	edict_t		*check;
@@ -72,8 +52,7 @@ void SV_CheckAllEnts (void)
 	{
 		if (check->free)
 			continue;
-		if (check->v.movetype == MOVETYPE_PUSH
-		|| check->v.movetype == MOVETYPE_NONE
+		if (check->v.movetype == MOVETYPE_PUSH || check->v.movetype == MOVETYPE_NONE
 		|| check->v.movetype == MOVETYPE_NOCLIP)
 			continue;
 
@@ -82,11 +61,6 @@ void SV_CheckAllEnts (void)
 	}
 }
 
-/*
-================
-SV_CheckVelocity
-================
-*/
 void SV_CheckVelocity (edict_t *ent)
 {
 	int		i;
@@ -113,16 +87,6 @@ void SV_CheckVelocity (edict_t *ent)
 	}
 }
 
-/*
-=============
-SV_RunThink
-
-Runs thinking code if time.  There is some play in the exact time the think
-function will be called, because it is called before any movement is done
-in a frame.  Not used for pushmove objects, because they must be exact.
-Returns false if the entity removed itself.
-=============
-*/
 qboolean SV_RunThink (edict_t *ent)
 {
 	float	thinktime;
@@ -141,8 +105,6 @@ qboolean SV_RunThink (edict_t *ent)
 									// by a trigger with a local time.
 		ent->v.nextthink = 0;
 		pr_global_struct->time = thinktime;
-		pr_global_struct->self = EDICT_TO_PROG(ent);
-		pr_global_struct->other = EDICT_TO_PROG(sv.edicts);
 		PR_ExecuteProgram (ent->v.think);
 
 		if (ent->free)
@@ -152,19 +114,8 @@ qboolean SV_RunThink (edict_t *ent)
 	return true;
 }
 
-/*
-==================
-SV_Impact
-
-Two entities have touched, so run their touch functions
-==================
-*/
 void SV_Impact (edict_t *e1, edict_t *e2)
 {
-	int		old_self, old_other;
-	
-	old_self = pr_global_struct->self;
-	old_other = pr_global_struct->other;
 	
 	pr_global_struct->time = sv.time;
 	if (e1->v.touch && e1->v.solid != SOLID_NOT)
@@ -180,61 +131,10 @@ void SV_Impact (edict_t *e1, edict_t *e2)
 		pr_global_struct->other = EDICT_TO_PROG(e1);
 		PR_ExecuteProgram (e2->v.touch);
 	}
-
-	pr_global_struct->self = old_self;
-	pr_global_struct->other = old_other;
 }
 
 
-/*
-==================
-ClipVelocity
 
-Slide off of the impacting object
-returns the blocked flags (1 = floor, 2 = step / wall)
-==================
-*/
-#define	STOP_EPSILON	0.1
-
-int ClipVelocity (vec3_t in, vec3_t normal, vec3_t out, float overbounce)
-{
-	float	backoff;
-	float	change;
-	int		i, blocked;
-	
-	blocked = 0;
-	if (normal[2] > 0)
-		blocked |= 1;		// floor
-	if (!normal[2])
-		blocked |= 2;		// step
-	
-	backoff = DotProduct (in, normal) * overbounce;
-
-	for (i=0 ; i<3 ; i++)
-	{
-		change = normal[i]*backoff;
-		out[i] = in[i] - change;
-		if (out[i] > -STOP_EPSILON && out[i] < STOP_EPSILON)
-			out[i] = 0;
-	}
-	
-	return blocked;
-}
-
-
-/*
-============
-SV_FlyMove
-
-The basic solid body movement clip that slides along multiple planes
-Returns the clipflags if the velocity was modified (hit something solid)
-1 = floor
-2 = wall / step
-4 = dead stop
-If steptrace is not NULL, the trace of any vertical wall hit will be stored
-============
-*/
-#define	MAX_CLIP_PLANES	5
 int SV_FlyMove (edict_t *ent, float time, trace_t *steptrace)
 {
 	int			bumpcount, numbumps;
@@ -282,7 +182,7 @@ int SV_FlyMove (edict_t *ent, float time, trace_t *steptrace)
 			 break;		// moved the entire distance
 
 		if (!trace.ent)
-			SV_Error ("SV_FlyMove: !trace.ent");
+			Sys_Error ("SV_FlyMove: !trace.ent");
 
 		if (trace.plane.normal[2] > 0.7)
 		{
@@ -307,7 +207,6 @@ int SV_FlyMove (edict_t *ent, float time, trace_t *steptrace)
 		if (ent->free)
 			break;		// removed by the impact function
 
-		
 		time_left -= time_left * trace.fraction;
 		
 	// cliped to another plane
@@ -367,57 +266,12 @@ int SV_FlyMove (edict_t *ent, float time, trace_t *steptrace)
 	return blocked;
 }
 
-
-/*
-============
-SV_AddGravity
-
-============
-*/
 void SV_AddGravity (edict_t *ent, float scale)
 {
 	ent->v.velocity[2] -= scale * movevars.gravity * host_frametime;
 }
 
-/*
-===============================================================================
-
-PUSHMOVE
-
-===============================================================================
-*/
-
-/*
-============
-SV_PushEntity
-
-Does not change the entities velocity at all
-============
-*/
-trace_t SV_PushEntity (edict_t *ent, vec3_t push)
-{
-	trace_t	trace;
-	vec3_t	end;
-		
-	VectorAdd (ent->v.origin, push, end);
-
-	if (ent->v.movetype == MOVETYPE_FLYMISSILE)
-		trace = SV_Move (ent->v.origin, ent->v.mins, ent->v.maxs, end, MOVE_MISSILE, ent);
-	else if (ent->v.solid == SOLID_TRIGGER || ent->v.solid == SOLID_NOT)
-	// only clip against bmodels
-		trace = SV_Move (ent->v.origin, ent->v.mins, ent->v.maxs, end, MOVE_NOMONSTERS, ent);
-	else
-		trace = SV_Move (ent->v.origin, ent->v.mins, ent->v.maxs, end, MOVE_NORMAL, ent);
-	
-	VectorCopy (trace.endpos, ent->v.origin);
-	SV_LinkEdict (ent, true);
-
-	if (trace.ent)
-		SV_Impact (ent, trace.ent);		
-
-	return trace;
-}					
-
+					
 
 /*
 ============
@@ -604,8 +458,6 @@ float	l;
 VectorCopy (ent->v.origin, oldorg);
 		ent->v.nextthink = 0;
 		pr_global_struct->time = sv.time;
-		pr_global_struct->self = EDICT_TO_PROG(ent);
-		pr_global_struct->other = EDICT_TO_PROG(sv.edicts);
 		PR_ExecuteProgram (ent->v.think);
 		if (ent->free)
 			return;
@@ -688,13 +540,6 @@ void SV_CheckWaterTransition (edict_t *ent)
 	}
 }
 
-/*
-=============
-SV_Physics_Toss
-
-Toss, bounce, and fly movement.  When onground, do nothing.
-=============
-*/
 void SV_Physics_Toss (edict_t *ent)
 {
 	trace_t	trace;
@@ -753,13 +598,6 @@ void SV_Physics_Toss (edict_t *ent)
 	SV_CheckWaterTransition (ent);
 }
 
-/*
-===============================================================================
-
-STEPPING MOVEMENT
-
-===============================================================================
-*/
 
 /*
 =============

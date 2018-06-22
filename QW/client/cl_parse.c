@@ -928,48 +928,7 @@ void CL_NewTranslation (int slot)
 #endif
 }
 
-/*
-==============
-CL_UpdateUserinfo
-==============
-*/
-void CL_ProcessUserInfo (int slot, player_info_t *player)
-{
-	strncpy (player->name, Info_ValueForKey (player->userinfo, "name"), sizeof(player->name)-1);
-	player->topcolor = atoi(Info_ValueForKey (player->userinfo, "topcolor"));
-	player->bottomcolor = atoi(Info_ValueForKey (player->userinfo, "bottomcolor"));
-	if (Info_ValueForKey (player->userinfo, "*spectator")[0])
-		player->spectator = true;
-	else
-		player->spectator = false;
 
-	if (cls.state == ca_active)
-		Skin_Find (player);
-
-	Sbar_Changed ();
-	CL_NewTranslation (slot);
-}
-
-/*
-==============
-CL_UpdateUserinfo
-==============
-*/
-void CL_UpdateUserinfo ()
-{
-	int		slot;
-	player_info_t	*player;
-
-	slot = MSG_ReadByte ();
-	if (slot >= MAX_CLIENTS)
-		Host_EndGame ("CL_ParseServerMessage: svc_updateuserinfo > MAX_SCOREBOARD");
-
-	player = &cl.players[slot];
-	player->userid = MSG_ReadLong ();
-	strncpy (player->userinfo, MSG_ReadString(), sizeof(player->userinfo)-1);
-
-	CL_ProcessUserInfo (slot, player);
-}
 
 /*
 ==============
@@ -1140,13 +1099,6 @@ void CL_ParseServerMessage ()
 	// other commands
 		switch (cmd)
 		{
-		default:
-			Host_EndGame ("CL_ParseServerMessage: Illegible server message");
-			break;
-			
-		case svc_nop:
-//			Con_Printf ("svc_nop\n");
-			break;
 			
 		case svc_disconnect:
 			if (cls.state == ca_connected)
@@ -1167,18 +1119,10 @@ void CL_ParseServerMessage ()
 			con_ormask = 0;
 			break;
 			
-		case svc_centerprint:
-			SCR_CenterPrint (MSG_ReadString ());
-			break;
-			
 		case svc_stufftext:
 			s = MSG_ReadString ();
 			Con_DPrintf ("stufftext: %s\n", s);
 			Cbuf_AddText (s);
-			break;
-			
-		case svc_damage:
-			V_ParseDamage ();
 			break;
 			
 		case svc_serverdata:
@@ -1203,11 +1147,6 @@ void CL_ParseServerMessage ()
 			
 		case svc_sound:
 			CL_ParseStartSoundPacket();
-			break;
-			
-		case svc_stopsound:
-			i = MSG_ReadShort();
-			S_StopSound(i>>3, i&7);
 			break;
 		
 		case svc_updatefrags:
@@ -1243,20 +1182,6 @@ void CL_ParseServerMessage ()
 		case svc_spawnbaseline:
 			i = MSG_ReadShort ();
 			CL_ParseBaseline (&cl_baselines[i]);
-			break;
-		case svc_spawnstatic:
-			CL_ParseStatic ();
-			break;			
-		case svc_temp_entity:
-			CL_ParseTEnt ();
-			break;
-
-		case svc_killedmonster:
-			cl.stats[STAT_MONSTERS]++;
-			break;
-
-		case svc_foundsecret:
-			cl.stats[STAT_SECRETS]++;
 			break;
 
 		case svc_updatestat:
@@ -1296,24 +1221,9 @@ void CL_ParseServerMessage ()
 			vid.recalc_refdef = true;	// go to full screen
 			SCR_CenterPrint (MSG_ReadString ());			
 			break;
-			
-		case svc_sellscreen:
-			Cmd_ExecuteString ("help");
-			break;
-
-		case svc_smallkick:
-			cl.punchangle = -2;
-			break;
-		case svc_bigkick:
-			cl.punchangle = -4;
-			break;
 
 		case svc_muzzleflash:
 			CL_MuzzleFlash ();
-			break;
-
-		case svc_updateuserinfo:
-			CL_UpdateUserinfo ();
 			break;
 
 		case svc_setinfo:
@@ -1348,14 +1258,6 @@ void CL_ParseServerMessage ()
 
 		case svc_soundlist:
 			CL_ParseSoundlist ();
-			break;
-
-		case svc_packetentities:
-			CL_ParsePacketEntities (false);
-			break;
-
-		case svc_deltapacketentities:
-			CL_ParsePacketEntities (true);
 			break;
 
 		case svc_maxspeed :

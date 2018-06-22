@@ -37,41 +37,7 @@ These commands can only be entered from stdin or by a remote operator datagram
 ===============================================================================
 */
 
-/*
-====================
-SV_SetMaster_f
 
-Make a master server current
-====================
-*/
-void SV_SetMaster_f ()
-{
-	char	data[2];
-	int		i;
-
-	memset (&master_adr, 0, sizeof(master_adr));
-
-	for (i=1 ; i<Cmd_Argc() ; i++)
-	{
-		if (!strcmp(Cmd_Argv(i), "none") || !NET_StringToAdr (Cmd_Argv(i), &master_adr[i-1]))
-		{
-			Con_Printf ("Setting nomaster mode.\n");
-			return;
-		}
-		if (master_adr[i-1].port == 0)
-			master_adr[i-1].port = BigShort (27000);
-
-		Con_Printf ("Master server at %s\n", NET_AdrToString (master_adr[i-1]));
-
-		Con_Printf ("Sending a ping.\n");
-
-		data[0] = A2A_PING;
-		data[1] = 0;
-		NET_SendPacket (2, data, master_adr[i-1]);
-	}
-
-	svs.last_heartbeat = -99999;
-}
 
 
 /*
@@ -506,15 +472,7 @@ void SV_ConSay_f()
 }
 
 
-/*
-==================
-SV_Heartbeat_f
-==================
-*/
-void SV_Heartbeat_f ()
-{
-	svs.last_heartbeat = -9999;
-}
+
 
 void SV_SendServerInfoChange(char *key, char *value)
 {
@@ -524,104 +482,6 @@ void SV_SendServerInfoChange(char *key, char *value)
 	MSG_WriteByte (&sv.reliable_datagram, svc_serverinfo);
 	MSG_WriteString (&sv.reliable_datagram, key);
 	MSG_WriteString (&sv.reliable_datagram, value);
-}
-
-/*
-===========
-SV_Serverinfo_f
-
-  Examine or change the serverinfo string
-===========
-*/
-char *CopyString(char *s);
-void SV_Serverinfo_f ()
-{
-	cvar_t	*var;
-
-	if (Cmd_Argc() == 1)
-	{
-		Con_Printf ("Server info settings:\n");
-		Info_Print (svs.info);
-		return;
-	}
-
-	if (Cmd_Argc() != 3)
-	{
-		Con_Printf ("usage: serverinfo [ <key> <value> ]\n");
-		return;
-	}
-
-	if (Cmd_Argv(1)[0] == '*')
-	{
-		Con_Printf ("Star variables cannot be changed.\n");
-		return;
-	}
-	Info_SetValueForKey (svs.info, Cmd_Argv(1), Cmd_Argv(2), MAX_SERVERINFO_STRING);
-
-	// if this is a cvar, change it too	
-	var = Cvar_FindVar (Cmd_Argv(1));
-	if (var)
-	{
-		Z_Free (var->string);	// free the old value string	
-		var->string = CopyString (Cmd_Argv(2));
-		var->value = Q_atof (var->string);
-	}
-
-	SV_SendServerInfoChange(Cmd_Argv(1), Cmd_Argv(2));
-}
-
-
-/*
-===========
-SV_Serverinfo_f
-
-  Examine or change the serverinfo string
-===========
-*/
-char *CopyString(char *s);
-void SV_Localinfo_f ()
-{
-	if (Cmd_Argc() == 1)
-	{
-		Con_Printf ("Local info settings:\n");
-		Info_Print (localinfo);
-		return;
-	}
-
-	if (Cmd_Argc() != 3)
-	{
-		Con_Printf ("usage: localinfo [ <key> <value> ]\n");
-		return;
-	}
-
-	if (Cmd_Argv(1)[0] == '*')
-	{
-		Con_Printf ("Star variables cannot be changed.\n");
-		return;
-	}
-	Info_SetValueForKey (localinfo, Cmd_Argv(1), Cmd_Argv(2), MAX_LOCALINFO_STRING);
-}
-
-
-/*
-===========
-SV_User_f
-
-Examine a users info strings
-===========
-*/
-void SV_User_f ()
-{
-	if (Cmd_Argc() != 2)
-	{
-		Con_Printf ("Usage: info <userid>\n");
-		return;
-	}
-
-	if (!SV_SetPlayer ())
-		return;
-
-	Info_Print (host_client->userinfo);
 }
 
 /*
@@ -863,17 +723,15 @@ void SV_InitOperatorCommands ()
 	Cmd_AddCommand ("status", SV_Status_f);
 
 	Cmd_AddCommand ("map", SV_Map_f);
-	Cmd_AddCommand ("setmaster", SV_SetMaster_f);
-
+	
 	Cmd_AddCommand ("say", SV_ConSay_f);
-	Cmd_AddCommand ("heartbeat", SV_Heartbeat_f);
+	
 	Cmd_AddCommand ("quit", SV_Quit_f);
 	Cmd_AddCommand ("god", SV_God_f);
 	Cmd_AddCommand ("give", SV_Give_f);
 	Cmd_AddCommand ("noclip", SV_Noclip_f);
-	Cmd_AddCommand ("serverinfo", SV_Serverinfo_f);
-	Cmd_AddCommand ("localinfo", SV_Localinfo_f);
-	Cmd_AddCommand ("user", SV_User_f);
+	
+	
 	Cmd_AddCommand ("gamedir", SV_Gamedir_f);
 	Cmd_AddCommand ("sv_gamedir", SV_Gamedir);
 	Cmd_AddCommand ("floodprot", SV_Floodprot_f);

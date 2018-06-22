@@ -18,69 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include "quakedef.h"
-#include "r_local.h"
 
-#define MAX_PARTICLES			2048	// default max # of particles at one
-										//  time
-#define ABSOLUTE_MIN_PARTICLES	512		// no fewer than this no matter what's
-										//  on the command line
-
-int		ramp1[8] = {0x6f, 0x6d, 0x6b, 0x69, 0x67, 0x65, 0x63, 0x61};
-int		ramp2[8] = {0x6f, 0x6e, 0x6d, 0x6c, 0x6b, 0x6a, 0x68, 0x66};
-int		ramp3[8] = {0x6d, 0x6b, 6, 5, 4, 3};
-
-particle_t	*active_particles, *free_particles;
-
-particle_t	*particles;
-int			r_numparticles;
-
-vec3_t			r_pright, r_pup, r_ppn;
-
-
-/*
-===============
-R_InitParticles
-===============
-*/
-void R_InitParticles (void)
-{
-	int		i;
-
-	i = COM_CheckParm ("-particles");
-
-	if (i)
-	{
-		r_numparticles = (int)(Q_atoi(com_argv[i+1]));
-		if (r_numparticles < ABSOLUTE_MIN_PARTICLES)
-			r_numparticles = ABSOLUTE_MIN_PARTICLES;
-	}
-	else
-	{
-		r_numparticles = MAX_PARTICLES;
-	}
-
-	particles = (particle_t *)
-			Hunk_AllocName (r_numparticles * sizeof(particle_t), "particles");
-}
-
-
-/*
-===============
-R_ClearParticles
-===============
-*/
-void R_ClearParticles (void)
-{
-	int		i;
-	
-	free_particles = &particles[0];
-	active_particles = NULL;
-
-	for (i=0 ;i<r_numparticles ; i++)
-		particles[i].next = &particles[i+1];
-	particles[r_numparticles-1].next = NULL;
-}
 
 
 void R_ReadPointFile_f (void)
@@ -181,44 +119,6 @@ R_BlobExplosion
 
 ===============
 */
-void R_BlobExplosion (vec3_t org)
-{
-	int			i, j;
-	particle_t	*p;
-	
-	for (i=0 ; i<1024 ; i++)
-	{
-		if (!free_particles)
-			return;
-		p = free_particles;
-		free_particles = p->next;
-		p->next = active_particles;
-		active_particles = p;
-
-		p->die = cl.time + 1 + (rand()&8)*0.05;
-
-		if (i & 1)
-		{
-			p->type = pt_blob;
-			p->color = 66 + rand()%6;
-			for (j=0 ; j<3 ; j++)
-			{
-				p->org[j] = org[j] + ((rand()%32)-16);
-				p->vel[j] = (rand()%512)-256;
-			}
-		}
-		else
-		{
-			p->type = pt_blob2;
-			p->color = 150 + rand()%6;
-			for (j=0 ; j<3 ; j++)
-			{
-				p->org[j] = org[j] + ((rand()%32)-16);
-				p->vel[j] = (rand()%512)-256;
-			}
-		}
-	}
-}
 
 /*
 ===============

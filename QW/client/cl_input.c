@@ -23,35 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 cvar_t	cl_nodelta = {"cl_nodelta","0"};
 
-/*
-===============================================================================
 
-KEY BUTTONS
-
-Continuous button event tracking is complicated by the fact that two different
-input sources (say, mouse button 1 and the control key) can both press the
-same button, but the button should only be released when both of the
-pressing key have been released.
-
-When a key event issues a button command (+forward, +attack, etc), it appends
-its key number as a parameter to the command so it can be matched up with
-the release.
-
-state bit 0 is the current state of the key
-state bit 1 is edge triggered on the up to down transition
-state bit 2 is edge triggered on the down to up transition
-
-===============================================================================
-*/
-
-
-kbutton_t	in_mlook, in_klook;
-kbutton_t	in_left, in_right, in_forward, in_back;
-kbutton_t	in_lookup, in_lookdown, in_moveleft, in_moveright;
-kbutton_t	in_strafe, in_speed, in_use, in_jump, in_attack;
-kbutton_t	in_up, in_down;
-
-int			in_impulse;
 
 
 void KeyDown (kbutton_t *b)
@@ -157,128 +129,13 @@ void IN_JumpUp (void) {KeyUp(&in_jump);}
 
 void IN_Impulse (void) {in_impulse=Q_atoi(Cmd_Argv(1));}
 
-/*
-===============
-CL_KeyState
-
-Returns 0.25 if a key was pressed and released during the frame,
-0.5 if it was pressed and held
-0 if held then released, and
-1.0 if held for the entire time
-===============
-*/
-float CL_KeyState (kbutton_t *key)
-{
-	float		val;
-	qboolean	impulsedown, impulseup, down;
-	
-	impulsedown = key->state & 2;
-	impulseup = key->state & 4;
-	down = key->state & 1;
-	val = 0;
-	
-	if (impulsedown && !impulseup)
-		if (down)
-			val = 0.5;	// pressed and held this frame
-		else
-			val = 0;	//	I_Error ();
-	if (impulseup && !impulsedown)
-		if (down)
-			val = 0;	//	I_Error ();
-		else
-			val = 0;	// released this frame
-	if (!impulsedown && !impulseup)
-		if (down)
-			val = 1.0;	// held the entire frame
-		else
-			val = 0;	// up the entire frame
-	if (impulsedown && impulseup)
-		if (down)
-			val = 0.75;	// released and re-pressed this frame
-		else
-			val = 0.25;	// pressed and released this frame
-
-	key->state &= 1;		// clear impulses
-	
-	return val;
-}
-
-
-
-
-//==========================================================================
 
 cvar_t	cl_upspeed = {"cl_upspeed","200"};
 cvar_t	cl_forwardspeed = {"cl_forwardspeed","200", true};
 cvar_t	cl_backspeed = {"cl_backspeed","200", true};
 cvar_t	cl_sidespeed = {"cl_sidespeed","350"};
 
-cvar_t	cl_movespeedkey = {"cl_movespeedkey","2.0"};
 
-cvar_t	cl_yawspeed = {"cl_yawspeed","140"};
-cvar_t	cl_pitchspeed = {"cl_pitchspeed","150"};
-
-cvar_t	cl_anglespeedkey = {"cl_anglespeedkey","1.5"};
-
-
-/*
-================
-CL_AdjustAngles
-
-Moves the local angle positions
-================
-*/
-void CL_AdjustAngles (void)
-{
-	float	speed;
-	float	up, down;
-	
-	if (in_speed.state & 1)
-		speed = host_frametime * cl_anglespeedkey.value;
-	else
-		speed = host_frametime;
-
-	if (!(in_strafe.state & 1))
-	{
-		cl.viewangles[YAW] -= speed*cl_yawspeed.value*CL_KeyState (&in_right);
-		cl.viewangles[YAW] += speed*cl_yawspeed.value*CL_KeyState (&in_left);
-		cl.viewangles[YAW] = anglemod(cl.viewangles[YAW]);
-	}
-	if (in_klook.state & 1)
-	{
-		V_StopPitchDrift ();
-		cl.viewangles[PITCH] -= speed*cl_pitchspeed.value * CL_KeyState (&in_forward);
-		cl.viewangles[PITCH] += speed*cl_pitchspeed.value * CL_KeyState (&in_back);
-	}
-	
-	up = CL_KeyState (&in_lookup);
-	down = CL_KeyState(&in_lookdown);
-	
-	cl.viewangles[PITCH] -= speed*cl_pitchspeed.value * up;
-	cl.viewangles[PITCH] += speed*cl_pitchspeed.value * down;
-
-	if (up || down)
-		V_StopPitchDrift ();
-		
-	if (cl.viewangles[PITCH] > 80)
-		cl.viewangles[PITCH] = 80;
-	if (cl.viewangles[PITCH] < -70)
-		cl.viewangles[PITCH] = -70;
-
-	if (cl.viewangles[ROLL] > 50)
-		cl.viewangles[ROLL] = 50;
-	if (cl.viewangles[ROLL] < -50)
-		cl.viewangles[ROLL] = -50;
-		
-}
-
-/*
-================
-CL_BaseMove
-
-Send the intended movement message to the server
-================
-*/
 void CL_BaseMove (usercmd_t *cmd)
 {	
 	CL_AdjustAngles ();
@@ -427,14 +284,12 @@ void CL_SendCmd ()
 
 }
 
-
-
 /*
 ============
 CL_InitInput
 ============
 */
-void CL_InitInput (void)
+void CL_InitInput ()
 {
 	Cmd_AddCommand ("+moveup",IN_UpDown);
 	Cmd_AddCommand ("-moveup",IN_UpUp);

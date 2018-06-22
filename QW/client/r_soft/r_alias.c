@@ -37,7 +37,8 @@ int				r_anumverts;
 
 float	aliastransform[3][4];
 
-typedef struct {
+typedef struct
+{
 	int	index0;
 	int	index1;
 } aedge_t;
@@ -61,7 +62,6 @@ void R_AliasTransformVector (vec3_t in, vec3_t out);
 void R_AliasTransformFinalVert (finalvert_t *fv, auxvert_t *av,
 	trivertx_t *pverts, stvert_t *pstverts);
 void R_AliasProjectFinalVert (finalvert_t *fv, auxvert_t *av);
-
 
 /*
 ================
@@ -142,7 +142,6 @@ qboolean R_AliasCheckBBox (void)
 		}
 	}
 
-	
 	if (zfullyclipped)
 	{
 		return false;	// everything was near-z-clipped
@@ -226,7 +225,6 @@ qboolean R_AliasCheckBBox (void)
 	return true;
 }
 
-
 /*
 ================
 R_AliasTransformVector
@@ -238,7 +236,6 @@ void R_AliasTransformVector (vec3_t in, vec3_t out)
 	out[1] = DotProduct(in, aliastransform[1]) + aliastransform[1][3];
 	out[2] = DotProduct(in, aliastransform[2]) + aliastransform[2][3];
 }
-
 
 /*
 ================
@@ -309,7 +306,6 @@ void R_AliasPreparePoints (void)
 		}
 	}
 }
-
 
 /*
 ================
@@ -383,11 +379,9 @@ void R_AliasSetUpTransform (int trivial_accept)
 			aliastransform[1][i] *= aliasyscale *
 					(1.0 / ((float)0x8000 * 0x10000));
 			aliastransform[2][i] *= 1.0 / ((float)0x8000 * 0x10000);
-
 		}
 	}
 }
-
 
 /*
 ================
@@ -429,7 +423,6 @@ void R_AliasTransformFinalVert (finalvert_t *fv, auxvert_t *av,
 
 	fv->v[4] = temp;
 }
-
 
 #if	!id386
 
@@ -487,7 +480,6 @@ void R_AliasTransformAndProjectFinalVerts (finalvert_t *fv, stvert_t *pstverts)
 
 #endif
 
-
 /*
 ================
 R_AliasProjectFinalVert
@@ -505,7 +497,6 @@ void R_AliasProjectFinalVert (finalvert_t *fv, auxvert_t *av)
 	fv->v[0] = (av->fv[0] * aliasxscale * zi) + aliasxcenter;
 	fv->v[1] = (av->fv[1] * aliasyscale * zi) + aliasycenter;
 }
-
 
 /*
 ================
@@ -613,7 +604,6 @@ R_AliasSetupLighting
 */
 void R_AliasSetupLighting (alight_t *plighting)
 {
-
 // guarantee that no vertex will ever be lit below LIGHT_MIN, so we don't have
 // to clamp off the bottom
 	r_ambientlight = plighting->ambientlight;
@@ -691,7 +681,6 @@ void R_AliasSetupFrame (void)
 				((byte *)paliashdr + paliasgroup->frames[i].frame);
 }
 
-
 /*
 ================
 R_AliasDrawModel
@@ -747,4 +736,3 @@ void R_AliasDrawModel (alight_t *plighting)
 	else
 		R_AliasPreparePoints ();
 }
-

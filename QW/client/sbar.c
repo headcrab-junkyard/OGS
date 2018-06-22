@@ -84,51 +84,8 @@ void Sbar_DontShowTeamScores (void)
 	sb_updates = 0;
 }
 
-/*
-===============
-Sbar_ShowScores
 
-Tab key down
-===============
-*/
-void Sbar_ShowScores (void)
-{
-	if (sb_showscores)
-		return;
-
-	sb_showscores = true;
-	sb_updates = 0;
-}
-
-/*
-===============
-Sbar_DontShowScores
-
-Tab key up
-===============
-*/
-void Sbar_DontShowScores (void)
-{
-	sb_showscores = false;
-	sb_updates = 0;
-}
-
-/*
-===============
-Sbar_Changed
-===============
-*/
-void Sbar_Changed (void)
-{
-	sb_updates = 0;	// update next frame
-}
-
-/*
-===============
-Sbar_Init
-===============
-*/
-void Sbar_Init (void)
+void Sbar_Init ()
 {
 	int		i;
 
@@ -219,16 +176,6 @@ void Sbar_Init (void)
 	sb_scorebar = Draw_PicFromWad ("scorebar");
 }
 
-
-//=============================================================================
-
-// drawing routines are relative to the status bar location
-
-/*
-=============
-Sbar_DrawPic
-=============
-*/
 void Sbar_DrawPic (int x, int y, qpic_t *pic)
 {
 	Draw_Pic (x /* + ((vid.width - 320)>>1) */, y + (vid.height-SBAR_HEIGHT), pic);
@@ -257,13 +204,6 @@ void Sbar_DrawTransPic (int x, int y, qpic_t *pic)
 	Draw_TransPic (x /*+ ((vid.width - 320)>>1) */, y + (vid.height-SBAR_HEIGHT), pic);
 }
 
-/*
-================
-Sbar_DrawCharacter
-
-Draws one solid graphics character
-================
-*/
 void Sbar_DrawCharacter (int x, int y, int num)
 {
 	Draw_Character ( x /*+ ((vid.width - 320)>>1) */ + 4, y + vid.height-SBAR_HEIGHT, num);
@@ -279,72 +219,6 @@ void Sbar_DrawString (int x, int y, char *str)
 	Draw_String (x /*+ ((vid.width - 320)>>1) */, y+ vid.height-SBAR_HEIGHT, str);
 }
 
-/*
-=============
-Sbar_itoa
-=============
-*/
-int Sbar_itoa (int num, char *buf)
-{
-	char	*str;
-	int		pow10;
-	int		dig;
-	
-	str = buf;
-	
-	if (num < 0)
-	{
-		*str++ = '-';
-		num = -num;
-	}
-	
-	for (pow10 = 10 ; num >= pow10 ; pow10 *= 10)
-	;
-	
-	do
-	{
-		pow10 /= 10;
-		dig = num/pow10;
-		*str++ = '0'+dig;
-		num -= dig*pow10;
-	} while (pow10 != 1);
-	
-	*str = 0;
-	
-	return str-buf;
-}
-
-
-/*
-=============
-Sbar_DrawNum
-=============
-*/
-void Sbar_DrawNum (int x, int y, int num, int digits, int color)
-{
-	char			str[12];
-	char			*ptr;
-	int				l, frame;
-
-	l = Sbar_itoa (num, str);
-	ptr = str;
-	if (l > digits)
-		ptr += (l-digits);
-	if (l < digits)
-		x += (digits-l)*24;
-
-	while (*ptr)
-	{
-		if (*ptr == '-')
-			frame = STAT_MINUS;
-		else
-			frame = *ptr -'0';
-
-		Sbar_DrawTransPic (x,y,sb_nums[color][frame]);
-		x += 24;
-		ptr++;
-	}
-}
 
 //=============================================================================
 
