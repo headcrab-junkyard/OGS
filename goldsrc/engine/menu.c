@@ -16,6 +16,9 @@
  *	You should have received a copy of the GNU General Public License
  *	along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
+
+/// @file
+
 #include "quakedef.h"
 
 #ifdef _WIN32
@@ -67,6 +70,7 @@ void M_Menu_GameOptions_f();
 void M_Menu_Search_f();
 void M_Menu_ServerList_f();
 
+/*
 class CMenuMain
 {
 public:
@@ -192,6 +196,7 @@ public:
 	void Draw();
 	void Key(int key);
 };
+*/
 
 void M_Main_Draw();
 void M_SinglePlayer_Draw();
@@ -760,9 +765,9 @@ void M_MultiPlayer_Draw()
 
 	M_DrawTransPic(54, 32 + m_multiplayer_cursor * 20, Draw_CachePic(va("gfx/menudot%i.lmp", f + 1)));
 
-	if(serialAvailable || ipxAvailable || tcpipAvailable)
-		return;
-	M_PrintWhite((320 / 2) - ((27 * 8) / 2), 148, "No Communications Available");
+	//if(serialAvailable || ipxAvailable || tcpipAvailable) // TODO
+		//return;
+	//M_PrintWhite((320 / 2) - ((27 * 8) / 2), 148, "No Communications Available");
 }
 
 void M_MultiPlayer_Key(int key)
@@ -790,12 +795,12 @@ void M_MultiPlayer_Key(int key)
 		switch(m_multiplayer_cursor)
 		{
 		case 0:
-			if(serialAvailable || ipxAvailable || tcpipAvailable)
+			//if(serialAvailable || ipxAvailable || tcpipAvailable) // TODO
 				M_Menu_Net_f();
 			break;
 
 		case 1:
-			if(serialAvailable || ipxAvailable || tcpipAvailable)
+			//if(serialAvailable || ipxAvailable || tcpipAvailable) // TODO
 				M_Menu_Net_f();
 			break;
 
@@ -1033,11 +1038,11 @@ void M_Net_Draw()
 
 	f = 32;
 
-	if(serialAvailable)
-	{
-		p = Draw_CachePic("gfx/netmen1.lmp");
-	}
-	else
+	//if(serialAvailable) // TODO
+	//{
+		//p = Draw_CachePic("gfx/netmen1.lmp");
+	//}
+	//else
 	{
 #ifdef _WIN32
 		p = NULL;
@@ -1051,11 +1056,11 @@ void M_Net_Draw()
 
 	f += 19;
 
-	if(serialAvailable)
-	{
-		p = Draw_CachePic("gfx/netmen2.lmp");
-	}
-	else
+	//if(serialAvailable) // TODO
+	//{
+		//p = Draw_CachePic("gfx/netmen2.lmp");
+	//}
+	//else
 	{
 #ifdef _WIN32
 		p = NULL;
@@ -1068,16 +1073,16 @@ void M_Net_Draw()
 		M_DrawTransPic(72, f, p);
 
 	f += 19;
-	if(ipxAvailable)
-		p = Draw_CachePic("gfx/netmen3.lmp");
-	else
+	//if(ipxAvailable) // TODO
+		//p = Draw_CachePic("gfx/netmen3.lmp");
+	//else
 		p = Draw_CachePic("gfx/dim_ipx.lmp");
 	M_DrawTransPic(72, f, p);
 
 	f += 19;
-	if(tcpipAvailable)
-		p = Draw_CachePic("gfx/netmen4.lmp");
-	else
+	//if(tcpipAvailable) // TODO
+		//p = Draw_CachePic("gfx/netmen4.lmp");
+	//else
 		p = Draw_CachePic("gfx/dim_tcp.lmp");
 	M_DrawTransPic(72, f, p);
 
@@ -1148,14 +1153,15 @@ again:
 		}
 	}
 
-	if(m_net_cursor == 0 && !serialAvailable)
-		goto again;
-	if(m_net_cursor == 1 && !serialAvailable)
-		goto again;
-	if(m_net_cursor == 2 && !ipxAvailable)
-		goto again;
-	if(m_net_cursor == 3 && !tcpipAvailable)
-		goto again;
+	// TODO
+	//if(m_net_cursor == 0 && !serialAvailable)
+		//goto again;
+	//if(m_net_cursor == 1 && !serialAvailable)
+		//goto again;
+	//if(m_net_cursor == 2 && !ipxAvailable)
+		//goto again;
+	//if(m_net_cursor == 3 && !tcpipAvailable)
+		//goto again;
 }
 
 //=============================================================================
@@ -1854,7 +1860,7 @@ void M_Menu_SerialConfig_f()
 	else
 		serialConfig_cursor = 5;
 
-	(*GetComPortConfig)(0, &port, &serialConfig_irq, &baudrate, &useModem);
+	//(*GetComPortConfig)(0, &port, &serialConfig_irq, &baudrate, &useModem); // TODO
 
 	// map uart's port to COMx
 	for(n = 0; n < 4; n++)
@@ -2040,7 +2046,7 @@ void M_SerialConfig_Key(int key)
 
 		if(serialConfig_cursor == 3)
 		{
-			(*SetComPortConfig)(0, ISA_uarts[serialConfig_comport - 1], serialConfig_irq, serialConfig_baudrate[serialConfig_baud], SerialConfig);
+			//(*SetComPortConfig)(0, ISA_uarts[serialConfig_comport - 1], serialConfig_irq, serialConfig_baudrate[serialConfig_baud], SerialConfig); // TODO
 
 			M_Menu_ModemConfig_f();
 			break;
@@ -2053,7 +2059,7 @@ void M_SerialConfig_Key(int key)
 		}
 
 		// serialConfig_cursor == 5 (OK/CONNECT)
-		(*SetComPortConfig)(0, ISA_uarts[serialConfig_comport - 1], serialConfig_irq, serialConfig_baudrate[serialConfig_baud], SerialConfig);
+		//(*SetComPortConfig)(0, ISA_uarts[serialConfig_comport - 1], serialConfig_irq, serialConfig_baudrate[serialConfig_baud], SerialConfig); // TODO
 
 		M_ConfigureNetSubsystem();
 
@@ -2126,7 +2132,7 @@ void M_Menu_ModemConfig_f()
 	key_dest = key_menu;
 	m_state = m_modemconfig;
 	m_entersound = true;
-	(*GetModemConfig)(0, &modemConfig_dialing, modemConfig_clear, modemConfig_init, modemConfig_hangup);
+	//(*GetModemConfig)(0, &modemConfig_dialing, modemConfig_clear, modemConfig_init, modemConfig_hangup); // TODO
 }
 
 void M_ModemConfig_Draw()
@@ -2217,7 +2223,7 @@ void M_ModemConfig_Key(int key)
 
 		if(modemConfig_cursor == 4)
 		{
-			(*SetModemConfig)(0, va("%c", modemConfig_dialing), modemConfig_clear, modemConfig_init, modemConfig_hangup);
+			//(*SetModemConfig)(0, va("%c", modemConfig_dialing), modemConfig_clear, modemConfig_init, modemConfig_hangup); // TODO
 			m_entersound = true;
 			M_Menu_SerialConfig_f();
 		}
@@ -2304,7 +2310,7 @@ void M_Menu_LanConfig_f()
 	}
 	if(StartingGame && lanConfig_cursor == 2)
 		lanConfig_cursor = 1;
-	lanConfig_port = DEFAULTnet_hostport;
+	//lanConfig_port = DEFAULTnet_hostport; // TODO
 	sprintf(lanConfig_portname, "%u", lanConfig_port);
 
 	m_return_onerror = false;
@@ -2335,10 +2341,10 @@ void M_LanConfig_Draw()
 	basex += 8;
 
 	M_Print(basex, 52, "Address:");
-	if(IPXConfig)
-		M_Print(basex + 9 * 8, 52, my_ipx_address);
-	else
-		M_Print(basex + 9 * 8, 52, my_tcpip_address);
+	//if(IPXConfig)
+		//M_Print(basex + 9 * 8, 52, my_ipx_address); // TODO
+	//else
+		//M_Print(basex + 9 * 8, 52, my_tcpip_address); // TODO
 
 	M_Print(basex, lanConfig_cursor_table[0], "Port");
 	M_DrawTextBox(basex + 8 * 8, lanConfig_cursor_table[0] - 8, 6, 1);
@@ -2597,6 +2603,7 @@ void M_GameOptions_Draw()
 		M_Print(160, 64, "Deathmatch");
 
 	M_Print(0, 72, "        Teamplay");
+	/*
 	if(rogue)
 	{
 		char *msg;
@@ -2628,6 +2635,7 @@ void M_GameOptions_Draw()
 		M_Print(160, 72, msg);
 	}
 	else
+	*/
 	{
 		char *msg;
 
@@ -2669,26 +2677,11 @@ void M_GameOptions_Draw()
 		M_Print(160, 96, va("%i minutes", (int)timelimit.value));
 
 	M_Print(0, 112, "         Episode");
-	//MED 01/06/97 added hipnotic episodes
-	if(hipnotic)
-		M_Print(160, 112, hipnoticepisodes[startepisode].description);
-	//PGM 01/07/97 added rogue episodes
-	else if(rogue)
-		M_Print(160, 112, rogueepisodes[startepisode].description);
-	else
-		M_Print(160, 112, episodes[startepisode].description);
+	M_Print(160, 112, episodes[startepisode].description);
 
 	M_Print(0, 120, "           Level");
-	if(rogue)
-	{
-		M_Print(160, 120, roguelevels[rogueepisodes[startepisode].firstLevel + startlevel].description);
-		M_Print(160, 128, roguelevels[rogueepisodes[startepisode].firstLevel + startlevel].name);
-	}
-	else
-	{
-		M_Print(160, 120, levels[episodes[startepisode].firstLevel + startlevel].description);
-		M_Print(160, 128, levels[episodes[startepisode].firstLevel + startlevel].name);
-	}
+	M_Print(160, 120, levels[episodes[startepisode].firstLevel + startlevel].description);
+	M_Print(160, 128, levels[episodes[startepisode].firstLevel + startlevel].name);
 
 	// line cursor
 	M_DrawCharacter(144, gameoptions_cursor_table[gameoptions_cursor], 12 + ((int)(realtime * 4) & 1));
@@ -2735,10 +2728,7 @@ void M_NetStart_Change(int dir)
 		break;
 
 	case 3:
-		if(rogue)
-			count = 6;
-		else
-			count = 2;
+		count = 2;
 
 		Cvar_SetValue("teamplay", teamplay.value + dir);
 		if(teamplay.value > count)
@@ -2773,10 +2763,7 @@ void M_NetStart_Change(int dir)
 
 	case 7:
 		startepisode += dir;
-		if(registered.value)
-			count = 7;
-		else
-			count = 2;
+		count = 7;
 
 		if(startepisode < 0)
 			startepisode = count - 1;
@@ -2846,12 +2833,7 @@ void M_GameOptions_Key(int key)
 			Cbuf_AddText(va("maxplayers %u\n", maxplayers));
 			SCR_BeginLoadingPlaque();
 
-			if(hipnotic)
-				Cbuf_AddText(va("map %s\n", hipnoticlevels[hipnoticepisodes[startepisode].firstLevel + startlevel].name));
-			else if(rogue)
-				Cbuf_AddText(va("map %s\n", roguelevels[rogueepisodes[startepisode].firstLevel + startlevel].name));
-			else
-				Cbuf_AddText(va("map %s\n", levels[episodes[startepisode].firstLevel + startlevel].name));
+			Cbuf_AddText(va("map %s\n", levels[episodes[startepisode].firstLevel + startlevel].name));
 
 			return;
 		}
@@ -2872,10 +2854,10 @@ void M_Menu_Search_f()
 	key_dest = key_menu;
 	m_state = m_search;
 	m_entersound = false;
-	slistSilent = true;
-	slistLocal = false;
+	//slistSilent = true; // TODO
+	//slistLocal = false; // TODO
 	searchComplete = false;
-	NET_Slist_f();
+	//NET_Slist_f(); // TODO
 }
 
 void M_Search_Draw()
@@ -2889,9 +2871,9 @@ void M_Search_Draw()
 	M_DrawTextBox(x - 8, 32, 12, 1);
 	M_Print(x, 40, "Searching...");
 
-	if(slistInProgress)
+	//if(slistInProgress)
 	{
-		NET_Poll();
+		//NET_Poll();
 		return;
 	}
 
@@ -2901,7 +2883,7 @@ void M_Search_Draw()
 		searchCompleteTime = realtime;
 	}
 
-	if(hostCacheCount)
+	//if(hostCacheCount)
 	{
 		M_Menu_ServerList_f();
 		return;
@@ -2943,6 +2925,8 @@ void M_ServerList_Draw()
 
 	if(!slist_sorted)
 	{
+		// TODO
+		/*
 		if(hostCacheCount > 1)
 		{
 			int i, j;
@@ -2956,11 +2940,14 @@ void M_ServerList_Draw()
 						Q_memcpy(&hostcache[i], &temp, sizeof(hostcache_t));
 					}
 		}
+		*/
 		slist_sorted = true;
 	}
 
 	p = Draw_CachePic("gfx/p_multi.lmp");
 	M_DrawPic((320 - p->width) / 2, 4, p);
+	// TODO
+	/*
 	for(n = 0; n < hostCacheCount; n++)
 	{
 		if(hostcache[n].maxusers)
@@ -2969,6 +2956,7 @@ void M_ServerList_Draw()
 			sprintf(string, "%-15.15s %-15.15s\n", hostcache[n].name, hostcache[n].map);
 		M_Print(16, 32 + 8 * n, string);
 	}
+	*/
 	M_DrawCharacter(0, 32 + slist_cursor * 8, 12 + ((int)(realtime * 4) & 1));
 
 	if(*m_return_reason)
@@ -2991,16 +2979,16 @@ void M_ServerList_Key(int k)
 	case K_LEFTARROW:
 		S_LocalSound("misc/menu1.wav");
 		slist_cursor--;
-		if(slist_cursor < 0)
-			slist_cursor = hostCacheCount - 1;
+		//if(slist_cursor < 0)
+			//slist_cursor = hostCacheCount - 1; // TODO
 		break;
 
 	case K_DOWNARROW:
 	case K_RIGHTARROW:
 		S_LocalSound("misc/menu1.wav");
 		slist_cursor++;
-		if(slist_cursor >= hostCacheCount)
-			slist_cursor = 0;
+		//if(slist_cursor >= hostCacheCount) // TODO
+			//slist_cursor = 0;
 		break;
 
 	case K_ENTER:
@@ -3010,7 +2998,7 @@ void M_ServerList_Key(int k)
 		slist_sorted = false;
 		key_dest = key_game;
 		m_state = m_none;
-		Cbuf_AddText(va("connect \"%s\"\n", hostcache[slist_cursor].cname));
+		//Cbuf_AddText(va("connect \"%s\"\n", hostcache[slist_cursor].cname)); // TODO
 		break;
 
 	default:
@@ -3244,6 +3232,6 @@ void M_ConfigureNetSubsystem()
 		Cbuf_AddText("com1 enable\n");
 	}
 
-	if(IPXConfig || TCPIPConfig)
-		net_hostport = lanConfig_port;
+	//if(IPXConfig || TCPIPConfig)
+		//net_hostport = lanConfig_port; // TODO
 }
