@@ -21,12 +21,13 @@
 
 // NOTE: The reason why the client dll support is implemented this way is historical
 // The GoldSrc is a fork of Source codebase somewhere at the beginning of November 1998
-// Current Source is a single dll for both dedicated/listenserver modes (it skips client dll
-// loading and does nothing inside these wrapper functions below)
-
-// NOTE: OGS planned to be doing the same
+// Current Source is a single dll for both dedicated/listenserver modes, it skips client dll
+// loading and does nothing inside these wrapper functions below (but it also contains a special 
+// dll for dedicated server so this feature is mostly useless)
 
 #include "quakedef.h"
+
+void *gpClientDLL;
 
 static cl_enginefunc_t gEngFuncs; // TODO: name overlap with server-side version? cl_enginefuncs in GS
 cldll_func_t cl_funcs;
@@ -240,6 +241,15 @@ void ClientDLL_ChatInputPosition(int *x, int *y){
 	// TODO
 };
 
+void UnloadClientDLL()
+{
+	if(gpClientDLL)
+	{
+		Sys_UnloadModule(gpClientDLL);
+		gpClientDLL = NULL;
+	};
+};
+
 qboolean LoadClientDLLF()
 {
 	pfnGetClientDLL fnGetClientDLL = NULL;
@@ -247,12 +257,12 @@ qboolean LoadClientDLLF()
 	//memcpy(&gEngFuncs, 0, sizeof(cl_enginefunc_t));
 	//memcpy(&cl_funcs, 0, sizeof(cldll_func_t));
 
-	void *pClientDLL = Sys_LoadModule("gskiller/cl_dll/client"); // TODO: FS_LoadLibrary or something else that will load it from the game folder instead of app folder
+	gpClientDLL = Sys_LoadModule("goldsrctest/cl_dll/client"); // TODO: FS_LoadLibrary or something else that will load it from the game folder instead of app folder
 
-	if(!pClientDLL)
+	if(!gpClientDLL)
 		return false;
 
-	fnGetClientDLL = (pfnGetClientDLL)Sys_GetExport(pClientDLL, "GetClientDLL");
+	fnGetClientDLL = (pfnGetClientDLL)Sys_GetExport(gpClientDLL, "F"); // TODO: GetClientDLL?
 
 	if(!fnGetClientDLL)
 		return false;
