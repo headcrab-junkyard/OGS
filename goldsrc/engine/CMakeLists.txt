@@ -1,6 +1,10 @@
 project(ogs-engine)
 
-add_definitions(-DGLQUAKE) # TODO
+option(OGS_ENGINE_HW "Build the engine module with hardware render (OpenGL) support, it will be using software render otherwise" ON)
+
+if(OGS_ENGINE_HW)
+	add_definitions(-DGLQUAKE) # TODO
+endif()
 
 file(GLOB PROJECT_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/*.c
@@ -19,18 +23,18 @@ if(NOT OGS_DEDICATED)
 			OUTPUT_NAME "hw"
 		)
 		
-		target_link_libraries(${PROJECT_NAME} ogs-render-gl)
+		#target_link_libraries(${PROJECT_NAME} ogs-render-gl)
 	else()
 		set_target_properties(${PROJECT_NAME} PROPERTIES
 			OUTPUT_NAME "sw"
 		)
 		
-		target_link_libraries(${PROJECT_NAME} ogs-render-soft)
+		#target_link_libraries(${PROJECT_NAME} ogs-render-soft)
 	endif()
 else()
 	set_target_properties(${PROJECT_NAME} PROPERTIES
 		OUTPUT_NAME "swds"
 	)
 	
-	target_link_libraries(${PROJECT_NAME} ogs-render-soft)
+	#target_link_libraries(${PROJECT_NAME} ogs-render-soft)
 endif()
