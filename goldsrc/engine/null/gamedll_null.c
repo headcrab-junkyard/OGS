@@ -1,6 +1,7 @@
 /// @file
 
 #include "quakedef.h"
+#include "custom.h" // TODO: temp?
 
 void GameInit(){};
 
@@ -24,9 +25,9 @@ int EntityRestore(edict_t *pent, SAVERESTOREDATA *pSaveRestoreData, int globalen
 
 void EntitySetAbsPos(edict_t *pent){};
 
-void SaveWriteFields(SAVERESTOREDATA *, const char *, void *, TYPEDESCRIPTION *, int){};
+void SaveWriteFields(SAVERESTOREDATA *pSaveRestoreData, const char *sName, void *pBaseData, TYPEDESCRIPTION *pFields, int nFieldCount){};
 
-void SaveReadFields(SAVERESTOREDATA *, const char *, void *, TYPEDESCRIPTION *, int){};
+void SaveReadFields(SAVERESTOREDATA *pSaveRestoreData, const char *sName, void *pBaseData, TYPEDESCRIPTION *pFields, int nFieldCount){};
 
 void SaveGlobalState(SAVERESTOREDATA *pSaveRestoreData){};
 
