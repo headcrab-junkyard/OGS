@@ -17,11 +17,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// sv_user.c -- server code for moving users
-
-#include "quakedef.h"
-
-edict_t	*sv_player;
 
 usercmd_t	cmd;
 
@@ -31,7 +26,7 @@ cvar_t	sv_spectalk = {"sv_spectalk", "1"};
 
 cvar_t	sv_mapcheck	= {"sv_mapcheck", "1"};
 
-extern	vec3_t	player_mins;
+
 
 extern int fp_messages, fp_persecond, fp_secondsdead;
 extern char fp_msg[];
@@ -1090,72 +1085,7 @@ float V_CalcRoll (vec3_t angles, vec3_t velocity)
 
 //============================================================================
 
-vec3_t	pmove_mins, pmove_maxs;
 
-/*
-====================
-AddLinksToPmove
-
-====================
-*/
-void AddLinksToPmove ( areanode_t *node )
-{
-	link_t		*l, *next;
-	edict_t		*check;
-	int			pl;
-	int			i;
-	physent_t	*pe;
-
-	pl = EDICT_TO_PROG(sv_player);
-
-	// touch linked edicts
-	for (l = node->solid_edicts.next ; l != &node->solid_edicts ; l = next)
-	{
-		next = l->next;
-		check = EDICT_FROM_AREA(l);
-
-		if (check->v.owner == pl)
-			continue;		// player's own missile
-		if (check->v.solid == SOLID_BSP 
-			|| check->v.solid == SOLID_BBOX 
-			|| check->v.solid == SOLID_SLIDEBOX)
-		{
-			if (check == sv_player)
-				continue;
-
-			for (i=0 ; i<3 ; i++)
-				if (check->v.absmin[i] > pmove_maxs[i]
-				|| check->v.absmax[i] < pmove_mins[i])
-					break;
-			if (i != 3)
-				continue;
-			if (pmove.numphysent == MAX_PHYSENTS)
-				return;
-			pe = &pmove.physents[pmove.numphysent];
-			pmove.numphysent++;
-
-			VectorCopy (check->v.origin, pe->origin);
-			pe->info = NUM_FOR_EDICT(check);
-			if (check->v.solid == SOLID_BSP)
-				pe->model = sv.models[(int)(check->v.modelindex)];
-			else
-			{
-				pe->model = NULL;
-				VectorCopy (check->v.mins, pe->mins);
-				VectorCopy (check->v.maxs, pe->maxs);
-			}
-		}
-	}
-	
-// recurse down both sides
-	if (node->axis == -1)
-		return;
-
-	if ( pmove_maxs[node->axis] > node->dist )
-		AddLinksToPmove ( node->children[0] );
-	if ( pmove_mins[node->axis] < node->dist )
-		AddLinksToPmove ( node->children[1] );
-}
 
 
 /*

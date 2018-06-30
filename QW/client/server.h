@@ -17,7 +17,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// server.h
 
 #define	QW_SERVER
 
@@ -100,15 +99,7 @@ typedef enum
 					// connection for a couple seconds
 } client_state_t;
 
-typedef struct
-{
-	// received from client
 
-	// reply
-	double				senttime;
-	float				ping_time;
-	packet_entities_t	entities;
-} client_frame_t;
 
 #define MAX_BACK_BUFFERS 4
 
@@ -120,10 +111,6 @@ typedef struct client_s
 	float			lastnametime;		// time of last name change
 	int				lastnamecount;		// time of last name change
 	qboolean		drop;				// lose this guy next opportunity
-	
-
-	int				userid;							// identifying number
-	char			userinfo[MAX_INFO_STRING];		// infostring
 
 	
 	
@@ -131,13 +118,6 @@ typedef struct client_s
 
 	float			maxspeed;			// localized maxspeed
 	float			entgravity;			// localized ent gravity
-
-	edict_t			*edict;				// EDICT_NUM(clientnum+1)
-	char			name[32];			// for printing to other people
-										// extracted from userinfo
-
-
-	client_frame_t	frames[UPDATE_BACKUP];	// updates can be deltad from here
 
 	FILE			*download;			// file being downloaded
 	int				downloadsize;		// total bytes
@@ -231,21 +211,11 @@ extern	FILE		*sv_fraglogfile;
 void SV_Shutdown ();
 void SV_Frame (float time);
 void SV_FinalMessage (char *message);
-void SV_DropClient (client_t *drop);
 
 int SV_CalcPing (client_t *cl);
 void SV_FullClientUpdate (client_t *client, sizebuf_t *buf);
 
-int SV_ModelIndex (char *name);
-
-qboolean SV_CheckBottom (edict_t *ent);
-qboolean SV_movestep (edict_t *ent, vec3_t move, qboolean relink);
-
 void SV_WriteClientdataToMessage (client_t *client, sizebuf_t *msg);
-
-void SV_MoveToGoal ();
-
-void SV_SaveSpawnparms ();
 
 void SV_Physics_Client (edict_t	*ent);
 
@@ -259,10 +229,6 @@ void SV_ExtractFromUserinfo (client_t *cl);
 void Master_Heartbeat ();
 void Master_Packet ();
 
-//
-// sv_init.c
-//
-void SV_SpawnServer (char *server);
 void SV_FlushSignon ();
 
 
@@ -270,7 +236,7 @@ void SV_FlushSignon ();
 // sv_phys.c
 //
 void SV_ProgStartFrame ();
-void SV_Physics ();
+
 void SV_CheckVelocity (edict_t *ent);
 void SV_AddGravity (edict_t *ent, float scale);
 qboolean SV_RunThink (edict_t *ent);
@@ -286,9 +252,7 @@ void SV_SendClientMessages ();
 
 void SV_Multicast (vec3_t origin, int to);
 void SV_StartSound (edict_t *entity, int channel, char *sample, int volume, float attenuation);
-void SV_ClientPrintf (client_t *cl, int level, char *fmt, ...);
-void SV_BroadcastPrintf (int level, char *fmt, ...);
-void SV_BroadcastCommand (char *fmt, ...);
+
 void SV_SendMessagesToAll ();
 void SV_FindModelNumbers ();
 

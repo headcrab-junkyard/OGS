@@ -18,8 +18,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-// sv_main.c -- server main program
-
 #include "quakedef.h"
 
 #define CHAN_AUTO   0
@@ -27,91 +25,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define CHAN_VOICE  2
 #define CHAN_ITEM   3
 #define CHAN_BODY   4
-
-/*
-=============================================================================
-
-Con_Printf redirection
-
-=============================================================================
-*/
-
-char	outputbuf[8000];
-
-redirect_t	sv_redirected;
-
-extern cvar_t sv_phs;
-
-/*
-==================
-SV_FlushRedirect
-==================
-*/
-void SV_FlushRedirect ()
-{
-	char	send[8000+6];
-
-	if (sv_redirected == RD_PACKET)
-	{
-		send[0] = 0xff;
-		send[1] = 0xff;
-		send[2] = 0xff;
-		send[3] = 0xff;
-		send[4] = A2C_PRINT;
-		memcpy (send+5, outputbuf, strlen(outputbuf)+1);
-
-		NET_SendPacket (strlen(send)+1, send, net_from);
-	}
-	else if (sv_redirected == RD_CLIENT)
-	{
-		ClientReliableWrite_Begin (host_client, svc_print, strlen(outputbuf)+3);
-		ClientReliableWrite_Byte (host_client, PRINT_HIGH);
-		ClientReliableWrite_String (host_client, outputbuf);
-	}
-
-	// clear it
-	outputbuf[0] = 0;
-}
-
-
-/*
-==================
-SV_BeginRedirect
-
-  Send Con_Printf data to the remote client
-  instead of the console
-==================
-*/
-void SV_BeginRedirect (redirect_t rd)
-{
-	sv_redirected = rd;
-	outputbuf[0] = 0;
-}
-
-void SV_EndRedirect ()
-{
-	SV_FlushRedirect ();
-	sv_redirected = RD_NONE;
-}
-
-void Con_Printf (char *fmt, ...)
-{
-	va_list		argptr;
-	char		msg[MAXPRINTMSG];
-
-	// add to redirected message
-	if (sv_redirected)
-	{
-		if (strlen (msg) + strlen(outputbuf) > sizeof(outputbuf) - 1)
-			SV_FlushRedirect ();
-		strcat (outputbuf, msg);
-		return;
-	}
-
-	Sys_Printf ("%s", msg);	// also echo to debugging console
-	if (sv_logfile)
-		fprintf (sv_logfile, "%s", msg);
-}
 
 /*
 =============================================================================
