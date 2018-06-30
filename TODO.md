@@ -26,3 +26,4 @@
 - [ ] Command line parser/handler;
 - [ ] pr_edict.c(?): IndexOfEdict
 - [ ] sizebuf_s flags: FSB_ALLOWOVERFLOW
+- [ ] DSP effects
