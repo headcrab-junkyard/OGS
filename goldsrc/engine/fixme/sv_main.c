@@ -205,10 +205,10 @@ void SV_New_f ()
 	char		*gamedir;
 	int			playernum;
 
-	if (host_client->state == cs_spawned)
+	if (host_client->spawned)
 		return;
 
-	host_client->state = cs_connected;
+	host_client->connected = true;
 	host_client->connection_started = realtime;
 
 	// send the info about the new client to all connected clients
@@ -522,9 +522,10 @@ void SV_SendBan()
 	data[0] = data[1] = data[2] = data[3] = 0xff;
 	data[4] = A2C_PRINT;
 	data[5] = 0;
-	strcat(data, "\nbanned.\n");
+	
+	Q_strcat(data, "\nbanned.\n");
 
-	NET_SendPacket(strlen(data), data, net_from);
+	NET_SendPacket(NS_SERVER, Q_strlen(data), data, net_from);
 }
 
 /*
@@ -1369,9 +1370,9 @@ Con_Printf redirection
 =============================================================================
 */
 
-char	outputbuf[8000];
+char outputbuf[8000];
 
-redirect_t	sv_redirected;
+redirect_t sv_redirected;
 
 extern cvar_t sv_phs;
 
@@ -1391,15 +1392,16 @@ void SV_FlushRedirect ()
 		send[2] = 0xff;
 		send[3] = 0xff;
 		send[4] = A2C_PRINT;
-		memcpy (send+5, outputbuf, strlen(outputbuf)+1);
+		
+		Q_memcpy (send+5, outputbuf, Q_strlen(outputbuf)+1);
 
-		NET_SendPacket (strlen(send)+1, send, net_from);
+		NET_SendPacket (NS_SERVER, Q_strlen(send)+1, send, net_from);
 	}
 	else if (sv_redirected == RD_CLIENT)
 	{
-		ClientReliableWrite_Begin (host_client, svc_print, strlen(outputbuf)+3);
-		ClientReliableWrite_Byte (host_client, PRINT_HIGH);
-		ClientReliableWrite_String (host_client, outputbuf);
+		MSG_WriteByte (&host_client->netchan.message, svc_print);
+		MSG_WriteByte (&host_client->netchan.message, PRINT_HIGH); // TODO
+		MSG_WriteString (&host_client->netchan.message, outputbuf);
 	}
 
 	// clear it
