@@ -68,6 +68,27 @@ void AddLightBlend(float r, float g, float b, float a2)
 	v_blend[0] = v_blend[1] * (1 - a2) + r * a2;
 	v_blend[1] = v_blend[1] * (1 - a2) + g * a2;
 	v_blend[2] = v_blend[2] * (1 - a2) + b * a2;
+
+	//Con_Printf("AddLightBlend(): %4.2f %4.2f %4.2f %4.6f\n", v_blend[0], v_blend[1], v_blend[2], v_blend[3]);
+}
+
+float bubble_sintable[17], bubble_costable[17];
+
+void R_InitBubble()
+{
+	float a;
+	int i;
+	float *bub_sin, *bub_cos;
+
+	bub_sin = bubble_sintable;
+	bub_cos = bubble_costable;
+
+	for (i=16 ; i>=0 ; i--)
+	{
+		a = i/16.0 * M_PI*2;
+		*bub_sin++ = sin(a);
+		*bub_cos++ = cos(a);
+	}
 }
 
 void R_RenderDlight(dlight_t *light)
@@ -76,6 +97,10 @@ void R_RenderDlight(dlight_t *light)
 	float a;
 	vec3_t v;
 	float rad;
+	//float	*bub_sin, *bub_cos; // TODO
+
+	//bub_sin = bubble_sintable; // TODO
+	//bub_cos = bubble_costable; // TODO
 
 	rad = light->radius * 0.35;
 
@@ -87,16 +112,27 @@ void R_RenderDlight(dlight_t *light)
 	}
 
 	glBegin(GL_TRIANGLE_FAN);
-	glColor3f(0.2, 0.1, 0.0);
+	glColor3f(0.2, 0.1, 0.0); // TODO: unused in qw
+	//glColor3f (0.2,0.1,0.05); // changed dimlight effect
+	//glColor4f (light->color[0], light->color[1], light->color[2], light->color[3]); // TODO: qw
+	
 	for(i = 0; i < 3; i++)
 		v[i] = light->origin[i] - vpn[i] * rad;
 	glVertex3fv(v);
 	glColor3f(0, 0, 0);
 	for(i = 16; i >= 0; i--)
 	{
-		a = i / 16.0 * M_PI * 2;
+		a = i / 16.0 * M_PI * 2; // TODO: unused in qw
+
 		for(j = 0; j < 3; j++)
 			v[j] = light->origin[j] + vright[j] * cos(a) * rad + vup[j] * sin(a) * rad;
+			// TODO: qw
+			//v[j] = light->origin[j] + (vright[j]*(*bub_cos) +
+				//+ vup[j]*(*bub_sin)) * rad;
+		
+		//bub_sin++; // TODO
+		//bub_cos++; // TODO
+
 		glVertex3fv(v);
 	}
 	glEnd();
@@ -283,7 +319,6 @@ int RecursiveLightPoint(mnode_t *node, vec3_t start, vec3_t end)
 
 		s = DotProduct(mid, tex->vecs[0]) + tex->vecs[0][3];
 		t = DotProduct(mid, tex->vecs[1]) + tex->vecs[1][3];
-		;
 
 		if(s < surf->texturemins[0] ||
 		   t < surf->texturemins[1])

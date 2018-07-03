@@ -1,7 +1,7 @@
-project(gskiller-render-gl)
+project(ogs-render-gl)
 
 file(GLOB PROJECT_SOURCES
-	${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/*.c
 )
 
 if(OGS_USE_INTERNAL_RENDER) #if(OGS_EVOL)

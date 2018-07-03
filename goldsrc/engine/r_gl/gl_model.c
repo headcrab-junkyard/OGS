@@ -29,6 +29,7 @@ char loadname[32]; // for hunk tags
 void Mod_LoadSpriteModel(model_t *mod, void *buffer);
 void Mod_LoadBrushModel(model_t *mod, void *buffer);
 void Mod_LoadAliasModel(model_t *mod, void *buffer);
+void Mod_LoadStudioModel(model_t *mod, void *buffer);
 model_t *Mod_LoadModel(model_t *mod, qboolean crash);
 
 byte mod_novis[MAX_MAP_LEAFS / 8];
@@ -179,7 +180,7 @@ Mod_FindName
 
 ==================
 */
-model_t *Mod_FindName(char *name)
+model_t *Mod_FindName(const char *name)
 {
 	int i;
 	model_t *mod;
@@ -212,7 +213,7 @@ Mod_TouchModel
 
 ==================
 */
-void Mod_TouchModel(char *name)
+void Mod_TouchModel(const char *name)
 {
 	model_t *mod;
 
@@ -292,6 +293,11 @@ model_t *Mod_LoadModel(model_t *mod, qboolean crash)
 		Mod_LoadSpriteModel(mod, buf);
 		break;
 
+	// TODO
+	//case STUDIOHEADER:
+		//Mod_LoadStudioModel(mod, buf);
+		//break;
+
 	default:
 		Mod_LoadBrushModel(mod, buf);
 		break;
@@ -307,7 +313,7 @@ Mod_ForName
 Loads in a model for the given name
 ==================
 */
-model_t *Mod_ForName(char *name, qboolean crash)
+model_t *Mod_ForName(const char *name, qboolean crash)
 {
 	model_t *mod;
 
@@ -382,7 +388,7 @@ void Mod_LoadTextures(lump_t *l)
 		else
 		{
 			texture_mode = GL_LINEAR_MIPMAP_NEAREST; //_LINEAR;
-			tx->gl_texturenum = GL_LoadTexture(mt->name, tx->width, tx->height, (byte *)(tx + 1), true, false);
+			//tx->gl_texturenum = GL_LoadTexture(mt->name, tx->width, tx->height, (byte *)(tx + 1), true, false); // TODO
 			texture_mode = GL_LINEAR;
 		}
 	}
@@ -883,6 +889,8 @@ void Mod_LoadLeafs(lump_t *l)
 	dleaf_t *in;
 	mleaf_t *out;
 	int i, j, count, p;
+	//char s[80]; // TODO
+	//qboolean isnotmap = true; // TODO
 
 	in = (void *)(mod_base + l->fileofs);
 	if(l->filelen % sizeof(*in))
@@ -892,6 +900,11 @@ void Mod_LoadLeafs(lump_t *l)
 
 	loadmodel->leafs = out;
 	loadmodel->numleafs = count;
+
+	// TODO
+	//sprintf(s, "maps/%s.bsp", Info_ValueForKey(cl.serverinfo,"map"));
+	//if (!strcmp(s, loadmodel->name))
+		//isnotmap = false;
 
 	for(i = 0; i < count; i++, in++, out++)
 	{
@@ -924,6 +937,14 @@ void Mod_LoadLeafs(lump_t *l)
 			for(j = 0; j < out->nummarksurfaces; j++)
 				out->firstmarksurface[j]->flags |= SURF_UNDERWATER;
 		}
+// TODO
+/*
+		if (isnotmap)
+		{
+			for (j=0 ; j<out->nummarksurfaces ; j++)
+				out->firstmarksurface[j]->flags |= SURF_DONTWARP;
+		}
+*/
 	}
 }
 
@@ -1151,6 +1172,25 @@ void Mod_LoadBrushModel(model_t *mod, void *buffer)
 	for(i = 0; i < sizeof(dheader_t) / 4; i++)
 		((int *)header)[i] = LittleLong(((int *)header)[i]);
 
+// TODO
+/*
+	// checksum all of the map, except for entities
+	mod->checksum = 0;
+	mod->checksum2 = 0;
+
+	for (i = 0; i < HEADER_LUMPS; i++) {
+		if (i == LUMP_ENTITIES)
+			continue;
+		mod->checksum ^= Com_BlockChecksum(mod_base + header->lumps[i].fileofs, 
+			header->lumps[i].filelen);
+
+		if (i == LUMP_VISIBILITY || i == LUMP_LEAFS || i == LUMP_NODES)
+			continue;
+		mod->checksum2 ^= Com_BlockChecksum(mod_base + header->lumps[i].fileofs, 
+			header->lumps[i].filelen);
+	}
+*/
+
 	// load into heap
 
 	Mod_LoadVertexes(&header->lumps[LUMP_VERTEXES]);
@@ -1228,8 +1268,13 @@ mtriangle_t triangles[MAXALIASTRIS];
 trivertx_t *poseverts[MAXALIASFRAMES];
 int posenum;
 
+// TODO
+//
 byte **player_8bit_texels_tbl;
 byte *player_8bit_texels;
+// QW
+//byte player_8bit_texels[320*200];
+//
 
 /*
 =================
@@ -1238,8 +1283,8 @@ Mod_LoadAliasFrame
 */
 void *Mod_LoadAliasFrame(void *pin, maliasframedesc_t *frame)
 {
-	trivertx_t *pframe, *pinframe;
-	int i, j;
+	trivertx_t *pinframe;
+	int i;
 	daliasframe_t *pdaliasframe;
 
 	pdaliasframe = (daliasframe_t *)pin;
@@ -1404,9 +1449,9 @@ void *Mod_LoadAllSkins(int numskins, daliasskintype_t *pskintype)
 	int i, j, k;
 	char name[32];
 	int s;
-	byte *copy;
+	//byte *copy; // TODO
 	byte *skin;
-	byte *texels;
+	byte *texels; // TODO
 	daliasskingroup_t *pinskingroup;
 	int groupskins;
 	daliasskininterval_t *pinskinintervals;
@@ -1425,11 +1470,21 @@ void *Mod_LoadAllSkins(int numskins, daliasskintype_t *pskintype)
 			Mod_FloodFillSkin(skin, pheader->skinwidth, pheader->skinheight);
 
 			// save 8 bit texels for the player model to remap
-			//		if (!strcmp(loadmodel->name,"progs/player.mdl")) {
-			texels = Hunk_AllocName(s, loadname);
-			pheader->texels[i] = texels - (byte *)pheader;
-			memcpy(texels, (byte *)(pskintype + 1), s);
-			//		}
+// TODO		
+			//if(!strcmp(loadmodel->name,"progs/player.mdl"))
+			//{
+				texels = Hunk_AllocName(s, loadname);
+				pheader->texels[i] = texels - (byte *)pheader;
+				memcpy(texels, (byte *)(pskintype + 1), s);
+			//}
+// QW
+			//if(!strcmp(loadmodel->name,"progs/player.mdl"))
+			//{
+				//if (s > sizeof(player_8bit_texels))
+					//Sys_Error ("Player skin too large");
+				//memcpy (player_8bit_texels, (byte *)(pskintype + 1), s);
+			//}
+//
 			sprintf(name, "%s_%i", loadmodel->name, i);
 			pheader->gl_texturenum[i][0] =
 			pheader->gl_texturenum[i][1] =
@@ -1452,12 +1507,17 @@ void *Mod_LoadAllSkins(int numskins, daliasskintype_t *pskintype)
 			for(j = 0; j < groupskins; j++)
 			{
 				Mod_FloodFillSkin(skin, pheader->skinwidth, pheader->skinheight);
+				
+				// TODO: not present in qw
+				//
 				if(j == 0)
 				{
 					texels = Hunk_AllocName(s, loadname);
 					pheader->texels[i] = texels - (byte *)pheader;
 					memcpy(texels, (byte *)(pskintype), s);
 				}
+				//
+
 				sprintf(name, "%s_%i_%i", loadmodel->name, i, j);
 				pheader->gl_texturenum[i][j & 3] =
 				GL_LoadTexture(name, pheader->skinwidth,
@@ -1487,12 +1547,39 @@ void Mod_LoadAliasModel(model_t *mod, void *buffer)
 	mdl_t *pinmodel;
 	stvert_t *pinstverts;
 	dtriangle_t *pintriangles;
-	int version, numframes, numskins;
+	int version, numframes;
 	int size;
 	daliasframetype_t *pframetype;
 	daliasskintype_t *pskintype;
 	int start, end, total;
 
+// TODO
+/*
+if (!strcmp(loadmodel->name, "progs/player.mdl") ||
+		!strcmp(loadmodel->name, "progs/eyes.mdl")) {
+		unsigned short crc;
+		byte *p;
+		int len;
+		char st[40];
+
+		CRC_Init(&crc);
+		for (len = com_filesize, p = buffer; len; len--, p++)
+			CRC_ProcessByte(&crc, *p);
+	
+		sprintf(st, "%d", (int) crc);
+		Info_SetValueForKey (cls.userinfo, 
+			!strcmp(loadmodel->name, "progs/player.mdl") ? pmodel_name : emodel_name,
+			st, MAX_INFO_STRING);
+
+		if (cls.state >= ca_connected) {
+			MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
+			sprintf(st, "setinfo %s %d", 
+				!strcmp(loadmodel->name, "progs/player.mdl") ? pmodel_name : emodel_name,
+				(int)crc);
+			SZ_Print (&cls.netchan.message, st);
+		}
+	}
+*/
 	start = Hunk_LowMark();
 
 	pinmodel = (mdl_t *)buffer;
@@ -1648,9 +1735,7 @@ void *Mod_LoadSpriteFrame(void *pin, mspriteframe_t **ppframe, int framenum)
 {
 	dspriteframe_t *pinframe;
 	mspriteframe_t *pspriteframe;
-	int i, width, height, size, origin[2];
-	unsigned short *ppixout;
-	byte *ppixin;
+	int width, height, size, origin[2];
 	char name[64];
 
 	pinframe = (dspriteframe_t *)pin;
@@ -1700,8 +1785,7 @@ void *Mod_LoadSpriteGroup(void *pin, mspriteframe_t **ppframe, int framenum)
 	numframes = LittleLong(pingroup->numframes);
 
 	pspritegroup = Hunk_AllocName(sizeof(mspritegroup_t) +
-	                              (numframes - 1) * sizeof(pspritegroup->frames[0]),
-	                              loadname);
+	                              (numframes - 1) * sizeof(pspritegroup->frames[0]), loadname);
 
 	pspritegroup->numframes = numframes;
 
@@ -1753,8 +1837,7 @@ void Mod_LoadSpriteModel(model_t *mod, void *buffer)
 	version = LittleLong(pin->version);
 	if(version != SPRITE_VERSION)
 		Sys_Error("%s has wrong version number "
-		          "(%i should be %i)",
-		          mod->name, version, SPRITE_VERSION);
+		          "(%i should be %i)", mod->name, version, SPRITE_VERSION);
 
 	numframes = LittleLong(pin->numframes);
 

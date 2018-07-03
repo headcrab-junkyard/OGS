@@ -42,10 +42,10 @@
 #define WARP_WIDTH 320
 #define WARP_HEIGHT 200
 
-static Display *dpy = nullptr;
+static Display *dpy = NULL;
 static int scrnum;
 static Window win;
-static GLXContext ctx = nullptr;
+static GLXContext ctx = NULL;
 
 #define KEY_MASK (KeyPressMask | KeyReleaseMask)
 #define MOUSE_MASK (ButtonPressMask | ButtonReleaseMask | \

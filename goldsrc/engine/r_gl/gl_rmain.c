@@ -20,12 +20,12 @@
 
 #include "quakedef.h"
 
-entity_t r_worldentity;
+cl_entity_t r_worldentity;
 
 qboolean r_cache_thrash; // compatability
 
 vec3_t modelorg, r_entorigin;
-entity_t *currententity;
+cl_entity_t *currententity;
 
 int r_visframecount; // bumped when going to a new PVS
 int r_framecount;    // used for dlight push checking
@@ -82,6 +82,7 @@ cvar_t r_mirroralpha = { "r_mirroralpha", "1" };
 cvar_t r_wateralpha = { "r_wateralpha", "1" };
 cvar_t r_dynamic = { "r_dynamic", "1" };
 cvar_t r_novis = { "r_novis", "0" };
+//cvar_t	r_netgraph = {"r_netgraph","0"}; // TODO
 
 cvar_t gl_finish = { "gl_finish", "0" };
 cvar_t gl_clear = { "gl_clear", "0" };
@@ -93,11 +94,12 @@ cvar_t gl_polyblend = { "gl_polyblend", "1" };
 cvar_t gl_flashblend = { "gl_flashblend", "1" };
 cvar_t gl_playermip = { "gl_playermip", "0" };
 cvar_t gl_nocolors = { "gl_nocolors", "0" };
-cvar_t gl_keeptjunctions = { "gl_keeptjunctions", "0" };
+cvar_t gl_keeptjunctions = { "gl_keeptjunctions", "0" }; // TODO: 1 in qw
 cvar_t gl_reporttjunctions = { "gl_reporttjunctions", "0" };
-cvar_t gl_doubleeyes = { "gl_doubleeys", "1" };
+cvar_t gl_doubleeyes = { "gl_doubleeys", "1" }; // TODO: not present in qw
 
 extern cvar_t gl_ztrick;
+//extern	cvar_t	scr_fov; // TODO
 
 /*
 =================
@@ -116,12 +118,13 @@ qboolean R_CullBox(vec3_t mins, vec3_t maxs)
 	return false;
 }
 
-void R_RotateForEntity(entity_t *e)
+void R_RotateForEntity(cl_entity_t *e)
 {
 	glTranslatef(e->origin[0], e->origin[1], e->origin[2]);
 
 	glRotatef(e->angles[1], 0, 0, 1);
 	glRotatef(-e->angles[0], 0, 1, 0);
+	//ZOID: fixed z angle
 	glRotatef(e->angles[2], 1, 0, 0);
 }
 
@@ -138,7 +141,7 @@ void R_RotateForEntity(entity_t *e)
 R_GetSpriteFrame
 ================
 */
-mspriteframe_t *R_GetSpriteFrame(entity_t *currententity)
+mspriteframe_t *R_GetSpriteFrame(cl_entity_t *currententity)
 {
 	msprite_t *psprite;
 	mspritegroup_t *pspritegroup;
@@ -190,7 +193,7 @@ R_DrawSpriteModel
 
 =================
 */
-void R_DrawSpriteModel(entity_t *e)
+void R_DrawSpriteModel(cl_entity_t *e)
 {
 	vec3_t point;
 	mspriteframe_t *frame;
@@ -422,18 +425,16 @@ R_DrawAliasModel
 
 =================
 */
-void R_DrawAliasModel(entity_t *e)
+void R_DrawAliasModel(cl_entity_t *e)
 {
-	int i, j;
+	int i;
 	int lnum;
 	vec3_t dist;
 	float add;
 	model_t *clmodel;
 	vec3_t mins, maxs;
 	aliashdr_t *paliashdr;
-	trivertx_t *verts, *v;
-	int index;
-	float s, t, an;
+	float an;
 	int anim;
 
 	clmodel = currententity->model;
@@ -482,13 +483,19 @@ void R_DrawAliasModel(entity_t *e)
 		shadelight = 192 - ambientlight;
 
 	// ZOID: never allow players to go totally black
+// TODO
 	i = currententity - cl_entities;
 	if(i >= 1 && i <= cl.maxclients /* && !strcmp (currententity->model->name, "progs/player.mdl") */)
+// TODO: qw
+	//if (!strcmp(clmodel->name, "progs/player.mdl"))
+	//{
+//
 		if(ambientlight < 8)
 			ambientlight = shadelight = 8;
 
+	//} // TODO: qw
 	// HACK HACK HACK -- no fullbright colors, so make torches full light
-	if(!strcmp(clmodel->name, "progs/flame2.mdl") || !strcmp(clmodel->name, "progs/flame.mdl"))
+	/*else*/ if(!strcmp(clmodel->name, "progs/flame2.mdl") || !strcmp(clmodel->name, "progs/flame.mdl"))
 		ambientlight = shadelight = 256;
 
 	shadedots = r_avertexnormal_dots[((int)(e->angles[1] * (SHADEDOT_QUANT / 360.0))) & (SHADEDOT_QUANT - 1)];
@@ -516,6 +523,7 @@ void R_DrawAliasModel(entity_t *e)
 	glPushMatrix();
 	R_RotateForEntity(e);
 
+	//if (!strcmp (clmodel->name, "progs/eyes.mdl") ) // TODO: qw
 	if(!strcmp(clmodel->name, "progs/eyes.mdl") && gl_doubleeyes.value)
 	{
 		glTranslatef(paliashdr->scale_origin[0], paliashdr->scale_origin[1], paliashdr->scale_origin[2] - (22 + 8));
@@ -533,11 +541,21 @@ void R_DrawAliasModel(entity_t *e)
 
 	// we can't dynamically colormap textures, so they are cached
 	// seperately for the players.  Heads are just uncolored.
+	//if (currententity->scoreboard && !gl_nocolors.value) // TODO: qw
 	if(currententity->colormap != vid.colormap && !gl_nocolors.value)
 	{
+		//i = currententity->scoreboard - cl.players; // TODO: qw
 		i = currententity - cl_entities;
-		if(i >= 1 && i <= cl.maxclients /* && !strcmp (currententity->model->name, "progs/player.mdl") */)
-			GL_Bind(playertextures - 1 + i);
+
+		// TODO: qw
+		//if (!currententity->scoreboard->skin)
+		{
+			//Skin_Find(currententity->scoreboard);
+			//R_TranslatePlayerSkin(i);
+		}
+
+		if(i >= 1 && i <= cl.maxclients /* && !strcmp (currententity->model->name, "progs/player.mdl") */) // TODO: if (i >= 0 && i< cl.maxclients) in qw
+			GL_Bind(playertextures - 1 + i); // TODO: GL_Bind(playertextures + i); in qw
 	}
 
 	if(gl_smoothmodels.value)
@@ -589,7 +607,7 @@ void R_DrawEntitiesOnList(void)
 	// draw sprites seperately, because of alpha blending
 	for(i = 0; i < cl_numvisedicts; i++)
 	{
-		currententity = cl_visedicts[i];
+		currententity = cl_visedicts[i]; // TODO: = &cl_visedicts[i]; in qw
 
 		switch(currententity->model->type)
 		{
@@ -608,13 +626,17 @@ void R_DrawEntitiesOnList(void)
 
 	for(i = 0; i < cl_numvisedicts; i++)
 	{
-		currententity = cl_visedicts[i];
+		currententity = cl_visedicts[i]; // TODO: = &cl_visedicts[i]; in qw
 
 		switch(currententity->model->type)
 		{
 		case mod_sprite:
 			R_DrawSpriteModel(currententity);
 			break;
+
+		// TODO
+		//default:
+			//break;
 		}
 	}
 }
@@ -634,9 +656,11 @@ void R_DrawViewModel(void)
 	dlight_t *dl;
 	int ambientlight, shadelight;
 
+	//if (!r_drawviewmodel.value || !Cam_DrawViewModel()) // TODO: qw
 	if(!r_drawviewmodel.value)
 		return;
 
+	// TODO: not present in qw
 	if(chase_active.value)
 		return;
 
@@ -646,6 +670,7 @@ void R_DrawViewModel(void)
 	if(!r_drawentities.value)
 		return;
 
+	//if (cl.stats[STAT_ITEMS] & IT_INVISIBILITY) // TODO: qw
 	if(cl.items & IT_INVISIBILITY)
 		return;
 
@@ -700,6 +725,8 @@ void R_PolyBlend(void)
 		return;
 	if(!v_blend[3])
 		return;
+
+	//Con_Printf("R_PolyBlend(): %4.2f %4.2f %4.2f %4.2f\n",v_blend[0], v_blend[1],	v_blend[2],	v_blend[3]);
 
 	GL_DisableMultitexture();
 
@@ -784,13 +811,17 @@ R_SetupFrame
 */
 void R_SetupFrame(void)
 {
-	int edgecount;
-	vrect_t vrect;
-	float w, h;
-
 	// don't allow cheats in multiplayer
 	if(cl.maxclients > 1)
 		Cvar_Set("r_fullbright", "0");
+
+// TODO: qw
+/*
+	r_fullbright.value = 0;
+	r_lightmap.value = 0;
+	if (!atoi(Info_ValueForKey(cl.serverinfo, "watervis")))
+		r_wateralpha.value = 1;
+*/
 
 	R_AnimateLight();
 
@@ -836,8 +867,6 @@ R_SetupGL
 void R_SetupGL(void)
 {
 	float screenaspect;
-	float yfov;
-	int i;
 	extern int glwidth, glheight;
 	int x, x2, y2, y, w, h;
 
@@ -873,6 +902,9 @@ void R_SetupGL(void)
 	glViewport(glx + x, gly + y2, w, h);
 	screenaspect = (float)r_refdef.vrect.width / r_refdef.vrect.height;
 	//	yfov = 2*atan((float)r_refdef.vrect.height/r_refdef.vrect.width)*180/M_PI;
+	//	yfov = (2.0 * tan (scr_fov.value/360*M_PI)) / screenaspect;
+	//	yfov = 2*atan((float)r_refdef.vrect.height/r_refdef.vrect.width)*(scr_fov.value*2)/M_PI;
+	//    MYgluPerspective (yfov,  screenaspect,  4,  4096);
 	MYgluPerspective(r_refdef.fov_y, screenaspect, 4, 4096);
 
 	if(mirror)
@@ -997,6 +1029,7 @@ void R_Clear(void)
 	glDepthRange(gldepthmin, gldepthmax);
 }
 
+//#if 0 //!!! FIXME, Zoid, mirror is disabled for now
 /*
 =============
 R_Mirror
@@ -1006,7 +1039,7 @@ void R_Mirror(void)
 {
 	float d;
 	msurface_t *s;
-	entity_t *ent;
+	cl_entity_t *ent;
 
 	if(!mirror)
 		return;
@@ -1056,13 +1089,14 @@ void R_Mirror(void)
 	glLoadMatrixf(r_base_world_matrix);
 
 	glColor4f(1, 1, 1, r_mirroralpha.value);
-	s = cl.worldmodel->textures[mirrortexturenum]->texturechain;
+	//s = cl.worldmodel->textures[mirrortexturenum]->texturechain; // TODO
 	for(; s; s = s->texturechain)
 		R_RenderBrushPoly(s);
-	cl.worldmodel->textures[mirrortexturenum]->texturechain = NULL;
+	//cl.worldmodel->textures[mirrortexturenum]->texturechain = NULL; // TODO
 	glDisable(GL_BLEND);
 	glColor4f(1, 1, 1, 1);
 }
+//#endif
 
 /*
 ================
@@ -1073,7 +1107,7 @@ r_refdef must be set before the first call
 */
 void R_RenderView(void)
 {
-	double time1, time2;
+	double time1 = 0, time2;
 	GLfloat colors[4] = { (GLfloat)0.0, (GLfloat)0.0, (GLfloat)1, (GLfloat)0.20 };
 
 	if(r_norefresh.value)
@@ -1111,12 +1145,12 @@ void R_RenderView(void)
 	R_DrawViewModel();
 	R_DrawWaterSurfaces();
 
-	//  More fog right here :)
-	//	glDisable(GL_FOG);
-	//  End of all fog code...
+	// More fog right here :)
+	//glDisable(GL_FOG);
+	// End of all fog code...
 
 	// render mirror view
-	R_Mirror();
+	R_Mirror(); // TODO: commented out in qw
 
 	R_PolyBlend();
 

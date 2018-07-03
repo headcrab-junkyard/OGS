@@ -20,6 +20,8 @@
 
 #include "quakedef.h"
 
+//extern void R_InitBubble(); // TODO
+
 /*
 ==================
 R_InitTextures
@@ -166,8 +168,7 @@ R_Init
 */
 void R_Init(void)
 {
-	extern byte *hunk_base;
-	extern cvar_t gl_finish;
+	extern cvar_t gl_finish; // TODO
 
 	Cmd_AddCommand("timerefresh", R_TimeRefresh_f);
 	Cmd_AddCommand("envmap", R_Envmap_f);
@@ -184,6 +185,7 @@ void R_Init(void)
 	Cvar_RegisterVariable(&r_dynamic);
 	Cvar_RegisterVariable(&r_novis);
 	Cvar_RegisterVariable(&r_speeds);
+	//Cvar_RegisterVariable (&r_netgraph); // TODO
 
 	Cvar_RegisterVariable(&gl_finish);
 	Cvar_RegisterVariable(&gl_clear);
@@ -205,6 +207,8 @@ void R_Init(void)
 
 	Cvar_RegisterVariable(&gl_doubleeyes);
 
+	//R_InitBubble(); // TODO: qw
+
 	R_InitParticles();
 	R_InitParticleTexture();
 
@@ -212,8 +216,11 @@ void R_Init(void)
 	Test_Init();
 #endif
 
+	//netgraphtexture = texture_extension_number; // TODO
+	//texture_extension_number++; // TODO
+
 	playertextures = texture_extension_number;
-	texture_extension_number += 16;
+	texture_extension_number += 16; // TODO: MAX_CLIENTS in qw
 }
 
 /*
@@ -235,14 +242,42 @@ void R_TranslatePlayerSkin(int playernum)
 	unsigned pixels[512 * 256], *out;
 	unsigned scaled_width, scaled_height;
 	int inwidth, inheight;
+	//int			tinwidth, tinheight; // TODO: qw
 	byte *inrow;
 	unsigned frac, fracstep;
-	extern byte **player_8bit_texels_tbl;
+	//player_info_t *player; // TODO: qw
+	extern byte **player_8bit_texels_tbl; // TODO: extern	byte		player_8bit_texels[320*200]; in qw
+	//char s[512]; // TODO: qw
 
 	GL_DisableMultitexture();
 
+// TODO: qw
+/*
+	player = &cl.players[playernum];
+	if (!player->name[0])
+		return;
+
+	strcpy(s, Info_ValueForKey(player->userinfo, "skin"));
+	COM_StripExtension(s, s);
+	if (player->skin && !stricmp(s, player->skin->name))
+		player->skin = NULL;
+
+	if (player->_topcolor != player->topcolor ||
+		player->_bottomcolor != player->bottomcolor || !player->skin) {
+		player->_topcolor = player->topcolor;
+		player->_bottomcolor = player->bottomcolor;
+
+		top = player->topcolor;
+		bottom = player->bottomcolor;
+		top = (top < 0) ? 0 : ((top > 13) ? 13 : top);
+		bottom = (bottom < 0) ? 0 : ((bottom > 13) ? 13 : bottom);
+		top *= 16;
+		bottom *= 16;
+*/
+//
 	top = cl.scores[playernum].colors & 0xf0;
 	bottom = (cl.scores[playernum].colors & 15) << 4;
+//
 
 	for(i = 0; i < 256; i++)
 		translate[i] = i;
@@ -263,6 +298,25 @@ void R_TranslatePlayerSkin(int playernum)
 	//
 	// locate the original skin pixels
 	//
+// TODO: qw
+/*
+		// real model width
+		tinwidth = 296;
+		tinheight = 194;
+
+		if (!player->skin)
+			Skin_Find(player);
+		if ((original = Skin_Cache(player->skin)) != NULL) {
+			//skin data width
+			inwidth = 320;
+			inheight = 200;
+		} else {
+			original = player_8bit_texels;
+			inwidth = 296;
+			inheight = 194;
+		}
+*/
+//
 	currententity = &cl_entities[1 + playernum];
 	model = currententity->model;
 	if(!model)
@@ -282,14 +336,16 @@ void R_TranslatePlayerSkin(int playernum)
 	if(s & 3)
 		Sys_Error("R_TranslateSkin: s&3");
 
-	inwidth = paliashdr->skinwidth;
-	inheight = paliashdr->skinheight;
+	inwidth = paliashdr->skinwidth; // TODO: not present in qw
+	inheight = paliashdr->skinheight; // TODO: not present in qw
+//
 
 	// because this happens during gameplay, do it fast
 	// instead of sending it through gl_upload 8
 	GL_Bind(playertextures + playernum);
 
 #if 0
+	//s = 320*200; // TODO: qw
 	byte	translated[320*200];
 
 	for (i=0 ; i<s ; i+=4)
@@ -303,7 +359,7 @@ void R_TranslatePlayerSkin(int playernum)
 
 	// don't mipmap these, because it takes too long
 	GL_Upload8 (translated, paliashdr->skinwidth, paliashdr->skinheight, false, false, true);
-#else
+#else // TODO: #endif in qw
 	scaled_width = gl_max_size.value < 512 ? gl_max_size.value : 512;
 	scaled_height = gl_max_size.value < 256 ? gl_max_size.value : 256;
 
@@ -317,10 +373,10 @@ void R_TranslatePlayerSkin(int playernum)
 
 		out2 = (byte *)pixels;
 		memset(pixels, 0, sizeof(pixels));
-		fracstep = inwidth * 0x10000 / scaled_width;
+		fracstep = inwidth * 0x10000 / scaled_width; // TODO: fracstep = tinwidth*0x10000/scaled_width; in qw
 		for(i = 0; i < scaled_height; i++, out2 += scaled_width)
 		{
-			inrow = original + inwidth * (i * inheight / scaled_height);
+			inrow = original + inwidth * (i * inheight / scaled_height); // TODO: inrow = original + inwidth*(i*tinheight/scaled_height); in qw
 			frac = fracstep >> 1;
 			for(j = 0; j < scaled_width; j += 4)
 			{
@@ -343,10 +399,11 @@ void R_TranslatePlayerSkin(int playernum)
 		translate32[i] = d_8to24table[translate[i]];
 
 	out = pixels;
-	fracstep = inwidth * 0x10000 / scaled_width;
+	//memset(pixels, 0, sizeof(pixels)); // TODO: qw
+	fracstep = inwidth * 0x10000 / scaled_width; // TODO: fracstep = tinwidth * 0x10000 / scaled_width; in qw
 	for(i = 0; i < scaled_height; i++, out += scaled_width)
 	{
-		inrow = original + inwidth * (i * inheight / scaled_height);
+		inrow = original + inwidth * (i * inheight / scaled_height); // TODO: inrow = original + inwidth*(i*tinheight/scaled_height); in qw
 		frac = fracstep >> 1;
 		for(j = 0; j < scaled_width; j += 4)
 		{
@@ -360,12 +417,13 @@ void R_TranslatePlayerSkin(int playernum)
 			frac += fracstep;
 		}
 	}
+
 	glTexImage2D(GL_TEXTURE_2D, 0, gl_solid_format, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-#endif
+#endif // TODO: } in qw (?????????????????)
 }
 
 /*
@@ -404,7 +462,7 @@ void R_NewMap(void)
 			skytexturenum = i;
 		if(!Q_strncmp(cl.worldmodel->textures[i]->name, "window02_1", 10))
 			mirrortexturenum = i;
-		cl.worldmodel->textures[i]->texturechain = NULL;
+		//cl.worldmodel->textures[i]->texturechain = NULL; // TODO
 	}
 #ifdef QUAKE2
 	R_LoadSkys();

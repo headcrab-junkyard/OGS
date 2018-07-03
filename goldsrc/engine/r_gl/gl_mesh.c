@@ -318,6 +318,17 @@ void GL_MakeAliasModelDisplayLists(model_t *m, aliashdr_t *hdr)
 		//
 		sprintf(fullpath, "%s/%s", com_gamedir, cache);
 		f = fopen(fullpath, "wb");
+// TODO
+/*
+		if (!f)
+		{
+			char gldir[MAX_OSPATH];
+
+			sprintf (gldir, "%s/glquake", com_gamedir);
+			Sys_mkdir (gldir);
+			f = fopen (fullpath, "wb");
+		}
+*/
 		if(f)
 		{
 			fwrite(&numcommands, 4, 1, f);

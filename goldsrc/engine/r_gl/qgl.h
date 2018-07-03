@@ -17,12 +17,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-/*
-** QGL.H
-*/
 
-#ifndef __QGL_H__
-#define __QGL_H__
+/// @file
+
+#pragma once
 
 #ifdef _WIN32
 #include <windows.h>
@@ -438,5 +436,3 @@ extern BOOL(WINAPI *qwglSetDeviceGammaRampEXT)(const unsigned char *pRed, const 
 
 #define GL_TEXTURE0_SGIS 0x835E
 #define GL_TEXTURE1_SGIS 0x835F
-
-#endif

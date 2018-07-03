@@ -716,8 +716,7 @@ void VID_Init(unsigned char *palette)
 void Sys_SendKeyEvents()
 {
 	if(UseKeyboard)
-		while(keyboard_update())
-			;
+		while(keyboard_update());
 }
 
 void Force_CenterView_f()
