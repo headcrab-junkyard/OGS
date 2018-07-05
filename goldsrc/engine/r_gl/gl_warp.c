@@ -196,7 +196,7 @@ void EmitWaterPolys(msurface_t *fa)
 
 	for(p = fa->polys; p; p = p->next)
 	{
-		glBegin(GL_POLYGON);
+		qglBegin(GL_POLYGON);
 		for(i = 0, v = p->verts[0]; i < p->numverts; i++, v += VERTEXSIZE)
 		{
 			os = v[3];
@@ -208,10 +208,10 @@ void EmitWaterPolys(msurface_t *fa)
 			t = ot + turbsin[(int)((os * 0.125 + realtime) * TURBSCALE) & 255];
 			t *= (1.0 / 64);
 
-			glTexCoord2f(s, t);
-			glVertex3fv(v);
+			qglTexCoord2f(s, t);
+			qglVertex3fv(v);
 		}
-		glEnd();
+		qglEnd();
 	}
 }
 
@@ -231,7 +231,7 @@ void EmitSkyPolys(msurface_t *fa)
 
 	for(p = fa->polys; p; p = p->next)
 	{
-		glBegin(GL_POLYGON);
+		qglBegin(GL_POLYGON);
 		for(i = 0, v = p->verts[0]; i < p->numverts; i++, v += VERTEXSIZE)
 		{
 			VectorSubtract(v, r_origin, dir);
@@ -247,10 +247,10 @@ void EmitSkyPolys(msurface_t *fa)
 			s = (speedscale + dir[0]) * (1.0 / 128);
 			t = (speedscale + dir[1]) * (1.0 / 128);
 
-			glTexCoord2f(s, t);
-			glVertex3fv(v);
+			qglTexCoord2f(s, t);
+			qglVertex3fv(v);
 		}
-		glEnd();
+		qglEnd();
 	}
 }
 
@@ -273,14 +273,14 @@ void EmitBothSkyLayers(msurface_t *fa)
 
 	EmitSkyPolys(fa);
 
-	glEnable(GL_BLEND);
+	qglEnable(GL_BLEND);
 	GL_Bind(alphaskytexture);
 	speedscale = realtime * 16;
 	speedscale -= (int)speedscale & ~127;
 
 	EmitSkyPolys(fa);
 
-	glDisable(GL_BLEND);
+	qglDisable(GL_BLEND);
 }
 
 #ifndef QUAKE2
@@ -303,7 +303,7 @@ void R_DrawSkyChain(msurface_t *s)
 	for(fa = s; fa; fa = fa->texturechain)
 		EmitSkyPolys(fa);
 
-	glEnable(GL_BLEND);
+	qglEnable(GL_BLEND);
 	GL_Bind(alphaskytexture);
 	speedscale = realtime * 16;
 	speedscale -= (int)speedscale & ~127;
@@ -311,7 +311,7 @@ void R_DrawSkyChain(msurface_t *s)
 	for(fa = s; fa; fa = fa->texturechain)
 		EmitSkyPolys(fa);
 
-	glDisable(GL_BLEND);
+	qglDisable(GL_BLEND);
 }
 
 #endif
@@ -652,14 +652,14 @@ void R_LoadSkys(void)
 		LoadTGA(f);
 		//		LoadPCX (f);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, gl_solid_format, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, targa_rgba);
-		//		glTexImage2D (GL_TEXTURE_2D, 0, gl_solid_format, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, pcx_rgb);
+		qglTexImage2D(GL_TEXTURE_2D, 0, gl_solid_format, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, targa_rgba);
+		//qglTexImage2D (GL_TEXTURE_2D, 0, gl_solid_format, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, pcx_rgb);
 
 		free(targa_rgba);
 		//		free (pcx_rgb);
 
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
 }
 
@@ -717,13 +717,13 @@ void DrawSkyPolygon(int nump, vec3_t vecs)
 
 	c_sky++;
 #if 0
-glBegin (GL_POLYGON);
+qglBegin (GL_POLYGON);
 for (i=0 ; i<nump ; i++, vecs+=3)
 {
 	VectorAdd(vecs, r_origin, v);
-	glVertex3fv (v);
+	qglVertex3fv (v);
 }
-glEnd();
+qglEnd();
 return;
 #endif
 	// decide which face it maps to
@@ -960,8 +960,8 @@ void MakeSkyVec(float s, float t, int axis)
 		t = 511.0 / 512;
 
 	t = 1.0 - t;
-	glTexCoord2f(s, t);
-	glVertex3fv(v);
+	qglTexCoord2f(s, t);
+	qglVertex3fv(v);
 }
 
 /*
@@ -977,10 +977,10 @@ void R_DrawSkyBox(void)
 	float s, t;
 
 #if 0
-glEnable (GL_BLEND);
-glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-glColor4f (1,1,1,0.5);
-glDisable (GL_DEPTH_TEST);
+qglEnable (GL_BLEND);
+qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+qglColor4f (1,1,1,0.5);
+qglDisable (GL_DEPTH_TEST);
 #endif
 	for(i = 0; i < 6; i++)
 	{
@@ -994,18 +994,18 @@ skymins[1][i] = -1;
 skymaxs[0][i] = 1;
 skymaxs[1][i] = 1;
 #endif
-		glBegin(GL_QUADS);
+		qglBegin(GL_QUADS);
 		MakeSkyVec(skymins[0][i], skymins[1][i], i);
 		MakeSkyVec(skymins[0][i], skymaxs[1][i], i);
 		MakeSkyVec(skymaxs[0][i], skymaxs[1][i], i);
 		MakeSkyVec(skymaxs[0][i], skymins[1][i], i);
-		glEnd();
+		qglEnd();
 	}
 #if 0
-glDisable (GL_BLEND);
-glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-glColor4f (1,1,1,0.5);
-glEnable (GL_DEPTH_TEST);
+qglDisable (GL_BLEND);
+qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+qglColor4f (1,1,1,0.5);
+qglEnable (GL_DEPTH_TEST);
 #endif
 }
 
@@ -1055,9 +1055,9 @@ void R_InitSky(texture_t *mt)
 	if(!solidskytexture)
 		solidskytexture = texture_extension_number++;
 	GL_Bind(solidskytexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, gl_solid_format, 128, 128, 0, GL_RGBA, GL_UNSIGNED_BYTE, trans);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	qglTexImage2D(GL_TEXTURE_2D, 0, gl_solid_format, 128, 128, 0, GL_RGBA, GL_UNSIGNED_BYTE, trans);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	for(i = 0; i < 128; i++)
 		for(j = 0; j < 128; j++)
@@ -1072,7 +1072,7 @@ void R_InitSky(texture_t *mt)
 	if(!alphaskytexture)
 		alphaskytexture = texture_extension_number++;
 	GL_Bind(alphaskytexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, gl_alpha_format, 128, 128, 0, GL_RGBA, GL_UNSIGNED_BYTE, trans);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	qglTexImage2D(GL_TEXTURE_2D, 0, gl_alpha_format, 128, 128, 0, GL_RGBA, GL_UNSIGNED_BYTE, trans);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
