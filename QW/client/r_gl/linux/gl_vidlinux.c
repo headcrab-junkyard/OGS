@@ -161,13 +161,11 @@ void vtswitch(int newconsole)
 
 void keyhandler(int scancode, int state)
 {
-	
 	int sc;
 
 	sc = scancode & 0x7f;
 
 	Key_Event(scantokey[sc], state == KEY_EVENTPRESS);
-
 }
 
 void VID_Shutdown()
@@ -346,7 +344,6 @@ void GL_BeginRendering (int *x, int *y, int *width, int *height)
 //	glViewport (*x, *y, *width, *height);
 }
 
-
 void GL_EndRendering ()
 {
 	glFlush();
@@ -357,7 +354,8 @@ void Init_KBD()
 {
 	int i;
 
-	if (COM_CheckParm("-nokbd")) UseKeyboard = 0;
+	if (COM_CheckParm("-nokbd"))
+		UseKeyboard = 0;
 
 	if (UseKeyboard)
 	{
@@ -483,7 +481,8 @@ int findres(int *width, int *height)
 	int i;
 
 	for(i=0;i<NUM_RESOLUTIONS;i++)
-		if((*width<=resolutions[i][0]) && (*height<=resolutions[i][1])) {
+		if((*width<=resolutions[i][0]) && (*height<=resolutions[i][1]))
+		{
 			*width = resolutions[i][0];
 			*height = resolutions[i][1];
 			return resolutions[i][2];
@@ -514,7 +513,8 @@ void VID_Init8bitPalette()
 	glEnable( GL_SHARED_TEXTURE_PALETTE_EXT );
 	oldPalette = (char *) d_8to24table; //d_8to24table3dfx;
 	newPalette = thePalette;
-	for (i=0;i<256;i++) {
+	for (i=0;i<256;i++)
+	{
 		*newPalette++ = *oldPalette++;
 		*newPalette++ = *oldPalette++;
 		*newPalette++ = *oldPalette++;
@@ -655,7 +655,6 @@ void Force_CenterView_f ()
 	cl.viewangles[PITCH] = 0;
 }
 
-
 void mousehandler(int buttonstate, int dx, int dy)
 {
 	mouse_buttonstate = buttonstate;
@@ -665,14 +664,12 @@ void mousehandler(int buttonstate, int dx, int dy)
 
 void IN_Init()
 {
-
 	int mtype;
 	char *mousedev;
 	int mouserate;
 
 	if (UseMouse)
 	{
-
 		Cvar_RegisterVariable (&mouse_button_commands[0]);
 		Cvar_RegisterVariable (&mouse_button_commands[1]);
 		Cvar_RegisterVariable (&mouse_button_commands[2]);
@@ -683,12 +680,14 @@ void IN_Init()
 		mtype = vga_getmousetype();
 
 		mousedev = "/dev/mouse";
-		if (getenv("MOUSEDEV")) mousedev = getenv("MOUSEDEV");
+		if (getenv("MOUSEDEV"))
+			mousedev = getenv("MOUSEDEV");
 		if (COM_CheckParm("-mdev"))
 			mousedev = com_argv[COM_CheckParm("-mdev")+1];
 
 		mouserate = 1200;
-		if (getenv("MOUSERATE")) mouserate = atoi(getenv("MOUSERATE"));
+		if (getenv("MOUSERATE"))
+			mouserate = atoi(getenv("MOUSERATE"));
 		if (COM_CheckParm("-mrate"))
 			mouserate = atoi(com_argv[COM_CheckParm("-mrate")+1]);
 
@@ -699,9 +698,7 @@ void IN_Init()
 		}
 		else
 			mouse_seteventhandler(mousehandler);
-
 	}
-
 }
 
 void IN_Shutdown()

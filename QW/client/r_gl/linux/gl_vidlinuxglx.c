@@ -1,22 +1,24 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
+ *	This file is part of OGS Engine
+ *	Copyright (C) 1996-1997 Id Software, Inc.
+ *	Copyright (C) 2018 BlackPhrase
+ *
+ *	OGS Engine is free software: you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License as published by
+ *	the Free Software Foundation, either version 3 of the License, or
+ *	(at your option) any later version.
+ *
+ *	OGS Engine is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *	GNU General Public License for more details.
+ *
+ *	You should have received a copy of the GNU General Public License
+ *	along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
+ */
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+/// @file
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
 #include <termios.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
@@ -101,7 +103,6 @@ void D_EndDirectRect (int x, int y, int width, int height)
 
 static int XLateKey(XKeyEvent *ev)
 {
-
 	int key;
 	char buf[64];
 	KeySym keysym;
@@ -345,7 +346,7 @@ static void GetEvent(void)
 }
 
 
-void VID_Shutdown(void)
+void VID_Shutdown()
 {
 	if (!ctx)
 		return;
@@ -360,7 +361,7 @@ void signal_handler(int sig)
 	exit(0);
 }
 
-void InitSig(void)
+void InitSig()
 {
 	signal(SIGHUP, signal_handler);
 	signal(SIGINT, signal_handler);
@@ -463,7 +464,7 @@ void	VID_SetPalette (unsigned char *palette)
 GL_Init
 ===============
 */
-void GL_Init (void)
+void GL_Init ()
 {
 	gl_vendor = glGetString (GL_VENDOR);
 	Con_Printf ("GL_VENDOR: %s\n", gl_vendor);
@@ -518,14 +519,13 @@ void GL_BeginRendering (int *x, int *y, int *width, int *height)
 //	glViewport (*x, *y, *width, *height);
 }
 
-
-void GL_EndRendering (void)
+void GL_EndRendering ()
 {
 	glFlush();
 	glXSwapBuffers(dpy, win);
 }
 
-qboolean VID_Is8bit(void)
+qboolean VID_Is8bit()
 {
 	return is8bit;
 }
@@ -545,7 +545,8 @@ void VID_Init8bitPalette()
 	glEnable( GL_SHARED_TEXTURE_PALETTE_EXT );
 	oldPalette = (char *) d_8to24table; //d_8to24table3dfx;
 	newPalette = thePalette;
-	for (i=0;i<256;i++) {
+	for (i=0;i<256;i++)
+	{
 		*newPalette++ = *oldPalette++;
 		*newPalette++ = *oldPalette++;
 		*newPalette++ = *oldPalette++;
@@ -619,6 +620,7 @@ void VID_Init(unsigned char *palette)
 // set vid parameters
 	if ((i = COM_CheckParm("-width")) != 0)
 		width = atoi(com_argv[i+1]);
+
 	if ((i = COM_CheckParm("-height")) != 0)
 		height = atoi(com_argv[i+1]);
 
@@ -640,7 +642,8 @@ void VID_Init(unsigned char *palette)
 	if (vid.conheight < 200)
 		vid.conheight = 200;
 
-	if (!(dpy = XOpenDisplay(NULL))) {
+	if (!(dpy = XOpenDisplay(NULL)))
+	{
 		fprintf(stderr, "Error couldn't open the X display\n");
 		exit(1);
 	}
@@ -703,7 +706,7 @@ void VID_Init(unsigned char *palette)
 	vid.recalc_refdef = 1;				// force a surface cache flush
 }
 
-void Sys_SendKeyEvents(void)
+void Sys_SendKeyEvents()
 {
 	if (dpy) {
 		while (XPending(dpy)) 
@@ -711,16 +714,16 @@ void Sys_SendKeyEvents(void)
 	}
 }
 
-void Force_CenterView_f (void)
+void Force_CenterView_f ()
 {
 	cl.viewangles[PITCH] = 0;
 }
 
-void IN_Init(void)
+void IN_Init()
 {
 }
 
-void IN_Shutdown(void)
+void IN_Shutdown()
 {
 }
 
@@ -729,7 +732,7 @@ void IN_Shutdown(void)
 IN_Commands
 ===========
 */
-void IN_Commands (void)
+void IN_Commands ()
 {
 }
 
