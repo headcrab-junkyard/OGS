@@ -20,13 +20,16 @@
 
 #include "quakedef.h"
 #include "GameUI/IGameUI.h"
+#include "GameUI/IGameConsole.h"
+//#include "GameUI/ICareerUI.h" // TODO
 
 void *gpGameUILib{ nullptr };
+
 IGameUI *gpGameUI{ nullptr };
 
 extern IGameConsole *gpGameConsole;
 
-ICareerUI *gpCareerUI{ nullptr };
+//ICareerUI *gpCareerUI{ nullptr };
 
 void UnloadGameUIModule()
 {
@@ -51,11 +54,11 @@ void LoadGameUIModule()
 	if(!fnGameUIFactory)
 		return;
 
-	gpGameUI = fnGameUIFactory(GAMEUI_INTERFACE_VERSION, nullptr);
-	gpGameConsole = fnGameUIFactory(GAMECONSOLE_INTERFACE_VERSION, nullptr);
-	gpCareerUI = fnGameUIFactory(CAREERUI_INTERFACE_VERSION, nullptr);
+	gpGameUI = (IGameUI*)fnGameUIFactory(GAMEUI_INTERFACE_VERSION, nullptr);
+	gpGameConsole = (IGameConsole*)fnGameUIFactory(GAMECONSOLE_INTERFACE_VERSION, nullptr);
+	//gpCareerUI = (ICareerUI*)fnGameUIFactory(CAREERUI_INTERFACE_VERSION, nullptr); // TODO
 
-	if(!gpGameUI || !gpGameConsole || !gpCareerUI)
+	if(!gpGameUI || !gpGameConsole) //|| !gpCareerUI)
 		return;
 };
 
