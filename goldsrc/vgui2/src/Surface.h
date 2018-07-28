@@ -28,157 +28,157 @@ namespace vgui2
 class CSurface : public ISurface
 {
 public:
-	void Shutdown();
+	void Shutdown() override;
 
-	void RunFrame();
+	void RunFrame() override;
 
-	VPANEL GetEmbeddedPanel();
-	void SetEmbeddedPanel(VPANEL pPanel);
+	VPANEL GetEmbeddedPanel() override;
+	void SetEmbeddedPanel(VPANEL pPanel) override;
 
-	void PushMakeCurrent(VPANEL panel, bool useInsets);
-	void PopMakeCurrent(VPANEL panel);
+	void PushMakeCurrent(VPANEL panel, bool useInsets) override;
+	void PopMakeCurrent(VPANEL panel) override;
 
-	void DrawSetColor(int r, int g, int b, int a);
-	void DrawSetColor(Color col);
+	void DrawSetColor(int r, int g, int b, int a) override;
+	void DrawSetColor(Color col) override;
 
-	void DrawFilledRect(int x0, int y0, int x1, int y1);
-	void DrawOutlinedRect(int x0, int y0, int x1, int y1);
+	void DrawFilledRect(int x0, int y0, int x1, int y1) override;
+	void DrawOutlinedRect(int x0, int y0, int x1, int y1) override;
 
-	void DrawLine(int x0, int y0, int x1, int y1);
-	void DrawPolyLine(int *px, int *py, int numPoints);
+	void DrawLine(int x0, int y0, int x1, int y1) override;
+	void DrawPolyLine(int *px, int *py, int numPoints) override;
 
-	void DrawSetTextFont(HFont font);
-	void DrawSetTextColor(int r, int g, int b, int a);
-	void DrawSetTextColor(Color col);
+	void DrawSetTextFont(HFont font) override;
+	void DrawSetTextColor(int r, int g, int b, int a) override;
+	void DrawSetTextColor(Color col) override;
 
-	void DrawSetTextPos(int x, int y);
-	void DrawGetTextPos(int &x, int &y);
+	void DrawSetTextPos(int x, int y) override;
+	void DrawGetTextPos(int &x, int &y) override;
 
-	void DrawPrintText(const wchar_t *text, int textLen);
+	void DrawPrintText(const wchar_t *text, int textLen) override;
 
-	void DrawUnicodeChar(wchar_t wch);
-	void DrawUnicodeCharAdd(wchar_t wch);
+	void DrawUnicodeChar(wchar_t wch) override;
+	void DrawUnicodeCharAdd(wchar_t wch) override;
 
-	void DrawFlushText();
+	void DrawFlushText() override;
 
-	IHTML *CreateHTMLWindow(IHTMLEvents *events, VPANEL context);
-	void PaintHTMLWindow(IHTML *htmlwin);
-	void DeleteHTMLWindow(IHTML *htmlwin);
+	IHTML *CreateHTMLWindow(IHTMLEvents *events, VPANEL context) override;
+	void PaintHTMLWindow(IHTML *htmlwin) override;
+	void DeleteHTMLWindow(IHTML *htmlwin) override;
 
-	void DrawSetTextureFile(int id, const char *filename, int hardwareFilter, bool forceReload);
-	void DrawSetTextureRGBA(int id, const unsigned char *rgba, int wide, int tall, int hardwareFilter, bool forceReload);
-	void DrawSetTexture(int id);
-	void DrawGetTextureSize(int id, int &wide, int &tall);
+	void DrawSetTextureFile(int id, const char *filename, int hardwareFilter, bool forceReload) override;
+	void DrawSetTextureRGBA(int id, const unsigned char *rgba, int wide, int tall, int hardwareFilter, bool forceReload) override;
+	void DrawSetTexture(int id) override;
+	void DrawGetTextureSize(int id, int &wide, int &tall) override;
 
-	void DrawTexturedRect(int x0, int y0, int x1, int y1);
+	void DrawTexturedRect(int x0, int y0, int x1, int y1) override;
 
-	bool IsTextureIDValid(int id);
-	int CreateNewTextureID(bool procedural = false);
+	bool IsTextureIDValid(int id) override;
+	int CreateNewTextureID(bool procedural = false) override;
 
-	void GetScreenSize(int &wide, int &tall);
+	void GetScreenSize(int &wide, int &tall) override;
 
-	void SetAsTopMost(VPANEL panel, bool state);
+	void SetAsTopMost(VPANEL panel, bool state) override;
 
-	void BringToFront(VPANEL panel);
+	void BringToFront(VPANEL panel) override;
 
-	void SetForegroundWindow(VPANEL panel);
+	void SetForegroundWindow(VPANEL panel) override;
 
-	void SetPanelVisible(VPANEL panel, bool state);
+	void SetPanelVisible(VPANEL panel, bool state) override;
 
-	void SetMinimized(VPANEL panel, bool state);
-	bool IsMinimized(VPANEL panel);
+	void SetMinimized(VPANEL panel, bool state) override;
+	bool IsMinimized(VPANEL panel) override;
 
-	void FlashWindow(VPANEL panel, bool state);
+	void FlashWindow(VPANEL panel, bool state) override;
 
-	void SetTitle(VPANEL panel, const wchar_t *title);
+	void SetTitle(VPANEL panel, const wchar_t *title) override;
 
-	void SetAsToolBar(VPANEL panel, bool state);
+	void SetAsToolBar(VPANEL panel, bool state) override;
 
-	void CreatePopup(VPANEL panel, bool minimised, bool showTaskbarIcon = true, bool disabled = false, bool mouseInput = true, bool kbInput = true);
+	void CreatePopup(VPANEL panel, bool minimised, bool showTaskbarIcon = true, bool disabled = false, bool mouseInput = true, bool kbInput = true) override;
 
-	void SwapBuffers(VPANEL panel);
+	void SwapBuffers(VPANEL panel) override;
 
-	void Invalidate(VPANEL panel);
+	void Invalidate(VPANEL panel) override;
 
-	void SetCursor(HCursor cursor);
+	void SetCursor(HCursor cursor) override;
 
-	bool IsCursorVisible();
+	bool IsCursorVisible() override;
 
-	void ApplyChanges();
+	void ApplyChanges() override;
 
-	bool IsWithin(int x, int y);
+	bool IsWithin(int x, int y) override;
 
-	bool HasFocus();
+	bool HasFocus() override;
 
-	bool SupportsFeature(SurfaceFeature_e feature);
+	bool SupportsFeature(SurfaceFeature_e feature) override;
 
-	void RestrictPaintToSinglePanel(VPANEL panel);
+	void RestrictPaintToSinglePanel(VPANEL panel) override;
 
-	void SetModalPanel(VPANEL panel);
-	VPANEL GetModalPanel();
+	void SetModalPanel(VPANEL panel) override;
+	VPANEL GetModalPanel() override;
 
-	void UnlockCursor();
-	void LockCursor();
+	void UnlockCursor() override;
+	void LockCursor() override;
 
-	void SetTranslateExtendedKeys(bool state);
+	void SetTranslateExtendedKeys(bool state) override;
 
-	VPANEL GetTopmostPopup();
+	VPANEL GetTopmostPopup() override;
 
-	void SetTopLevelFocus(VPANEL panel);
+	void SetTopLevelFocus(VPANEL panel) override;
 
-	HFont CreateFont();
+	HFont CreateFont() override;
 
-	bool AddGlyphSetToFont(HFont font, const char *windowsFontName, int tall, int weight, int blur, int scanlines, int flags, int lowRange, int highRange);
-	bool AddCustomFontFile(const char *fontFileName);
+	bool AddGlyphSetToFont(HFont font, const char *windowsFontName, int tall, int weight, int blur, int scanlines, int flags, int lowRange, int highRange) override;
+	bool AddCustomFontFile(const char *fontFileName) override;
 
-	int GetFontTall(HFont font);
-	void GetCharABCwide(HFont font, int ch, int &a, int &b, int &c);
-	int GetCharacterWidth(HFont font, int ch);
-	void GetTextSize(HFont font, const wchar_t *text, int &wide, int &tall);
+	int GetFontTall(HFont font) override;
+	void GetCharABCwide(HFont font, int ch, int &a, int &b, int &c) override;
+	int GetCharacterWidth(HFont font, int ch) override;
+	void GetTextSize(HFont font, const wchar_t *text, int &wide, int &tall) override;
 
-	VPANEL GetNotifyPanel();
+	VPANEL GetNotifyPanel() override;
 
-	void SetNotifyIcon(VPANEL context, HTexture icon, VPANEL panelToReceiveMessages, const char *text);
+	void SetNotifyIcon(VPANEL context, HTexture icon, VPANEL panelToReceiveMessages, const char *text) override;
 
-	void PlaySound(const char *fileName);
+	void PlaySound(const char *fileName) override;
 
-	int GetPopupCount();
-	VPANEL GetPopup(int index);
+	int GetPopupCount() override;
+	VPANEL GetPopup(int index) override;
 
-	bool ShouldPaintChildPanel(VPANEL childPanel);
+	bool ShouldPaintChildPanel(VPANEL childPanel) override;
 
-	bool RecreateContext(VPANEL panel);
+	bool RecreateContext(VPANEL panel) override;
 
-	void AddPanel(VPANEL panel);
-	void ReleasePanel(VPANEL panel);
+	void AddPanel(VPANEL panel) override;
+	void ReleasePanel(VPANEL panel) override;
 
-	void MovePopupToFront(VPANEL panel);
-	void MovePopupToBack(VPANEL panel);
+	void MovePopupToFront(VPANEL panel) override;
+	void MovePopupToBack(VPANEL panel) override;
 
-	void SolveTraverse(VPANEL panel, bool forceApplySchemeSettings = false);
-	void PaintTraverse(VPANEL panel);
+	void SolveTraverse(VPANEL panel, bool forceApplySchemeSettings = false) override;
+	void PaintTraverse(VPANEL panel) override;
 
-	void EnableMouseCapture(VPANEL panel, bool state);
+	void EnableMouseCapture(VPANEL panel, bool state) override;
 
-	void GetWorkspaceBounds(int &x, int &y, int &wide, int &tall);
-	void GetAbsoluteWindowBounds(int &x, int &y, int &wide, int &tall);
+	void GetWorkspaceBounds(int &x, int &y, int &wide, int &tall) override;
+	void GetAbsoluteWindowBounds(int &x, int &y, int &wide, int &tall) override;
 
-	void GetProportionalBase(int &width, int &height);
+	void GetProportionalBase(int &width, int &height) override;
 
-	void CalculateMouseVisible();
+	void CalculateMouseVisible() override;
 
-	bool NeedKBInput();
+	bool NeedKBInput() override;
 
-	bool HasCursorPosFunctions();
+	bool HasCursorPosFunctions() override;
 
-	void SurfaceGetCursorPos(int &x, int &y);
-	void SurfaceSetCursorPos(int x, int y);
+	void SurfaceGetCursorPos(int &x, int &y) override;
+	void SurfaceSetCursorPos(int x, int y) override;
 
-	void DrawTexturedPolygon(int *p, int n);
+	void DrawTexturedPolygon(int *p, int n) override;
 
-	int GetFontAscent(HFont font, wchar_t wch);
+	int GetFontAscent(HFont font, wchar_t wch) override;
 
-	void SetAllowHTMLJavaScript(bool state);
+	void SetAllowHTMLJavaScript(bool state) override;
 };
 
 }; // namespace vgui2

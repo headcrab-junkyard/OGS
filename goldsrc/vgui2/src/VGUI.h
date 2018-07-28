@@ -28,44 +28,44 @@ namespace vgui2
 class CVGui : public IVGui
 {
 public:
-	bool Init(CreateInterfaceFn *factoryList, int numFactories);
-	void Shutdown();
+	bool Init(CreateInterfaceFn *factoryList, int numFactories) override;
+	void Shutdown() override;
 
-	void Start();
-	void Stop();
+	void Start() override;
+	void Stop() override;
 
-	bool IsRunning();
+	bool IsRunning() override;
 
-	void RunFrame();
+	void RunFrame() override;
 
-	void ShutdownMessage(unsigned int shutdownID);
+	void ShutdownMessage(unsigned int shutdownID) override;
 
-	VPANEL AllocPanel();
-	void FreePanel(VPANEL panel);
+	VPANEL AllocPanel() override;
+	void FreePanel(VPANEL panel) override;
 
-	void DPrintf(const char *format, ...);
-	void DPrintf2(const char *format, ...);
+	void DPrintf(const char *format, ...) override;
+	void DPrintf2(const char *format, ...) override;
 
-	void SpewAllActivePanelNames();
+	void SpewAllActivePanelNames() override;
 
-	HPanel PanelToHandle(VPANEL panel);
-	VPANEL HandleToPanel(HPanel index);
+	HPanel PanelToHandle(VPANEL panel) override;
+	VPANEL HandleToPanel(HPanel index) override;
 
-	void MarkPanelForDeletion(VPANEL panel);
+	void MarkPanelForDeletion(VPANEL panel) override;
 
-	void AddTickSignal(VPANEL panel, int intervalMilliseconds = 0);
-	void RemoveTickSignal(VPANEL panekl);
+	void AddTickSignal(VPANEL panel, int intervalMilliseconds = 0) override;
+	void RemoveTickSignal(VPANEL panekl) override;
 
-	void PostMessage(VPANEL target, KeyValues *params, VPANEL from, float delaySeconds = 0.0f);
+	void PostMessage(VPANEL target, KeyValues *params, VPANEL from, float delaySeconds = 0.0f) override;
 
-	HContext CreateContext();
-	void DestroyContext(HContext context);
+	HContext CreateContext() override;
+	void DestroyContext(HContext context) override;
 
-	void AssociatePanelWithContext(HContext context, VPANEL pRoot);
-	void ActivateContext(HContext context);
+	void AssociatePanelWithContext(HContext context, VPANEL pRoot) override;
+	void ActivateContext(HContext context) override;
 
-	void SetSleep(bool state);
-	bool GetShouldVGuiControlSleep();
+	void SetSleep(bool state) override;
+	bool GetShouldVGuiControlSleep() override;
 };
 
 }; // namespace vgui2

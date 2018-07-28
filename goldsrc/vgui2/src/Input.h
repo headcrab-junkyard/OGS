@@ -28,38 +28,38 @@ namespace vgui2
 class CInput : public IInput
 {
 public:
-	void SetMouseFocus(VPANEL newMouseFocus);
-	void SetMouseCapture(VPANEL panel);
+	void SetMouseFocus(VPANEL newMouseFocus) override;
+	void SetMouseCapture(VPANEL panel) override;
 
-	void GetKeyCodeText(KeyCode code, char *buf, int buflen);
+	void GetKeyCodeText(KeyCode code, char *buf, int buflen) override;
 
-	VPANEL GetFocus();
-	VPANEL GetMouseOver();
+	VPANEL GetFocus() override;
+	VPANEL GetMouseOver() override;
 
-	void SetCursorPos(int x, int y);
-	void GetCursorPos(int &x, int &y);
+	void SetCursorPos(int x, int y) override;
+	void GetCursorPos(int &x, int &y) override;
 
-	bool WasMousePressed(MouseCode code);
-	bool WasMouseDoublePressed(MouseCode code);
+	bool WasMousePressed(MouseCode code) override;
+	bool WasMouseDoublePressed(MouseCode code) override;
 
-	bool IsMouseDown(MouseCode code);
+	bool IsMouseDown(MouseCode code) override;
 
-	void SetCursorOveride(HCursor cursor);
-	HCursor GetCursorOveride();
+	void SetCursorOveride(HCursor cursor) override;
+	HCursor GetCursorOveride() override;
 
-	bool WasMouseReleased(MouseCode code);
-	bool WasKeyPressed(KeyCode code);
+	bool WasMouseReleased(MouseCode code) override;
+	bool WasKeyPressed(KeyCode code) override;
 
-	bool IsKeyDown(KeyCode code);
+	bool IsKeyDown(KeyCode code) override;
 
-	bool WasKeyTyped(KeyCode code);
-	bool WasKeyReleased(KeyCode code);
+	bool WasKeyTyped(KeyCode code) override;
+	bool WasKeyReleased(KeyCode code) override;
 
-	VPANEL GetAppModalSurface();
-	void SetAppModalSurface(VPANEL panel);
-	void ReleaseAppModalSurface();
+	VPANEL GetAppModalSurface() override;
+	void SetAppModalSurface(VPANEL panel) override;
+	void ReleaseAppModalSurface() override;
 
-	void GetCursorPosition(int &x, int &y);
+	void GetCursorPosition(int &x, int &y) override;
 };
 
 }; // namespace vgui2

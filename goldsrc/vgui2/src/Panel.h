@@ -28,102 +28,102 @@ namespace vgui2
 class CPanel : public IPanel
 {
 public:
-	void Init(VPANEL vguiPanel, IClientPanel *panel);
+	void Init(VPANEL vguiPanel, IClientPanel *panel) override;
 
-	void SetPos(VPANEL vguiPanel, int x, int y);
-	void GetPos(VPANEL vguiPanel, int &x, int &y);
+	void SetPos(VPANEL vguiPanel, int x, int y) override;
+	void GetPos(VPANEL vguiPanel, int &x, int &y) override;
 
-	void SetSize(VPANEL vguiPanel, int wide, int tall);
-	void GetSize(VPANEL vguiPanel, int &wide, int &tall);
+	void SetSize(VPANEL vguiPanel, int wide, int tall) override;
+	void GetSize(VPANEL vguiPanel, int &wide, int &tall) override;
 
-	void SetMinimumSize(VPANEL vguiPanel, int wide, int tall);
-	void GetMinimumSize(VPANEL vguiPanel, int &wide, int &tall);
+	void SetMinimumSize(VPANEL vguiPanel, int wide, int tall) override;
+	void GetMinimumSize(VPANEL vguiPanel, int &wide, int &tall) override;
 
-	void SetZPos(VPANEL vguiPanel, int z);
-	int GetZPos(VPANEL vguiPanel);
+	void SetZPos(VPANEL vguiPanel, int z) override;
+	int GetZPos(VPANEL vguiPanel) override;
 
-	void GetAbsPos(VPANEL vguiPanel, int &x, int &y);
+	void GetAbsPos(VPANEL vguiPanel, int &x, int &y) override;
 
-	void GetClipRect(VPANEL vguiPanel, int &x0, int &y0, int &x1, int &y1);
+	void GetClipRect(VPANEL vguiPanel, int &x0, int &y0, int &x1, int &y1) override;
 
-	void SetInset(VPANEL vguiPanel, int left, int top, int right, int bottom);
-	void GetInset(VPANEL vguiPanel, int &left, int &top, int &right, int &bottom);
+	void SetInset(VPANEL vguiPanel, int left, int top, int right, int bottom) override;
+	void GetInset(VPANEL vguiPanel, int &left, int &top, int &right, int &bottom) override;
 
-	void SetVisible(VPANEL vguiPanel, bool state);
-	bool IsVisible(VPANEL vguiPanel);
+	void SetVisible(VPANEL vguiPanel, bool state) override;
+	bool IsVisible(VPANEL vguiPanel) override;
 
-	void SetParent(VPANEL vguiPanel, VPANEL newParent);
+	void SetParent(VPANEL vguiPanel, VPANEL newParent) override;
 
-	int GetChildCount(VPANEL vguiPanel);
+	int GetChildCount(VPANEL vguiPanel) override;
 
-	VPANEL GetChild(VPANEL vguiPanel, int index);
-	VPANEL GetParent(VPANEL vguiPanel);
+	VPANEL GetChild(VPANEL vguiPanel, int index) override;
+	VPANEL GetParent(VPANEL vguiPanel) override;
 
-	void MoveToFront(VPANEL vguiPanel);
-	void MoveToBack(VPANEL vguiPanel);
+	void MoveToFront(VPANEL vguiPanel) override;
+	void MoveToBack(VPANEL vguiPanel) override;
 
-	bool HasParent(VPANEL vguiPanel, VPANEL potentialParent);
+	bool HasParent(VPANEL vguiPanel, VPANEL potentialParent) override;
 
-	bool IsPopup(VPANEL vguiPanel);
-	void SetPopup(VPANEL vguiPanel, bool state);
+	bool IsPopup(VPANEL vguiPanel) override;
+	void SetPopup(VPANEL vguiPanel, bool state) override;
 
-	bool Render_GetPopupVisible(VPANEL vguiPanel);
-	void Render_SetPopupVisible(VPANEL vguiPanel, bool state);
+	bool Render_GetPopupVisible(VPANEL vguiPanel) override;
+	void Render_SetPopupVisible(VPANEL vguiPanel, bool state) override;
 
-	HScheme GetScheme(VPANEL vguiPanel);
+	HScheme GetScheme(VPANEL vguiPanel) override;
 
-	bool IsProportional(VPANEL vguiPanel);
-	bool IsAutoDeleteSet(VPANEL vguiPanel);
+	bool IsProportional(VPANEL vguiPanel) override;
+	bool IsAutoDeleteSet(VPANEL vguiPanel) override;
 
-	void DeletePanel(VPANEL vguiPanel);
+	void DeletePanel(VPANEL vguiPanel) override;
 
-	void SetKeyBoardInputEnabled(VPANEL vguiPanel, bool state);
-	void SetMouseInputEnabled(VPANEL vguiPanel, bool state);
+	void SetKeyBoardInputEnabled(VPANEL vguiPanel, bool state) override;
+	void SetMouseInputEnabled(VPANEL vguiPanel, bool state) override;
 
-	bool IsKeyBoardInputEnabled(VPANEL vguiPanel);
-	bool IsMouseInputEnabled(VPANEL vguiPanel);
+	bool IsKeyBoardInputEnabled(VPANEL vguiPanel) override;
+	bool IsMouseInputEnabled(VPANEL vguiPanel) override;
 
-	void Solve(VPANEL vguiPanel);
+	void Solve(VPANEL vguiPanel) override;
 
-	const char *GetName(VPANEL vguiPanel);
-	const char *GetClassName(VPANEL vguiPanel);
+	const char *GetName(VPANEL vguiPanel) override;
+	const char *GetClassName(VPANEL vguiPanel) override;
 
-	void SendMessage(VPANEL vguiPanel, KeyValues *params, VPANEL ifromPanel);
+	void SendMessage(VPANEL vguiPanel, KeyValues *params, VPANEL ifromPanel) override;
 
-	void Think(VPANEL vguiPanel);
+	void Think(VPANEL vguiPanel) override;
 
-	void PerformApplySchemeSettings(VPANEL vguiPanel);
+	void PerformApplySchemeSettings(VPANEL vguiPanel) override;
 
-	void PaintTraverse(VPANEL vguiPanel, bool forceRepaint, bool allowForce = true);
-	void Repaint(VPANEL vguiPanel);
+	void PaintTraverse(VPANEL vguiPanel, bool forceRepaint, bool allowForce = true) override;
+	void Repaint(VPANEL vguiPanel) override;
 
-	VPANEL IsWithinTraverse(VPANEL vguiPanel, int x, int y, bool traversePopups);
+	VPANEL IsWithinTraverse(VPANEL vguiPanel, int x, int y, bool traversePopups) override;
 
-	void OnChildAdded(VPANEL vguiPanel, VPANEL child);
-	void OnSizeChanged(VPANEL vguiPanel, int newWide, int newTall);
+	void OnChildAdded(VPANEL vguiPanel, VPANEL child) override;
+	void OnSizeChanged(VPANEL vguiPanel, int newWide, int newTall) override;
 
-	void InternalFocusChanged(VPANEL vguiPanel, bool lost);
+	void InternalFocusChanged(VPANEL vguiPanel, bool lost) override;
 
-	bool RequestInfo(VPANEL vguiPanel, KeyValues *outputData);
-	void RequestFocus(VPANEL vguiPanel, int direction = 0);
-	bool RequestFocusPrev(VPANEL vguiPanel, VPANEL existingPanel);
-	bool RequestFocusNext(VPANEL vguiPanel, VPANEL existingPanel);
+	bool RequestInfo(VPANEL vguiPanel, KeyValues *outputData) override;
+	void RequestFocus(VPANEL vguiPanel, int direction = 0) override;
+	bool RequestFocusPrev(VPANEL vguiPanel, VPANEL existingPanel) override;
+	bool RequestFocusNext(VPANEL vguiPanel, VPANEL existingPanel) override;
 
-	VPANEL GetCurrentKeyFocus(VPANEL vguiPanel);
+	VPANEL GetCurrentKeyFocus(VPANEL vguiPanel) override;
 
-	int GetTabPosition(VPANEL vguiPanel);
+	int GetTabPosition(VPANEL vguiPanel) override;
 
-	SurfacePlat *Plat(VPANEL vguiPanel);
-	void SetPlat(VPANEL vguiPanel, SurfacePlat *Plat);
+	SurfacePlat *Plat(VPANEL vguiPanel) override;
+	void SetPlat(VPANEL vguiPanel, SurfacePlat *Plat) override;
 
-	Panel *GetPanel(VPANEL vguiPanel, const char *destinationModule);
+	Panel *GetPanel(VPANEL vguiPanel, const char *destinationModule) override;
 
-	bool IsEnabled(VPANEL vguiPanel);
-	void SetEnabled(VPANEL vguiPanel, bool state);
+	bool IsEnabled(VPANEL vguiPanel) override;
+	void SetEnabled(VPANEL vguiPanel, bool state) override;
 
-	void *Client(VPANEL vguiPanel);
+	void *Client(VPANEL vguiPanel) override;
 
-	const char *GetModuleName(VPANEL vguiPanel);
+	const char *GetModuleName(VPANEL vguiPanel) override;
 };
 
 }; // namespace vgui2

@@ -28,35 +28,35 @@ namespace vgui2
 class CInputInternal : public IInputInternal
 {
 public:
-	void RunFrame();
+	void RunFrame() override;
 
-	void UpdateMouseFocus(int x, int y);
+	void UpdateMouseFocus(int x, int y) override;
 
-	void PanelDeleted(VPANEL panel);
+	void PanelDeleted(VPANEL panel) override;
 
-	bool InternalCursorMoved(int x, int y);
+	bool InternalCursorMoved(int x, int y) override;
 
-	bool InternalMousePressed(MouseCode code);
-	bool InternalMouseDoublePressed(MouseCode code);
-	bool InternalMouseReleased(MouseCode code);
-	bool InternalMouseWheeled(int delta);
+	bool InternalMousePressed(MouseCode code) override;
+	bool InternalMouseDoublePressed(MouseCode code) override;
+	bool InternalMouseReleased(MouseCode code) override;
+	bool InternalMouseWheeled(int delta) override;
 
-	bool InternalKeyCodePressed(KeyCode code);
-	void InternalKeyCodeTyped(KeyCode code);
-	void InternalKeyTyped(wchar_t unichar);
-	bool InternalKeyCodeReleased(KeyCode code);
+	bool InternalKeyCodePressed(KeyCode code) override;
+	void InternalKeyCodeTyped(KeyCode code) override;
+	void InternalKeyTyped(wchar_t unichar) override;
+	bool InternalKeyCodeReleased(KeyCode code) override;
 
-	HInputContext CreateInputContext();
-	void DestroyInputContext(HInputContext context);
+	HInputContext CreateInputContext() override;
+	void DestroyInputContext(HInputContext context) override;
 
-	void AssociatePanelWithInputContext(HInputContext context, VPANEL pRoot);
-	void ActivateInputContext(HInputContext context);
+	void AssociatePanelWithInputContext(HInputContext context, VPANEL pRoot) override;
+	void ActivateInputContext(HInputContext context) override;
 
-	VPANEL GetMouseCapture();
+	VPANEL GetMouseCapture() override;
 
-	bool IsChildOfModalPanel(VPANEL panel);
+	bool IsChildOfModalPanel(VPANEL panel) override;
 
-	void ResetInputContext(HInputContext context);
+	void ResetInputContext(HInputContext context) override;
 };
 
 }; // namespace vgui2

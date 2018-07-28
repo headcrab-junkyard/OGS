@@ -26,16 +26,16 @@ namespace vgui2
 class CImage : public IImage
 {
 public:
-	void Paint();
+	void Paint() override;
 
-	void SetPos(int x, int y);
+	void SetPos(int x, int y) override;
 
-	void GetContentSize(int &wide, int &tall);
+	void GetContentSize(int &wide, int &tall) override;
 
-	void GetSize(int &wide, int &tall);
-	void SetSize(int wide, int tall);
+	void GetSize(int &wide, int &tall) override;
+	void SetSize(int wide, int tall) override;
 
-	void SetColor(Color color);
+	void SetColor(Color color) override;
 };
 
 }; // namespace vgui2

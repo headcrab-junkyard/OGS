@@ -22,6 +22,9 @@
 
 #include "vgui/IKeyValues.h"
 
+//namespace vgui2 // TODO
+{
+
 class CKeyValues final : public vgui2::IKeyValues
 {
 public:
@@ -43,3 +46,5 @@ public:
 	void AddKeyValuesToMemoryLeakList(void *pMem, HKeySymbol name) override;
 	void RemoveKeyValuesFromMemoryLeakList(void *pMem) override;
 };
+
+}; // namespace vgui2

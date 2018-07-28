@@ -27,56 +27,56 @@ namespace vgui2
 class CSystem : public ISystem
 {
 public:
-	void Shutdown();
+	void Shutdown() override;
 
-	void RunFrame();
+	void RunFrame() override;
 
-	void ShellExecute(const char *command, const char *file);
+	void ShellExecute(const char *command, const char *file) override;
 
-	double GetFrameTime();
-	double GetCurrentTime();
+	double GetFrameTime() override;
+	double GetCurrentTime() override;
 
-	long GetTimeMillis();
+	long GetTimeMillis() override;
 
-	int GetClipboardTextCount();
+	int GetClipboardTextCount() override;
 
-	void SetClipboardText(const char *text, int textLen);
-	void SetClipboardText(const wchar_t *text, int textLen);
-	int GetClipboardText(int offset, char *buf, int bufLen);
-	int GetClipboardText(int offset, wchar_t *buf, int bufLen);
+	void SetClipboardText(const char *text, int textLen) override;
+	void SetClipboardText(const wchar_t *text, int textLen) override;
+	int GetClipboardText(int offset, char *buf, int bufLen) override;
+	int GetClipboardText(int offset, wchar_t *buf, int bufLen) override;
 
-	bool SetRegistryString(const char *key, const char *value);
-	bool GetRegistryString(const char *key, char *value, int valueLen);
-	bool SetRegistryInteger(const char *key, int value);
-	bool GetRegistryInteger(const char *key, int &value);
+	bool SetRegistryString(const char *key, const char *value) override;
+	bool GetRegistryString(const char *key, char *value, int valueLen) override;
+	bool SetRegistryInteger(const char *key, int value) override;
+	bool GetRegistryInteger(const char *key, int &value) override;
 
-	KeyValues *GetUserConfigFileData(const char *dialogName, int dialogID);
-	void SetUserConfigFile(const char *fileName, const char *pathName);
-	void SaveUserConfigFile();
+	KeyValues *GetUserConfigFileData(const char *dialogName, int dialogID) override;
+	void SetUserConfigFile(const char *fileName, const char *pathName) override;
+	void SaveUserConfigFile() override;
 
-	bool SetWatchForComputerUse(bool state);
+	bool SetWatchForComputerUse(bool state) override;
 
-	double GetTimeSinceLastUse();
+	double GetTimeSinceLastUse() override;
 
-	int GetAvailableDrives(char *buf, int bufLen);
+	int GetAvailableDrives(char *buf, int bufLen) override;
 
-	bool CommandLineParamExists(const char *paramName);
-	const char *GetFullCommandLine();
+	bool CommandLineParamExists(const char *paramName) override;
+	const char *GetFullCommandLine() override;
 
-	bool GetCurrentTimeAndDate(int *year, int *month, int *dayOfWeek, int *day, int *hour, int *minute, int *second);
+	bool GetCurrentTimeAndDate(int *year, int *month, int *dayOfWeek, int *day, int *hour, int *minute, int *second) override;
 
-	double GetFreeDiskSpace(const char *path);
+	double GetFreeDiskSpace(const char *path) override;
 
-	bool CreateShortcut(const char *linkFileName, const char *targetPath, const char *arguments, const char *workingDirectory, const char *iconFile);
+	bool CreateShortcut(const char *linkFileName, const char *targetPath, const char *arguments, const char *workingDirectory, const char *iconFile) override;
 
-	bool GetShortcutTarget(const char *linkFileName, char *targetPath, char *arguments, int destBufferSizes);
-	bool ModifyShortcutTarget(const char *linkFileName, const char *targetPath, const char *arguments, const char *workingDirectory);
+	bool GetShortcutTarget(const char *linkFileName, char *targetPath, char *arguments, int destBufferSizes) override;
+	bool ModifyShortcutTarget(const char *linkFileName, const char *targetPath, const char *arguments, const char *workingDirectory) override;
 
-	bool GetCommandLineParamValue(const char *paramName, char *value, int valueBufferSize);
+	bool GetCommandLineParamValue(const char *paramName, char *value, int valueBufferSize) override;
 
-	bool DeleteRegistryKey(const char *keyName);
+	bool DeleteRegistryKey(const char *keyName) override;
 
-	const char *GetDesktopFolderPath();
+	const char *GetDesktopFolderPath() override;
 };
 
 }; // namespace vgui2

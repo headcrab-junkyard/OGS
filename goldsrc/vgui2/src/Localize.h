@@ -28,41 +28,41 @@ namespace vgui2
 class CLocalize : public ILocalize
 {
 public:
-	bool AddFile(IFileSystem *fileSystem, const char *fileName);
+	bool AddFile(IFileSystem *fileSystem, const char *fileName) override;
 
-	void RemoveAll();
+	void RemoveAll() override;
 
-	wchar_t *Find(char const *tokenName);
+	wchar_t *Find(char const *tokenName) override;
 
-	int ConvertANSIToUnicode(const char *ansi, wchar_t *unicode, int unicodeBufferSizeInBytes);
-	int ConvertUnicodeToANSI(const wchar_t *unicode, char *ansi, int ansiBufferSize);
+	int ConvertANSIToUnicode(const char *ansi, wchar_t *unicode, int unicodeBufferSizeInBytes) override;
+	int ConvertUnicodeToANSI(const wchar_t *unicode, char *ansi, int ansiBufferSize) override;
 
-	StringIndex_t FindIndex(const char *tokenName);
+	StringIndex_t FindIndex(const char *tokenName) override;
 
-	void ConstructString(wchar_t *unicodeOuput, int unicodeBufferSizeInBytes, wchar_t *formatString, int numFormatParameters, ...);
+	void ConstructString(wchar_t *unicodeOuput, int unicodeBufferSizeInBytes, wchar_t *formatString, int numFormatParameters, ...) override;
 
-	const char *GetNameByIndex(StringIndex_t index);
-	wchar_t *GetValueByIndex(StringIndex_t index);
+	const char *GetNameByIndex(StringIndex_t index) override;
+	wchar_t *GetValueByIndex(StringIndex_t index) override;
 
-	StringIndex_t GetFirstStringIndex();
-	StringIndex_t GetNextStringIndex(StringIndex_t index);
+	StringIndex_t GetFirstStringIndex() override;
+	StringIndex_t GetNextStringIndex(StringIndex_t index) override;
 
-	void AddString(const char *tokenName, wchar_t *unicodeString, const char *fileName);
+	void AddString(const char *tokenName, wchar_t *unicodeString, const char *fileName) override;
 
-	void SetValueByIndex(StringIndex_t index, wchar_t *newValue);
+	void SetValueByIndex(StringIndex_t index, wchar_t *newValue) override;
 
-	bool SaveToFile(IFileSystem *fileSystem, const char *fileName);
+	bool SaveToFile(IFileSystem *fileSystem, const char *fileName) override;
 
-	int GetLocalizationFileCount();
+	int GetLocalizationFileCount() override;
 
-	const char *GetLocalizationFileName(int index);
-	const char *GetFileNameByIndex(StringIndex_t index);
+	const char *GetLocalizationFileName(int index) override;
+	const char *GetFileNameByIndex(StringIndex_t index) override;
 
-	void ReloadLocalizationFiles();
+	void ReloadLocalizationFiles() override;
 
 	// THIS IS REALLY BAD SINCE OVERLOADED FUNCS ORDER IN VIRTUAL INTERFACES CAN BE DIFFERENT ON VARIOUS COMPILERS VALVE!!!!!!!!!!!!
-	void ConstructString(wchar_t *unicodeOutput, int unicodeBufferSizeInBytes, const char *tokenName, KeyValues *localizationVariables);
-	void ConstructString(wchar_t *unicodeOutput, int unicodeBufferSizeInBytes, StringIndex_t unlocalizedTextSymbol, KeyValues *localizationVariables);
+	void ConstructString(wchar_t *unicodeOutput, int unicodeBufferSizeInBytes, const char *tokenName, KeyValues *localizationVariables) override;
+	void ConstructString(wchar_t *unicodeOutput, int unicodeBufferSizeInBytes, StringIndex_t unlocalizedTextSymbol, KeyValues *localizationVariables) override;
 };
 
 }; // namespace vgui2

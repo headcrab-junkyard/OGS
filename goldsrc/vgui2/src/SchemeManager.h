@@ -28,22 +28,22 @@ namespace vgui2
 class CSchemeManager : public ISchemeManager
 {
 public:
-	HScheme LoadSchemeFromFile(const char *fileName, const char *tag);
+	HScheme LoadSchemeFromFile(const char *fileName, const char *tag) override;
 
-	void ReloadSchemes();
+	void ReloadSchemes() override;
 
-	HScheme GetDefaultScheme();
-	HScheme GetScheme(const char *tag);
+	HScheme GetDefaultScheme() override;
+	HScheme GetScheme(const char *tag) override;
 
-	IImage *GetImage(const char *imageName, bool hardwareFiltered);
-	HTexture GetImageID(const char *imageName, bool hardwareFiltered);
+	IImage *GetImage(const char *imageName, bool hardwareFiltered) override;
+	HTexture GetImageID(const char *imageName, bool hardwareFiltered) override;
 
-	IScheme *GetIScheme(HScheme scheme);
+	IScheme *GetIScheme(HScheme scheme) override;
 
-	void Shutdown(bool full = true);
+	void Shutdown(bool full = true) override;
 
-	int GetProportionalScaledValue(int normalizedValue);
-	int GetProportionalNormalizedValue(int scaledValue);
+	int GetProportionalScaledValue(int normalizedValue) override;
+	int GetProportionalNormalizedValue(int scaledValue) override;
 };
 
 }; // namespace vgui2

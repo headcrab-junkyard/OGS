@@ -28,10 +28,10 @@ namespace vgui2
 class CScheme : public IScheme
 {
 public:
-	const char *GetResourceString(const char *stringName);
-	IBorder *GetBorder(const char *borderName);
-	HFont GetFont(const char *fontName, bool proportional);
-	Color GetColor(const char *colorName, Color defaultColor);
+	const char *GetResourceString(const char *stringName) override;
+	IBorder *GetBorder(const char *borderName) override;
+	HFont GetFont(const char *fontName, bool proportional) override;
+	Color GetColor(const char *colorName, Color defaultColor) override;
 };
 
 }; // namespace vgui2

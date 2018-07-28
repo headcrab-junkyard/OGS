@@ -28,21 +28,21 @@ namespace vgui2
 class CBorder : public IBorder
 {
 public:
-	void Paint(VPANEL panel);
-	void Paint(int x0, int y0, int x1, int y1);
-	void Paint(int x0, int y0, int x1, int y1, int breakSide, int breakStart, int breakStop);
+	void Paint(VPANEL panel) override;
+	void Paint(int x0, int y0, int x1, int y1) override;
+	void Paint(int x0, int y0, int x1, int y1, int breakSide, int breakStart, int breakStop) override;
 
-	void SetInset(int left, int top, int right, int bottom);
-	void GetInset(int &left, int &top, int &right, int &bottom);
+	void SetInset(int left, int top, int right, int bottom) override;
+	void GetInset(int &left, int &top, int &right, int &bottom) override;
 
-	void AddLine(sides_e side, Color color, int startOffset, int endOffset);
+	void AddLine(sides_e side, Color color, int startOffset, int endOffset) override;
 
-	void ApplySchemeSettings(IScheme *pScheme, KeyValues *inResourceData);
+	void ApplySchemeSettings(IScheme *pScheme, KeyValues *inResourceData) override;
 
-	void ParseSideSettings(int side_index, KeyValues *inResourceData, IScheme *pScheme);
+	void ParseSideSettings(int side_index, KeyValues *inResourceData, IScheme *pScheme) override;
 
-	const char *GetName();
-	void SetName(const char *name);
+	const char *GetName() override;
+	void SetName(const char *name) override;
 };
 
 }; // namespace vgui2

@@ -28,41 +28,41 @@ namespace vgui2
 class CHTMLWindow : public IHTML, public IHTMLEvents
 {
 public:
-	void OpenURL(const char *url);
+	void OpenURL(const char *url) override;
 
-	bool StopLoading();
+	bool StopLoading() override;
 
-	bool Refresh();
+	bool Refresh() override;
 
-	bool Show(bool shown);
+	bool Show(bool shown) override;
 
-	char *GetOpenedPage();
+	char *GetOpenedPage() override;
 
-	void OnSize(int x, int y, int w, int h);
-	void GetHTMLSize(int &wide, int &tall);
+	void OnSize(int x, int y, int w, int h) override;
+	void GetHTMLSize(int &wide, int &tall) override;
 
-	void Clear();
+	void Clear() override;
 
-	void AddText(const char *text);
+	void AddText(const char *text) override;
 
-	void OnMouse(MouseCode code, MOUSE_STATE s, int x, int y);
-	void OnChar(wchar_t unichar);
-	void OnKeyDown(KeyCode code);
+	void OnMouse(MouseCode code, MOUSE_STATE s, int x, int y) override;
+	void OnChar(wchar_t unichar) override;
+	void OnKeyDown(KeyCode code) override;
 
-	IImage *GetBitmap();
+	IImage *GetBitmap() override;
 
-	void SetVisible(bool state);
+	void SetVisible(bool state) override;
 
-	bool OnStartURL(const char *url, const char *target, bool first);
-	void OnFinishURL(const char *url);
-	void OnProgressURL(long current, long maximum);
+	bool OnStartURL(const char *url, const char *target, bool first) override;
+	void OnFinishURL(const char *url) override;
+	void OnProgressURL(long current, long maximum) override;
 
-	void OnSetStatusText(const char *text);
+	void OnSetStatusText(const char *text) override;
 
-	void OnUpdate();
+	void OnUpdate() override;
 
-	void OnLink();
-	void OffLink();
+	void OnLink() override;
+	void OffLink() override;
 };
 
 }; // namespace vgui2
