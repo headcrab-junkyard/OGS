@@ -17,35 +17,24 @@
  *	along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file
-
 #include <unistd.h>
 #include <signal.h>
-#include <stdlib.h>
 #include <limits.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <fcntl.h>
-#include <stdarg.h>
-#include <stdio.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
-#include <string.h>
 #include <ctype.h>
 #include <sys/wait.h>
 #include <sys/mman.h>
 #include <errno.h>
 
-#include "quakedef.h"
+int nostdout{0};
 
-qboolean isDedicated;
-
-int nostdout = 0;
-
-char *basedir = ".";
-char *cachedir = "/tmp";
+const char *basedir{"."};
+const char *cachedir{"/tmp"};
 
 cvar_t sys_linerefresh = { "sys_linerefresh", "0" }; // set for entity display
 
@@ -103,32 +92,6 @@ void Sys_Printf (char *fmt, ...)
 
 }
 */
-
-void Sys_Quit()
-{
-	Host_Shutdown();
-	fcntl(0, F_SETFL, fcntl(0, F_GETFL, 0) & ~FNDELAY);
-
-	fflush(stdout);
-	exit(0);
-}
-
-void Sys_Error(const char *error, ...)
-{
-	va_list argptr;
-	char string[1024];
-
-	// change stdin to non blocking
-	fcntl(0, F_SETFL, fcntl(0, F_GETFL, 0) & ~FNDELAY);
-
-	va_start(argptr, error);
-	vsprintf(string, error, argptr);
-	va_end(argptr);
-	fprintf(stderr, "Error: %s\n", string);
-
-	Host_Shutdown();
-	exit(1);
-}
 
 void Sys_Warn(const char *warning, ...)
 {
@@ -224,23 +187,6 @@ void Sys_EditFile(const char *filename)
 	}
 }
 
-double Sys_FloatTime()
-{
-	struct timeval tp;
-	struct timezone tzp;
-	static int secbase;
-
-	gettimeofday(&tp, &tzp);
-
-	if(!secbase)
-	{
-		secbase = tp.tv_sec;
-		return tp.tv_usec / 1000000.0;
-	}
-
-	return (tp.tv_sec - secbase) + tp.tv_usec / 1000000.0;
-}
-
 // =======================================================================
 // Sleeps for microseconds
 // =======================================================================
@@ -250,73 +196,40 @@ static volatile int oktogo;
 void alarm_handler(int x)
 {
 	oktogo = 1;
-}
+};
 
 void Sys_LineRefresh()
 {
-}
+};
 
 void floating_point_exception_handler(int whatever)
 {
-	//	Sys_Warn("floating point exception\n");
+	//Sys_Warn("floating point exception\n");
 	signal(SIGFPE, floating_point_exception_handler);
-}
+};
 
-char *Sys_ConsoleInput()
-{
-	static char text[256];
-	int len;
-	fd_set fdset;
-	struct timeval timeout;
-
-	if(cls.state == ca_dedicated)
-	{
-		FD_ZERO(&fdset);
-		FD_SET(0, &fdset); // stdin
-		timeout.tv_sec = 0;
-		timeout.tv_usec = 0;
-		if(select(1, &fdset, NULL, NULL, &timeout) == -1 || !FD_ISSET(0, &fdset))
-			return NULL;
-
-		len = read(0, text, sizeof(text));
-		if(len < 1)
-			return NULL;
-		text[len - 1] = 0; // rip off the /n and terminate
-
-		return text;
-	}
-	return NULL;
-}
-
+#if defined(__linux__) or defined(sun)
 #if !id386
-void Sys_HighFPPrecision()
-{
-}
+	void Sys_HighFPPrecision()
+	{
+	};
 
-void Sys_LowFPPrecision()
-{
-}
+	void Sys_LowFPPrecision()
+	{
+	};
+#endif // id386
 #endif
 
 /*
 int main (int c, char **v)
 {
-
-	double		time, oldtime, newtime;
 	extern int vcrFile;
 	extern int recording;
 	int j;
 
-//	static char cwd[1024];
+	//static char cwd[1024];
 
-//	signal(SIGFPE, floating_point_exception_handler);
-	signal(SIGFPE, SIG_IGN);
-
-#ifdef GLQUAKE
-	parms.memsize = 16*1024*1024;
-#else
-	parms.memsize = 8*1024*1024;
-#endif
+	
 
 	j = COM_CheckParm("-mem");
 	if (j)
@@ -328,8 +241,6 @@ int main (int c, char **v)
 //	parms.cachedir = cachedir;
 
 	fcntl(0, F_SETFL, fcntl (0, F_GETFL, 0) | FNDELAY);
-
-    Host_Init(&parms);
 
 	Sys_Init();
 
@@ -371,25 +282,3 @@ int main (int c, char **v)
 
 }
 */
-
-/*
-================
-Sys_MakeCodeWriteable
-================
-*/
-void Sys_MakeCodeWriteable(unsigned long startaddr, unsigned long length)
-{
-	int r;
-	unsigned long addr;
-	int psize = getpagesize();
-
-	addr = (startaddr & ~(psize - 1)) - psize;
-
-	//	fprintf(stderr, "writable code %lx(%lx)-%lx, length=%lx\n", startaddr,
-	//			addr, startaddr+length, length);
-
-	r = mprotect((char *)addr, length + startaddr - addr + psize, 7);
-
-	if(r < 0)
-		Sys_Error("Protection change failed\n");
-}

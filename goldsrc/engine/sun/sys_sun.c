@@ -16,7 +16,9 @@
  *	You should have received a copy of the GNU General Public License
  *	along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
-// sys_sun.h -- Sun system driver
+
+/// @file
+/// @brief Sun system driver
 
 #include "quakedef.h"
 #include "errno.h"
@@ -31,8 +33,6 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <stdio.h>
-
-qboolean isDedicated;
 
 /*
 ===============================================================================
@@ -187,11 +187,6 @@ int Sys_FileTime(char *path)
 	return -1;
 }
 
-void Sys_mkdir(char *path)
-{
-	mkdir(path, 0777);
-}
-
 /*
 ===============================================================================
 
@@ -199,68 +194,6 @@ SYSTEM IO
 
 ===============================================================================
 */
-
-void Sys_MakeCodeWriteable(unsigned long startaddr, unsigned long length)
-{
-	int r;
-	unsigned long addr;
-	int psize = getpagesize();
-
-	addr = (startaddr & ~(psize - 1)) - psize;
-
-	//	fprintf(stderr, "writable code %lx(%lx)-%lx, length=%lx\n", startaddr,
-	//			addr, startaddr+length, length);
-
-	r = mprotect((char *)addr, length + startaddr - addr + psize, 7);
-
-	if(r < 0)
-		Sys_Error("Protection change failed\n");
-}
-
-void Sys_Error(char *error, ...)
-{
-	va_list argptr;
-
-	printf("Sys_Error: ");
-	va_start(argptr, error);
-	vprintf(error, argptr);
-	va_end(argptr);
-	printf("\n");
-	Host_Shutdown();
-	exit(1);
-}
-
-void Sys_Printf(char *fmt, ...)
-{
-	va_list argptr;
-
-	va_start(argptr, fmt);
-	vprintf(fmt, argptr);
-	va_end(argptr);
-}
-
-void Sys_Quit(void)
-{
-	Host_Shutdown();
-	exit(0);
-}
-
-double Sys_FloatTime(void)
-{
-	struct timeval tp;
-	struct timezone tzp;
-	static int secbase;
-
-	gettimeofday(&tp, &tzp);
-
-	if(!secbase)
-	{
-		secbase = tp.tv_sec;
-		return tp.tv_usec / 1000000.0;
-	}
-
-	return (tp.tv_sec - secbase) + tp.tv_usec / 1000000.0;
-}
 
 char *Sys_ConsoleInput(void)
 {
@@ -289,47 +222,10 @@ char *Sys_ConsoleInput(void)
 	return 0;
 }
 
-void Sys_Sleep(void)
-{
-}
-
-#if !id386
-void Sys_HighFPPrecision(void)
-{
-}
-
-void Sys_LowFPPrecision(void)
-{
-}
-#endif
-
-void Sys_Init(void)
-{
-#if id386
-	Sys_SetFPCW();
-#endif
-}
-
 //=============================================================================
 
 int main(int argc, char **argv)
 {
-	static quakeparms_t parms;
-	float time, oldtime, newtime;
-
-	parms.memsize = 16 * 1024 * 1024;
-	parms.membase = malloc(parms.memsize);
-	parms.basedir = ".";
-	parms.cachedir = NULL;
-
-	COM_InitArgv(argc, argv);
-
-	parms.argc = com_argc;
-	parms.argv = com_argv;
-
-	printf("Host_Init\n");
-	Host_Init(&parms);
-
 	Sys_Init();
 
 	// unroll the simulation loop to give the video side a chance to see _vid_default_mode
@@ -339,9 +235,5 @@ int main(int argc, char **argv)
 	oldtime = Sys_FloatTime();
 	while(1)
 	{
-		newtime = Sys_FloatTime();
-		Host_Frame(newtime - oldtime);
-		oldtime = newtime;
 	}
-	return 0;
 }

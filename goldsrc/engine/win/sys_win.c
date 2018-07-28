@@ -31,50 +31,15 @@
 
 #define CONSOLE_ERROR_TIMEOUT 60.0 // # of seconds to wait on Sys_Error running dedicated before exiting
 
-int starttime;
-
-qboolean isDedicated;
 static qboolean sc_return_on_enter = false;
 HANDLE hinput, houtput;
 
-static char *tracking_tag = "Clams & Mooses";
+static const char *tracking_tag{"Clams & Mooses"};
 
 static HANDLE tevent;
 static HANDLE hFile;
 static HANDLE heventParent;
 static HANDLE heventChild;
-
-void MaskExceptions();
-void Sys_InitFloatTime();
-void Sys_PushFPCW_SetHigh();
-void Sys_PopFPCW();
-
-volatile int sys_checksum;
-
-/*
-================
-Sys_PageIn
-================
-*/
-void Sys_PageIn(void *ptr, int size)
-{
-	byte *x;
-	int j, m, n;
-
-	// touch all the memory to make sure it's there. The 16-page skip is to
-	// keep Win 95 from thinking we're trying to page ourselves in (we are
-	// doing that, of course, but there's no reason we shouldn't)
-	x = (byte *)ptr;
-
-	for(n = 0; n < 4; n++)
-	{
-		for(m = 0; m < (size - 16 * 0x1000); m += 4)
-		{
-			sys_checksum += *(int *)&x[m];
-			sys_checksum += *(int *)&x[m + 16 * 0x1000];
-		}
-	}
-}
 
 /*
 ===============================================================================
@@ -237,198 +202,11 @@ SYSTEM IO
 ===============================================================================
 */
 
-/*
-================
-Sys_MakeCodeWriteable
-================
-*/
-void Sys_MakeCodeWriteable(unsigned long startaddr, unsigned long length)
-{
-	DWORD flOldProtect;
 
-	if(!VirtualProtect((LPVOID)startaddr, length, PAGE_READWRITE, &flOldProtect))
-		Sys_Error("Protection change failed\n");
-}
-
-#ifndef _M_IX86
-
-void Sys_SetFPCW()
-{
-}
-
-void Sys_PushFPCW_SetHigh()
-{
-}
-
-void Sys_PopFPCW()
-{
-}
-
-void MaskExceptions()
-{
-}
-
-#endif
-
-void Sys_Error(char *error, ...)
-{
-	va_list argptr;
-	char text[1024], text2[1024];
-	char *text3 = "Press Enter to exit\n";
-	char *text4 = "***********************************\n";
-	char *text5 = "\n";
-	DWORD dummy;
-	double starttime;
-	static int in_sys_error0 = 0;
-	static int in_sys_error1 = 0;
-	static int in_sys_error2 = 0;
-	static int in_sys_error3 = 0;
-
-	if(!in_sys_error3)
-	{
-		in_sys_error3 = 1;
-		VID_ForceUnlockedAndReturnState();
-	}
-
-	va_start(argptr, error);
-	vsprintf(text, error, argptr);
-	va_end(argptr);
-
-	if(isDedicated)
-	{
-		va_start(argptr, error);
-		vsprintf(text, error, argptr);
-		va_end(argptr);
-
-		sprintf(text2, "ERROR: %s\n", text);
-		WriteFile(houtput, text5, strlen(text5), &dummy, NULL);
-		WriteFile(houtput, text4, strlen(text4), &dummy, NULL);
-		WriteFile(houtput, text2, strlen(text2), &dummy, NULL);
-		WriteFile(houtput, text3, strlen(text3), &dummy, NULL);
-		WriteFile(houtput, text4, strlen(text4), &dummy, NULL);
-
-		starttime = Sys_FloatTime();
-		sc_return_on_enter = true; // so Enter will get us out of here
-
-		while(!Sys_ConsoleInput() &&
-		      ((Sys_FloatTime() - starttime) < CONSOLE_ERROR_TIMEOUT))
-		{
-		}
-	}
-	else
-	{
-		// switch to windowed so the message box is visible, unless we already
-		// tried that and failed
-		if(!in_sys_error0)
-		{
-			in_sys_error0 = 1;
-			VID_SetDefaultMode();
-			MessageBox(NULL, text, "Engine Error",
-			           MB_OK | MB_SETFOREGROUND | MB_ICONSTOP);
-		}
-		else
-		{
-			MessageBox(NULL, text, "Double Engine Error",
-			           MB_OK | MB_SETFOREGROUND | MB_ICONSTOP);
-		}
-	}
-
-	if(!in_sys_error1)
-	{
-		in_sys_error1 = 1;
-		Host_Shutdown();
-	}
-
-	// shut down QHOST hooks if necessary
-	if(!in_sys_error2)
-	{
-		in_sys_error2 = 1;
-		DeinitConProc();
-	}
-
-	exit(1);
-}
-
-void Sys_Quit()
-{
-	VID_ForceUnlockedAndReturnState();
-
-	Host_Shutdown();
-
-	if(tevent)
-		CloseHandle(tevent);
-
-	exit(0);
-}
-
-/*
-================
-Sys_FloatTime
-================
-*/
-double Sys_FloatTime()
-{
-	static int sametimecount;
-	static unsigned int oldtime;
-	static int first = 1;
-	LARGE_INTEGER PerformanceCount;
-	unsigned int temp, t2;
-	double time;
-
-	Sys_PushFPCW_SetHigh();
-
-	QueryPerformanceCounter(&PerformanceCount);
-
-	temp = ((unsigned int)PerformanceCount.LowPart >> lowshift) |
-	((unsigned int)PerformanceCount.HighPart << (32 - lowshift));
-
-	if(first)
-	{
-		oldtime = temp;
-		first = 0;
-	}
-	else
-	{
-		// check for turnover or backward time
-		if((temp <= oldtime) && ((oldtime - temp) < 0x10000000))
-		{
-			oldtime = temp; // so we can't get stuck
-		}
-		else
-		{
-			t2 = temp - oldtime;
-
-			time = (double)t2 * pfreq;
-			oldtime = temp;
-
-			curtime += time;
-
-			if(curtime == lastcurtime)
-			{
-				sametimecount++;
-
-				if(sametimecount > 100000)
-				{
-					curtime += 1.0;
-					sametimecount = 0;
-				}
-			}
-			else
-			{
-				sametimecount = 0;
-			}
-
-			lastcurtime = curtime;
-		}
-	}
-
-	Sys_PopFPCW();
-
-	return curtime;
-}
 
 char *Sys_ConsoleInput()
 {
+#ifdef _WIN32
 	static char text[256];
 	static int len;
 	INPUT_RECORD recs[1024];
@@ -503,13 +281,33 @@ char *Sys_ConsoleInput()
 	}
 
 	return NULL;
+#elif __linux__
+	static char text[256];
+	int len;
+	fd_set fdset;
+	struct timeval timeout;
+
+	if(cls.state == ca_dedicated)
+	{
+		FD_ZERO(&fdset);
+		FD_SET(0, &fdset); // stdin
+		timeout.tv_sec = 0;
+		timeout.tv_usec = 0;
+		if(select(1, &fdset, NULL, NULL, &timeout) == -1 || !FD_ISSET(0, &fdset))
+			return NULL;
+
+		len = read(0, text, sizeof(text));
+		if(len < 1)
+			return NULL;
+		text[len - 1] = 0; // rip off the /n and terminate
+
+		return text;
+	}
+	return NULL;
+#endif
 }
 
-void Sys_Sleep()
-{
-	Sleep(1);
-}
-
+#ifdef _WIN32
 void Sys_SendKeyEvents()
 {
 	MSG msg;
@@ -526,6 +324,7 @@ void Sys_SendKeyEvents()
 		DispatchMessage(&msg);
 	}
 }
+#endif
 
 /*
 ==============================================================================
