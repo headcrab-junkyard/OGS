@@ -18,11 +18,48 @@
 
 /// @file
 
-#include "VPanel.h"
+#include "KeyValues.h"
 
 namespace vgui2
 {
 
-// TODO
-
+void CKeyValues::RegisterSizeofKeyValues(int size)
+{
 };
+
+void *CKeyValues::AllocKeyValuesMemory(int size)
+{
+	return nullptr;
+};
+
+void CKeyValues::FreeKeyValuesMemory(void *pMem)
+{
+};
+
+HKeySymbol CKeyValues::GetSymbolForString(const char *name)
+{
+	return 0;
+};
+
+const char *CKeyValues::GetStringForSymbol(HKeySymbol symbol)
+{
+	return "";
+};
+
+void CKeyValues::GetLocalizedFromANSI(const char *ansi, wchar_t *outBuf, int unicodeBufferSizeInBytes)
+{
+};
+
+void CKeyValues::GetANSIFromLocalized(const wchar_t *wchar, char *outBuf, int ansiBufferSizeInBytes)
+{
+};
+
+void CKeyValues::AddKeyValuesToMemoryLeakList(void *pMem, HKeySymbol name)
+{
+};
+
+void CKeyValues::RemoveKeyValuesFromMemoryLeakList(void *pMem)
+{
+};
+
+}; // namespace vgui2

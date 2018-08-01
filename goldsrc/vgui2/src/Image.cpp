@@ -18,11 +18,33 @@
 
 /// @file
 
-#include "VPanel.h"
+#include "Image.h"
 
 namespace vgui2
 {
 
-// TODO
-
+void CImage::Paint()
+{
 };
+
+void CImage::SetPos(int x, int y)
+{
+};
+
+void CImage::GetContentSize(int &wide, int &tall)
+{
+};
+
+void CImage::GetSize(int &wide, int &tall)
+{
+};
+
+void CImage::SetSize(int wide, int tall)
+{
+};
+
+void CImage::SetColor(Color color)
+{
+};
+
+}; // namespace vgui2

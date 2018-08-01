@@ -18,11 +18,29 @@
 
 /// @file
 
-#include "VPanel.h"
+#include "Scheme.h"
 
 namespace vgui2
 {
 
-// TODO
-
+const char *CScheme::GetResourceString(const char *stringName)
+{
+	return "";
 };
+
+IBorder *CScheme::GetBorder(const char *borderName)
+{
+	return nullptr;
+};
+
+HFont CScheme::GetFont(const char *fontName, bool proportional)
+{
+	return 0;
+};
+
+Color CScheme::GetColor(const char *colorName, Color defaultColor)
+{
+	return {};
+};
+
+}; // namespace vgui2
