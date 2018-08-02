@@ -22,8 +22,8 @@
 #include "sys_engine.h"
 
 // TODO: temp
-#define PAUSE_SLEEP 50     // sleep time on pause or minimization
-#define NOT_FOCUS_SLEEP 20 // sleep time when not focus
+const int PAUSE_SLEEP = 50;     // sleep time on pause or minimization
+const int NOT_FOCUS_SLEEP = 20; // sleep time when not focus
 
 static CEngine gEngine;       // g_Engine
 IEngine *gpEngine = &gEngine; // eng
@@ -42,12 +42,24 @@ bool CEngine::Load(bool dedicated, const char *basedir, const char *cmdline)
 
 	//memset(&parms, 0, sizeof(parms));
 
+#ifdef __linux__
+	//signal(SIGFPE, floating_point_exception_handler);
+	signal(SIGFPE, SIG_IGN);
+#endif
+
 	//mParms. =;
 
+#if defined(GLQUAKE) or defined(sun)
+	//parms.memsize = 16*1024*1024;
+#else
 	//parms.memsize = 8*1024*1024; // TODO: 5861376 in QW
+#endif
+
 	//parms.membase = malloc (parms.memsize);
 	//parms.basedir = ".";
-
+	
+	//parms.cachedir = NULL; // TODO
+	
 	//COM_InitArgv (argc, argv); // TODO: parms.argc, parms.argv
 
 	//parms.argc = com_argc;
@@ -58,7 +70,7 @@ bool CEngine::Load(bool dedicated, const char *basedir, const char *cmdline)
 	//Sys_InitGame(char *, char *, void *, int); // TODO
 
 	//printf("Host_Init\n");
-	Host_Init(&mParms);
+	Host_Init(&mParms); // TODO: parms
 	return true;
 };
 

@@ -37,6 +37,7 @@ public:
 private:
 	quakeparms_t mParms{};
 
+	// TODO: floats for sun
 	double newtime{ 0.0 };
 	double oldtime{ 0.0 };
 	double frametime{ 0.0 };
