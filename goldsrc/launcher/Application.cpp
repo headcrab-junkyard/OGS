@@ -46,13 +46,17 @@ int CApplication::Run()
 
 bool CApplication::Init()
 {
-	if(!LoadFileSystemModule("filesystem_stdio"))
-		throw std::runtime_error(std::string("Failed to load the filesystem module!"));
+	constexpr auto FILESYSTEM_MODULE_NAME{"filesystem_stdio"};
 	
-	mpEngineLib = Sys_LoadModule("engine");
+	if(!LoadFileSystemModule(FILESYSTEM_MODULE_NAME))
+		throw std::runtime_error(std::string("Failed to load the filesystem module (") + FILESYSTEM_MODULE_NAME + ")!");
+	
+	constexpr auto ENGINE_MODULE_NAME{"engine"}; // TODO: hw
+	
+	mpEngineLib = Sys_LoadModule(ENGINE_MODULE_NAME);
 	
 	if(!mpEngineLib)
-		throw std::runtime_error(std::string("Failed to load the engine module!"));
+		throw std::runtime_error(std::string("Failed to load the engine module (") + ENGINE_MODULE_NAME + ")!");
 	
 	auto pEngineFactory{Sys_GetFactory(mpEngineLib)};
 	
@@ -72,15 +76,15 @@ void CApplication::Shutdown()
 	// TODO
 };
 
-bool CApplication::LoadFileSystemModule(const char *name)
+bool CApplication::LoadFileSystemModule(const char *asName)
 {
-	if(!name || !*name)
+	if(!asName || !*asName)
 	{
-		//throw std::invalid_argument(std::string("Argument passed to CApplication::LoadFileSystemModule is invalid! (").append(name).append(")"));
+		//throw std::invalid_argument(std::string("Argument passed to CApplication::LoadFileSystemModule is invalid! (").append(asName).append(")"));
 		return false;
 	};
 	
-	mpFSLib = Sys_LoadModule(name);
+	mpFSLib = Sys_LoadModule(asName);
 	
 	if(!mpFSLib)
 		return false;
