@@ -29,165 +29,1294 @@
 ===============================================================================
 */
 
-/*
+void PF_precache_model_I(const char *s)
 {
-pfnPrecacheModel = 0xb3cece40 <PF_precache_model_I>,
-pfnPrecacheSound = 0xb3cec330 <PF_precache_sound_I>,
-pfnSetModel = 0xb3cea250 <PF_setmodel_I>,
-pfnModelIndex = 0xb3cea330 <PF_modelindex>,
-pfnModelFrames = 0xb3cea340 <ModelFrames>,
-pfnSetSize = 0xb3cea220 <PF_setsize_I>,
-pfnChangeLevel = 0xb3ceeb60 <PF_changelevel_I>,
-pfnGetSpawnParms = 0xb3ceeb20 <PF_setspawnparms_I>,
-pfnSaveSpawnParms = 0xb3cf0a70 <SaveSpawnParms>,
-pfnVecToYaw = 0xb3cea570 <PF_vectoyaw_I>,
-pfnVecToAngles = 0xb3cea610 <PF_vectoangles_I>,
-pfnMoveToOrigin = 0xb3d1a330 <SV_MoveToOrigin_I>,
-pfnChangeYaw = 0xb3ceda20 <PF_changeyaw_I>,
-pfnChangePitch = 0xb3cedb00 <PF_changepitch_I>,
-pfnFindEntityByString = 0xb3cec1a0 <FindEntityByString>,
-pfnGetEntityIllum = 0xb3cec280 <GetEntityIllum>,
-pfnFindEntityInSphere = 0xb3cebd10 <FindEntityInSphere>,
-pfnFindClientInPVS = 0xb3ceb730 <PF_checkclient_I>,
-pfnEntitiesInPVS = 0xb3ceb9e0 <PVSFindEntities>,
-pfnMakeVectors = 0xb3cea060 <PF_makevectors_I>,
-pfnAngleVectors = 0xb3ce2570 <AngleVectors>,
-pfnCreateEntity = 0xb3cebed0 <PF_Spawn_I>,
-pfnRemoveEntity = 0xb3cebf70 <PF_Remove_I>,
-pfnCreateNamedEntity = 0xb3cebee0 <CreateNamedEntity>,
-pfnMakeStatic = 0xb3cee860 <PF_makestatic_I>,
-pfnEntIsOnFloor = 0xb3ced5e0 <PF_checkbottom_I>,
-pfnDropToFloor = 0xb3ced3c0 <PF_droptofloor_I>,
-pfnWalkMove = 0xb3ced2e0 <PF_walkmove_I>,
-pfnSetOrigin = 0xb3cea0b0 <PF_setorigin_I>,
-pfnEmitSound = 0xb3cea800 <PF_sound_I>,
-pfnEmitAmbientSound = 0xb3cea640 <PF_ambientsound_I>,
-pfnTraceLine = 0xb3ceb330 <PF_traceline_DLL>,
-pfnTraceToss = 0xb3ceb450 <PF_TraceToss_DLL>,
-pfnTraceMonsterHull = 0xb3ceb530 <TraceMonsterHull>,
-pfnTraceHull = 0xb3cea920 <TraceHull>,
-pfnTraceModel = 0xb3ceaa20 <TraceModel>,
-pfnTraceTexture = 0xb3ceae60 <TraceTexture>,
-pfnTraceSphere = 0xb3ceaa10 <TraceSphere>,
-pfnGetAimVector = 0xb3ced600 <PF_aim_I>,
-pfnServerCommand = 0xb3cebcb0 <PF_localcmd_I>,
-pfnServerExecute = 0xb3cebd00 <PF_localexec_I>,
-pfnClientCommand = 0xb3cebbc0 <PF_stuffcmd_I>,
-pfnParticleEffect = 0xb3cea620 <PF_particle_I>,
-pfnLightStyle = 0xb3ced520 <PF_lightstyle_I>,
-pfnDecalIndex = 0xb3ced4c0 <PF_DecalIndex>,
-pfnPointContents = 0xb3ced5f0 <PF_pointcontents_I>,
-pfnMessageBegin = 0xb3cee250 <PF_MessageBegin_I>,
-pfnMessageEnd = 0xb3cee390 <PF_MessageEnd_I>,
-pfnWriteByte = 0xb3cee6b0 <PF_WriteByte_I>,
-pfnWriteChar = 0xb3cee6e0 <PF_WriteChar_I>,
-pfnWriteShort = 0xb3cee710 <PF_WriteShort_I>,
-pfnWriteLong = 0xb3cee740 <PF_WriteLong_I>,
-pfnWriteAngle = 0xb3cee770 <PF_WriteAngle_I>,
-pfnWriteCoord = 0xb3cee7a0 <PF_WriteCoord_I>,
-pfnWriteString = 0xb3cee7f0 <PF_WriteString_I>,
-pfnWriteEntity = 0xb3cee830 <PF_WriteEntity_I>,
-pfnCVarRegister = 0x981fd7a4 <meta_CVarRegister(cvar_s*)>,
-pfnCVarGetFloat = 0xb3cf0980 <CVarGetFloat>,
-pfnCVarGetString = 0xb3cf0990 <CVarGetString>,
-pfnCVarSetFloat = 0xb3cf09b0 <CVarSetFloat>,
-pfnCVarSetString = 0xb3cf09c0 <CVarSetString>,
-pfnAlertMessage = 0xb3cfe510 <AlertMessage>,
-pfnEngineFprintf = 0xb3cfe6a0 <EngineFprintf>,
-pfnPvAllocEntPrivateData = 0xb3cf0730 <PvAllocEntPrivateData>,
-pfnPvEntPrivateData = 0xb3cf0790 <PvEntPrivateData>,
-pfnFreeEntPrivateData = 0xb3cf07b0 <FreeEntPrivateData>,
-pfnSzFromIndex = 0xb3cf0910 <SzFromIndex>,
-pfnAllocString = 0xb3cf09f0 <AllocEngineString>,
-pfnGetVarsOfEnt = 0xb3cf0920 <GetVarsOfEnt>,
-pfnPEntityOfEntOffset = 0xb3cf0860 <PEntityOfEntOffset>,
-pfnEntOffsetOfPEntity = 0xb3cf0870 <EntOffsetOfPEntity>,
-pfnIndexOfEdict = 0xb3cf0880 <IndexOfEdict>,
-pfnPEntityOfEntIndex = 0xb3cf08c0 <PEntityOfEntIndex>,
-pfnFindEntityByVars = 0xb3cf0930 <FindEntityByVars>,
-pfnGetModelPtr = 0xb3cf0ad0 <GetModelPtr>,
-pfnRegUserMsg = 0x981fd94a <meta_RegUserMsg(char const*, int)>,
-pfnAnimationAutomove = 0xb3cf53e0 <AnimationAutomove>,
-pfnGetBonePosition = 0xb3cf53f0 <GetBonePosition>,
-pfnFunctionFromName = 0xb3cff2f0 <FunctionFromName>,
-pfnNameForFunction = 0xb3cfe6c0 <NameForFunction>,
-pfnClientPrintf = 0xb3cea470 <ClientPrintf>,
-pfnServerPrint = 0xb3cea450 <ServerPrint>,
-pfnCmd_Args = 0xb3cbf7c0 <Cmd_Args>,
-pfnCmd_Argv = 0xb3cbf790 <Cmd_Argv>,
-pfnCmd_Argc = 0xb3cbf770 <Cmd_Argc>,
-pfnGetAttachment = 0xb3cf54c0 <GetAttachment>,
-pfnCRC32_Init = 0xb3cc8bd0 <CRC32_Init>,
-pfnCRC32_ProcessBuffer = 0xb3cc8c10 <CRC32_ProcessBuffer>,
-pfnCRC32_ProcessByte = 0xb3cc8bf0 <CRC32_ProcessByte>,
-pfnCRC32_Final = 0xb3cc8be0 <CRC32_Final>,
-pfnRandomLong = 0xb3ceedd0 <RandomLong>,
-pfnRandomFloat = 0xb3ceed70 <RandomFloat>,
-pfnSetView = 0xb3cedbe0 <PF_setview_I>,
-pfnTime = 0xb3cea090 <PF_Time>,
-pfnCrosshairAngle = 0xb3cedc80 <PF_crosshairangle_I>,
-pfnLoadFileForMe = 0xb3cc6ab0 <COM_LoadFileForMe>,
-pfnFreeFile = 0xb3cc62b0 <COM_FreeFile>,
-pfnEndSection = 0xb3ce0750 <Host_EndSection>,
-pfnCompareFileTime = 0xb3cc6ae0 <COM_CompareFileTime>,
-pfnGetGameDir = 0xb3cc6b80 <COM_GetGameDir>,
-pfnCvar_RegisterVariable = 0x981fd7a4 <meta_CVarRegister(cvar_s*)>,
-pfnFadeClientVolume = 0xb3ceee30 <PF_FadeVolume>,
-pfnSetClientMaxspeed = 0xb3ceef50 <PF_SetClientMaxspeed>,
-pfnCreateFakeClient = 0xb3ceddc0 <PF_CreateFakeClient_I>,
-pfnRunPlayerMove = 0xb3cedfd0 <PF_RunPlayerMove_I>,
-pfnNumberOfEntities = 0xb3ced0c0 <PF_NumberOfEntities_I>,
-pfnGetInfoKeyBuffer = 0xb3ced100 <PF_GetInfoKeyBuffer_I>,
-pfnInfoKeyValue = 0xb3ced160 <PF_InfoKeyValue_I>,
-pfnSetKeyValue = 0xb3ced170 <PF_SetKeyValue_I>,
-pfnSetClientKeyValue = 0xb3ced220 <PF_SetClientKeyValue_I>,
-pfnIsMapValid = 0xb3ced070 <PF_IsMapValid_I>,
-pfnStaticDecal = 0xb3ceea30 <PF_StaticDecal>,
-pfnPrecacheGeneric = 0xb3cecf70 <PF_precache_generic_I>,
-pfnGetPlayerUserId = 0xb3ceefb0 <PF_GetPlayerUserId>,
-pfnBuildSoundMsg = 0xb3cef140 <PF_BuildSoundMsg_I>,
-pfnIsDedicatedServer = 0xb3cef220 <PF_IsDedicatedServer>,
-pfnCVarGetPointer = 0xb3cf09a0 <CVarGetPointer>,
-pfnGetPlayerWONId = 0xb3cef010 <PF_GetPlayerWONId>,
-pfnInfo_RemoveKey = 0xb3ced210 <PF_RemoveKey_I>,
-pfnGetPhysicsKeyValue = 0xb3cef280 <PF_GetPhysicsKeyValue>,
-pfnSetPhysicsKeyValue = 0xb3cef2f0 <PF_SetPhysicsKeyValue>,
-pfnGetPhysicsInfoString = 0xb3cef230 <PF_GetPhysicsInfoString>,
-pfnPrecacheEvent = 0xb3cec450 <EV_Precache>,
-pfnPlaybackEvent = 0xb3cec810 <EV_Playback>,
-pfnSetFatPVS = 0xb3d0cdd0 <SV_FatPVS>,
-pfnSetFatPAS = 0xb3d0cf70 <SV_FatPAS>,
-pfnCheckVisibility = 0xb3d0dde0 <SV_CheckVisibility>,
-pfnDeltaSetField = 0xb3ccc610 <DELTA_SetField>,
-pfnDeltaUnsetField = 0xb3ccc690 <DELTA_UnsetField>,
-pfnDeltaAddEncoder = 0xb3ccdd50 <DELTA_AddEncoder>,
-pfnGetCurrentPlayer = 0xb3cef380 <PF_GetCurrentPlayer>,
-pfnCanSkipPlayer = 0xb3cef3c0 <PF_CanSkipPlayer>,
-pfnDeltaFindField = 0xb3ccc5a0 <DELTA_FindFieldIndex>,
-pfnDeltaSetFieldByIndex = 0xb3ccc710 <DELTA_SetFieldByIndex>,
-pfnDeltaUnsetFieldByIndex = 0xb3ccc730 <DELTA_UnsetFieldByIndex>,
-pfnSetGroupMask = 0xb3cef420 <PF_SetGroupMask>,
-pfnCreateInstancedBaseline = 0xb3cef440 <PF_CreateInstancedBaseline>,
-pfnCvar_DirectSet = 0xb3cef4c0 <PF_Cvar_DirectSet>,
-pfnForceUnmodified = 0xb3cef4d0 <PF_ForceUnmodified>,
-pfnGetPlayerStats = 0xb3cef640 <PF_GetPlayerStats>,
-pfnAddServerCommand = 0x981fd63f <meta_AddServerCommand(char*, void (*)())>,
-pfnVoice_GetClientListening = 0xb3cfe3f0 <Voice_GetClientListening>,
-pfnVoice_SetClientListening = 0xb3cfe470 <Voice_SetClientListening>,
-pfnGetPlayerAuthId = 0,
-pfnSequenceGet = 0,
-pfnSequencePickSentence = 0,
-pfnGetFileSize = 0,
-pfnGetApproxWavePlayLen = 0,
-pfnIsCareerMatch = 0,
-pfnGetLocalizedStringLength = 0,
-pfnRegisterTutorMessageShown = 0,
-pfnGetTimesTutorMessageShown = 0,
-ProcessTutorMessageDecayBuffer = 0,
-ConstructTutorMessageDecayBuffer = 0,
-ResetTutorMessageDecayData = 0,
-pfnQueryClientCvarValue = 0,
-pfnQueryClientCvarValue2 = 0,
-pfnCheckParm = 0
+	int i;
+
+	if(sv.state != ss_loading)
+		Host_Error("PF_Precache_*: Precache can only be done in spawn functions");
+
+	G_INT(OFS_RETURN) = G_INT(OFS_PARM0);
+	PR_CheckEmptyString(s);
+
+	for(i = 0; i < MAX_MODELS; i++)
+	{
+		if(!sv.model_precache[i])
+		{
+			sv.model_precache[i] = s;
+			sv.models[i] = Mod_ForName(s, true);
+			return;
+		};
+		
+		if(!strcmp(sv.model_precache[i], s))
+			return;
+	};
+	
+	Host_Error("PF_precache_model: overflow");
+};
+
+int PF_precache_sound_I(const char *s)
+{
+	int i;
+
+	if(sv.state != ss_loading)
+		Host_Error("PF_Precache_*: Precache can only be done in spawn functions");
+
+	G_INT(OFS_RETURN) = G_INT(OFS_PARM0);
+	PR_CheckEmptyString(s);
+
+	for(i = 0; i < MAX_SOUNDS; i++)
+	{
+		if(!sv.sound_precache[i])
+		{
+			sv.sound_precache[i] = s;
+			return;
+		};
+		
+		if(!strcmp(sv.sound_precache[i], s))
+			return;
+	};
+	
+	Host_Error("PF_precache_sound: overflow");
+};
+
+/*
+=================
+PF_setmodel
+
+setmodel(entity, model)
+=================
+*/
+void PF_setmodel_I(edict_t *e, const char *m)
+{
+	char **check;
+	model_t *mod;
+	int i;
+
+	// check to see if model was properly precached
+	for(i = 0, check = sv.model_precache; *check; i++, check++)
+		if(!strcmp(*check, m))
+			break;
+
+	if(!*check)
+		Host_Error("no precache: %s\n", m);
+
+	e->v.model = m - pr_strings;
+	e->v.modelindex = i; //SV_ModelIndex (m);
+
+	mod = sv.models[(int)e->v.modelindex]; // Mod_ForName (m, true);
+
+	if(mod)
+		SetMinMaxSize(e, mod->mins, mod->maxs, true);
+	else
+		SetMinMaxSize(e, vec3_origin, vec3_origin, true);
+};
+
+PF_modelindex,
+{
+};
+
+ModelFrames,
+{
+};
+
+void SetMinMaxSize(edict_t *e, float *min, float *max, qboolean rotate)
+{
+	float *angles;
+	vec3_t rmin, rmax;
+	float bounds[2][3];
+	float xvector[2], yvector[2];
+	float a;
+	vec3_t base, transformed;
+	int i, j, k, l;
+
+	for(i = 0; i < 3; i++)
+		if(min[i] > max[i])
+			Host_Error("backwards mins/maxs");
+
+	rotate = false; // FIXME: implement rotation properly again
+
+	if(!rotate)
+	{
+		VectorCopy(min, rmin);
+		VectorCopy(max, rmax);
+	}
+	else
+	{
+		// find min / max for rotations
+		angles = e->v.angles;
+
+		a = angles[1] / 180 * M_PI;
+
+		xvector[0] = cos(a);
+		xvector[1] = sin(a);
+		yvector[0] = -sin(a);
+		yvector[1] = cos(a);
+
+		VectorCopy(min, bounds[0]);
+		VectorCopy(max, bounds[1]);
+
+		rmin[0] = rmin[1] = rmin[2] = 9999;
+		rmax[0] = rmax[1] = rmax[2] = -9999;
+
+		for(i = 0; i <= 1; i++)
+		{
+			base[0] = bounds[i][0];
+			for(j = 0; j <= 1; j++)
+			{
+				base[1] = bounds[j][1];
+				for(k = 0; k <= 1; k++)
+				{
+					base[2] = bounds[k][2];
+
+					// transform the point
+					transformed[0] = xvector[0] * base[0] + yvector[0] * base[1];
+					transformed[1] = xvector[1] * base[0] + yvector[1] * base[1];
+					transformed[2] = base[2];
+
+					for(l = 0; l < 3; l++)
+					{
+						if(transformed[l] < rmin[l])
+							rmin[l] = transformed[l];
+						if(transformed[l] > rmax[l])
+							rmax[l] = transformed[l];
+					};
+				};
+			};
+		};
+	};
+
+	// set derived values
+	VectorCopy(rmin, e->v.mins);
+	VectorCopy(rmax, e->v.maxs);
+	VectorSubtract(max, min, e->v.size);
+
+	SV_LinkEdict(e, false);
+};
+
+/*
+=================
+PF_setsize
+
+the size box is rotated by the current angle
+
+setsize (entity, minvector, maxvector)
+=================
+*/
+void PF_setsize_I(edict_t *e, float *min, float *max)
+{
+	SetMinMaxSize(e, min, max, false);
+};
+
+/*
+==============
+PF_changelevel
+==============
+*/
+void PF_changelevel_I(const char *s1, const char *s2)
+{
+	// make sure we don't issue two changelevels
+	if(svs.changelevel_issued)
+		return;
+	svs.changelevel_issued = true;
+
+	if(s2 && *s2)
+		//if ((int)gGlobalVariables.serverflags & (SFL_NEW_UNIT | SFL_NEW_EPISODE))
+		//Cbuf_AddText (va("changelevel %s %s\n",s1, s2));
+		//else
+		Cbuf_AddText(va("changelevel2 %s %s\n", s1, s2));
+	else
+		Cbuf_AddText(va("changelevel %s\n", s1));
+};
+
+/*
+==============
+PF_setspawnparms
+==============
+*/
+void PF_setspawnparms_I(edict_t *ent)
+{
+	int i;
+	client_t *client;
+
+	i = NUM_FOR_EDICT(ent);
+	if(i < 1 || i > svs.maxclients)
+		Host_Error("Entity is not a client");
+
+	// copy spawn parms out of the client_t
+	client = svs.clients + (i - 1);
+
+	for(i = 0; i < NUM_SPAWN_PARMS; i++)
+		(&gGlobalVariables.parm1)[i] = client->spawn_parms[i];
+};
+
+SaveSpawnParms,
+{
+};
+
+/*
+=================
+PF_vectoyaw
+
+float vectoyaw(vector)
+=================
+*/
+float PF_vectoyaw_I(float *value1)
+{
+	float yaw;
+
+	if(value1[1] == 0 && value1[0] == 0)
+		yaw = 0;
+	else
+	{
+		yaw = (int)(atan2(value1[1], value1[0]) * 180 / M_PI);
+		if(yaw < 0)
+			yaw += 360;
+	};
+
+	return yaw;
+};
+
+/*
+=================
+PF_vectoangles
+
+vector vectoangles(vector)
+=================
+*/
+float *PF_vectoangles_I(float *value1)
+{
+	float forward;
+	float yaw, pitch;
+
+	if(value1[1] == 0 && value1[0] == 0)
+	{
+		yaw = 0;
+		if(value1[2] > 0)
+			pitch = 90;
+		else
+			pitch = 270;
+	}
+	else
+	{
+		yaw = (int)(atan2(value1[1], value1[0]) * 180 / M_PI);
+		if(yaw < 0)
+			yaw += 360;
+
+		forward = sqrt(value1[0] * value1[0] + value1[1] * value1[1]);
+		pitch = (int)(atan2(value1[2], forward) * 180 / M_PI);
+		if(pitch < 0)
+			pitch += 360;
+	};
+
+	G_FLOAT(OFS_RETURN + 0) = pitch;
+	G_FLOAT(OFS_RETURN + 1) = yaw;
+	G_FLOAT(OFS_RETURN + 2) = 0;
+};
+
+SV_MoveToOrigin_I,
+{
+};
+
+PF_changeyaw_I,
+{
+};
+
+PF_changepitch_I,
+{
+};
+
+FindEntityByString,
+{
+};
+
+GetEntityIllum,
+{
+};
+
+FindEntityInSphere,
+{
+};
+
+PF_checkclient_I,
+{
+};
+
+PVSFindEntities,
+{
+};
+
+/*
+==============
+PF_makevectors
+
+Writes new values for v_forward, v_up, and v_right based on angles
+makevectors(vector)
+==============
+*/
+void PF_makevectors_I(float *v)
+{
+	AngleVectors(v, gGlobalVariables.v_forward, gGlobalVariables.v_right, gGlobalVariables.v_up);
+};
+
+AngleVectors,
+{
+};
+
+edict_t *PF_Spawn_I()
+{
+	edict_t *ed = ED_Alloc();
+	return ed;
+};
+
+void PF_Remove_I(edict_t *ed)
+{
+	ED_Free(ed);
+};
+
+CreateNamedEntity,
+{
+};
+
+PF_makestatic_I,
+{
+};
+
+/*
+=============
+PF_checkbottom
+=============
+*/
+float PF_checkbottom_I(edict_t *ent)
+{
+	return SV_CheckBottom(ent);
+};
+
+/*
+===============
+PF_droptofloor
+
+void() droptofloor
+===============
+*/
+int PF_droptofloor_I(edict_t *ent)
+{
+	vec3_t end;
+	trace_t trace;
+
+	VectorCopy(ent->v.origin, end);
+	end[2] -= 256;
+
+	trace = SV_Move(ent->v.origin, ent->v.mins, ent->v.maxs, end, false, ent);
+
+	if(trace.fraction == 1 || trace.allsolid)
+		return 0;
+	else
+	{
+		VectorCopy(trace.endpos, ent->v.origin);
+		SV_LinkEdict(ent, false);
+		ent->v.flags = (int)ent->v.flags | FL_ONGROUND;
+		ent->v.groundentity = EDICT_TO_PROG(trace.ent);
+		return 1;
+	};
+};
+
+/*
+===============
+PF_walkmove
+
+float(float yaw, float dist) walkmove
+===============
+*/
+float PF_walkmove_I(edict_t *ent, float yaw, float dist)
+{
+	vec3_t move;
+
+	if(!((int)ent->v.flags & (FL_ONGROUND | FL_FLY | FL_SWIM)))
+		return 0;
+
+	yaw = yaw * M_PI * 2 / 360;
+
+	move[0] = cos(yaw) * dist;
+	move[1] = sin(yaw) * dist;
+	move[2] = 0;
+
+	return SV_movestep(ent, move, true);
+};
+
+/*
+=================
+PF_setorigin
+
+This is the only valid way to move an object without using the physics of the world (setting velocity and waiting).  Directly changing origin will not set internal links correctly, so clipping would be messed up.  This should be called when an object is spawned, and then only if it is teleported.
+
+setorigin (entity, origin)
+=================
+*/
+void PF_setorigin_I(edict_t *e, float *org)
+{
+	VectorCopy(org, e->v.origin);
+	SV_LinkEdict(e, false);
 }
+
+/*
+=================
+PF_sound
+
+Each entity can have eight independant sound sources, like voice,
+weapon, feet, etc.
+
+Channel 0 is an auto-allocate channel, the others override anything
+allready running on that entity/channel pair.
+
+An attenuation of 0 will play full volume everywhere in the level.
+Larger attenuations will drop off.
+
+=================
+*/
+void PF_sound_I(edict_t *entity, int channel, const char *sample, int volume, float attenuation)
+{
+	volume *= 255;
+
+	if(volume < 0 || volume > 255)
+		Sys_Error("SV_StartSound: volume = %i", volume);
+
+	if(attenuation < 0 || attenuation > 4)
+		Sys_Error("SV_StartSound: attenuation = %f", attenuation);
+
+	if(channel < 0 || channel > 7)
+		Sys_Error("SV_StartSound: channel = %i", channel);
+
+	SV_StartSound(entity, channel, sample, volume, attenuation);
+};
+
+/*
+=================
+PF_ambientsound
+
+=================
+*/
+void PF_ambientsound_I(float *pos, const char *samp, float vol, float attenuation)
+{
+	char **check;
+	int i, soundnum;
+
+	// check to see if samp was properly precached
+	for(soundnum = 0, check = sv.sound_precache; *check; check++, soundnum++)
+		if(!strcmp(*check, samp))
+			break;
+
+	if(!*check)
+	{
+		Con_Printf("no precache: %s\n", samp);
+		return;
+	};
+
+	// add an svc_spawnambient command to the level signon packet
+
+	MSG_WriteByte(&sv.signon, svc_spawnstaticsound);
+	for(i = 0; i < 3; i++)
+		MSG_WriteCoord(&sv.signon, pos[i]);
+
+	MSG_WriteByte(&sv.signon, soundnum);
+
+	MSG_WriteByte(&sv.signon, vol * 255);
+	MSG_WriteByte(&sv.signon, attenuation * 64);
+};
+
+PF_traceline_DLL,
+{
+};
+
+PF_TraceToss_DLL,
+{
+};
+
+TraceMonsterHull,
+{
+};
+
+TraceHull,
+{
+};
+
+TraceModel,
+{
+};
+
+TraceTexture,
+{
+};
+
+TraceSphere,
+{
+};
+
+/*
+=============
+PF_aim
+
+Pick a vector for the player to shoot along
+vector aim(entity, missilespeed)
+=============
+*/
+cvar_t sv_aim = { "sv_aim", "0.93" };
+void PF_aim_I(edict_t *ent, float speed)
+{
+	edict_t *check, *bestent;
+	vec3_t start, dir, end, bestdir;
+	int i, j;
+	trace_t tr;
+	float dist, bestdist;
+
+	VectorCopy(ent->v.origin, start);
+	start[2] += 20;
+
+	// try sending a trace straight
+	VectorCopy(gGlobalVariables.v_forward, dir);
+	VectorMA(start, 2048, dir, end);
+	tr = SV_Move(start, vec3_origin, vec3_origin, end, false, ent);
+	if(tr.ent && tr.ent->v.takedamage == DAMAGE_AIM && (!teamplay.value || ent->v.team <= 0 || ent->v.team != tr.ent->v.team))
+	{
+		VectorCopy(gGlobalVariables.v_forward, G_VECTOR(OFS_RETURN));
+		return;
+	};
+
+	// try all possible entities
+	VectorCopy(dir, bestdir);
+	bestdist = sv_aim.value;
+	bestent = NULL;
+
+	check = NEXT_EDICT(sv.edicts);
+	for(i = 1; i < sv.num_edicts; i++, check = NEXT_EDICT(check))
+	{
+		if(check->v.takedamage != DAMAGE_AIM)
+			continue;
+		if(check == ent)
+			continue;
+		if(teamplay.value && ent->v.team > 0 && ent->v.team == check->v.team)
+			continue; // don't aim at teammate
+		for(j = 0; j < 3; j++)
+			end[j] = check->v.origin[j] + 0.5 * (check->v.mins[j] + check->v.maxs[j]);
+		VectorSubtract(end, start, dir);
+		VectorNormalize(dir);
+		dist = DotProduct(dir, gGlobalVariables.v_forward);
+		if(dist < bestdist)
+			continue; // to far to turn
+		tr = SV_Move(start, vec3_origin, vec3_origin, end, false, ent);
+		if(tr.ent == check)
+		{ // can shoot at this one
+			bestdist = dist;
+			bestent = check;
+		};
+	};
+
+	if(bestent)
+	{
+		VectorSubtract(bestent->v.origin, ent->v.origin, dir);
+		dist = DotProduct(dir, gGlobalVariables.v_forward);
+		VectorScale(gGlobalVariables.v_forward, dist, end);
+		end[2] = dir[2];
+		VectorNormalize(end);
+		VectorCopy(end, G_VECTOR(OFS_RETURN));
+	}
+	else
+		VectorCopy(bestdir, G_VECTOR(OFS_RETURN));
+};
+
+/*
+=================
+PF_localcmd
+
+Sends text over to the client's execution buffer
+
+localcmd (string)
+=================
+*/
+void PF_localcmd_I(const char *str)
+{
+	Cbuf_AddText(str);
+};
+
+PF_localexec_I,
+{
+};
+
+/*
+=================
+PF_stuffcmd
+
+Sends text over to the client's execution buffer
+
+stuffcmd (clientent, value)
+=================
+*/
+void PF_stuffcmd_I(edict_t *client, const char *str)
+{
+	int entnum;
+	client_t *old;
+
+	entnum = EDICT_NUM(OFS_PARM0);
+	if(entnum < 1 || entnum > svs.maxclients)
+		Host_Error("Parm 0 not a client");
+
+	old = host_client;
+	host_client = &svs.clients[entnum - 1];
+	Host_ClientCommands("%s", str);
+	host_client = old;
+};
+
+/*
+=================
+PF_particle
+
+particle(origin, color, count)
+=================
+*/
+void PF_particle_I(float *org, float *dir, float color, float count)
+{
+	SV_StartParticle(org, dir, color, count);
+};
+
+/*
+===============
+PF_lightstyle
+
+void(float style, string value) lightstyle
+===============
+*/
+void PF_lightstyle_I(/*float*/ int style, const char *val)
+{
+	client_t *client;
+	int j;
+
+	// change the string in sv
+	sv.lightstyles[style] = val;
+
+	// send message to all clients on this server
+	if(sv.state != ss_active)
+		return;
+
+	for(j = 0, client = svs.clients; j < svs.maxclients; j++, client++)
+		if(client->active || client->spawned)
+		{
+			MSG_WriteChar(&client->message, svc_lightstyle);
+			MSG_WriteChar(&client->message, style);
+			MSG_WriteString(&client->message, val);
+		};
+};
+
+PF_DecalIndex,
+{
+};
+
+/*
+=============
+PF_pointcontents
+=============
+*/
+float PF_pointcontents_I(float *v)
+{
+	return SV_PointContents(v);
+};
+
+PF_MessageBegin_I,
+{
+};
+
+PF_MessageEnd_I,
+{
+};
+
+void PF_WriteByte_I(int val)
+{
+	MSG_WriteByte(WriteDest(), val);
+};
+
+void PF_WriteChar_I(int val)
+{
+	MSG_WriteChar(WriteDest(), val);
+};
+
+void PF_WriteShort_I(int val)
+{
+	MSG_WriteShort(WriteDest(), val);
+};
+
+void PF_WriteLong_I(int val)
+{
+	MSG_WriteLong(WriteDest(), val);
+};
+
+void PF_WriteAngle_I(float val)
+{
+	MSG_WriteAngle(WriteDest(), val);
+};
+
+void PF_WriteCoord_I(float val)
+{
+	MSG_WriteCoord(WriteDest(), val);
+};
+
+void PF_WriteString_I(const char *s)
+{
+	MSG_WriteString(WriteDest(), s);
+};
+
+void PF_WriteEntity_I(edict_t *ent)
+{
+	MSG_WriteShort(WriteDest(), EDICT_NUM(ent));
+};
+
+pfnCVarRegister = 0x981fd7a4 <meta_CVarRegister(cvar_s*)>,
+
+CVarGetFloat,
+{
+};
+
+CVarGetString,
+{
+};
+
+CVarSetFloat,
+{
+};
+
+CVarSetString,
+{
+};
+
+AlertMessage,
+{
+};
+
+EngineFprintf,
+{
+};
+
+PvAllocEntPrivateData,
+{
+};
+
+PvEntPrivateData,
+{
+};
+
+FreeEntPrivateData,
+{
+};
+
+SzFromIndex,
+{
+};
+
+AllocEngineString,
+{
+};
+
+GetVarsOfEnt,
+{
+};
+
+PEntityOfEntOffset,
+{
+};
+
+EntOffsetOfPEntity,
+{
+};
+
+IndexOfEdict,
+{
+};
+
+PEntityOfEntIndex,
+{
+};
+
+FindEntityByVars,
+{
+};
+
+GetModelPtr,
+{
+};
+
+pfnRegUserMsg = 0x981fd94a <meta_RegUserMsg(char const*, int)>,
+
+AnimationAutomove,
+{
+};
+
+GetBonePosition,
+{
+};
+
+FunctionFromName,
+{
+};
+
+NameForFunction,
+{
+};
+
+ClientPrintf,
+{
+};
+
+ServerPrint,
+{
+};
+
+GetAttachment,
+{
+};
+
+CRC32_Init,
+{
+};
+
+CRC32_ProcessBuffer,
+{
+};
+
+CRC32_ProcessByte,
+{
+};
+
+CRC32_Final,
+{
+};
+
+RandomLong,
+{
+};
+
+RandomFloat,
+{
+};
+
+PF_setview_I,
+{
+};
+
+PF_Time,
+{
+};
+
+PF_crosshairangle_I,
+{
+};
+
+COM_LoadFileForMe,
+{
+};
+
+COM_FreeFile,
+{
+};
+
+Host_EndSection,
+{
+};
+
+COM_CompareFileTime,
+{
+};
+
+COM_GetGameDir,
+{
+};
+
+pfnCvar_RegisterVariable = 0x981fd7a4 <meta_CVarRegister(cvar_s*)>,
+
+PF_FadeVolume,
+{
+};
+
+PF_SetClientMaxspeed,
+{
+};
+
+PF_CreateFakeClient_I,
+{
+};
+
+PF_RunPlayerMove_I,
+{
+};
+
+PF_NumberOfEntities_I,
+{
+};
+
+PF_GetInfoKeyBuffer_I,
+{
+};
+
+PF_InfoKeyValue_I,
+{
+};
+
+PF_SetKeyValue_I,
+{
+};
+
+PF_SetClientKeyValue_I,
+{
+};
+
+PF_IsMapValid_I,
+{
+};
+
+PF_StaticDecal,
+{
+};
+
+PF_precache_generic_I,
+{
+};
+
+PF_GetPlayerUserId,
+{
+};
+
+PF_BuildSoundMsg_I,
+{
+};
+
+int PF_IsDedicatedServer()
+{
+	return isDedicated;
+};
+
+CVarGetPointer,
+{
+};
+
+PF_GetPlayerWONId,
+{
+};
+
+PF_RemoveKey_I,
+{
+};
+
+PF_GetPhysicsKeyValue,
+{
+};
+
+PF_SetPhysicsKeyValue,
+{
+};
+
+PF_GetPhysicsInfoString,
+{
+};
+
+EV_Precache,
+{
+};
+
+EV_Playback,
+{
+};
+
+SV_FatPVS,
+{
+};
+
+SV_FatPAS,
+{
+};
+
+SV_CheckVisibility,
+{
+};
+
+DELTA_SetField,
+{
+};
+
+DELTA_UnsetField,
+{
+};
+
+DELTA_AddEncoder,
+{
+};
+
+PF_GetCurrentPlayer,
+{
+};
+
+PF_CanSkipPlayer,
+{
+};
+
+DELTA_FindFieldIndex,
+{
+};
+
+DELTA_SetFieldByIndex,
+{
+};
+
+DELTA_UnsetFieldByIndex,
+{
+};
+
+PF_SetGroupMask,
+{
+};
+
+PF_CreateInstancedBaseline,
+{
+};
+
+PF_Cvar_DirectSet,
+{
+};
+
+PF_ForceUnmodified,
+{
+};
+
+PF_GetPlayerStats,
+{
+};
+
+pfnAddServerCommand = 0x981fd63f <meta_AddServerCommand(char*, void (*)())>,
+
+Voice_GetClientListening,
+{
+};
+
+Voice_SetClientListening,
+{
+};
+
+pfnGetPlayerAuthId = 0,
+{
+};
+
+pfnSequenceGet = 0,
+{
+};
+
+pfnSequencePickSentence = 0,
+{
+};
+
+pfnGetFileSize = 0,
+{
+};
+
+pfnGetApproxWavePlayLen = 0,
+{
+};
+
+pfnIsCareerMatch = 0,
+{
+};
+
+pfnGetLocalizedStringLength = 0,
+{
+};
+
+pfnRegisterTutorMessageShown = 0,
+{
+};
+
+pfnGetTimesTutorMessageShown = 0,
+{
+};
+
+ProcessTutorMessageDecayBuffer = 0,
+{
+};
+
+ConstructTutorMessageDecayBuffer = 0,
+{
+};
+
+ResetTutorMessageDecayData = 0,
+{
+};
+
+pfnQueryClientCvarValue = 0,
+{
+};
+
+pfnQueryClientCvarValue2 = 0,
+{
+};
+
+pfnCheckParm = 0
+{
+};
+
+/*
+enginefuncs_t gEngineFuncs[] =
+{
+	PF_precache_model_I,
+	PF_precache_sound_I,
+	PF_setmodel_I,
+	PF_modelindex,
+	ModelFrames,
+	PF_setsize_I,
+	PF_changelevel_I,
+	PF_setspawnparms_I,
+	SaveSpawnParms,
+	PF_vectoyaw_I,
+	PF_vectoangles_I,
+	SV_MoveToOrigin_I,
+	PF_changeyaw_I,
+	PF_changepitch_I,
+	FindEntityByString,
+	GetEntityIllum,
+	FindEntityInSphere,
+	PF_checkclient_I,
+	PVSFindEntities,
+	PF_makevectors_I,
+	AngleVectors,
+	PF_Spawn_I,
+	PF_Remove_I,
+	CreateNamedEntity,
+	PF_makestatic_I,
+	PF_checkbottom_I,
+	PF_droptofloor_I,
+	PF_walkmove_I,
+	PF_setorigin_I,
+	PF_sound_I,
+	PF_ambientsound_I,
+	PF_traceline_DLL,
+	PF_TraceToss_DLL,
+	TraceMonsterHull,
+	TraceHull,
+	TraceModel,
+	TraceTexture,
+	TraceSphere,
+	PF_aim_I,
+	PF_localcmd_I,
+	PF_localexec_I,
+	PF_stuffcmd_I,
+	PF_particle_I,
+	PF_lightstyle_I,
+	PF_DecalIndex,
+	PF_pointcontents_I,
+	PF_MessageBegin_I,
+	PF_MessageEnd_I,
+	PF_WriteByte_I,
+	PF_WriteChar_I,
+	PF_WriteShort_I,
+	PF_WriteLong_I,
+	PF_WriteAngle_I,
+	PF_WriteCoord_I,
+	PF_WriteString_I,
+	PF_WriteEntity_I,
+	pfnCVarRegister = 0x981fd7a4 <meta_CVarRegister(cvar_s*)>,
+	CVarGetFloat,
+	CVarGetString,
+	CVarSetFloat,
+	CVarSetString,
+	AlertMessage,
+	EngineFprintf,
+	PvAllocEntPrivateData,
+	PvEntPrivateData,
+	FreeEntPrivateData,
+	SzFromIndex,
+	AllocEngineString,
+	GetVarsOfEnt,
+	PEntityOfEntOffset,
+	EntOffsetOfPEntity,
+	IndexOfEdict,
+	PEntityOfEntIndex,
+	FindEntityByVars,
+	GetModelPtr,
+	pfnRegUserMsg = 0x981fd94a <meta_RegUserMsg(char const*, int)>,
+	AnimationAutomove,
+	GetBonePosition,
+	FunctionFromName,
+	NameForFunction,
+	ClientPrintf,
+	ServerPrint,
+	Cmd_Args,
+	Cmd_Argv,
+	Cmd_Argc,
+	GetAttachment,
+	CRC32_Init,
+	CRC32_ProcessBuffer,
+	CRC32_ProcessByte,
+	CRC32_Final,
+	RandomLong,
+	RandomFloat,
+	PF_setview_I,
+	PF_Time,
+	PF_crosshairangle_I,
+	COM_LoadFileForMe,
+	COM_FreeFile,
+	Host_EndSection,
+	COM_CompareFileTime,
+	COM_GetGameDir,
+	pfnCvar_RegisterVariable = 0x981fd7a4 <meta_CVarRegister(cvar_s*)>,
+	PF_FadeVolume,
+	PF_SetClientMaxspeed,
+	PF_CreateFakeClient_I,
+	PF_RunPlayerMove_I,
+	PF_NumberOfEntities_I,
+	PF_GetInfoKeyBuffer_I,
+	PF_InfoKeyValue_I,
+	PF_SetKeyValue_I,
+	PF_SetClientKeyValue_I,
+	PF_IsMapValid_I,
+	PF_StaticDecal,
+	PF_precache_generic_I,
+	PF_GetPlayerUserId,
+	PF_BuildSoundMsg_I,
+	PF_IsDedicatedServer,
+	CVarGetPointer,
+	PF_GetPlayerWONId,
+	PF_RemoveKey_I,
+	PF_GetPhysicsKeyValue,
+	PF_SetPhysicsKeyValue,
+	PF_GetPhysicsInfoString,
+	EV_Precache,
+	EV_Playback,
+	SV_FatPVS,
+	SV_FatPAS,
+	SV_CheckVisibility,
+	DELTA_SetField,
+	DELTA_UnsetField,
+	DELTA_AddEncoder,
+	PF_GetCurrentPlayer,
+	PF_CanSkipPlayer,
+	DELTA_FindFieldIndex,
+	DELTA_SetFieldByIndex,
+	DELTA_UnsetFieldByIndex,
+	PF_SetGroupMask,
+	PF_CreateInstancedBaseline,
+	PF_Cvar_DirectSet,
+	PF_ForceUnmodified,
+	PF_GetPlayerStats,
+	pfnAddServerCommand = 0x981fd63f <meta_AddServerCommand(char*, void (*)())>,
+	Voice_GetClientListening,
+	Voice_SetClientListening,
+	pfnGetPlayerAuthId = 0,
+	pfnSequenceGet = 0,
+	pfnSequencePickSentence = 0,
+	pfnGetFileSize = 0,
+	pfnGetApproxWavePlayLen = 0,
+	pfnIsCareerMatch = 0,
+	pfnGetLocalizedStringLength = 0,
+	pfnRegisterTutorMessageShown = 0,
+	pfnGetTimesTutorMessageShown = 0,
+	ProcessTutorMessageDecayBuffer = 0,
+	ConstructTutorMessageDecayBuffer = 0,
+	ResetTutorMessageDecayData = 0,
+	pfnQueryClientCvarValue = 0,
+	pfnQueryClientCvarValue2 = 0,
+	pfnCheckParm = 0
+};
 */
