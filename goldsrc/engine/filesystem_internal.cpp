@@ -100,7 +100,9 @@ void FS_Close(FileHandle_t file)
 
 void FS_Seek(FileHandle_t file, int pos, FileSystemSeek_t seekType)
 {
+	//int t{VID_ForceUnlockedAndReturnState()}; // TODO: windows
 	gpFileSystem->Seek(file, pos, seekType);
+	//VID_ForceLockState(t); // TODO: windows
 };
 
 unsigned int FS_Tell(FileHandle_t file)
@@ -347,7 +349,7 @@ void FS_FileClose(int handle)
 
 void FS_FileSeek(int handle, int position)
 {
-	gpFileSystem->FileSeek(handle, position);
+	gpFileSystem->FileSeek(handle, position); // fseek(sys_handles[handle], position, SEEK_SET);
 };
 
 int FS_FileRead(int handle, void *dest, int count)
@@ -371,7 +373,7 @@ void FS_mkdir(const char *path)
 // TODO: if not dedicated?
 
 #ifdef _WIN32
-//_mkdir(path); // TODO
+	//_mkdir(path); // TODO
 #else
 	mkdir(path, 0777);
 #endif
