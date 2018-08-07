@@ -191,7 +191,7 @@ void MD5Transform(UINT4 state[4], const unsigned char block[64])
 	memset(x, 0, sizeof(x));
 }
 
-void MD5Digest(MD5Context_t *md5, const void *input, unsigned int inputLen)
+void MD5Update(MD5Context_t *md5, const void *input, unsigned int inputLen)
 {
 	unsigned int i, index, partLen;
 	/* Compute number of bytes mod 64 */
@@ -242,14 +242,14 @@ void MD5Final(unsigned char digest[16], MD5Context_t *md5)
 	/* Pad out to 56 mod 64. */
 	index = (unsigned int)((md5->count[0] >> 3) & 0x3f);
 	padLen = (index < 56) ? (56 - index) : (120 - index);
-	MD5Digest(md5, PADDING, padLen);
+	MD5Update(md5, PADDING, padLen);
 	/* Append length (before padding) */
-	MD5Digest(md5, bits, 8);
+	MD5Update(md5, bits, 8);
 	/* Store state in digest */
 	ENCODE(digest, md5->state[0]);
 	ENCODE(digest + 4, md5->state[1]);
 	ENCODE(digest + 8, md5->state[2]);
 	ENCODE(digest + 12, md5->state[3]);
 	/* Zeroize sensitive information. */
-	memset(md5, 0, sizeof(MD5));
+	memset(md5, 0, sizeof(MD5Context_t));
 }
