@@ -104,23 +104,6 @@ void Sys_Warn(const char *warning, ...)
 	fprintf(stderr, "Warning: %s", string);
 }
 
-/*
-============
-Sys_FileTime
-
-returns -1 if not present
-============
-*/
-int Sys_FileTime(const char *path)
-{
-	struct stat buf;
-
-	if(stat(path, &buf) == -1)
-		return -1;
-
-	return buf.st_mtime;
-}
-
 int Sys_FileOpenRead(const char *path, int *handle)
 {
 	int h;

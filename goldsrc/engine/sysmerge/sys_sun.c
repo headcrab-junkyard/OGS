@@ -42,28 +42,14 @@ FILE IO
 ===============================================================================
 */
 
-#define MAX_HANDLES 10
-
-typedef struct
+int findhandle() const
 {
-	FILE *hFile;
-	char *pMap;
-	int nLen;
-	int nPos;
-} MEMFILE;
-
-MEMFILE sys_handles[MAX_HANDLES];
-
-int findhandle(void)
-{
-	int i;
-
-	for(i = 1; i < MAX_HANDLES; i++)
+	for(int i = 1; i < MAX_HANDLES; i++)
 		if(!sys_handles[i].hFile)
 			return i;
 	Sys_Error("out of handles");
 	return -1;
-}
+};
 
 /*
 ================
@@ -72,16 +58,14 @@ filelength
 */
 int filelength(FILE *f)
 {
-	int pos;
-	int end;
-
-	pos = ftell(f);
+	int pos = ftell(f);
 	fseek(f, 0, SEEK_END);
-	end = ftell(f);
+	
+	int end = ftell(f);
 	fseek(f, pos, SEEK_SET);
 
 	return end;
-}
+};
 
 int Sys_FileOpenRead(char *path, int *hndl)
 {
@@ -95,7 +79,8 @@ int Sys_FileOpenRead(char *path, int *hndl)
 	{
 		*hndl = -1;
 		return -1;
-	}
+	};
+	
 	sys_handles[i].hFile = f;
 	sys_handles[i].nLen = filelength(f);
 	sys_handles[i].nPos = 0;
@@ -104,12 +89,12 @@ int Sys_FileOpenRead(char *path, int *hndl)
 	{
 		printf("mmap %s failed!", path);
 		sys_handles[i].pMap = NULL;
-	}
+	};
 
 	*hndl = i;
 
 	return (sys_handles[i].nLen);
-}
+};
 
 int Sys_FileOpenWrite(char *path)
 {
@@ -127,7 +112,7 @@ int Sys_FileOpenWrite(char *path)
 	sys_handles[i].pMap = NULL;
 
 	return i;
-}
+};
 
 void Sys_FileClose(int handle)
 {
@@ -137,17 +122,15 @@ void Sys_FileClose(int handle)
 
 	fclose(sys_handles[handle].hFile);
 	sys_handles[handle].hFile = NULL;
-}
+};
 
 void Sys_FileSeek(int handle, int position)
 {
 	if(sys_handles[handle].pMap)
-	{
 		sys_handles[handle].nPos = position;
-	}
 	else
 		fseek(sys_handles[handle].hFile, position, SEEK_SET);
-}
+};
 
 int Sys_FileRead(int handle, void *dest, int count)
 {
@@ -164,63 +147,14 @@ int Sys_FileRead(int handle, void *dest, int count)
 	}
 	else
 		return fread(dest, 1, count, sys_handles[handle].hFile);
-}
+};
 
 int Sys_FileWrite(int handle, void *data, int count)
 {
 	if(sys_handles[handle].pMap)
 		Sys_Error("Attempted to write to read-only file %d!\n", handle);
 	return fwrite(data, 1, count, sys_handles[handle].hFile);
-}
-
-int Sys_FileTime(char *path)
-{
-	FILE *f;
-
-	f = fopen(path, "rb");
-	if(f)
-	{
-		fclose(f);
-		return 1;
-	}
-
-	return -1;
-}
-
-/*
-===============================================================================
-
-SYSTEM IO
-
-===============================================================================
-*/
-
-char *Sys_ConsoleInput(void)
-{
-	static char text[256];
-	int len;
-	fd_set readfds;
-	int ready;
-	struct timeval timeout;
-
-	timeout.tv_sec = 0;
-	timeout.tv_usec = 0;
-	FD_ZERO(&readfds);
-	FD_SET(0, &readfds);
-	ready = select(1, &readfds, 0, 0, &timeout);
-
-	if(ready > 0)
-	{
-		len = read(0, text, sizeof(text));
-		if(len >= 1)
-		{
-			text[len - 1] = 0; // rip off the /n and terminate
-			return text;
-		}
-	}
-
-	return 0;
-}
+};
 
 //=============================================================================
 
@@ -235,5 +169,5 @@ int main(int argc, char **argv)
 	oldtime = Sys_FloatTime();
 	while(1)
 	{
-	}
-}
+	};
+};

@@ -71,14 +71,14 @@ int filelength(FILE *f)
 	int end;
 	int t;
 
-	t = VID_ForceUnlockedAndReturnState();
+	t = VID_ForceUnlockedAndReturnState(); // TODO: unused in QW
 
 	pos = ftell(f);
 	fseek(f, 0, SEEK_END);
 	end = ftell(f);
 	fseek(f, pos, SEEK_SET);
 
-	VID_ForceLockState(t);
+	VID_ForceLockState(t); // TODO: unused in QW
 
 	return end;
 }
@@ -142,15 +142,6 @@ void Sys_FileClose(int handle)
 	VID_ForceLockState(t);
 }
 
-void Sys_FileSeek(int handle, int position)
-{
-	int t;
-
-	t = VID_ForceUnlockedAndReturnState();
-	fseek(sys_handles[handle], position, SEEK_SET);
-	VID_ForceLockState(t);
-}
-
 int Sys_FileRead(int handle, void *dest, int count)
 {
 	int t, x;
@@ -171,7 +162,12 @@ int Sys_FileWrite(int handle, void *data, int count)
 	return x;
 }
 
-int Sys_FileTime(char *path)
+/*
+================
+Sys_FileTime
+================
+*/
+int Sys_FileTime(const char *path)
 {
 	FILE *f;
 	int t, retval;
@@ -201,8 +197,6 @@ SYSTEM IO
 
 ===============================================================================
 */
-
-
 
 char *Sys_ConsoleInput()
 {
@@ -304,6 +298,30 @@ char *Sys_ConsoleInput()
 		return text;
 	}
 	return NULL;
+#elif sun
+	static char text[256];
+	int len;
+	fd_set readfds;
+	int ready;
+	struct timeval timeout;
+
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 0;
+	FD_ZERO(&readfds);
+	FD_SET(0, &readfds);
+	ready = select(1, &readfds, 0, 0, &timeout);
+
+	if(ready > 0)
+	{
+		len = read(0, text, sizeof(text));
+		if(len >= 1)
+		{
+			text[len - 1] = 0; // rip off the /n and terminate
+			return text;
+		};
+	};
+
+	return 0;
 #endif
 }
 
@@ -322,8 +340,8 @@ void Sys_SendKeyEvents()
 
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
-	}
-}
+	};
+};
 #endif
 
 /*
@@ -342,7 +360,7 @@ WinMain
 
 /*
 char		*argv[MAX_NUM_ARGVS];
-static char	*empty_string = "";
+static const char	*empty_string = "";
 HWND		hwnd_dialog;
 
 
