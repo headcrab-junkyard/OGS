@@ -27,7 +27,7 @@ GoldSource Engine Clone Prototype
 Clean open source reimplementation of the GoldSource game engine  
 Based on original Quake (Id Tech 2) engine sources
 
-For more information about the project you can visit its official [Wiki](https://github.com/BlackPhrase/OGS/wiki)
+For more information about the project you can visit its official [Wiki](https://gitlab.com/BlackPhrase/OGS/wikis/home)
 
 ## Mini-Q&A
 
@@ -43,12 +43,17 @@ This information allows you to see which function caused the crash and its locat
 (Backtrace logs don't show you the actual source code)
 
 **Q: Will the engine be able to run my precious (%MODNAME%)?**  
+**A:** Technically, it's possible to interconnect the reimplemented engine with original mods written 
+using HLSDK, its license doesn't explicitly forbids to do that, but that's at your own risk. And only for non-commercial use. 
+The game dlls compiled from the HLSDK code will still be licensed under terms of Half-Life SDK License, I can only permit to link 
+the GPL3 OGS code with them as a special exception
+
+**Q: Can I use the HLSDK to create a mod for this engine?**
 **A:** Nope, HLSDK EULA expects that any modification created using it will be used only by the original 
-GoldSrc engine. Technically, it still might be possible to interconnect the reimplemented engine with original mods written 
-using HLSDK, but that's at your own risk. I'm not planning to reimplement the game code for this engine. I'm also thinking about 
-preventing the engine from supporting game/client dlls loading and just contain stubs for them inside the engine, 
-can't say for sure now, but I doubt that anyone else decides to rewrite the game code for this engine, so it probably end up being used 
-as a tech demo of the GoldSrc showcasing its features using some recreated HL Alpha maps
+GoldSrc engine. You need to reimplement the game code yourself or use the reimplemented OGS SDK template game code based on Quake's QC progs code 
+(if it's present at the time you reading this, I'm not planning to reimplement the game code for this engine for now, can't say for sure, but 
+I doubt that anyone else decides to rewrite the game code for this engine, so it probably end up being used as a tech demo of the GoldSrc 
+showcasing its features using some recreated HL Alpha maps)
 
 ## License
 
