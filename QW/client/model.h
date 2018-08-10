@@ -46,10 +46,15 @@ typedef struct texture_s
 {
 	char		name[16];
 	unsigned	width, height;
+	// TODO: gl_model
+	/*
+	int			gl_texturenum;
+	struct msurface_s	*texturechain;	// for gl_texsort drawing
+	*/
 	int			anim_total;				// total tenths in sequence ( 0 = no)
 	int			anim_min, anim_max;		// time for this frame min <=time< max
 	struct texture_s *anim_next;		// in the animation sequence
-	struct texture_s *alternate_anims;	// bmodels in frmae 1 use these
+	struct texture_s *alternate_anims;	// bmodels in frame 1 use these
 	unsigned	offsets[MIPLEVELS];		// four mip maps stored
 } texture_t;
 
@@ -131,6 +136,32 @@ typedef enum {mod_brush, mod_sprite, mod_alias} modtype_t;
 #define	EF_ZOMGIB	32			// small blood trail
 #define	EF_TRACER2	64			// orange split trail + rotate
 #define	EF_TRACER3	128			// purple trail
+
+// TODO: from gl_model
+typedef struct {
+	int			ident;
+	int			version;
+	vec3_t		scale;
+	vec3_t		scale_origin;
+	float		boundingradius;
+	vec3_t		eyeposition;
+	int			numskins;
+	int			skinwidth;
+	int			skinheight;
+	int			numverts;
+	int			numtris;
+	int			numframes;
+	synctype_t	synctype;
+	int			flags;
+	float		size;
+
+	int					numposes;
+	int					poseverts;
+	int					posedata;	// numposes*poseverts trivert_t
+	int					commands;	// gl command list with embedded s/t
+	int					gl_texturenum[MAX_SKINS][4];
+	maliasframedesc_t	frames[1];	// variable sized
+} aliashdr_t;
 
 typedef struct model_s
 {

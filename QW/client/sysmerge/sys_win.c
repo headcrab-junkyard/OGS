@@ -17,42 +17,22 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// sys_win.h
 
-#include "quakedef.h"
-#include "winquake.h"
-#include "resource.h"
-#include "errno.h"
 #include "fcntl.h"
 #include <limits.h>
 
 #define MINIMUM_WIN_MEMORY	0x0c00000
 #define MAXIMUM_WIN_MEMORY	0x1000000
 
-#define PAUSE_SLEEP		50				// sleep time on pause or minimization
-#define NOT_FOCUS_SLEEP	20				// sleep time when not focus
-
-int		starttime;
-qboolean ActiveApp, Minimized;
 qboolean	WinNT;
 
 HWND	hwnd_dialog;		// startup dialog box
 
-static double		pfreq;
-static double		curtime = 0.0;
-static double		lastcurtime = 0.0;
-static int			lowshift;
 static HANDLE		hinput, houtput;
 
 HANDLE		qwclsemaphore;
 
 static HANDLE	tevent;
-
-void Sys_InitFloatTime (void);
-
-void MaskExceptions (void);
-void Sys_PopFPCW (void);
-void Sys_PushFPCW_SetHigh (void);
 
 void Sys_DebugLog(char *file, char *fmt, ...)
 {
@@ -71,124 +51,13 @@ void Sys_DebugLog(char *file, char *fmt, ...)
 /*
 ===============================================================================
 
-FILE IO
-
-===============================================================================
-*/
-
-/*
-================
-filelength
-================
-*/
-int filelength (FILE *f)
-{
-	int		pos;
-	int		end;
-
-	pos = ftell (f);
-	fseek (f, 0, SEEK_END);
-	end = ftell (f);
-	fseek (f, pos, SEEK_SET);
-
-	return end;
-}
-
-/*
-================
-Sys_FileTime
-================
-*/
-int	Sys_FileTime (char *path)
-{
-	FILE	*f;
-	int		t, retval;
-
-	t = VID_ForceUnlockedAndReturnState ();
-	
-	f = fopen(path, "rb");
-
-	if (f)
-	{
-		fclose(f);
-		retval = 1;
-	}
-	else
-	{
-		retval = -1;
-	}
-	
-	VID_ForceLockState (t);
-	return retval;
-}
-
-/*
-================
-Sys_mkdir
-================
-*/
-void Sys_mkdir (char *path)
-{
-	_mkdir (path);
-}
-
-
-/*
-===============================================================================
-
 SYSTEM IO
 
 ===============================================================================
 */
 
-/*
-================
-Sys_MakeCodeWriteable
-================
-*/
-void Sys_MakeCodeWriteable (unsigned long startaddr, unsigned long length)
-{
-	DWORD  flOldProtect;
-
-//@@@ copy on write or just read-write?
-	if (!VirtualProtect((LPVOID)startaddr, length, PAGE_READWRITE, &flOldProtect))
-   		Sys_Error("Protection change failed\n");
-}
-
-
-/*
-================
-Sys_Init
-================
-*/
 void Sys_Init (void)
 {
-	LARGE_INTEGER	PerformanceFreq;
-	unsigned int	lowpart, highpart;
-	OSVERSIONINFO	vinfo;
-
-#ifndef SERVERONLY
-	// allocate a named semaphore on the client so the
-	// front end can tell if it is alive
-
-	// mutex will fail if semephore allready exists
-    qwclsemaphore = CreateMutex(
-        NULL,         /* Security attributes */
-        0,            /* owner       */
-        "qwcl"); /* Semaphore name      */
-	if (!qwclsemaphore)
-		Sys_Error ("QWCL is already running on this system");
-	CloseHandle (qwclsemaphore);
-
-    qwclsemaphore = CreateSemaphore(
-        NULL,         /* Security attributes */
-        0,            /* Initial count       */
-        1,            /* Maximum count       */
-        "qwcl"); /* Semaphore name      */
-#endif
-
-	MaskExceptions ();
-	Sys_SetFPCW ();
 
 #if 0
 	if (!QueryPerformanceFrequency (&PerformanceFreq))
@@ -225,7 +94,7 @@ void Sys_Init (void)
 	if ((vinfo.dwMajorVersion < 4) ||
 		(vinfo.dwPlatformId == VER_PLATFORM_WIN32s))
 	{
-		Sys_Error ("QuakeWorld requires at least Win95 or NT 4.0");
+		Sys_Error ("OGS requires at least Win95 or NT 4.0");
 	}
 	
 	if (vinfo.dwPlatformId == VER_PLATFORM_WIN32_NT)
@@ -258,34 +127,6 @@ void Sys_Error (char *error, ...)
 
 	exit (1);
 }
-
-void Sys_Printf (char *fmt, ...)
-{
-	va_list		argptr;
-	char		text[1024];
-	DWORD		dummy;
-	
-	va_start (argptr,fmt);
-	vprintf (fmt, argptr);
-	va_end (argptr);
-}
-
-void Sys_Quit (void)
-{
-	VID_ForceUnlockedAndReturnState ();
-
-	Host_Shutdown();
-#ifndef SERVERONLY
-	if (tevent)
-		CloseHandle (tevent);
-
-	if (qwclsemaphore)
-		CloseHandle (qwclsemaphore);
-#endif
-
-	exit (0);
-}
-
 
 #if 0
 /*
@@ -354,61 +195,7 @@ double Sys_DoubleTime (void)
     return curtime;
 }
 
-/*
-================
-Sys_InitFloatTime
-================
-*/
-void Sys_InitFloatTime (void)
-{
-	int		j;
-
-	Sys_DoubleTime ();
-
-	j = COM_CheckParm("-starttime");
-
-	if (j)
-	{
-		curtime = (double) (Q_atof(com_argv[j+1]));
-	}
-	else
-	{
-		curtime = 0.0;
-	}
-
-	lastcurtime = curtime;
-}
-
 #endif
-
-/*
-================
-Sys_DoubleTime
-================
-*/
-double Sys_DoubleTime (void)
-{
-	static DWORD starttime;
-	static qboolean first = true;
-	DWORD now;
-	double t;
-
-	now = timeGetTime();
-
-	if (first) {
-		first = false;
-		starttime = now;
-		return 0.0;
-	}
-	
-	if (now < starttime) // wrapped?
-		return (now / 1000.0) + (LONG_MAX - starttime / 1000.0);
-
-	if (now - starttime == 0)
-		return 0.0;
-
-	return (now - starttime) / 1000.0;
-}
 
 /*
 ================
@@ -515,50 +302,6 @@ char *Sys_ConsoleInput (void)
 	return NULL;
 }
 
-void Sys_Sleep (void)
-{
-}
-
-
-void Sys_SendKeyEvents (void)
-{
-    MSG        msg;
-
-	while (PeekMessage (&msg, NULL, 0, 0, PM_NOREMOVE))
-	{
-	// we always update if there are any event, even if we're paused
-		scr_skipupdate = 0;
-
-		if (!GetMessage (&msg, NULL, 0, 0))
-			Sys_Quit ();
-      	TranslateMessage (&msg);
-      	DispatchMessage (&msg);
-	}
-}
-
-
-
-/*
-==============================================================================
-
- WINDOWS CRAP
-
-==============================================================================
-*/
-
-/*
-==================
-WinMain
-==================
-*/
-void SleepUntilInput (int time)
-{
-
-	MsgWaitForMultipleObjects(1, &tevent, FALSE, time, QS_ALLINPUT);
-}
-
-
-
 /*
 ==================
 WinMain
@@ -566,9 +309,6 @@ WinMain
 */
 HINSTANCE	global_hInstance;
 int			global_nCmdShow;
-char		*argv[MAX_NUM_ARGVS];
-static char	*empty_string = "";
-HWND		hwnd_dialog;
 
 
 int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)

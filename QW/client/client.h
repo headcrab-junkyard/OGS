@@ -91,31 +91,6 @@ qboolean CL_GetMessage ();
 void CL_WriteDemoCmd (usercmd_t *pcmd);
 
 //
-// cl_parse.c
-//
-#define NET_TIMINGS 256
-#define NET_TIMINGSMASK 255
-extern int	packet_latency[NET_TIMINGS];
-int CL_CalcNet ();
-void CL_ParseServerMessage ();
-void CL_NewTranslation (int slot);
-qboolean	CL_CheckOrDownloadFile (const char *filename);
-qboolean CL_IsUploading();
-void CL_NextUpload();
-void CL_StartUpload (byte *data, int size);
-void CL_StopUpload();
-
-//
-// view.c
-//
-
-//
-// cl_tent
-//
-void CL_InitTEnts ();
-void CL_ClearTEnts ();
-
-//
 // cl_cam.c
 //
 #define CAM_NONE	0

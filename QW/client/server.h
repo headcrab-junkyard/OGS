@@ -161,7 +161,7 @@ typedef struct
 	int			heartbeat_sequence;
 	
 
-	char		info[MAX_SERVERINFO_STRING];
+	
 
 	// log messages are used so that fraglog processes can get stats
 	int			logsequence;	// the message currently being filled

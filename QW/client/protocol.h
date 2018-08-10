@@ -105,12 +105,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //
 // client to server
 //
-#define	clc_bad			0
-#define	clc_nop 		1
-//define	clc_doublemove	2
-#define	clc_move		3		// [[usercmd_t]
-#define	clc_stringcmd	4		// [string] message
-#define	clc_delta		5		// [byte] sequence number, requests delta compression of message
 #define clc_tmove		6		// teleport request, spectator only
 #define clc_upload		7		// teleport request, spectator only
 

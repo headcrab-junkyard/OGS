@@ -17,12 +17,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// sv_edict.c -- entity dictionary
 
-#include "quakedef.h"
-
-char			*pr_strings;
-globalvars_t	*pr_global_struct;
 int				pr_edict_size;	// in bytes
 
 int		type_size[8] = {1,sizeof(void *)/4,1,3,1,1,sizeof(void *)/4,sizeof(void *)/4};
@@ -44,35 +39,10 @@ func_t SpectatorConnect;
 func_t SpectatorThink;
 func_t SpectatorDisconnect;
 
-
-/*
-=================
-ED_ClearEdict
-
-Sets everything to NULL
-=================
-*/
-void ED_ClearEdict (edict_t *e)
-{
-	memset (&e->v, 0, progs->entityfields * 4);
-	e->free = false;
-}
-
 edict_t *ED_Alloc ()
 {
-	int			i;
-	edict_t		*e;
-
 	for ( i=svs.maxclients+1 ; i<sv.num_edicts ; i++)
 	{
-		e = EDICT_NUM(i);
-		// the first couple seconds of server time can involve a lot of
-		// freeing and allocating, so relax the replacement policy
-		if (e->free && ( e->freetime < 2 || sv.time - e->freetime > 0.5 ) )
-		{
-			ED_ClearEdict (e);
-			return e;
-		}
 	}
 	
 	if (i == MAX_EDICTS)
@@ -86,8 +56,6 @@ edict_t *ED_Alloc ()
 		sv.num_edicts++;
 	e = EDICT_NUM(i);
 	ED_ClearEdict (e);
-
-	return e;
 }
 
 /*
@@ -370,34 +338,6 @@ void ED_Print (edict_t *ed)
 	}
 }
 
-
-
-
-void ED_PrintNum (int ent)
-{
-	ED_Print (EDICT_NUM(ent));
-}
-
-
-void ED_PrintEdicts ()
-{
-	int		i;
-	
-	Con_Printf ("%i entities\n", sv.num_edicts);
-	for (i=0 ; i<sv.num_edicts ; i++)
-	{
-		Con_Printf ("\nEDICT %i:\n",i);
-		ED_PrintNum (i);
-	}
-}
-
-/*
-=============
-ED_PrintEdict_f
-
-For debugging, prints a single edicy
-=============
-*/
 void ED_PrintEdict_f (void)
 {
 	int		i;
@@ -406,55 +346,6 @@ void ED_PrintEdict_f (void)
 	Con_Printf ("\n EDICT %i:\n",i);
 	ED_PrintNum (i);
 }
-
-
-
-
-
-
-
-/*
-=============
-ED_ParseGlobals
-=============
-*/
-void ED_ParseGlobals (char *data)
-{
-	char	keyname[64];
-	ddef_t	*key;
-
-	while (1)
-	{	
-	// parse key
-		data = COM_Parse (data);
-		if (com_token[0] == '}')
-			break;
-		if (!data)
-			Sys_Error ("ED_ParseEntity: EOF without closing brace");
-
-		strcpy (keyname, com_token);
-
-	// parse value	
-		data = COM_Parse (data);
-		if (!data)
-			Sys_Error ("ED_ParseEntity: EOF without closing brace");
-
-		if (com_token[0] == '}')
-			Sys_Error ("ED_ParseEntity: closing brace without data");
-
-		key = ED_FindGlobal (keyname);
-		if (!key)
-		{
-			Con_Printf ("%s is not a global\n", keyname);
-			continue;
-		}
-
-		if (!ED_ParseEpair ((void *)pr_globals, key, com_token))
-			Host_Error ("ED_ParseGlobals: parse error");
-	}
-}
-
-
 
 /*
 =============
@@ -529,15 +420,6 @@ qboolean	ED_ParseEpair (void *base, ddef_t *key, char *s)
 	return true;
 }
 
-/*
-====================
-ED_ParseEdict
-
-Parses an edict out of the given string, returning the new position
-ed should be a properly initialized empty edict.
-Used for initial level load and for savegames.
-====================
-*/
 char *ED_ParseEdict (char *data, edict_t *ent)
 {
 	ddef_t		*key;
@@ -680,12 +562,6 @@ void ED_LoadFromFile (char *data)
 	Con_DPrintf ("%i entities inhibited\n", inhibit);
 }
 
-
-/*
-===============
-PR_LoadProgs
-===============
-*/
 void PR_LoadProgs ()
 {
 	int		i;
@@ -771,37 +647,4 @@ void PR_LoadProgs ()
 		SpectatorThink = (func_t)(f - pr_functions);
 	if ((f = ED_FindFunction ("SpectatorDisconnect")) != NULL)
 		SpectatorDisconnect = (func_t)(f - pr_functions);
-}
-
-
-/*
-===============
-PR_Init
-===============
-*/
-void PR_Init ()
-{
-	Cmd_AddCommand ("edict", ED_PrintEdict_f);
-	Cmd_AddCommand ("edicts", ED_PrintEdicts);
-	Cmd_AddCommand ("edictcount", ED_Count);
-	Cmd_AddCommand ("profile", PR_Profile_f);
-}
-
-edict_t *EDICT_NUM(int n)
-{
-	if (n < 0 || n >= MAX_EDICTS)
-		Sys_Error ("EDICT_NUM: bad number %i", n);
-	return (edict_t *)((byte *)sv.edicts+ (n)*pr_edict_size);
-}
-
-int NUM_FOR_EDICT(edict_t *e)
-{
-	int		b;
-	
-	b = (byte *)e - (byte *)sv.edicts;
-	b = b / pr_edict_size;
-	
-	if (b < 0 || b >= sv.num_edicts)
-		Sys_Error ("NUM_FOR_EDICT: bad pointer");
-	return b;
 }

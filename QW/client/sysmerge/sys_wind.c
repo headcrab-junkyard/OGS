@@ -40,7 +40,7 @@ void Sys_Error (char *error, ...)
 
 
 
-double Sys_DoubleTime (void)
+double Sys_FloatTime (void)
 {
 	double t;
     struct _timeb tstruct;

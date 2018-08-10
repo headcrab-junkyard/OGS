@@ -18,8 +18,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */			
 
-char localinfo[MAX_LOCALINFO_STRING+1]; // local game info
-
 /*
 ================
 SV_ModelIndex
