@@ -112,11 +112,12 @@ void PF_setmodel_I(edict_t *e, const char *m)
 		SetMinMaxSize(e, vec3_origin, vec3_origin, true);
 };
 
-PF_modelindex,
+int PF_modelindex()
 {
+	return 0;
 };
 
-ModelFrames,
+int ModelFrames()
 {
 };
 
@@ -222,9 +223,9 @@ void PF_changelevel_I(const char *s1, const char *s2)
 
 	if(s2 && *s2)
 		//if ((int)gGlobalVariables.serverflags & (SFL_NEW_UNIT | SFL_NEW_EPISODE))
-		//Cbuf_AddText (va("changelevel %s %s\n",s1, s2));
+			//Cbuf_AddText (va("changelevel %s %s\n",s1, s2));
 		//else
-		Cbuf_AddText(va("changelevel2 %s %s\n", s1, s2));
+			Cbuf_AddText(va("changelevel2 %s %s\n", s1, s2));
 	else
 		Cbuf_AddText(va("changelevel %s\n", s1));
 };
@@ -250,7 +251,7 @@ void PF_setspawnparms_I(edict_t *ent)
 		(&gGlobalVariables.parm1)[i] = client->spawn_parms[i];
 };
 
-SaveSpawnParms,
+void SaveSpawnParms()
 {
 };
 
@@ -314,35 +315,114 @@ float *PF_vectoangles_I(float *value1)
 	G_FLOAT(OFS_RETURN + 2) = 0;
 };
 
-SV_MoveToOrigin_I,
+void SV_MoveToOrigin_I()
 {
 };
 
-PF_changeyaw_I,
+/*
+==============
+PF_changeyaw
+
+This was a major timewaster in progs, so it was converted to C
+==============
+*/
+void PF_changeyaw_I(edict_t *ent)
+{
+	float ideal, current, move, speed;
+
+	//ent = PROG_TO_EDICT(gGlobalVariables.self);
+	current = anglemod(ent->v.angles[1]);
+	ideal = ent->v.ideal_yaw;
+	speed = ent->v.yaw_speed;
+
+	if(current == ideal)
+		return;
+	move = ideal - current;
+	if(ideal > current)
+	{
+		if(move >= 180)
+			move = move - 360;
+	}
+	else
+	{
+		if(move <= -180)
+			move = move + 360;
+	};
+	
+	if(move > 0)
+	{
+		if(move > speed)
+			move = speed;
+	}
+	else
+	{
+		if(move < -speed)
+			move = -speed;
+	};
+
+	ent->v.angles[1] = anglemod(current + move);
+};
+
+/*
+==============
+PF_changepitch
+==============
+*/
+void PF_changepitch_I(edict_t *ent)
+{
+	float ideal, current, move, speed;
+
+	current = anglemod(ent->v.angles[0]);
+	ideal = ent->v.idealpitch;
+	speed = ent->v.pitch_speed;
+
+	if(current == ideal)
+		return;
+	move = ideal - current;
+	if(ideal > current)
+	{
+		if(move >= 180)
+			move = move - 360;
+	}
+	else
+	{
+		if(move <= -180)
+			move = move + 360;
+	};
+	
+	if(move > 0)
+	{
+		if(move > speed)
+			move = speed;
+	}
+	else
+	{
+		if(move < -speed)
+			move = -speed;
+	};
+
+	ent->v.angles[0] = anglemod(current + move);
+};
+
+edict_t *FindEntityByString()
+{
+	return NULL;
+};
+
+int GetEntityIllum()
+{
+	return 0;
+};
+
+FindEntityInSphere()
 {
 };
 
-PF_changepitch_I,
+PF_checkclient_I()
 {
 };
 
-FindEntityByString,
-{
-};
-
-GetEntityIllum,
-{
-};
-
-FindEntityInSphere,
-{
-};
-
-PF_checkclient_I,
-{
-};
-
-PVSFindEntities,
+PVSFindEntities()
 {
 };
 
@@ -359,7 +439,7 @@ void PF_makevectors_I(float *v)
 	AngleVectors(v, gGlobalVariables.v_forward, gGlobalVariables.v_right, gGlobalVariables.v_up);
 };
 
-AngleVectors,
+void AngleVectors()
 {
 };
 
@@ -374,12 +454,32 @@ void PF_Remove_I(edict_t *ed)
 	ED_Free(ed);
 };
 
-CreateNamedEntity,
+CreateNamedEntity()
 {
 };
 
-PF_makestatic_I,
+int SV_ModelIndex(const char *name); // TODO
+
+void PF_makestatic_I(edict_t *ent)
 {
+	int i;
+
+	MSG_WriteByte(&sv.signon, svc_spawnstatic);
+
+	MSG_WriteByte(&sv.signon, SV_ModelIndex(pr_strings + ent->v.model));
+
+	MSG_WriteByte(&sv.signon, ent->v.frame);
+	MSG_WriteByte(&sv.signon, ent->v.colormap);
+	MSG_WriteByte(&sv.signon, ent->v.skin);
+
+	for(i = 0; i < 3; i++)
+	{
+		MSG_WriteCoord(&sv.signon, ent->v.origin[i]);
+		MSG_WriteAngle(&sv.signon, ent->v.angles[i]);
+	};
+
+	// throw the entity away now
+	ED_Free(ent);
 };
 
 /*
@@ -457,7 +557,7 @@ void PF_setorigin_I(edict_t *e, float *org)
 {
 	VectorCopy(org, e->v.origin);
 	SV_LinkEdict(e, false);
-}
+};
 
 /*
 =================
@@ -524,31 +624,31 @@ void PF_ambientsound_I(float *pos, const char *samp, float vol, float attenuatio
 	MSG_WriteByte(&sv.signon, attenuation * 64);
 };
 
-PF_traceline_DLL,
+void PF_traceline_DLL()
 {
 };
 
-PF_TraceToss_DLL,
+void PF_TraceToss_DLL()
 {
 };
 
-TraceMonsterHull,
+void TraceMonsterHull()
 {
 };
 
-TraceHull,
+void TraceHull()
 {
 };
 
-TraceModel,
+void TraceModel()
 {
 };
 
-TraceTexture,
+void TraceTexture()
 {
 };
 
-TraceSphere,
+void TraceSphere()
 {
 };
 
@@ -638,7 +738,7 @@ void PF_localcmd_I(const char *str)
 	Cbuf_AddText(str);
 };
 
-PF_localexec_I,
+void PF_localexec_I()
 {
 };
 
@@ -706,8 +806,9 @@ void PF_lightstyle_I(/*float*/ int style, const char *val)
 		};
 };
 
-PF_DecalIndex,
+int PF_DecalIndex()
 {
+	return 0;
 };
 
 /*
@@ -720,11 +821,11 @@ float PF_pointcontents_I(float *v)
 	return SV_PointContents(v);
 };
 
-PF_MessageBegin_I,
+void PF_MessageBegin_I()
 {
 };
 
-PF_MessageEnd_I,
+void PF_MessageEnd_I()
 {
 };
 
@@ -770,47 +871,52 @@ void PF_WriteEntity_I(edict_t *ent)
 
 pfnCVarRegister = 0x981fd7a4 <meta_CVarRegister(cvar_s*)>,
 
-CVarGetFloat,
+float CVarGetFloat()
+{
+	return 0.0f;
+};
+
+const char *CVarGetString()
+{
+	return "";
+};
+
+void CVarSetFloat()
 {
 };
 
-CVarGetString,
+void CVarSetString()
 {
 };
 
-CVarSetFloat,
+void AlertMessage()
 {
 };
 
-CVarSetString,
+void EngineFprintf()
 {
 };
 
-AlertMessage,
+void *PvAllocEntPrivateData()
+{
+	return NULL;
+};
+
+void *PvEntPrivateData()
+{
+	return NULL;
+};
+
+void FreeEntPrivateData()
 {
 };
 
-EngineFprintf,
+const char *SzFromIndex()
 {
+	return "";
 };
 
-PvAllocEntPrivateData,
-{
-};
-
-PvEntPrivateData,
-{
-};
-
-FreeEntPrivateData,
-{
-};
-
-SzFromIndex,
-{
-};
-
-AllocEngineString,
+AllocEngineString()
 {
 };
 
@@ -838,17 +944,17 @@ FindEntityByVars,
 {
 };
 
-GetModelPtr,
+GetModelPtr()
 {
 };
 
 pfnRegUserMsg = 0x981fd94a <meta_RegUserMsg(char const*, int)>,
 
-AnimationAutomove,
+AnimationAutomove()
 {
 };
 
-GetBonePosition,
+GetBonePosition()
 {
 };
 
@@ -860,15 +966,15 @@ NameForFunction,
 {
 };
 
-ClientPrintf,
+void ClientPrintf()
 {
 };
 
-ServerPrint,
+void ServerPrint()
 {
 };
 
-GetAttachment,
+GetAttachment()
 {
 };
 
@@ -896,15 +1002,16 @@ RandomFloat,
 {
 };
 
-PF_setview_I,
+void PF_setview_I()
 {
 };
 
-PF_Time,
+float PF_Time()
 {
+	return 0.0f;
 };
 
-PF_crosshairangle_I,
+void PF_crosshairangle_I()
 {
 };
 
@@ -916,73 +1023,79 @@ COM_FreeFile,
 {
 };
 
-Host_EndSection,
+void Host_EndSection()
 {
 };
 
-COM_CompareFileTime,
+int COM_CompareFileTime()
 {
+	return 0;
 };
 
-COM_GetGameDir,
+COM_GetGameDir()
 {
 };
 
 pfnCvar_RegisterVariable = 0x981fd7a4 <meta_CVarRegister(cvar_s*)>,
 
-PF_FadeVolume,
+void PF_FadeVolume()
 {
 };
 
-PF_SetClientMaxspeed,
+void PF_SetClientMaxspeed()
 {
 };
 
-PF_CreateFakeClient_I,
+client_t *PF_CreateFakeClient_I()
+{
+	return NULL;
+};
+
+void PF_RunPlayerMove_I()
 {
 };
 
-PF_RunPlayerMove_I,
+int PF_NumberOfEntities_I()
+{
+	return 0;
+};
+
+char *PF_GetInfoKeyBuffer_I()
+{
+	return NULL;
+};
+
+PF_InfoKeyValue_I()
 {
 };
 
-PF_NumberOfEntities_I,
+void PF_SetKeyValue_I()
 {
 };
 
-PF_GetInfoKeyBuffer_I,
+void PF_SetClientKeyValue_I()
 {
 };
 
-PF_InfoKeyValue_I,
+int PF_IsMapValid_I()
+{
+	return 0;
+};
+
+void PF_StaticDecal()
 {
 };
 
-PF_SetKeyValue_I,
+int PF_precache_generic_I()
+{
+	return 0;
+};
+
+PF_GetPlayerUserId()
 {
 };
 
-PF_SetClientKeyValue_I,
-{
-};
-
-PF_IsMapValid_I,
-{
-};
-
-PF_StaticDecal,
-{
-};
-
-PF_precache_generic_I,
-{
-};
-
-PF_GetPlayerUserId,
-{
-};
-
-PF_BuildSoundMsg_I,
+void PF_BuildSoundMsg_I()
 {
 };
 
@@ -991,28 +1104,31 @@ int PF_IsDedicatedServer()
 	return isDedicated;
 };
 
-CVarGetPointer,
+cvar_t *CVarGetPointer(const char *name)
+{
+	return NULL;
+};
+
+PF_GetPlayerWONId()
 {
 };
 
-PF_GetPlayerWONId,
+void PF_RemoveKey_I(char *infobuffer, const char *key)
 {
 };
 
-PF_RemoveKey_I,
+const char *PF_GetPhysicsKeyValue(const char *key)
+{
+	return "";
+};
+
+void PF_SetPhysicsKeyValue(const char *key, const char *value)
 {
 };
 
-PF_GetPhysicsKeyValue,
+char *PF_GetPhysicsInfoString()
 {
-};
-
-PF_SetPhysicsKeyValue,
-{
-};
-
-PF_GetPhysicsInfoString,
-{
+	return NULL;
 };
 
 EV_Precache,
@@ -1035,65 +1151,66 @@ SV_CheckVisibility,
 {
 };
 
-DELTA_SetField,
+void DELTA_SetField()
 {
 };
 
-DELTA_UnsetField,
+void DELTA_UnsetField()
 {
 };
 
-DELTA_AddEncoder,
+void DELTA_AddEncoder()
 {
 };
 
-PF_GetCurrentPlayer,
+PF_GetCurrentPlayer()
 {
 };
 
-PF_CanSkipPlayer,
+int PF_CanSkipPlayer()
+{
+	return 0;
+};
+
+DELTA_FindFieldIndex()
 {
 };
 
-DELTA_FindFieldIndex,
+void DELTA_SetFieldByIndex()
 {
 };
 
-DELTA_SetFieldByIndex,
+void DELTA_UnsetFieldByIndex()
 {
 };
 
-DELTA_UnsetFieldByIndex,
+void PF_SetGroupMask()
 {
 };
 
-PF_SetGroupMask,
+void PF_CreateInstancedBaseline()
 {
 };
 
-PF_CreateInstancedBaseline,
+void PF_Cvar_DirectSet()
 {
 };
 
-PF_Cvar_DirectSet,
+void PF_ForceUnmodified()
 {
 };
 
-PF_ForceUnmodified,
-{
-};
-
-PF_GetPlayerStats,
+PF_GetPlayerStats()
 {
 };
 
 pfnAddServerCommand = 0x981fd63f <meta_AddServerCommand(char*, void (*)())>,
 
-Voice_GetClientListening,
+Voice_GetClientListening()
 {
 };
 
-Voice_SetClientListening,
+void Voice_SetClientListening()
 {
 };
 
