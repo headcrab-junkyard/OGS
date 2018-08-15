@@ -18,31 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-#include "quakedef.h"
-
-void CL_FinishTimeDemo (void);
-
-/*
-==============================================================================
-
-DEMO CODE
-
-When a demo is playing back, all NET_SendMessages are skipped, and
-NET_GetMessages are read from the demo file.
-
-Whenever cl.time gets past the last received message, another message is
-read from the demo file.
-==============================================================================
-*/
-
-/*
-==============
-CL_StopPlayback
-
-Called when a demo file runs out, or the user starts a game
-==============
-*/
-void CL_StopPlayback (void)
+void CL_StopPlayback ()
 {
 	if (!cls.demoplayback)
 		return;
@@ -705,13 +681,6 @@ void CL_ReRecord_f ()
 	CL_BeginServerConnect();
 }
 
-/*
-====================
-CL_PlayDemo_f
-
-play [demoname]
-====================
-*/
 void CL_PlayDemo_f ()
 {
 	char	name[256];
@@ -748,13 +717,7 @@ void CL_PlayDemo_f ()
 	realtime = 0;
 }
 
-/*
-====================
-CL_FinishTimeDemo
-
-====================
-*/
-void CL_FinishTimeDemo (void)
+void CL_FinishTimeDemo ()
 {
 	int		frames;
 	float	time;
@@ -763,20 +726,13 @@ void CL_FinishTimeDemo (void)
 	
 // the first frame didn't count
 	frames = (host_framecount - cls.td_startframe) - 1;
-	time = Sys_DoubleTime() - cls.td_starttime;
+	time = Sys_FloatTime() - cls.td_starttime;
 	if (!time)
 		time = 1;
 	Con_Printf ("%i frames %5.1f seconds %5.1f fps\n", frames, time, frames/time);
 }
 
-/*
-====================
-CL_TimeDemo_f
-
-timedemo [demoname]
-====================
-*/
-void CL_TimeDemo_f (void)
+void CL_TimeDemo_f ()
 {
 	if (Cmd_Argc() != 2)
 	{

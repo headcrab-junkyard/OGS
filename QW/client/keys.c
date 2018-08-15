@@ -326,13 +326,6 @@ void Key_Bind_f ()
 	Key_SetBinding (b, cmd);
 }
 
-/*
-============
-Key_WriteBindings
-
-Writes lines containing "bind key value"
-============
-*/
 void Key_WriteBindings (FILE *f)
 {
 	int		i;
@@ -342,11 +335,6 @@ void Key_WriteBindings (FILE *f)
 			fprintf (f, "bind %s \"%s\"\n", Key_KeynumToString(i), keybindings[i]);
 }
 
-/*
-===================
-Key_Init
-===================
-*/
 void Key_Init ()
 {
 	int		i;

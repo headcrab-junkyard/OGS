@@ -9,51 +9,12 @@
 cvar_t	sys_nostdout = {"sys_nostdout","0"};
 
 
-int	Sys_FileTime (char *path)
-{
-	FILE	*f;
-	
-	f = fopen(path, "rb");
-	if (f)
-	{
-		fclose(f);
-		return 1;
-	}
-	
-	return -1;
-}
 
 
 
-void Sys_Error (char *error, ...)
-{
-
-	va_start (argptr,error);
-	vsprintf (text, error,argptr);
-	va_end (argptr);
-
-//    MessageBox(NULL, text, "Error", 0 /* MB_OK */ );
-	printf ("ERROR: %s\n", text);
-
-	exit (1);
-}
 
 
 
-double Sys_FloatTime (void)
-{
-	double t;
-    struct _timeb tstruct;
-	static int	starttime;
-
-	_ftime( &tstruct );
- 
-	if (!starttime)
-		starttime = tstruct.time;
-	t = (tstruct.time-starttime) + tstruct.millitm*0.001;
-	
-	return t;
-}
 
 
 
@@ -138,13 +99,7 @@ void Sys_Init (void)
 	Cvar_RegisterVariable (&sys_nostdout);
 }
 
-/*
-==================
-main
 
-==================
-*/
-char	*newargv[256];
 
 int main (int argc, char **argv)
 {

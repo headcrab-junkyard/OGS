@@ -19,17 +19,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // view.c -- player eye positioning
 
-#include "quakedef.h"
-#include "r_local.h"
-
-/*
-
-The view is allowed to move slightly from it's true position for bobbing,
-but if it exceeds 8 pixels linear distance (spherical, not box), the list of
-entities sent from the server may not include everything in the pvs, especially
-when crossing a water boudnary.
-
-*/
 
 cvar_t	lcd_x = {"lcd_x", "0"};	// FIXME: make this work sometime...
 
@@ -44,15 +33,6 @@ cvar_t	v_kicktime = {"v_kicktime", "0.5", false};
 cvar_t	v_kickroll = {"v_kickroll", "0.6", false};
 cvar_t	v_kickpitch = {"v_kickpitch", "0.6", false};
 
-cvar_t	v_iyaw_cycle = {"v_iyaw_cycle", "2", false};
-cvar_t	v_iroll_cycle = {"v_iroll_cycle", "0.5", false};
-cvar_t	v_ipitch_cycle = {"v_ipitch_cycle", "1", false};
-cvar_t	v_iyaw_level = {"v_iyaw_level", "0.3", false};
-cvar_t	v_iroll_level = {"v_iroll_level", "0.1", false};
-cvar_t	v_ipitch_level = {"v_ipitch_level", "0.3", false};
-
-cvar_t	v_idlescale = {"v_idlescale", "0", false};
-
 cvar_t	crosshair = {"crosshair", "0", true};
 cvar_t	crosshaircolor = {"crosshaircolor", "79", true};
 
@@ -64,10 +44,6 @@ cvar_t	gl_cshiftpercent = {"gl_cshiftpercent", "100", false};
 #endif
 
 cvar_t  v_contentblend = {"v_contentblend", "1", false};
-
-float	v_dmg_time, v_dmg_roll, v_dmg_pitch;
-
-extern	int			in_forward, in_forward2, in_back;
 
 frame_t		*view_frame;
 player_state_t		*view_message;
@@ -272,54 +248,6 @@ byte		ramps[3][256];
 float		v_blend[4];		// rgba 0.0 - 1.0
 #endif	// GLQUAKE
 
-void BuildGammaTable (float g)
-{
-	int		i, inf;
-	
-	if (g == 1.0)
-	{
-		for (i=0 ; i<256 ; i++)
-			gammatable[i] = i;
-		return;
-	}
-	
-	for (i=0 ; i<256 ; i++)
-	{
-		inf = 255 * pow ( (i+0.5)/255.5 , g ) + 0.5;
-		if (inf < 0)
-			inf = 0;
-		if (inf > 255)
-			inf = 255;
-		gammatable[i] = inf;
-	}
-}
-
-/*
-=================
-V_CheckGamma
-=================
-*/
-qboolean V_CheckGamma (void)
-{
-	static float oldgammavalue;
-	
-	if (v_gamma.value == oldgammavalue)
-		return false;
-	oldgammavalue = v_gamma.value;
-	
-	BuildGammaTable (v_gamma.value);
-	vid.recalc_refdef = 1;				// force a surface cache flush
-	
-	return true;
-}
-
-
-
-/*
-===============
-V_ParseDamage
-===============
-*/
 void V_ParseDamage (void)
 {
 	int		armor, blood;
@@ -382,21 +310,6 @@ void V_ParseDamage (void)
 	v_dmg_time = v_kicktime.value;
 }
 
-
-/*
-==================
-V_cshift_f
-==================
-*/
-void V_cshift_f (void)
-{
-	cshift_empty.destcolor[0] = atoi(Cmd_Argv(1));
-	cshift_empty.destcolor[1] = atoi(Cmd_Argv(2));
-	cshift_empty.destcolor[2] = atoi(Cmd_Argv(3));
-	cshift_empty.percent = atoi(Cmd_Argv(4));
-}
-
-
 /*
 ==================
 V_BonusFlash_f
@@ -404,21 +317,7 @@ V_BonusFlash_f
 When you run over an item, the server sends this command
 ==================
 */
-void V_BonusFlash_f (void)
-{
-	cl.cshifts[CSHIFT_BONUS].destcolor[0] = 215;
-	cl.cshifts[CSHIFT_BONUS].destcolor[1] = 186;
-	cl.cshifts[CSHIFT_BONUS].destcolor[2] = 69;
-	cl.cshifts[CSHIFT_BONUS].percent = 50;
-}
 
-/*
-=============
-V_SetContentsColor
-
-Underwater, lava, etc each has a color shift
-=============
-*/
 void V_SetContentsColor (int contents)
 {
 	if (!v_contentblend.value) {
@@ -482,12 +381,6 @@ void V_CalcPowerupCshift (void)
 		cl.cshifts[CSHIFT_POWERUP].percent = 0;
 }
 
-
-/*
-=============
-V_CalcBlend
-=============
-*/
 #ifdef	GLQUAKE
 void V_CalcBlend (void)
 {
@@ -698,27 +591,6 @@ void V_UpdatePalette (void)
 
 #endif	// !GLQUAKE
 
-/* 
-============================================================================== 
- 
-						VIEW RENDERING 
- 
-============================================================================== 
-*/ 
-
-float angledelta (float a)
-{
-	a = anglemod(a);
-	if (a > 180)
-		a -= 360;
-	return a;
-}
-
-/*
-==================
-CalcGunAngle
-==================
-*/
 void CalcGunAngle (void)
 {	
 	float	yaw, pitch, move;
@@ -768,11 +640,6 @@ void CalcGunAngle (void)
 	cl.viewent.angles[PITCH] = - (r_refdef.viewangles[PITCH] + pitch);
 }
 
-/*
-==============
-V_BoundOffsets
-==============
-*/
 void V_BoundOffsets (void)
 {
 // absolutely bound refresh reletive to entity clipping hull
@@ -792,13 +659,6 @@ void V_BoundOffsets (void)
 		r_refdef.vieworg[2] = cl.simorg[2] + 30;
 }
 
-/*
-==============
-V_AddIdle
-
-Idle swaying
-==============
-*/
 void V_AddIdle (void)
 {
 	r_refdef.viewangles[ROLL] += v_idlescale.value * sin(cl.time*v_iroll_cycle.value) * v_iroll_level.value;
@@ -810,14 +670,6 @@ void V_AddIdle (void)
 	cl.viewent.angles[YAW] -= v_idlescale.value * sin(cl.time*v_iyaw_cycle.value) * v_iyaw_level.value;
 }
 
-
-/*
-==============
-V_CalcViewRoll
-
-Roll is induced by movement and damage
-==============
-*/
 void V_CalcViewRoll (void)
 {
 	float		side;
@@ -834,16 +686,9 @@ void V_CalcViewRoll (void)
 
 }
 
-
-/*
-==================
-V_CalcIntermissionRefdef
-
-==================
-*/
 void V_CalcIntermissionRefdef (void)
 {
-	entity_t	*view;
+	cl_entity_t	*view;
 	float		old;
 
 // view is the weapon model
@@ -860,12 +705,6 @@ void V_CalcIntermissionRefdef (void)
 	v_idlescale.value = old;
 }
 
-/*
-==================
-V_CalcRefdef
-
-==================
-*/
 void V_CalcRefdef (void)
 {
 	entity_t	*view;

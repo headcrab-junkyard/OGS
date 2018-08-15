@@ -97,7 +97,7 @@ char		m_return_reason [32];
 #define	IPXConfig		(m_net_cursor == 2)
 #define	TCPIPConfig		(m_net_cursor == 3)
 
-void M_ConfigureNetSubsystem(void);
+void M_ConfigureNetSubsystem();
 
 //=============================================================================
 /* Support Routines */

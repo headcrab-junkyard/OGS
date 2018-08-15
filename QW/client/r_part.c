@@ -77,40 +77,6 @@ R_ParticleExplosion
 */
 void R_ParticleExplosion (vec3_t org)
 {
-	int			i, j;
-	particle_t	*p;
-	
-	for (i=0 ; i<1024 ; i++)
-	{
-		if (!free_particles)
-			return;
-		p = free_particles;
-		free_particles = p->next;
-		p->next = active_particles;
-		active_particles = p;
-
-		p->die = cl.time + 5;
-		p->color = ramp1[0];
-		p->ramp = rand()&3;
-		if (i & 1)
-		{
-			p->type = pt_explode;
-			for (j=0 ; j<3 ; j++)
-			{
-				p->org[j] = org[j] + ((rand()%32)-16);
-				p->vel[j] = (rand()%512)-256;
-			}
-		}
-		else
-		{
-			p->type = pt_explode2;
-			for (j=0 ; j<3 ; j++)
-			{
-				p->org[j] = org[j] + ((rand()%32)-16);
-				p->vel[j] = (rand()%512)-256;
-			}
-		}
-	}
 }
 
 /*
@@ -120,12 +86,6 @@ R_BlobExplosion
 ===============
 */
 
-/*
-===============
-R_RunParticleEffect
-
-===============
-*/
 void R_RunParticleEffect (vec3_t org, vec3_t dir, int color, int count)
 {
 	int			i, j;
@@ -160,12 +120,6 @@ void R_RunParticleEffect (vec3_t org, vec3_t dir, int color, int count)
 }
 
 
-/*
-===============
-R_LavaSplash
-
-===============
-*/
 void R_LavaSplash (vec3_t org)
 {
 	int			i, j, k;
@@ -202,12 +156,6 @@ void R_LavaSplash (vec3_t org)
 			}
 }
 
-/*
-===============
-R_TeleportSplash
-
-===============
-*/
 void R_TeleportSplash (vec3_t org)
 {
 	int			i, j, k;
@@ -337,7 +285,6 @@ void R_RocketTrail (vec3_t start, vec3_t end, int type)
 		VectorAdd (start, vec, start);
 	}
 }
-
 
 /*
 ===============
