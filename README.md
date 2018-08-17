@@ -48,7 +48,7 @@ using HLSDK, its license doesn't explicitly forbids to do that, but that's at yo
 The game dlls compiled from the HLSDK code will still be licensed under terms of Half-Life SDK License, I can only permit to link 
 the GPL3 OGS code with them as a special exception
 
-**Q: Can I use the HLSDK to create a mod for this engine?**
+**Q: Can I use the HLSDK to create a mod for this engine?**  
 **A:** Nope, HLSDK EULA expects that any modification created using it will be used only by the original 
 GoldSrc engine. You need to reimplement the game code yourself or use the reimplemented OGS SDK template game code based on Quake's QC progs code 
 (if it's present at the time you reading this, I'm not planning to reimplement the game code for this engine for now, can't say for sure, but 
