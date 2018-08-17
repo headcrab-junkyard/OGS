@@ -36,7 +36,7 @@ void ED_ClearEdict(edict_t *e)
 {
 	memset(&e->v, 0, sizeof(e->v));
 	e->free = false;
-}
+};
 
 /*
 =================
@@ -63,8 +63,8 @@ edict_t *ED_Alloc()
 		{
 			ED_ClearEdict(e);
 			return e;
-		}
-	}
+		};
+	};
 
 	if(i == MAX_EDICTS)
 		Sys_Error("ED_Alloc: no free edicts");
@@ -74,7 +74,7 @@ edict_t *ED_Alloc()
 	ED_ClearEdict(e);
 
 	return e;
-}
+};
 
 /*
 =================
@@ -359,8 +359,11 @@ void ED_PrintEdicts ()
 	
 	Con_Printf ("%i entities\n", sv.num_edicts);
 	for (i=0 ; i<sv.num_edicts ; i++)
+	{
+		//Con_Printf ("\nEDICT %i:\n",i); // TODO: qw
 		ED_PrintNum (i);
-}
+	};
+};
 */
 
 // TODO: unused?
@@ -368,7 +371,7 @@ void ED_PrintEdicts ()
 =============
 ED_PrintEdict_f
 
-For debugging, prints a single edicy
+For debugging, prints a single edict
 =============
 */
 /*
@@ -498,16 +501,18 @@ void ED_ParseGlobals (char *data)
 		if (com_token[0] == '}')
 			Sys_Error ("ED_ParseEntity: closing brace without data");
 
+		//key = ED_FindGlobal (keyname); // TODO: qw
+		
 		if (!key)
 		{
 			Con_Printf ("'%s' is not a global\n", keyname);
 			continue;
-		}
+		};
 
-		//if (!ED_ParseEpair ((void *)pr_globals, key, com_token))
-			//Host_Error ("ED_ParseGlobals: parse error");
-	}
-}
+		if (!ED_ParseEpair ((void *)gGlobalVariables, key, com_token))
+			Host_Error ("ED_ParseGlobals: parse error");
+	};
+};
 */
 
 //============================================================================
@@ -725,60 +730,6 @@ void ED_LoadFromFile(char *data)
 	Con_DPrintf("%i entities inhibited\n", inhibit);
 }
 
-typedef void (*pfnGiveFnptrsToDll)(enginefuncs_t *apEngFuncs, globalvars_t *apGlobals);
-
-typedef int (*pfnGetEntityAPI)(DLL_FUNCTIONS *apFuncs, int anVersion);
-typedef int (*pfnGetEntityAPI2)(DLL_FUNCTIONS *apFuncs, int *apVersion);
-
-/*
-===============
-PR_LoadProgs
-===============
-*/
-void PR_LoadProgs() // our temporary LoadEntityDLLs
-{
-	static void *gamedll = NULL;
-	pfnGiveFnptrsToDll fnGiveFnptrsToDll = NULL;
-	pfnGetEntityAPI fnGetEntityAPI = NULL;
-	pfnGetEntityAPI2 fnGetEntityAPI2 = NULL;
-
-	gamedll = Sys_LoadModule("dlls/server");
-
-	if(!gamedll)
-		Sys_Error("PR_LoadProgs: couldn't load game dll");
-
-	//pr_strings = (char *)progs + progs->ofs_strings; // TODO
-
-	fnGiveFnptrsToDll = (pfnGiveFnptrsToDll)Sys_GetExport(gamedll, "GiveFnptrsToDll");
-
-	if(!fnGiveFnptrsToDll)
-		return;
-
-	//fnGiveFnptrsToDll(&gEngFuncs, &gGlobalVariables); // TODO
-
-	fnGetEntityAPI = (pfnGetEntityAPI)Sys_GetExport(gamedll, "GetEntityAPI");
-	fnGetEntityAPI2 = (pfnGetEntityAPI2)Sys_GetExport(gamedll, "GetEntityAPI2");
-
-	if(fnGetEntityAPI2)
-	{
-		int nDLLVersion = INTERFACE_VERSION;
-
-		if(!fnGetEntityAPI2(&gEntityInterface, &nDLLVersion))
-			return;
-
-		if(nDLLVersion != INTERFACE_VERSION)
-			Sys_Error("game dll has wrong version number (%i should be %i)", nDLLVersion, INTERFACE_VERSION);
-
-		return;
-	};
-
-	if(fnGetEntityAPI)
-	{
-		if(!fnGetEntityAPI(&gEntityInterface, INTERFACE_VERSION))
-			return;
-	};
-}
-
 /*
 ===============
 PR_Init
@@ -789,6 +740,7 @@ void PR_Init()
 	//Cmd_AddCommand ("edict", ED_PrintEdict_f);
 	//Cmd_AddCommand ("edicts", ED_PrintEdicts);
 	//Cmd_AddCommand ("edictcount", ED_Count);
+	//Cmd_AddCommand ("profile", PR_Profile_f);
 }
 
 edict_t *EDICT_NUM(int n)
@@ -796,7 +748,7 @@ edict_t *EDICT_NUM(int n)
 	if(n < 0 || n >= sv.max_edicts)
 		Sys_Error("EDICT_NUM: bad number %i", n);
 	return (edict_t *)((byte *)sv.edicts + (n) * sizeof(edict_t));
-}
+};
 
 int NUM_FOR_EDICT(edict_t *e)
 {
@@ -808,4 +760,4 @@ int NUM_FOR_EDICT(edict_t *e)
 	if(b < 0 || b >= sv.num_edicts)
 		Sys_Error("NUM_FOR_EDICT: bad pointer");
 	return b;
-}
+};
