@@ -68,20 +68,24 @@ bool InitConsole()
 
 int RunServer() // void?
 {
-	auto pFSLib{Sys_LoadModule("filesystem_stdio")};
+	constexpr auto FILESYSTEM_MODULE_NAME{"filesystem_stdio"};
+	
+	auto pFSLib{Sys_LoadModule(FILESYSTEM_MODULE_NAME)};
 	
 	if(!pFSLib)
-		throw std::runtime_error(std::string("Failed to load the filesystem module!"));
+		throw std::runtime_error(std::string("Failed to load the filesystem module (") + FILESYSTEM_MODULE_NAME + ")!");
 	
 	auto pFSFactory{Sys_GetFactory(pFSLib)};
 	
 	if(!pFSFactory)
 		return EXIT_FAILURE;
 	
-	auto pEngineLib{Sys_LoadModule("engine")};
+	constexpr auto ENGINE_MODULE_NAME{"engine"}; // TODO: swds
+	
+	auto pEngineLib{Sys_LoadModule(ENGINE_MODULE_NAME)};
 	
 	if(!pEngineLib)
-		throw std::runtime_error(std::string("Failed to load the engine module!"));
+		throw std::runtime_error(std::string("Failed to load the engine module (") + ENGINE_MODULE_NAME + ")!");
 	
 	auto pEngineFactory{Sys_GetFactory(pEngineLib)};
 	
@@ -94,7 +98,7 @@ int RunServer() // void?
 		return EXIT_FAILURE;
 	
 	//char *basedir, char *cmdline, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory
-	if(!pEngine->Init(".", "", nullptr, pFSFactory))
+	if(!pEngine->Init(".", "TODO", Sys_GetFactoryThis(), pFSFactory))
 		return EXIT_FAILURE;
 	
 	while(true)
