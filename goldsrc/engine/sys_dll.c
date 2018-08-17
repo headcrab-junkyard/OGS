@@ -24,10 +24,10 @@
 #ifdef _WIN32
 qboolean WinNT;
 
-static double pfreq;
-static double curtime = 0.0;
-static double lastcurtime = 0.0;
-static int lowshift;
+static double pfreq{0.0};
+static double curtime{0.0};
+static double lastcurtime{0.0};
+static int lowshift{0};
 #endif
 
 int starttime;
@@ -129,6 +129,29 @@ void Sys_Init()
 	unsigned int lowpart, highpart;
 	OSVERSIONINFO vinfo;
 
+// TODO
+/*
+#ifndef SWDS
+	// allocate a named semaphore on the client so the
+	// front end can tell if it is alive
+
+	// mutex will fail if semephore allready exists
+    qwclsemaphore = CreateMutex(
+        NULL,         // Security attributes
+        0,            // owner
+        "qwcl"); // Semaphore name
+	if (!qwclsemaphore)
+		Sys_Error ("QWCL is already running on this system");
+	CloseHandle (qwclsemaphore);
+
+    qwclsemaphore = CreateSemaphore(
+        NULL,         // Security attributes
+        0,            // Initial count
+        1,            // Maximum count
+        "qwcl"); // Semaphore name
+#endif
+*/
+
 	MaskExceptions();
 	Sys_SetFPCW();
 
@@ -194,6 +217,7 @@ void Sys_Printf(const char *fmt, ...)
 	char text[1024];
 	DWORD dummy;
 
+//
 	if(isDedicated)
 	{
 		va_start(argptr, fmt);
@@ -202,6 +226,11 @@ void Sys_Printf(const char *fmt, ...)
 
 		//WriteFile(houtput, text, strlen (text), &dummy, NULL); // TODO: IDedicatedExports->Printf
 	};
+// QW
+	//va_start(argptr, fmt);
+	//vprintf(fmt, argptr);
+	//va_end(argptr);
+//
 #elif __linux__
 	va_list argptr;
 	char text[1024];
@@ -244,6 +273,7 @@ void Sys_MakeCodeWriteable(unsigned long startaddr, unsigned long length)
 #ifdef _WIN32
 	DWORD flOldProtect;
 
+	// TODO: copy on write or just read-write?
 	if(!VirtualProtect((LPVOID)startaddr, length, PAGE_READWRITE, &flOldProtect))
 		Sys_Error("Protection change failed\n");
 #else
@@ -390,8 +420,13 @@ void Sys_Quit()
 
 	Host_Shutdown();
 
+#ifndef SWDS
 	if(tevent)
 		CloseHandle(tevent);
+
+	//if(qwclsemaphore) // TODO
+		//CloseHandle(qwclsemaphore); // TODO
+#endif
 
 	exit(0);
 #elif __linux__
@@ -469,6 +504,30 @@ double Sys_FloatTime()
 	Sys_PopFPCW();
 
 	return curtime;
+	
+	// TODO: QW version
+	/*
+	static DWORD starttime;
+	static qboolean first = true;
+	DWORD now;
+	double t;
+
+	now = timeGetTime();
+
+	if (first) {
+		first = false;
+		starttime = now;
+		return 0.0;
+	}
+	
+	if (now < starttime) // wrapped?
+		return (now / 1000.0) + (LONG_MAX - starttime / 1000.0);
+
+	if (now - starttime == 0)
+		return 0.0;
+
+	return (now - starttime) / 1000.0;
+	*/
 #else
 	struct timeval tp;
 	struct timezone tzp;
@@ -489,7 +548,7 @@ double Sys_FloatTime()
 void Sys_Sleep()
 {
 #ifdef _WIN32
-	Sleep(1);
+	Sleep(1); // TODO: nothing in QW
 #ifdef __linux__
 	usleep(1 * 1000);
 #elif sun
