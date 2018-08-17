@@ -24,6 +24,12 @@
 
 #define QUAKEDEF_H
 
+/*
+#ifdef _WIN32
+#pragma warning( disable : 4244 4127 4201 4214 4514 4305 4115 4018)
+#endif
+*/
+
 //#define	GLTEST			// experimental stuff
 
 #define QUAKE_GAME // as opposed to utilities
@@ -46,7 +52,7 @@
 #include <stdlib.h>
 #include <setjmp.h>
 //#include <ctype.h>
-//#include <time.h>
+#include <time.h>
 
 #if defined(_WIN32) && !defined(WINDED)
 
@@ -70,7 +76,7 @@ void VID_UnlockBuffer();
 #define id386 0
 #endif
 
-#ifdef SERVERONLY // no asm in dedicated server
+#ifdef SWDS // no asm in dedicated server
 #undef id386
 #endif
 
@@ -110,7 +116,7 @@ void VID_UnlockBuffer();
 //
 // per-level limits
 //
-#define MAX_EDICTS 600 // FIXME: ouch! ouch! ouch!
+#define MAX_EDICTS 600 // FIXME: ouch! ouch! ouch! // TODO: 768 in qw
 #define MAX_LIGHTSTYLES 64
 #define MAX_MODELS 256 // these are sent over the net as bytes
 #define MAX_SOUNDS 256 // so they cannot be blindly increased
@@ -138,6 +144,8 @@ void VID_UnlockBuffer();
 #define STAT_TOTALMONSTERS 12
 #define STAT_SECRETS 13  // bumped on client side by svc_foundsecret
 #define STAT_MONSTERS 14 // bumped by svc_killedmonster
+#define	STAT_ITEMS 15
+//define STAT_VIEWHEIGHT 16
 
 // stock defines
 
@@ -216,6 +224,7 @@ extern "C" {
 #include "progs.h"
 #include "server.h"
 #include "eiface.h"
+//#include "client.h" // TODO: qw
 #include "cdll_int.h"
 
 #ifdef GLQUAKE
@@ -235,10 +244,21 @@ extern "C" {
 #include "menu.h"
 #include "crc.h"
 #include "cdaudio.h"
+//#include "pmove.h" // TODO: qw
 
 #ifdef GLQUAKE
 #include "glquake.h"
 #endif
+
+#include "voice.h"
+
+// TODO: qw
+/*
+#ifndef max
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#define min(a,b) ((a) < (b) ? (a) : (b))
+#endif
+*/
 
 //=============================================================================
 
@@ -258,6 +278,8 @@ typedef struct
 
 //=============================================================================
 
+//#define MAX_NUM_ARGVS	50 // TODO: qw
+
 extern qboolean noclip_anglehack;
 
 //
@@ -268,6 +290,8 @@ extern quakeparms_t host_parms;
 extern cvar_t sys_ticrate;
 extern cvar_t sys_nostdout;
 extern cvar_t developer;
+
+//extern cvar_t password; // TODO: qw
 
 extern qboolean host_initialized; // true if into command execution
 extern double host_frametime;
@@ -283,11 +307,14 @@ void Host_Init(quakeparms_t *parms);
 void Host_Shutdown();
 void Host_Error(const char *error, ...);
 void Host_EndGame(const char *message, ...);
+//qboolean Host_SimulationTime(float time); // TODO: qw
 void Host_Frame(float time); // TODO: state, stateinfo
+//void Host_ServerFrame(); // TODO: qw
 void Host_Quit_f();
 void Host_ClientCommands(const char *fmt, ...);
 void Host_ShutdownServer(qboolean crash);
 //void Host_WriteConfiguration ();
+void Host_UpdateStatus(float *fps, int *nActive, /*int *nSpectators*/ int *nMaxPlayers, const char *pszMap);
 
 extern qboolean msg_suppress_1; // suppresses resolution and cache size console output
                                 //  an fullscreen DIB focus gain/loss

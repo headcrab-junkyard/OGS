@@ -539,6 +539,23 @@ void Host_UpdateScreen()
 	// TODO: something else?
 };
 
+void Host_UpdateStatus(float *fps, int *nActive, /*int *nSpectators, */ int *nMaxPlayers, const char *pszMap)
+{
+	// TODO
+	
+	if(fps)
+		*fps = 0.0f;
+	
+	if(nActive)
+		*nActive = 0;
+	
+	if(nMaxPlayers)
+		*nMaxPlayers = 0;
+	
+	if(pszMap)
+		*pszMap = "none";
+};
+
 /*
 ==================
 Host_Frame
@@ -621,6 +638,9 @@ void _Host_Frame(float time)
 		CL_ReadPackets();
 	}
 
+	// TODO: should be somewhere around here
+	//CL_FireEvents();
+	
 	// Set up prediction for other players
 	CL_SetUpPlayerPrediction(false);
 
@@ -861,6 +881,8 @@ void Host_Init(quakeparms_t *parms)
 
 		// Initialize the client dll now
 		ClientDLL_Init();
+		
+		//Voice_RegisterCvars(); // TODO
 	}
 
 	Cbuf_InsertText("exec valve.rc\n");
