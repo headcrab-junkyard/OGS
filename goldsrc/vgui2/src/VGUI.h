@@ -66,6 +66,10 @@ public:
 
 	void SetSleep(bool state) override;
 	bool GetShouldVGuiControlSleep() override;
+private:
+	void DispatchMessages();
+	
+	bool mbRunning{false};
 };
 
 }; // namespace vgui2

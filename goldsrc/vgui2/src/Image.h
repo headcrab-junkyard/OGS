@@ -16,6 +16,8 @@
  *	along with OGS Engine.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/// @file
+
 #pragma once
 
 #include "vgui2/IImage.h"

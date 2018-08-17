@@ -25,7 +25,7 @@
 namespace vgui2
 {
 
-class CPanel : public IPanel
+class CPanel : public IPanel // TODO: CPanel -> Panel?
 {
 public:
 	void Init(VPANEL vguiPanel, IClientPanel *panel) override;
