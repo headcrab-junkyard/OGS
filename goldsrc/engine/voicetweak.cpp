@@ -24,7 +24,7 @@
 
 qboolean gbInVoiceTweakMode{ false };
 
-float gVoiceTweakControlMap[VoiceTweakControl]{ 0.0f };
+float gVoiceTweakControlMap[3]{ 0.0f }; // TODO
 
 static int Voice_StartVoiceTweakMode()
 {
