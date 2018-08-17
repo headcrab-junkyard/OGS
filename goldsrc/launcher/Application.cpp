@@ -31,7 +31,7 @@ int CApplication::Run()
 		if(!Init())
 			return EXIT_FAILURE;
 		
-		if(!mpEngine->Run(nullptr, ".", "", "", nullptr, mfnFSFactory))
+		if(!mpEngine->Run(nullptr, ".", "", "", Sys_GetFactoryThis(), mfnFSFactory))
 			return EXIT_FAILURE;
 		
 		mbRestart = false; // TODO
@@ -51,7 +51,7 @@ bool CApplication::Init()
 	if(!LoadFileSystemModule(FILESYSTEM_MODULE_NAME))
 		throw std::runtime_error(std::string("Failed to load the filesystem module (") + FILESYSTEM_MODULE_NAME + ")!");
 	
-	constexpr auto ENGINE_MODULE_NAME{"engine"}; // TODO: hw
+	constexpr auto ENGINE_MODULE_NAME{"engine"}; // TODO: hw/sw
 	
 	mpEngineLib = Sys_LoadModule(ENGINE_MODULE_NAME);
 	
