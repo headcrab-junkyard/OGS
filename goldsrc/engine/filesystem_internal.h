@@ -143,6 +143,12 @@ FileHandle_t FS_OpenFromCacheForRead(const char *pFileName, const char *pOptions
 
 void FS_AddSearchPathNoWrite(const char *pPath, const char *pathID);
 
+// Dynamic Library Management
+
+// TODO: this is not a part of VFileSystem009
+void *FS_LoadLibrary(const char *path); // TODO: wraps Sys_LoadModule
+//void FS_UnloadLibrary(void *apHandle); // TODO: Probably also should be present
+
 ////////////
 
 /// returns the file size
@@ -162,7 +168,3 @@ int FS_FileWrite(int handle, const void *data, int count);
 int FS_FileTime(const char *path);
 
 void FS_mkdir(const char *path);
-
-// Dynamic Library Management
-
-//void *FS_LoadLibrary(const char *name, const char *path);

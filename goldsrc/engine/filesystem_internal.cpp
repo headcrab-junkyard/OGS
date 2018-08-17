@@ -321,6 +321,12 @@ void FS_AddSearchPathNoWrite(const char *pPath, const char *pathID)
 	gpFileSystem->AddSearchPathNoWrite(pPath, pathID);
 };
 
+void *FS_LoadLibrary(const char *asPath)
+{
+	// TODO: mb something else
+	return Sys_LoadModule(asPath);
+};
+
 //////////////////////////////////////////////////////////////
 
 /*
@@ -368,6 +374,11 @@ int FS_FileTime(const char *path)
 };
 */
 
+/*
+================
+Sys_mkdir
+================
+*/
 void FS_mkdir(const char *path)
 {
 // TODO: if not dedicated?
