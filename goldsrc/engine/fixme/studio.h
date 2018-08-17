@@ -238,11 +238,12 @@ typedef struct
 	char name[64];
 	int unk1;
 } hlmdl_sequencefile_t;
+
 /*
  -----------------------------------------------------------------------------------------------------------------------
     halflife model internal structure
  -----------------------------------------------------------------------------------------------------------------------
- */
+*/
 
 #define MAX_ANIM_GROUPS	16	//submodel files containing anim data.
 typedef struct	//this is stored as the cache. an hlmodel_t is generated when drawing
@@ -284,17 +285,17 @@ typedef struct	//this is stored as the cache. an hlmodel_t is generated when dra
 	} *geomset;
 } hlmodel_t;
 
-/* HL mathlib prototypes: */
+// HL mathlib prototypes:
 void	QuaternionGLAngle(const vec3_t angles, vec4_t quaternion);
 void	QuaternionGLMatrix(float x, float y, float z, float w, vec4_t *GLM);
 //void	UploadTexture(hlmdl_tex_t *ptexture, qbyte *data, qbyte *pal);
 
 qboolean QDECL Mod_LoadHLModel (model_t *mod, void *buffer, size_t fsize);
 
-/* physics stuff */
+// physics stuff
 void *Mod_GetHalfLifeModelData(model_t *mod);
 
-//reflectioney things, including bone data
+// reflectioney things, including bone data
 int HLMDL_BoneForName(model_t *mod, const char *name);
 int HLMDL_FrameForName(model_t *mod, const char *name);
 const char *HLMDL_FrameNameForNum(model_t *model, int surfaceidx, int num);
@@ -306,8 +307,8 @@ const char *HLMDL_GetBoneName(model_t *mod, int bonenum);
 int HLMDL_GetBoneData(model_t *model, int firstbone, int lastbone, framestate_t *fstate, float *result);
 int HLMDL_GetAttachment(model_t *model, int tagnum, float *resultmatrix);
 
-#ifndef SERVERONLY
-//stuff only useful for clients that need to draw stuff
-void	R_DrawHLModel(entity_t	*curent);
-void HLMDL_DrawHitBoxes(entity_t *ent);
+#ifndef SWDS
+// stuff only useful for clients that need to draw stuff
+void R_DrawHLModel(cl_entity_t *curent);
+void HLMDL_DrawHitBoxes(cl_entity_t *ent);
 #endif
