@@ -27,6 +27,74 @@ int current_skill;
 
 void Mod_Print();
 
+typedef void (*pfnGiveFnptrsToDll)(enginefuncs_t *apEngFuncs, globalvars_t *apGlobals);
+
+typedef int (*pfnGetEntityAPI)(DLL_FUNCTIONS *apFuncs, int anVersion);
+typedef int (*pfnGetEntityAPI2)(DLL_FUNCTIONS *apFuncs, int *apVersion);
+
+void LoadThisDll(const char *name)
+{
+	static void *gamedll = NULL;
+	pfnGiveFnptrsToDll fnGiveFnptrsToDll = NULL;
+	pfnGetEntityAPI fnGetEntityAPI = NULL;
+	pfnGetEntityAPI2 fnGetEntityAPI2 = NULL;
+
+	gamedll = Sys_LoadModule(name);
+
+	if(!gamedll)
+		Sys_Error("PR_LoadProgs: couldn't load game dll");
+
+	//pr_strings = (char *)progs + progs->ofs_strings; // TODO
+
+	fnGiveFnptrsToDll = (pfnGiveFnptrsToDll)Sys_GetExport(gamedll, "GiveFnptrsToDll");
+
+	if(!fnGiveFnptrsToDll)
+		return;
+
+	//fnGiveFnptrsToDll(&gEngFuncs, &gGlobalVariables); // TODO
+
+	fnGetEntityAPI = (pfnGetEntityAPI)Sys_GetExport(gamedll, "GetEntityAPI");
+	fnGetEntityAPI2 = (pfnGetEntityAPI2)Sys_GetExport(gamedll, "GetEntityAPI2");
+
+	if(fnGetEntityAPI2)
+	{
+		int nDLLVersion = INTERFACE_VERSION;
+
+		if(!fnGetEntityAPI2(&gEntityInterface, &nDLLVersion))
+			return;
+
+		if(nDLLVersion != INTERFACE_VERSION)
+			Sys_Error("game dll has wrong version number (%i should be %i)", nDLLVersion, INTERFACE_VERSION);
+
+		return;
+	};
+
+	if(fnGetEntityAPI)
+	{
+		if(!fnGetEntityAPI(&gEntityInterface, INTERFACE_VERSION))
+			return;
+	};
+};
+
+void PR_LoadProgs() // our temporary LoadEntityDLLs
+{
+	LoadThisDll("dlls/server");
+};
+
+/*
+==================
+Host_InitializeGameDLL
+
+TODO: should be located somewhere here around 222 line, called by Sys_InitGame
+==================
+*/
+void Host_InitializeGameDLL()
+{
+	Cbuf_Execute();
+	
+	PR_LoadProgs(); // TODO: LoadEntityDLLs
+};
+
 /*
 ==================
 Host_Quit_f
@@ -240,6 +308,17 @@ SERVER TRANSITIONS
 
 ===============================================================================
 */
+
+/*
+======================
+Host_Map
+
+TODO: probably contains everything from Host_Map_f and Host_Map_f contains something else + redirects to Host_Map
+======================
+*/
+void Host_Map(qboolean loadGame, const char *mapName, const char *mapstring, qboolean bIsDemo)
+{
+};
 
 /*
 ======================
