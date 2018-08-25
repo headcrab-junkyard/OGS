@@ -318,24 +318,8 @@ TODO: probably contains everything from Host_Map_f and Host_Map_f contains somet
 */
 void Host_Map(qboolean loadGame, const char *mapName, const char *mapstring, qboolean bIsDemo)
 {
-};
-
-/*
-======================
-Host_Map_f
-
-handle a 
-map <servername>
-command from the console.  Active clients are kicked off.
-======================
-*/
-void Host_Map_f()
-{
 	int i;
 	char name[MAX_QPATH];
-
-	if(cmd_source != src_command)
-		return;
 
 	cls.demonum = -1; // stop demo loop in case this fails
 
@@ -343,18 +327,21 @@ void Host_Map_f()
 	Host_ShutdownServer(false);
 
 	key_dest = key_game; // remove console or menu
-	SCR_BeginLoadingPlaque();
+	
+	if(loadGame) // TODO
+		SCR_BeginLoadingPlaque();
 
 	cls.mapstring[0] = 0;
 	for(i = 0; i < Cmd_Argc(); i++)
 	{
 		strcat(cls.mapstring, Cmd_Argv(i));
 		strcat(cls.mapstring, " ");
-	}
+	};
+	
 	strcat(cls.mapstring, "\n");
 
 	svs.serverflags = 0; // haven't completed an episode yet
-	strcpy(name, Cmd_Argv(1));
+	strcpy(name, mapName);
 
 	SV_SpawnServer(name, NULL);
 
@@ -373,6 +360,35 @@ void Host_Map_f()
 
 		Cmd_ExecuteString("connect local", src_command);
 	}
+	
+	if(loadGame)
+	{
+		// TODO
+	};
+	
+	if(bIsDemo)
+	{
+		// TODO
+	};
+};
+
+/*
+======================
+Host_Map_f
+
+handle a 
+map <servername>
+command from the console.  Active clients are kicked off.
+======================
+*/
+void Host_Map_f()
+{
+	if(cmd_source != src_command)
+		return;
+	
+	// TODO: move mapstring parsing here
+	
+	Host_Map(false, Cmd_Argv(1), "", false);
 }
 
 /*
