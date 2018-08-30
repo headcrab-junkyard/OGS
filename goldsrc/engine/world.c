@@ -441,7 +441,7 @@ POINT TESTING IN HULLS
 ===============================================================================
 */
 
-#if !id386
+//#if !id386 // TODO: check for non-Intel?
 
 /*
 ==================
@@ -476,7 +476,7 @@ int SV_HullPointContents(hull_t *hull, int num, vec3_t p)
 	return num;
 }
 
-#endif // !id386
+//#endif // !id386
 
 /*
 ==================
