@@ -169,19 +169,7 @@ ENTITY AREA CHECKING
 ===============================================================================
 */
 
-typedef struct areanode_s
-{
-	int axis; // -1 = leaf node
-	float dist;
-	struct areanode_s *children[2];
-	link_t trigger_edicts;
-	link_t solid_edicts;
-} areanode_t;
-
-#define AREA_DEPTH 4
-#define AREA_NODES 32
-
-static areanode_t sv_areanodes[AREA_NODES];
+areanode_t sv_areanodes[AREA_NODES];
 static int sv_numareanodes;
 
 /*
