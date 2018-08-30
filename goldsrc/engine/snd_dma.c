@@ -158,7 +158,7 @@ S_Init
 void S_Init()
 {
 	Con_Printf("\nSound Initialization\n");
-	VOX_Init(); // TODO
+	VOX_Init();
 
 	if(COM_CheckParm("-nosound"))
 		return;
