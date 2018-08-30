@@ -66,6 +66,151 @@ bool InitConsole()
 */
 };
 
+#ifdef _WIN32
+static bool sc_return_on_enter{false};
+HANDLE hinput, houtput;
+#endif
+
+char *Sys_ConsoleInput()
+{
+#ifdef _WIN32
+	static char text[256];
+	static int len;
+	INPUT_RECORD recs[1024];
+	int count;
+	int i, dummy;
+	int ch, numread, numevents;
+
+	for(;;)
+	{
+		if(!GetNumberOfConsoleInputEvents(hinput, &numevents))
+			Sys_Error("Error getting # of console events");
+
+		if(numevents <= 0)
+			break;
+
+		if(!ReadConsoleInput(hinput, recs, 1, &numread))
+			Sys_Error("Error reading console input");
+
+		if(numread != 1)
+			Sys_Error("Couldn't read console input");
+
+		if(recs[0].EventType == KEY_EVENT)
+		{
+			if(!recs[0].Event.KeyEvent.bKeyDown)
+			{
+				ch = recs[0].Event.KeyEvent.uChar.AsciiChar;
+
+				switch(ch)
+				{
+				case '\r':
+					WriteFile(houtput, "\r\n", 2, &dummy, NULL);
+
+					if(len)
+					{
+						text[len] = 0;
+						len = 0;
+						return text;
+					}
+					else if(sc_return_on_enter)
+					{
+						// special case to allow exiting from the error handler on Enter
+						text[0] = '\r';
+						len = 0;
+						return text;
+					}
+
+					break;
+
+				case '\b':
+					WriteFile(houtput, "\b \b", 3, &dummy, NULL);
+					if(len)
+					{
+						len--;
+					}
+					break;
+
+				default:
+					if(ch >= ' ')
+					{
+						WriteFile(houtput, &ch, 1, &dummy, NULL);
+						text[len] = ch;
+						len = (len + 1) & 0xff;
+					}
+
+					break;
+				}
+			}
+		}
+	}
+
+	return NULL;
+#elif __linux__
+	static char text[256];
+	int len;
+	fd_set fdset;
+	struct timeval timeout;
+
+	FD_ZERO(&fdset);
+	FD_SET(0, &fdset); // stdin
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 0;
+	if(select(1, &fdset, NULL, NULL, &timeout) == -1 || !FD_ISSET(0, &fdset))
+		return NULL;
+
+	len = read(0, text, sizeof(text));
+	if(len < 1)
+		return NULL;
+	text[len - 1] = 0; // rip off the /n and terminate
+
+	return text;
+#elif sun
+	static char text[256];
+	int len;
+	fd_set readfds;
+	int ready;
+	struct timeval timeout;
+
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 0;
+	FD_ZERO(&readfds);
+	FD_SET(0, &readfds);
+	ready = select(1, &readfds, 0, 0, &timeout);
+
+	if(ready > 0)
+	{
+		len = read(0, text, sizeof(text));
+		if(len >= 1)
+		{
+			text[len - 1] = 0; // rip off the /n and terminate
+			return text;
+		};
+	};
+
+	return 0;
+#endif // _WIN32
+};
+
+/*
+===================
+Host_GetConsoleCommands
+
+Add them exactly as if they had been typed at the console
+===================
+*/
+void Host_GetConsoleCommands()
+{
+	char *cmd{nullptr};
+
+	while(1)
+	{
+		cmd = Sys_ConsoleInput();
+		if(!cmd)
+			break;
+		//Cbuf_AddText(cmd); // TODO
+	};
+};
+
 int RunServer() // void?
 {
 	constexpr auto FILESYSTEM_MODULE_NAME{"filesystem_stdio"};
@@ -80,7 +225,7 @@ int RunServer() // void?
 	if(!pFSFactory)
 		return EXIT_FAILURE;
 	
-	constexpr auto ENGINE_MODULE_NAME{"engine"}; // TODO: swds
+	constexpr auto ENGINE_MODULE_NAME{"swds"};
 	
 	auto pEngineLib{Sys_LoadModule(ENGINE_MODULE_NAME)};
 	
@@ -101,8 +246,14 @@ int RunServer() // void?
 	if(!pEngine->Init(".", "TODO", Sys_GetFactoryThis(), pFSFactory))
 		return EXIT_FAILURE;
 	
+	// main loop
 	while(true)
+	{
+		// check for commands typed to the host
+		Host_GetConsoleCommands();
+		
 		pEngine->RunFrame();
+	};
 	
 	pEngine->Shutdown();
 	
