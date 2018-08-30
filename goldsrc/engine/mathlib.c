@@ -166,12 +166,13 @@ BOPS_Error
 Split out like this for ASM to call.
 ==================
 */
-void BOPS_Error(void)
+// TODO: should be extern for ASM
+/*extern "C"*/ void BOPS_Error(void)
 {
 	Sys_Error("BoxOnPlaneSide:  Bad signbits");
 }
 
-#if !id386
+//#if !id386 // TODO: check for non-Intel?
 
 /*
 ==================
@@ -280,7 +281,7 @@ int BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, mplane_t *p)
 	return sides;
 }
 
-#endif
+//#endif // !id386
 
 void AngleVectors(vec3_t angles, vec3_t forward, vec3_t right, vec3_t up)
 {
