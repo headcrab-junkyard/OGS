@@ -17,6 +17,8 @@
  *	along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "quakedef.h"
+
 #include <unistd.h>
 #include <signal.h>
 #include <limits.h>
@@ -30,7 +32,12 @@
 #include <sys/wait.h>
 #include <sys/mman.h>
 #include <errno.h>
+//#include <stdlib.h>
+//#include <stdarg.h>
+//#include <stdio.h>
+//#include <string.h>
 
+//int noconinput{0};
 int nostdout{0};
 
 const char *basedir{"."};
@@ -44,6 +51,34 @@ cvar_t sys_linerefresh = { "sys_linerefresh", "0" }; // set for entity display
 
 void Sys_DebugNumber(int y, int val)
 {
+}
+
+/*
+================
+Sys_Printf
+================
+*/
+void Sys_Printf (const char *fmt, ...)
+{
+	va_list		argptr;
+	char		text[2048];
+	unsigned char		*p;
+
+	va_start (argptr,fmt);
+	vsprintf (text,fmt,argptr);
+	va_end (argptr);
+
+	if (strlen(text) > sizeof(text))
+		Sys_Error("memory overwrite in Sys_Printf");
+
+    if (nostdout)
+        return;
+
+	for (p = (unsigned char *)text; *p; p++)
+		if ((*p > 128 || *p < 32) && *p != 10 && *p != 13 && *p != 9)
+			printf("[%02x]", *p);
+		else
+			putc(*p, stdout);
 }
 
 /*
@@ -104,6 +139,93 @@ void Sys_Warn(const char *warning, ...)
 	fprintf(stderr, "Warning: %s", string);
 }
 
+/*
+================
+Sys_Error
+================
+*/
+void Sys_Error (char *error, ...)
+{
+	va_list		argptr;
+	char		string[1024];
+	
+	va_start (argptr,error);
+	vsprintf (string,error,argptr);
+	va_end (argptr);
+	printf ("Fatal error: %s\n",string);
+	
+	exit (1);
+}
+
+/*
+================
+Sys_Quit
+================
+*/
+void Sys_Quit ()
+{
+	Host_Shutdown();
+    fcntl (0, F_SETFL, fcntl (0, F_GETFL, 0) & ~FNDELAY);
+	exit(0);
+}
+
+/*
+=============
+Sys_Init
+
+Quake calls this so the system can register variables before host_hunklevel
+is marked
+=============
+*/
+void Sys_Init()
+{
+#if id386
+	Sys_SetFPCW();
+#endif
+
+	//Cvar_RegisterVariable (&sys_nostdout);
+	//Cvar_RegisterVariable (&sys_extrasleep);
+}
+
+/*
+================
+Sys_DoubleTime
+================
+*/
+double Sys_FloatTime (void)
+{
+	struct timeval tp;
+	struct timezone tzp;
+	static int		secbase;
+
+	gettimeofday(&tp, &tzp);
+	
+	if (!secbase)
+	{
+		secbase = tp.tv_sec;
+		return tp.tv_usec/1000000.0;
+	}
+	
+	return (tp.tv_sec - secbase) + tp.tv_usec/1000000.0;
+}
+
+/*
+============
+Sys_FileTime
+
+returns -1 if not present
+============
+*/
+int	Sys_FileTime (char *path)
+{
+	struct	stat	buf;
+	
+	if (stat (path,&buf) == -1)
+		return -1;
+	
+	return buf.st_mtime;
+}
+
 int Sys_FileOpenRead(const char *path, int *handle)
 {
 	int h;
@@ -132,6 +254,37 @@ int Sys_FileOpenWrite(const char *path)
 		Sys_Error("Error opening %s: %s", path, strerror(errno));
 
 	return handle;
+}
+
+/*
+============
+Sys_mkdir
+
+============
+*/
+void Sys_mkdir (const char *path)
+{
+    mkdir (path, 0777);
+}
+
+int Sys_FileWrite (int handle, void *src, int count)
+{
+	return write (handle, src, count);
+}
+
+void Sys_FileClose (int handle)
+{
+	close (handle);
+}
+
+void Sys_FileSeek (int handle, int position)
+{
+	lseek (handle, position, SEEK_SET);
+}
+
+int Sys_FileRead (int handle, void *dest, int count)
+{
+    return read (handle, dest, count);
 }
 
 void Sys_DebugLog(const char *file, const char *fmt, ...)
@@ -168,6 +321,24 @@ void Sys_EditFile(const char *filename)
 		sprintf(cmd, "xterm -e %s %s", editor, filename);
 		system(cmd);
 	}
+}
+
+char *Sys_ConsoleInput()
+{
+#if 0
+    static char text[256];
+    int     len;
+
+	if (cls.state == ca_dedicated) {
+		len = read (0, text, sizeof(text));
+		if (len < 1)
+			return NULL;
+		text[len-1] = 0;    // rip off the /n and terminate
+
+		return text;
+	}
+#endif
+	return NULL;
 }
 
 // =======================================================================
@@ -261,6 +432,68 @@ int main (int c, char **v)
 // graphic debugging aids
         if (sys_linerefresh.value)
             Sys_LineRefresh ();
+    }
+
+}
+*/
+
+/*
+=============
+main
+=============
+*/
+/*
+int		skipframes;
+
+int main (int c, char **v)
+{
+
+	double		time, oldtime, newtime;
+	quakeparms_t parms;
+	int j;
+
+//	static char cwd[1024];
+
+//	signal(SIGFPE, floating_point_exception_handler);
+	signal(SIGFPE, SIG_IGN);
+
+	memset(&parms, 0, sizeof(parms));
+
+	COM_InitArgv(c, v);
+	parms.argc = com_argc;
+	parms.argv = com_argv;
+
+	parms.memsize = 16*1024*1024;
+
+	j = COM_CheckParm("-mem");
+	if (j)
+		parms.memsize = (int) (Q_atof(com_argv[j+1]) * 1024 * 1024);
+	parms.membase = malloc (parms.memsize);
+
+	parms.basedir = basedir;
+// caching is disabled by default, use -cachedir to enable
+//	parms.cachedir = cachedir;
+
+	noconinput = COM_CheckParm("-noconinput");
+	if (!noconinput)
+		fcntl(0, F_SETFL, fcntl (0, F_GETFL, 0) | FNDELAY);
+
+	if (COM_CheckParm("-nostdout"))
+		nostdout = 1;
+
+	Sys_Init();
+
+    Host_Init(&parms);
+
+    oldtime = Sys_FloatTime ();
+    while (1)
+    {
+// find time spent rendering last frame
+        newtime = Sys_FloatTime ();
+        time = newtime - oldtime;
+
+		Host_Frame(time);
+		oldtime = newtime;
     }
 
 }
