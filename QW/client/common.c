@@ -26,15 +26,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MAX_NUM_ARGVS	50
 #define NUM_SAFE_ARGVS	6
 
-usercmd_t nullcmd; // guarenteed to be zero
-
 static char	*largv[MAX_NUM_ARGVS + NUM_SAFE_ARGVS + 1];
 static char	*argvdummy = " ";
 
 static char	*safeargvs[NUM_SAFE_ARGVS] =
 	{"-stdvid", "-nolan", "-nosound", "-nocdaudio", "-nojoy", "-nomouse"};
-
-cvar_t	registered = {"registered","0"};
 
 qboolean	com_modified;	// set true if using non-id files
 
@@ -43,14 +39,10 @@ int		static_registered = 1;	// only for startup check, then set
 qboolean		msg_suppress_1 = 0;
 
 void COM_InitFilesystem (void);
-void COM_Path_f (void);
-
 
 // if a packfile directory differs from this, it is assumed to be hacked
 #define	PAK0_COUNT		339
 #define	PAK0_CRC		52883
-
-qboolean		standard_quake = true, rogue, hipnotic;
 
 char	gamedirfile[MAX_OSPATH];
 
@@ -620,23 +612,6 @@ void MSG_WriteDeltaUsercmd (sizebuf_t *buf, usercmd_t *from, usercmd_t *cmd)
 	MSG_WriteByte (buf, cmd->msec);
 }
 
-//
-// reading functions
-//
-int			msg_readcount;
-qboolean	msg_badread;
-
-void MSG_BeginReading (void)
-{
-	msg_readcount = 0;
-	msg_badread = false;
-}
-
-int MSG_GetReadCount(void)
-{
-	return msg_readcount;
-}
-
 // returns -1 and sets msg_badread if no more characters are available
 int MSG_ReadChar (void)
 {
@@ -781,41 +756,6 @@ float MSG_ReadAngle (void)
 float MSG_ReadAngle16 (void)
 {
 	return MSG_ReadShort() * (360.0/65536);
-}
-
-void MSG_ReadDeltaUsercmd (usercmd_t *from, usercmd_t *move)
-{
-	int bits;
-
-	memcpy (move, from, sizeof(*move));
-
-	bits = MSG_ReadByte ();
-		
-// read current angles
-	if (bits & CM_ANGLE1)
-		move->angles[0] = MSG_ReadAngle16 ();
-	if (bits & CM_ANGLE2)
-		move->angles[1] = MSG_ReadAngle16 ();
-	if (bits & CM_ANGLE3)
-		move->angles[2] = MSG_ReadAngle16 ();
-		
-// read movement
-	if (bits & CM_FORWARD)
-		move->forwardmove = MSG_ReadShort ();
-	if (bits & CM_SIDE)
-		move->sidemove = MSG_ReadShort ();
-	if (bits & CM_UP)
-		move->upmove = MSG_ReadShort ();
-	
-// read buttons
-	if (bits & CM_BUTTONS)
-		move->buttons = MSG_ReadByte ();
-
-	if (bits & CM_IMPULSE)
-		move->impulse = MSG_ReadByte ();
-
-// read time to run command
-	move->msec = MSG_ReadByte ();
 }
 
 

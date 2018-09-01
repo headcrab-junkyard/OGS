@@ -232,14 +232,12 @@ void Master_Packet ();
 void SV_FlushSignon ();
 
 
-//
-// sv_phys.c
-//
+
 void SV_ProgStartFrame ();
 
 void SV_CheckVelocity (edict_t *ent);
 void SV_AddGravity (edict_t *ent, float scale);
-qboolean SV_RunThink (edict_t *ent);
+
 void SV_Physics_Toss (edict_t *ent);
 void SV_RunNewmis ();
 void SV_Impact (edict_t *e1, edict_t *e2);
