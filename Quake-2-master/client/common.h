@@ -538,7 +538,6 @@ float	frand();	// 0 ti 1
 float	crand();	// -1 to 1
 
 extern	cvar_t	*developer;
-extern	cvar_t	*dedicated;
 extern	cvar_t	*host_speeds;
 extern	cvar_t	*log_stats;
 
@@ -550,9 +549,6 @@ extern	int		time_after_game;
 extern	int		time_before_ref;
 extern	int		time_after_ref;
 
-void Z_Free (void *ptr);
-void *Z_Malloc (int size);			// returns 0 filled memory
-void *Z_TagMalloc (int size, int tag);
 void Z_FreeTags (int tag);
 
 void Qcommon_Init (int argc, char **argv);
@@ -594,7 +590,6 @@ CLIENT / SERVER SYSTEMS
 ==============================================================
 */
 
-void CL_Init ();
 void CL_Drop ();
 void CL_Shutdown ();
 void CL_Frame (int msec);
