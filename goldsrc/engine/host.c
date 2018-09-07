@@ -56,6 +56,7 @@ jmp_buf host_abortserver;
 byte *host_basepal;
 byte *host_colormap;
 
+cvar_t hostname = {"hostname", "unnamed"/*, FCVAR_SERVER*/};
 cvar_t host_framerate = { "host_framerate", "0" }; // set for slow motion
 cvar_t host_speeds = { "host_speeds", "0" };       // set for running times
 cvar_t host_profile = { "host_profile", "0" };
