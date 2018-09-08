@@ -36,7 +36,7 @@ unsigned short d_8to16table[256];
 unsigned d_8to24table[256];
 
 // TODO: instead of d_local include
-extern short *d_pzbuffer;
+short *d_pzbuffer;
 
 void VID_SetPalette(unsigned char *palette)
 {
@@ -58,7 +58,7 @@ void VID_Init(unsigned char *palette)
 	vid.rowbytes = vid.conrowbytes = BASEWIDTH;
 
 	d_pzbuffer = zbuffer;
-	D_InitCaches(surfcache, sizeof(surfcache));
+	//D_InitCaches(surfcache, sizeof(surfcache)); // TODO
 }
 
 void VID_Shutdown()
