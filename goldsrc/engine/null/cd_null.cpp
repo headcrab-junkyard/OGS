@@ -59,3 +59,11 @@ void CCDAudio::Stop(){};
 void CCDAudio::Pause(){};
 
 void CCDAudio::Resume(){};
+
+#ifdef _WIN32
+#include "winquake.h"
+extern "C" LONG CDAudio_MessageHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	return 0;
+};
+#endif
