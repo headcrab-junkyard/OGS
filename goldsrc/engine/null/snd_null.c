@@ -93,3 +93,40 @@ void S_ExtraUpdate()
 void S_LocalSound(const char *s)
 {
 }
+
+// TODO
+//#ifdef _WIN32
+
+#ifdef _WIN32
+#include "winquake.h"
+LPDIRECTSOUNDBUFFER pDSBuf;
+#endif
+
+DWORD gSndBufSize;
+
+void S_BlockSound()
+{
+};
+
+void S_UnblockSound()
+{
+};
+
+qboolean SNDDMA_Init()
+{
+	return true;
+};
+
+void SNDDMA_Shutdown()
+{
+};
+
+void SNDDMA_Submit()
+{
+};
+
+int SNDDMA_GetDMAPos()
+{
+	return 0;
+};
+//#endif // _WIN32
