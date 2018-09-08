@@ -24,21 +24,23 @@
 
 void IN_Init()
 {
-}
+};
 
 void IN_Shutdown()
 {
-}
+};
 
 void IN_Commands()
 {
-}
+};
 
 void IN_Move(usercmd_t *cmd)
 {
-}
+};
 
-// TODO: IN_ClearStates?
+void IN_ClearStates()
+{
+};
 
 // TODO: unused?
 /*
@@ -49,5 +51,44 @@ IN_ModeChanged
 /*
 void IN_ModeChanged()
 {
-}
+};
 */
+
+// TODO
+//#ifdef _WIN32
+
+qboolean mouseactive;
+
+#ifdef _WIN32
+unsigned int uiWheelMessage;
+#endif
+
+void IN_ActivateMouse()
+{
+};
+
+void IN_DeactivateMouse()
+{
+};
+
+void IN_ShowMouse()
+{
+};
+
+void IN_HideMouse()
+{
+};
+
+void IN_Accumulate()
+{
+};
+
+void IN_MouseEvent(int key, qboolean down)
+{
+};
+
+void IN_UpdateClipCursor()
+{
+};
+
+//#endif // _WIN32
