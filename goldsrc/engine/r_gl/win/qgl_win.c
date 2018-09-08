@@ -17,6 +17,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+
 /*
 ** QGL_WIN.C
 **
@@ -27,8 +28,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ** QGL_Init() - loads libraries, assigns function pointers, etc.
 ** QGL_Shutdown() - unloads libraries, NULLs function pointers
 */
+
+#include "quakedef.h"
 #include <float.h>
-#include "../ref_gl/gl_local.h"
+#include "r_local.h"
 #include "glw_win.h"
 
 int   ( WINAPI * qwglChoosePixelFormat )(HDC, CONST PIXELFORMATDESCRIPTOR *);
@@ -3014,8 +3017,9 @@ void QGL_Shutdown( void )
 	qwglSetDeviceGammaRampEXT = NULL;
 }
 
-#	pragma warning (disable : 4113 4133 4047 )
-#	define GPA( a ) GetProcAddress( glw_state.hinstOpenGL, a )
+#pragma warning (disable : 4113 4133 4047 )
+
+#define GPA( a ) GetProcAddress( glw_state.hinstOpenGL, a )
 
 /*
 ** QGL_Init
@@ -3034,10 +3038,10 @@ qboolean QGL_Init( const char *dllname )
 		char envbuffer[1024];
 		float g;
 
-		g = 2.00 * ( 0.8 - ( vid_gamma->value - 0.5 ) ) + 1.0F;
-		Com_sprintf( envbuffer, sizeof(envbuffer), "SSTV2_GAMMA=%f", g );
+		g = 2.00 * ( 0.8 - ( v_gamma.value - 0.5 ) ) + 1.0F; // TODO: was vid_gamme
+		snprintf( envbuffer, sizeof(envbuffer), "SSTV2_GAMMA=%f", g );
 		putenv( envbuffer );
-		Com_sprintf( envbuffer, sizeof(envbuffer), "SST_GAMMA=%f", g );
+		snprintf( envbuffer, sizeof(envbuffer), "SST_GAMMA=%f", g );
 		putenv( envbuffer );
 	}
 
@@ -3046,11 +3050,11 @@ qboolean QGL_Init( const char *dllname )
 		char *buf = NULL;
 
 		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &buf, 0, NULL);
-		ri.Con_Printf( PRINT_ALL, "%s\n", buf );
+		/*ri.*/Con_Printf( /*PRINT_ALL,*/ "%s\n", buf ); // TODO
 		return false;
 	}
 
-	gl_config.allow_cds = true;
+	//gl_config.allow_cds = true; // TODO
 
 	qglAccum                     = dllAccum = GPA( "glAccum" );
 	qglAlphaFunc                 = dllAlphaFunc = GPA( "glAlphaFunc" );
@@ -3437,7 +3441,7 @@ void GLimp_EnableLogging( qboolean enable )
 
 			asctime( newtime );
 
-			Com_sprintf( buffer, sizeof(buffer), "%s/gl.log", ri.FS_Gamedir() ); 
+			snprintf( buffer, sizeof(buffer), "%s/gl.log", /*ri.*/FS_Gamedir() );  // TODO
 			glw_state.log_fp = fopen( buffer, "wt" );
 
 			fprintf( glw_state.log_fp, "%s\n", asctime( newtime ) );

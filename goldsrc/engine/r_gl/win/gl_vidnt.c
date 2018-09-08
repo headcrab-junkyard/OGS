@@ -22,7 +22,7 @@
 
 #include "quakedef.h"
 #include "winquake.h"
-#include "resource.h"
+//#include "resource.h"
 #include <commctrl.h>
 
 #define MAX_MODE_LIST 30
@@ -234,8 +234,8 @@ qboolean VID_SetWindowedMode(int modenum)
 	// Create the DIB window
 	dibwindow = CreateWindowEx(
 	ExWindowStyle,
-	"WinQuake",
-	"GLQuake",
+	"WinOGS",
+	"GLOGS",
 	WindowStyle,
 	rect.left, rect.top,
 	width,
@@ -323,8 +323,8 @@ qboolean VID_SetFullDIBMode(int modenum)
 	// Create the DIB window
 	dibwindow = CreateWindowEx(
 	ExWindowStyle,
-	"WinQuake",
-	"GLQuake",
+	"WinOGS",
+	"GLOGS",
 	WindowStyle,
 	rect.left, rect.top,
 	width,
@@ -502,7 +502,7 @@ void CheckTextureExtensions()
 
 	texture_ext = FALSE;
 	/* check for texture extension */
-	tmp = (unsigned char *)glGetString(GL_EXTENSIONS);
+	tmp = (unsigned char *)qglGetString(GL_EXTENSIONS);
 	while(*tmp)
 	{
 		if(strncmp((const char *)tmp, TEXTURE_EXT_STRING, strlen(TEXTURE_EXT_STRING)) == 0)
@@ -526,7 +526,7 @@ void CheckTextureExtensions()
 
 	/* load library and get procedure adresses for texture extension API */
 	if((bindTexFunc = (BINDTEXFUNCPTR)
-	    wglGetProcAddress((LPCSTR) "glBindTextureEXT")) == NULL)
+	    qwglGetProcAddress((LPCSTR) "glBindTextureEXT")) == NULL)
 	{
 		Sys_Error("GetProcAddress for BindTextureEXT failed");
 		return;
@@ -538,16 +538,16 @@ void CheckArrayExtensions()
 	char *tmp;
 
 	/* check for texture extension */
-	tmp = (unsigned char *)glGetString(GL_EXTENSIONS);
+	tmp = (unsigned char *)qglGetString(GL_EXTENSIONS);
 	while(*tmp)
 	{
 		if(strncmp((const char *)tmp, "GL_EXT_vertex_array", strlen("GL_EXT_vertex_array")) == 0)
 		{
 			if(
-			((glArrayElementEXT = wglGetProcAddress("glArrayElementEXT")) == NULL) ||
-			((glColorPointerEXT = wglGetProcAddress("glColorPointerEXT")) == NULL) ||
-			((glTexCoordPointerEXT = wglGetProcAddress("glTexCoordPointerEXT")) == NULL) ||
-			((glVertexPointerEXT = wglGetProcAddress("glVertexPointerEXT")) == NULL))
+			((glArrayElementEXT = qwglGetProcAddress("glArrayElementEXT")) == NULL) ||
+			((glColorPointerEXT = qwglGetProcAddress("glColorPointerEXT")) == NULL) ||
+			((glTexCoordPointerEXT = qwglGetProcAddress("glTexCoordPointerEXT")) == NULL) ||
+			((glVertexPointerEXT = qwglGetProcAddress("glVertexPointerEXT")) == NULL))
 			{
 				Sys_Error("GetProcAddress for vertex extension failed");
 				return;
@@ -575,8 +575,8 @@ void CheckMultiTextureExtensions()
 	if(strstr(gl_extensions, "GL_SGIS_multitexture ") && !COM_CheckParm("-nomtex"))
 	{
 		Con_Printf("Multitexture extensions found.\n");
-		qglMTexCoord2fSGIS = (void *)wglGetProcAddress("glMTexCoord2fSGIS");
-		qglSelectTextureSGIS = (void *)wglGetProcAddress("glSelectTextureSGIS");
+		qglMTexCoord2fSGIS = (void *)qwglGetProcAddress("glMTexCoord2fSGIS");
+		qglSelectTextureSGIS = (void *)qwglGetProcAddress("glSelectTextureSGIS");
 		gl_mtexable = true;
 	}
 }
@@ -594,14 +594,14 @@ GL_Init
 */
 void GL_Init()
 {
-	gl_vendor = glGetString(GL_VENDOR);
+	gl_vendor = qglGetString(GL_VENDOR);
 	Con_Printf("GL_VENDOR: %s\n", gl_vendor);
-	gl_renderer = glGetString(GL_RENDERER);
+	gl_renderer = qglGetString(GL_RENDERER);
 	Con_Printf("GL_RENDERER: %s\n", gl_renderer);
 
-	gl_version = glGetString(GL_VERSION);
+	gl_version = qglGetString(GL_VERSION);
 	Con_Printf("GL_VERSION: %s\n", gl_version);
-	gl_extensions = glGetString(GL_EXTENSIONS);
+	gl_extensions = qglGetString(GL_EXTENSIONS);
 	Con_Printf("GL_EXTENSIONS: %s\n", gl_extensions);
 
 	//	Con_Printf ("%s %s\n", gl_renderer, gl_version);
@@ -615,34 +615,34 @@ void GL_Init()
 	CheckTextureExtensions();
 	CheckMultiTextureExtensions();
 
-	glClearColor(1, 0, 0, 0);
-	glCullFace(GL_FRONT);
-	glEnable(GL_TEXTURE_2D);
+	qglClearColor(1, 0, 0, 0);
+	qglCullFace(GL_FRONT);
+	qglEnable(GL_TEXTURE_2D);
 
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GREATER, 0.666);
+	qglEnable(GL_ALPHA_TEST);
+	qglAlphaFunc(GL_GREATER, 0.666);
 
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glShadeModel(GL_FLAT);
+	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	qglShadeModel(GL_FLAT);
 
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	//	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	//qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
 #if 0
 	CheckArrayExtensions ();
 
-	glEnable (GL_VERTEX_ARRAY_EXT);
-	glEnable (GL_TEXTURE_COORD_ARRAY_EXT);
-	glVertexPointerEXT (3, GL_FLOAT, 0, 0, &glv.x);
-	glTexCoordPointerEXT (2, GL_FLOAT, 0, 0, &glv.s);
-	glColorPointerEXT (3, GL_FLOAT, 0, 0, &glv.r);
+	qglEnable (GL_VERTEX_ARRAY_EXT);
+	qglEnable (GL_TEXTURE_COORD_ARRAY_EXT);
+	qglVertexPointerEXT (3, GL_FLOAT, 0, 0, &glv.x);
+	qglTexCoordPointerEXT (2, GL_FLOAT, 0, 0, &glv.s);
+	qglColorPointerEXT (3, GL_FLOAT, 0, 0, &glv.r);
 #endif
 }
 
@@ -789,13 +789,13 @@ void VID_Shutdown()
 	if(vid_initialized)
 	{
 		vid_canalttab = false;
-		hRC = wglGetCurrentContext();
-		hDC = wglGetCurrentDC();
+		hRC = qwglGetCurrentContext();
+		hDC = qwglGetCurrentDC();
 
-		wglMakeCurrent(NULL, NULL);
+		qwglMakeCurrent(NULL, NULL);
 
 		if(hRC)
-			wglDeleteContext(hRC);
+			qwglDeleteContext(hRC);
 
 		if(hDC && dibwindow)
 			ReleaseDC(dibwindow, hDC);
@@ -1508,13 +1508,13 @@ void VID_Init8bitPalette()
 	char thePalette[256 * 3];
 	char *oldPalette, *newPalette;
 
-	glColorTableEXT = (void *)wglGetProcAddress("glColorTableEXT");
+	glColorTableEXT = (void *)qwglGetProcAddress("glColorTableEXT");
 	if(!glColorTableEXT || strstr(gl_extensions, "GL_EXT_shared_texture_palette") ||
 	   COM_CheckParm("-no8bit"))
 		return;
 
 	Con_SafePrintf("8-bit GL extensions enabled.\n");
-	glEnable(GL_SHARED_TEXTURE_PALETTE_EXT);
+	qglEnable(GL_SHARED_TEXTURE_PALETTE_EXT);
 	oldPalette = (char *)d_8to24table; //d_8to24table3dfx;
 	newPalette = thePalette;
 	for(i = 0; i < 256; i++)
@@ -1524,7 +1524,7 @@ void VID_Init8bitPalette()
 		*newPalette++ = *oldPalette++;
 		oldPalette++;
 	}
-	glColorTableEXT(GL_SHARED_TEXTURE_PALETTE_EXT, GL_RGB, 256, GL_RGB, GL_UNSIGNED_BYTE,
+	qglColorTableEXT(GL_SHARED_TEXTURE_PALETTE_EXT, GL_RGB, 256, GL_RGB, GL_UNSIGNED_BYTE,
 	                (void *)thePalette);
 	is8bit = TRUE;
 }
@@ -1593,7 +1593,7 @@ void VID_Init(unsigned char *palette)
 	Cmd_AddCommand("vid_describemode", VID_DescribeMode_f);
 	Cmd_AddCommand("vid_describemodes", VID_DescribeModes_f);
 
-	hIcon = LoadIcon(global_hInstance, MAKEINTRESOURCE(IDI_ICON2));
+	//hIcon = LoadIcon(global_hInstance, MAKEINTRESOURCE(IDI_ICON2)); // TODO
 
 	InitCommonControls();
 
@@ -1799,16 +1799,16 @@ void VID_Init(unsigned char *palette)
 	maindc = GetDC(mainwindow);
 	bSetupPixelFormat(maindc);
 
-	baseRC = wglCreateContext(maindc);
+	baseRC = qwglCreateContext(maindc);
 	if(!baseRC)
 		Sys_Error("Could not initialize GL (wglCreateContext failed).\n\nMake sure you in are 65535 color mode, and try running -window.");
-	if(!wglMakeCurrent(maindc, baseRC))
+	if(!qwglMakeCurrent(maindc, baseRC))
 		Sys_Error("wglMakeCurrent failed");
 
 	GL_Init();
 
 	sprintf(gldir, "%s/glquake", com_gamedir);
-	Sys_mkdir(gldir);
+	FS_mkdir(gldir);
 
 	vid_realmode = vid_modenum;
 
