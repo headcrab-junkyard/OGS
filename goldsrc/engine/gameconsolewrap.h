@@ -17,6 +17,7 @@
  */
 
 /// @file
+/// @brief gameui's module game console interface wrapper
 
 #pragma once
 
@@ -26,7 +27,7 @@ void GameConsole_Activate();
 void GameConsole_Hide();
 void GameConsole_Clear();
 
-bool GameConsole_IsVisible();
+qboolean GameConsole_IsVisible();
 
 void GameConsole_Printf(const char *format, ...);
 void GameConsole_DPrintf(const char *format, ...);

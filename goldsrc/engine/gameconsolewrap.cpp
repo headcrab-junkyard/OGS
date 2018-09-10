@@ -43,7 +43,7 @@ void GameConsole_Clear()
 		gpGameConsole->Clear();
 };
 
-bool GameConsole_IsVisible()
+qboolean GameConsole_IsVisible()
 {
 	if(gpGameConsole)
 		return gpGameConsole->IsConsoleVisible();
