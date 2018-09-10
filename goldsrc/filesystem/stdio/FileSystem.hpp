@@ -117,4 +117,23 @@ public:
 	FileHandle_t OpenFromCacheForRead(const char *sFileName, const char *sOptions, const char *sPathID) override;
 
 	void AddSearchPathNoWrite(const char *sPath, const char *sPathID) override;
+private:
+	static constexpr auto MAX_HANDLES{10};
+	
+	int findhandle() const;
+	int filelength(FILE *f);
+	
+#ifdef _WIN32
+	FILE sys_handles[MAX_HANDLES]{};
+#elif sun
+	struct MEMFILE
+	{
+		FILE *hFile{nullptr};
+		char *pMap{nullptr};
+		int nLen{0};
+		int nPos{0};
+	};
+
+	MEMFILE sys_handles[MAX_HANDLES]{};
+#endif
 };

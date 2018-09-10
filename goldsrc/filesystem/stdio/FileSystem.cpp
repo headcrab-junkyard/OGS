@@ -1,5 +1,6 @@
 /*
  *	This file is part of OGS Engine
+ *	Copyright (C) 1996-1997 Id Software, Inc.
  *	Copyright (C) 2016-2018 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
@@ -110,22 +111,56 @@ bool CFileSystem::IsDirectory(const char *pFileName)
 	return false;
 };
 
+/*
+===========
+COM_OpenFile
+
+filename never has a leading slash, but may contain directory walks
+returns a handle and a length
+it may actually be inside a pak file
+===========
+*/
+/*
+int COM_OpenFile(const char *filename, int *handle)
+{
+	return COM_FindFile(filename, handle, NULL);
+}
+*/
+
 FileHandle_t CFileSystem::Open(const char *pFileName, const char *pOptions, const char *pathID)
 {
 	TRACE_LOG("CFileSystem::Open(%s, %s, %s)", pFileName, pOptions, pathID);
 	return nullptr;
 };
 
+/*
+============
+COM_CloseFile
+
+If it is a pak file handle, don't really close it
+============
+*/
 void CFileSystem::Close(FileHandle_t file)
 {
 	TRACE_LOG("CFileSystem::Close(%d)", file);
+	
+	// TODO
+	/*
+	searchpath_t *s;
+
+	for(s = com_searchpaths; s; s = s->next)
+		if(s->pack && s->pack->handle == h)
+			return;
+	*/
+	
 	fclose((FILE*)file);
+	file = nullptr;
 };
 
 void CFileSystem::Seek(FileHandle_t file, int pos, FileSystemSeek_t seekType)
 {
 	TRACE_LOG("CFileSystem::Seek(%d, %d, %d)", file, pos, seekType);
-	fseek((FILE*)file, pos, SEEK_SET);
+	fseek((FILE*)file, pos, seekType);
 };
 
 unsigned int CFileSystem::Tell(FileHandle_t file)
@@ -156,13 +191,26 @@ returns -1 if not present
 long CFileSystem::GetFileTime(const char *pFileName)
 {
 	TRACE_LOG("CFileSystem::GetFileTime(%s)", pFileName);
+	// TODO: returns int originally
 	
+#if defined(_WIN32) or defined(__linux__)
 	struct stat buf;
 
 	if(stat(pFileName, &buf) == -1)
 		return -1;
 
 	return buf.st_mtime;
+#elif sun
+	FILE *f{fopen(pFileName, "rb")};
+	
+	if(f)
+	{
+		fclose(f);
+		return 1;
+	};
+
+	return -1;
+#endif
 };
 
 void CFileSystem::FileTimeToString(char *pStrip, int maxCharsIncludingTerminator, long fileTime)
