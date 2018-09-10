@@ -16,19 +16,20 @@
  *	You should have received a copy of the GNU General Public License
  *	along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
-/* crc.c */
+
+/// @file
 
 #include "quakedef.h"
 #include "crc.h"
 
-// this is a 16 bit, non-reflected CRC using the polynomial 0x1021
+// this is a 32 bit, non-reflected CRC using the polynomial 0x1021
 // and the initial and final xor values shown below...  in other words, the
 // CCITT standard CRC used by XMODEM
 
 #define CRC_INIT_VALUE 0xffff
 #define CRC_XOR_VALUE 0x0000
 
-static unsigned short crctable[256] =
+static CRC32_t crctable[256] =
 {
   0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50a5, 0x60c6, 0x70e7,
   0x8108, 0x9129, 0xa14a, 0xb16b, 0xc18c, 0xd1ad, 0xe1ce, 0xf1ef,
@@ -64,28 +65,63 @@ static unsigned short crctable[256] =
   0x6e17, 0x7e36, 0x4e55, 0x5e74, 0x2e93, 0x3eb2, 0x0ed1, 0x1ef0
 };
 
-void CRC_Init(unsigned short *crcvalue)
+void CRC32_Init(CRC32_t *crcvalue)
 {
 	*crcvalue = CRC_INIT_VALUE;
-}
+};
 
-void CRC_ProcessByte(unsigned short *crcvalue, byte data)
+void CRC32_ProcessByte(CRC32_t *crcvalue, byte data)
 {
 	*crcvalue = (*crcvalue << 8) ^ crctable[(*crcvalue >> 8) ^ data];
-}
+};
 
-unsigned short CRC_Value(unsigned short crcvalue)
+unsigned short CRC32_Value(CRC32_t crcvalue)
 {
 	return crcvalue ^ CRC_XOR_VALUE;
-}
+};
 
-unsigned short CRC_Block(byte *start, int count)
+unsigned short CRC32_Block(byte *start, int count)
 {
-	unsigned short crc;
+	CRC32_t crc;
 
-	CRC_Init(&crc);
+	CRC32_Init(&crc);
+	
 	while(count--)
 		crc = (crc << 8) ^ crctable[(crc >> 8) ^ *start++];
 
 	return crc;
-}
+};
+
+/*
+====================
+COM_BlockSequenceCRCByte
+
+For proxy protecting
+====================
+*/
+byte COM_BlockSequenceCRCByte(byte *base, int length, int sequence)
+{
+	CRC32_t crc;
+	byte *p;
+	byte chkb[60 + 4];
+
+	p = crctable + (sequence % (sizeof(crctable) - 8));
+
+	if (length > 60)
+		length = 60;
+	
+	memcpy (chkb, base, length);
+
+	chkb[length] = (sequence & 0xff) ^ p[0];
+	chkb[length+1] = p[1];
+	chkb[length+2] = ((sequence>>8) & 0xff) ^ p[2];
+	chkb[length+3] = p[3];
+
+	length += 4;
+
+	crc = CRC32_Block(chkb, length);
+
+	crc &= 0xff;
+
+	return crc;
+};
