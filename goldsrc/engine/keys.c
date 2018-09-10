@@ -332,7 +332,7 @@ the given string.  Single ascii characters return themselves, while
 the K_* names are matched up.
 ===================
 */
-int Key_StringToKeynum(char *str)
+int Key_StringToKeynum(const char *str)
 {
 	keyname_t *kn;
 
@@ -358,7 +358,7 @@ given keynum.
 FIXME: handle quote special (general escape sequence?)
 ===================
 */
-char *Key_KeynumToString(int keynum)
+const char *Key_KeynumToString(int keynum)
 {
 	keyname_t *kn;
 	static char tinystr[2];
@@ -384,7 +384,7 @@ char *Key_KeynumToString(int keynum)
 Key_SetBinding
 ===================
 */
-void Key_SetBinding(int keynum, char *binding)
+void Key_SetBinding(int keynum, const char *binding)
 {
 	char *new;
 	int l;
@@ -705,9 +705,7 @@ void Key_Event(int key, qboolean down)
 		return; // other systems only care about key down events
 
 	if(shift_down)
-	{
 		key = keyshift[key];
-	}
 
 	switch(key_dest)
 	{
