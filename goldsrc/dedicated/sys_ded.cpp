@@ -24,6 +24,7 @@
 
 #ifdef _WIN32
 	#include <windows.h>
+	#include <conio.h>
 	#include "win/conproc.h"
 #endif
 
@@ -74,6 +75,45 @@ HANDLE hinput, houtput;
 char *Sys_ConsoleInput()
 {
 #ifdef _WIN32
+
+//#ifdef SWDS
+	static char text[256];
+	static int len;
+	int c;
+
+	// read a line out
+	while(_kbhit())
+	{
+		c = _getch();
+		putch(c);
+		if(c == '\r')
+		{
+			text[len] = 0;
+			putch('\n');
+			len = 0;
+			return text;
+		}
+		if(c == 8)
+		{
+			//if (len) // TODO
+			{
+				putch(' ');
+				putch(c);
+				len--;
+				text[len] = 0;
+			}
+			continue;
+		}
+		text[len] = c;
+		len++;
+		text[len] = 0;
+		if(len == sizeof(text))
+			len = 0;
+	}
+
+	return NULL;
+/*
+#else // if not SWDS
 	static char text[256];
 	static int len;
 	INPUT_RECORD recs[1024];
@@ -145,6 +185,9 @@ char *Sys_ConsoleInput()
 	}
 
 	return NULL;
+#endif // SWDS
+*/
+
 #elif __linux__
 	static char text[256];
 	int len;
@@ -260,6 +303,13 @@ int RunServer() // void?
 	return EXIT_SUCCESS;
 };
 
+/*
+==================
+main
+
+==================
+*/
+//char *newargv[256]; // TODO: unused?
 int main(int argc, char **argv)
 {
 	//CCmdLine CmdLine(argc, argv); // TODO
