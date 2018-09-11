@@ -603,21 +603,10 @@ void CL_ParseClientdata(int bits)
 
 	i = MSG_ReadByte();
 
-	if(standard_quake)
+	if(cl.stats[STAT_ACTIVEWEAPON] != i) // != (1 << i))
 	{
-		if(cl.stats[STAT_ACTIVEWEAPON] != i)
-		{
-			cl.stats[STAT_ACTIVEWEAPON] = i;
-			Sbar_Changed();
-		}
-	}
-	else
-	{
-		if(cl.stats[STAT_ACTIVEWEAPON] != (1 << i))
-		{
-			cl.stats[STAT_ACTIVEWEAPON] = (1 << i);
-			Sbar_Changed();
-		}
+		cl.stats[STAT_ACTIVEWEAPON] = i; // = (1 << i);
+		Sbar_Changed();
 	}
 }
 
