@@ -54,6 +54,7 @@ cvar_t v_idlescale = { "v_idlescale", "0", false };
 cvar_t crosshair = { "crosshair", "0", true };
 cvar_t cl_crossx = { "cl_crossx", "0", false };
 cvar_t cl_crossy = { "cl_crossy", "0", false };
+cvar_t	crosshaircolor = {"crosshaircolor", "79", true};
 
 cvar_t gl_cshiftpercent = { "gl_cshiftpercent", "100", false };
 
