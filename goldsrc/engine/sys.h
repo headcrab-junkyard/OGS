@@ -44,8 +44,6 @@ void Sys_Quit();
 
 double Sys_FloatTime();
 
-char *Sys_ConsoleInput();
-
 void Sys_Sleep();
 // called to yield for a little bit so as
 // not to hog cpu when paused or debugging
@@ -55,8 +53,5 @@ void Sys_SendKeyEvents();
 
 void Sys_LowFPPrecision();
 void Sys_HighFPPrecision();
-void Sys_SetFPCW();
 
-//int Sys_FileTime (char *path); // TODO: FS_FileTime
-
-//void Sys_mkdir (char *path); // TODO: FS_mkdir
+void Sys_InitGame(const char *lpOrgCmdLine, const char *pBaseDir /*TODO: szBaseDir?*/, void *pwnd, int bIsDedicated);
