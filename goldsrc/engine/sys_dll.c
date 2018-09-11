@@ -382,7 +382,7 @@ void Sys_Error(const char *error, ...)
 	if(!in_sys_error2)
 	{
 		in_sys_error2 = 1;
-		DeinitConProc();
+		//DeinitConProc(); // TODO
 	};
 
 	exit(1);
