@@ -345,11 +345,11 @@ void Sys_Error(const char *error, ...)
 		va_end(argptr);
 
 		sprintf(text2, "ERROR: %s\n", text);
-		WriteFile(houtput, text5, strlen(text5), &dummy, NULL);
-		WriteFile(houtput, text4, strlen(text4), &dummy, NULL);
-		WriteFile(houtput, text2, strlen(text2), &dummy, NULL);
-		WriteFile(houtput, text3, strlen(text3), &dummy, NULL);
-		WriteFile(houtput, text4, strlen(text4), &dummy, NULL);
+		//WriteFile(houtput, text5, strlen(text5), &dummy, NULL); // TODO
+		//WriteFile(houtput, text4, strlen(text4), &dummy, NULL); // TODO
+		//WriteFile(houtput, text2, strlen(text2), &dummy, NULL); // TODO
+		//WriteFile(houtput, text3, strlen(text3), &dummy, NULL); // TODO
+		//WriteFile(houtput, text4, strlen(text4), &dummy, NULL); // TODO
 
 		starttime = Sys_FloatTime();
 		sc_return_on_enter = true; // so Enter will get us out of here
