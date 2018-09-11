@@ -338,8 +338,7 @@ void SND_InitScaletable(void)
 			snd_scaletable[i][j] = ((signed char)j) * i * 8;
 }
 
-#if !id386
-
+//#if !id386 // TODO: check for non-Intel?
 void SND_PaintChannelFrom8(channel_t *ch, sfxcache_t *sc, int count)
 {
 	int data;
@@ -365,8 +364,7 @@ void SND_PaintChannelFrom8(channel_t *ch, sfxcache_t *sc, int count)
 
 	ch->pos += count;
 }
-
-#endif // !id386
+//#endif // !id386
 
 void SND_PaintChannelFrom16(channel_t *ch, sfxcache_t *sc, int count)
 {
