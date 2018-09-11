@@ -58,6 +58,8 @@ typedef struct
 	svstats_t stats;
 
 	challenge_t challenges[MAX_CHALLENGES]; // to prevent invalid IPs from connecting
+	
+	char info[MAX_SERVERINFO_STRING]; // TODO
 } server_static_t;
 
 //=============================================================================
@@ -126,21 +128,25 @@ typedef struct client_s
 	qboolean spawned;   // client is fully in game (false = don't send datagrams)
 	qboolean connected; // has been assigned to a client_t, but not in game yet
 	qboolean drop;      // has been told to go to another level
-	//int				lossage;			// loss percentage
+	
+	//int lossage; // loss percentage
 
 	qboolean sendinfo; // at end of frame, send info to all
 	                   // this prevents malicious multiple broadcasts
 
 	int userid;                     // identifying number
 	char userinfo[MAX_INFO_STRING]; // infostring
-
+	
 	usercmd_t lastcmd; // for filling in big drops and partial predictions
 	double localtime;  // of last message
 
 	edict_t *edict; // EDICT_NUM(clientnum+1)
-	char name[32];  // for printing to other people
+	char name[32];  // for printing to other people (extracted from userinfo)
+	
 	int topcolor;
 	int bottomcolor;
+	
+	client_frame_t frames[UPDATE_BACKUP]; // updates can be deltad from here
 
 	float ping_times[NUM_PING_TIMES];
 	int num_pings; // ping_times[num_pings%NUM_PING_TIMES]
@@ -203,9 +209,28 @@ extern double host_time;
 
 extern edict_t *sv_player;
 
+extern char outputbuf[8000];
+
+typedef enum
+{
+	RD_NONE,
+	RD_CLIENT,
+	RD_PACKET
+} redirect_t;
+
+extern redirect_t sv_redirected;
+
 //===========================================================
 
 void SV_Init();
+
+void SV_Frame();
+
+//
+// sv_phys.c
+//
+void SV_Physics();
+qboolean SV_RunThink(edict_t *ent);
 
 void SV_StartParticle(vec3_t org, vec3_t dir, int color, int count);
 void SV_StartSound(edict_t *entity, int channel, const char *sample, int volume, float attenuation);
@@ -223,14 +248,10 @@ void SV_AddUpdates();
 
 void SV_ClientThink();
 
-void SV_ClientPrintf(client_t *cl, const char *fmt, ...);
-void SV_BroadcastPrintf(const char *fmt, ...);
+void SV_ClientPrintf(client_t *cl, /*int level,*/ const char *fmt, ...);
+void SV_BroadcastPrintf(/*int level,*/ const char *fmt, ...);
 
 void SV_BroadcastCommand(const char *fmt, ...);
-
-void SV_Frame();
-
-void SV_Physics();
 
 qboolean SV_CheckBottom(edict_t *ent);
 qboolean SV_movestep(edict_t *ent, vec3_t move, qboolean relink);
@@ -239,7 +260,6 @@ void SV_WriteClientdataToMessage(edict_t *ent, sizebuf_t *msg);
 
 void SV_MoveToGoal(edict_t *ent, float dist);
 
-void SV_RunClients();
 void SV_SaveSpawnparms();
 
 void SV_SpawnServer(const char *server, const char *startspot);
@@ -249,12 +269,6 @@ void SV_SpawnServer(const char *server, const char *startspot);
 //
 
 void SV_ExecuteClientMessage(client_t *cl);
-
-typedef enum {
-	RD_NONE,
-	RD_CLIENT,
-	RD_PACKET
-} redirect_t;
 
 void SV_BeginRedirect(redirect_t rd);
 void SV_EndRedirect();
