@@ -184,9 +184,11 @@ enum
 //
 #define clc_bad 0
 #define clc_nop 1
-#define clc_disconnect 2
+#define clc_disconnect 2 // TODO: clc_doublemove in qw
 #define clc_move 3      // [usercmd_t]
 #define clc_stringcmd 4 // [string] message
+#define clc_tmove 5 // TODO: 6 in qw
+#define clc_delta 6 // [byte] sequence number, requests delta compression of message // TODO: 5 in qw
 
 #define DEFAULT_SOUND_PACKET_VOLUME 255
 #define DEFAULT_SOUND_PACKET_ATTENUATION 1.0
