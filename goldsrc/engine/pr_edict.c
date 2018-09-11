@@ -709,7 +709,7 @@ void ED_LoadFromFile(char *data)
 		if(!ent->v.classname)
 		{
 			Con_Printf("No classname for:\n");
-			ED_Print(ent);
+			//ED_Print(ent); // TODO
 			ED_Free(ent);
 			continue;
 		}
@@ -720,7 +720,7 @@ void ED_LoadFromFile(char *data)
 		//if (!func)
 		{
 			Con_Printf("No spawn function for:\n");
-			ED_Print(ent);
+			//ED_Print(ent); // TODO
 			ED_Free(ent);
 			continue;
 		}
