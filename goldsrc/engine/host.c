@@ -40,7 +40,7 @@ qboolean host_initialized; // true if into command execution
 //qboolean	nomaster;
 
 double host_frametime;
-//double		host_time; // TODO
+double host_time; // TODO: doesn't look like GS use that
 double realtime;    // without any filtering or bounding
 double oldrealtime; // last frame run
 int host_framecount;
