@@ -24,8 +24,7 @@
 
 #define iDirectSoundCreate(a, b, c) pDirectSoundCreate(a, b, c)
 
-HRESULT(WINAPI *pDirectSoundCreate)
-(GUID FAR *lpGUID, LPDIRECTSOUND FAR *lplpDS, IUnknown FAR *pUnkOuter);
+HRESULT(WINAPI *pDirectSoundCreate)(GUID FAR *lpGUID, LPDIRECTSOUND FAR *lplpDS, IUnknown FAR *pUnkOuter);
 
 // 64K is > 1 second at 16-bit, 22050 Hz
 #define WAV_BUFFERS 64
@@ -70,7 +69,7 @@ LPDIRECTSOUNDBUFFER pDSBuf, pDSPBuf;
 
 HINSTANCE hInstDS;
 
-qboolean SNDDMA_InitDirect();
+sndinitstat SNDDMA_InitDirect();
 qboolean SNDDMA_InitWav();
 
 /*
@@ -542,8 +541,7 @@ Try to find a sound device to mix for.
 Returns false if nothing is found.
 ==================
 */
-
-int SNDDMA_Init()
+qboolean SNDDMA_Init()
 {
 	sndinitstat stat;
 
@@ -560,7 +558,6 @@ int SNDDMA_Init()
 		if(snd_firsttime || snd_isdirect)
 		{
 			stat = SNDDMA_InitDirect();
-			;
 
 			if(stat == SIS_SUCCESS)
 			{
