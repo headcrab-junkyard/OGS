@@ -30,7 +30,7 @@ qboolean gbDedicatedServer{ false };
 
 char *gsPostRestartCmdLineArgs{ nullptr };
 
-void Sys_InitGame(char *lpOrgCmdLine, char *pBaseDir /*TODO: szBaseDir?*/, void *pwnd, int bIsDedicated)
+void Sys_InitGame(const char *lpOrgCmdLine, const char *pBaseDir /*TODO: szBaseDir?*/, void *pwnd, int bIsDedicated)
 {
 	static quakeparms_t parms{}; // TODO: (non-)static?
 
@@ -41,33 +41,71 @@ void Sys_InitGame(char *lpOrgCmdLine, char *pBaseDir /*TODO: szBaseDir?*/, void 
 	signal(SIGFPE, SIG_IGN);
 #endif
 
-#if defined(GLQUAKE) or defined(sun)
-	parms.memsize = 16*1024*1024;
+#if defined(GLQUAKE) or defined(sun) or defined(SWDS)
+	parms.memsize = 16*1024*1024; // TODO: 16Mb
 #else
-	parms.memsize = 8*1024*1024; // TODO: 5861376 in QW
+	parms.memsize = 8*1024*1024; // TODO: 8Mb; 5861376 in QW
 #endif
 
+	/*
+	if ((t = COM_CheckParm ("-heapsize")) != 0 && t + 1 < com_argc)
+		parms.memsize = Q_atoi (com_argv[t + 1]) * 1024;
+
+	if ((t = COM_CheckParm ("-mem")) != 0 && t + 1 < com_argc)
+		parms.memsize = Q_atoi (com_argv[t + 1]) * 1024 * 1024;
+	*/
+
 	parms.membase = malloc(parms.memsize);
-	parms.basedir = pBaseDir; // TODO: "."
+	
+	//if (!parms.membase)
+		//Sys_Error("Insufficient memory.\n");
+	
+	parms.basedir = (char*)pBaseDir; // TODO: "."
+	
+	/*
+	static char cwd[1024];
+	_getcwd(cwd, sizeof(cwd));
+	if(cwd[Q_strlen(cwd) - 1] == '\\')
+		cwd[Q_strlen(cwd) - 1] = 0;
+	parms.basedir = cwd;
+	*/
 	
 	parms.cachedir = NULL; // TODO
 	
 	// TODO: cmdline string parsing/tokenization
 	//COM_InitArgv(argc, argv); // TODO: parms.argc, parms.argv
 
-	//parms.argc = com_argc;
-	//parms.argv = com_argv;
+	/*
+	// dedicated server ONLY!
+	if(!COM_CheckParm("-dedicated"))
+	{
+		memcpy(newargv, argv, argc * 4);
+		newargv[argc] = "-dedicated";
+		argc++;
+		argv = newargv;
+		COM_InitArgv(argc, argv);
+	}
+	*/
+	
+	//parms.argc = com_argc; // argc
+	//parms.argv = com_argv; // argv
 	
 	isDedicated = bIsDedicated; // TODO: was (COM_CheckParm ("-dedicated") != 0);
 	
 	//printf("Host_Init\n");
 	Host_Init(&parms);
+	
+	//oldtime = Sys_FloatTime();
+	
+	Host_InitializeGameDLL();
 };
 
 int RunListenServer(void *instance, const char *basedir, const char *cmdline, char *postRestartCmdLineArgs, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory)
 {
 	// TODO: Whole bunch of Sys_Init* calls
 
+	FileSystem_Init(basedir, (void*)filesystemFactory);
+	
 	// TODO: CWindowManager::CreateGameWindow(); // IGame::CreateGameWindow
 
 	if(!gpEngine->Load(false, basedir, cmdline))
@@ -80,6 +118,8 @@ int RunListenServer(void *instance, const char *basedir, const char *cmdline, ch
 
 	// TODO: CWindowManager::DestroyGameWindow(); // IGame::DestroyGameWindow
 
+	FileSystem_Shutdown();
+	
 	// TODO: Whole bunch of Sys_Shutdown* calls
 
 	return EXIT_SUCCESS;
@@ -108,6 +148,8 @@ int CEngineAPI::Run(void *instance, const char *basedir, const char *cmdline, ch
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// TODO
+/*
 class CGameUIFuncs final : public IGameUIFuncs
 {
 public:
@@ -174,6 +216,7 @@ int CGameUIFuncs::Key_KeyStringToKeyNum(const char *string)
 {
 	return Key_KeyStringToKeyNum(string);
 };
+*/
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -190,7 +233,7 @@ public:
 
 	void AddConsoleText(const char *text) override;
 
-	void UpdateStatus(float *fps, int *nActive, int *nMaxPlayers, const char *pszMap) override;
+	void UpdateStatus(float *fps, int *nActive, int *nMaxPlayers, /*const*/ char *pszMap) override;
 };
 
 EXPOSE_SINGLE_INTERFACE(CDedicatedServerAPI, IDedicatedServerAPI, VENGINE_HLDS_API_VERSION);
@@ -224,7 +267,7 @@ void CDedicatedServerAPI::AddConsoleText(const char *text)
 	Cbuf_AddText(text);
 };
 
-void CDedicatedServerAPI::UpdateStatus(float *fps, int *nActive, int *nMaxPlayers, const char *pszMap)
+void CDedicatedServerAPI::UpdateStatus(float *fps, int *nActive, int *nMaxPlayers, /*const*/ char *pszMap)
 {
 	Host_UpdateStatus(fps, nActive, nMaxPlayers, pszMap);
 };
