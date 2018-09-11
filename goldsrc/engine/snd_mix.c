@@ -34,7 +34,7 @@ short *snd_out;
 
 void Snd_WriteLinearBlastStereo16(void);
 
-#if !id386
+//#if !id386 // TODO: check for non-Intel?
 void Snd_WriteLinearBlastStereo16(void)
 {
 	int i;
@@ -59,7 +59,7 @@ void Snd_WriteLinearBlastStereo16(void)
 			snd_out[i + 1] = val;
 	}
 }
-#endif
+//#endif // !id386
 
 void S_TransferStereo16(int endtime)
 {
