@@ -109,7 +109,7 @@ int CCDAudio::Init()
 		cdValid = false;
 	};
 
-	Cmd_AddCommand("cd", CD_f);
+	//Cmd_AddCommand("cd", CD_f); // TODO
 
 	Con_Printf("CD Audio Initialized\n");
 
@@ -127,7 +127,7 @@ void CCDAudio::Shutdown()
 		Con_DPrintf("CDAudio_Shutdown: MCI_CLOSE failed\n");
 };
 
-void CDAudio::Frame() // TODO: was Update
+void CCDAudio::Frame() // TODO: was Update
 {
 	if(!mbEnabled)
 		return;
@@ -286,6 +286,7 @@ void CCDAudio::Resume()
 	playing = true;
 }
 
+/*
 static void CD_f()
 {
 	char *command;
@@ -404,12 +405,15 @@ static void CD_f()
 		return;
 	};
 };
+*/
 
-LONG CDAudio_MessageHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+extern "C" LONG CDAudio_MessageHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if(lParam != wDeviceID)
 		return 1;
 
+	// TODO
+/*
 	switch(wParam)
 	{
 	case MCI_NOTIFY_SUCCESSFUL:
@@ -435,6 +439,7 @@ LONG CDAudio_MessageHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		Con_DPrintf("Unexpected MM_MCINOTIFY type (%i)\n", wParam);
 		return 1;
 	};
+*/
 
 	return 0;
 };
