@@ -110,6 +110,16 @@ typedef struct
 #define MAX_INFO_STRING 256
 #endif
 
+typedef struct
+{
+	// received from client
+
+	// reply
+	double				senttime;
+	float				ping_time;
+	packet_entities_t	entities;
+} client_frame_t;
+
 typedef struct client_s
 {
 	qboolean active;    // false = client is free
