@@ -53,10 +53,6 @@ double			connect_time = -1;		// for connection retransmits
 
 netadr_t	master_adr;				// address of the master server
 
-cvar_t	show_fps = {"cl_showfps","0"};			// set for running times
-
-int			fps_count;
-
 void Master_Connect_f ();
 
 float	server_version = 0;	// version of server we connected to

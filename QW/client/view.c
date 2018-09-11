@@ -34,7 +34,6 @@ cvar_t	v_kickroll = {"v_kickroll", "0.6", false};
 cvar_t	v_kickpitch = {"v_kickpitch", "0.6", false};
 
 cvar_t	crosshair = {"crosshair", "0", true};
-cvar_t	crosshaircolor = {"crosshaircolor", "79", true};
 
 cvar_t  cl_crossx = {"cl_crossx", "0", true};
 cvar_t  cl_crossy = {"cl_crossy", "0", true};

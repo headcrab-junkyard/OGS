@@ -21,28 +21,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <ctype.h>
 
-#include "quakedef.h"
-
 #define MAX_NUM_ARGVS	50
 #define NUM_SAFE_ARGVS	6
 
-static char	*largv[MAX_NUM_ARGVS + NUM_SAFE_ARGVS + 1];
-static char	*argvdummy = " ";
-
 static char	*safeargvs[NUM_SAFE_ARGVS] =
 	{"-stdvid", "-nolan", "-nosound", "-nocdaudio", "-nojoy", "-nomouse"};
-
-qboolean	com_modified;	// set true if using non-id files
-
-int		static_registered = 1;	// only for startup check, then set
-
-qboolean		msg_suppress_1 = 0;
-
-void COM_InitFilesystem (void);
-
-// if a packfile directory differs from this, it is assumed to be hacked
-#define	PAK0_COUNT		339
-#define	PAK0_CRC		52883
 
 char	gamedirfile[MAX_OSPATH];
 
@@ -988,15 +971,6 @@ skipwhite:
 	return data;
 }
 
-
-/*
-================
-COM_CheckParm
-
-Returns the position (1 to argc-1) in the program's argument list
-where the given parameter apears, or 0 if not present
-================
-*/
 int COM_CheckParm (char *parm)
 {
 	int		i;
@@ -1011,50 +985,6 @@ int COM_CheckParm (char *parm)
 		
 	return 0;
 }
-
-/*
-================
-COM_CheckRegistered
-
-Looks for the pop.txt file and verifies it.
-Sets the "registered" cvar.
-Immediately exits out if an alternate game was attempted to be started without
-being registered.
-================
-*/
-void COM_CheckRegistered (void)
-{
-	FILE		*h;
-	unsigned short	check[128];
-	int			i;
-
-	COM_FOpenFile("gfx/pop.lmp", &h);
-	static_registered = 0;
-
-	if (!h)
-	{
-		Con_Printf ("Playing shareware version.\n");
-#ifndef SERVERONLY
-// FIXME DEBUG -- only temporary
-		if (com_modified)
-			Sys_Error ("You must have the registered version to play QuakeWorld");
-#endif
-		return;
-	}
-
-	fread (check, 1, sizeof(check), h);
-	fclose (h);
-	
-	for (i=0 ; i<128 ; i++)
-		if (pop[i] != (unsigned short)BigShort (check[i]))
-			Sys_Error ("Corrupted data file.");
-	
-	Cvar_Set ("registered", "1");
-	static_registered = 1;
-	Con_Printf ("Playing registered version.\n");
-}
-
-
 
 /*
 ================
@@ -1135,105 +1065,14 @@ void COM_Init (void)
 		LittleFloat = FloatSwap;
 	}
 
-	Cvar_RegisterVariable (&registered);
 	Cmd_AddCommand ("path", COM_Path_f);
 
 	COM_InitFilesystem ();
-	COM_CheckRegistered ();
 }
-
-
-/*
-============
-va
-
-does a varargs printf into a temp buffer, so I don't need to have
-varargs versions of all text functions.
-FIXME: make this buffer size safe someday
-============
-*/
-char	*va(char *format, ...)
-{
-	va_list		argptr;
-	static char		string[1024];
-	
-	va_start (argptr, format);
-	vsprintf (string, format,argptr);
-	va_end (argptr);
-
-	return string;	
-}
-
-
-/// just for debugging
-int	memsearch (byte *start, int count, int search)
-{
-	int		i;
-	
-	for (i=0 ; i<count ; i++)
-		if (start[i] == search)
-			return i;
-	return -1;
-}
-
-/*
-=============================================================================
-
-QUAKE FILESYSTEM
-
-=============================================================================
-*/
-
-int	com_filesize;
-
-
-//
-// in memory
-//
-
-typedef struct
-{
-	char	name[MAX_QPATH];
-	int		filepos, filelen;
-} packfile_t;
-
-typedef struct pack_s
-{
-	char	filename[MAX_OSPATH];
-	FILE	*handle;
-	int		numfiles;
-	packfile_t	*files;
-} pack_t;
-
-//
-// on disk
-//
-typedef struct
-{
-	char	name[56];
-	int		filepos, filelen;
-} dpackfile_t;
-
-typedef struct
-{
-	char	id[4];
-	int		dirofs;
-	int		dirlen;
-} dpackheader_t;
-
-#define	MAX_FILES_IN_PACK	2048
 
 char	com_gamedir[MAX_OSPATH];
 char	com_basedir[MAX_OSPATH];
 
-typedef struct searchpath_s
-{
-	char	filename[MAX_OSPATH];
-	pack_t	*pack;		// only one of filename / pack will be used
-	struct searchpath_s *next;
-} searchpath_t;
-
-searchpath_t	*com_searchpaths;
 searchpath_t	*com_base_searchpaths;	// without gamedirs
 
 /*
@@ -1317,30 +1156,6 @@ void COM_WriteFile (char *filename, void *data, int len)
 	fwrite (data, 1, len, f);
 	fclose (f);
 }
-
-
-/*
-============
-COM_CreatePath
-
-Only used for CopyFile and download
-============
-*/
-void	COM_CreatePath (char *path)
-{
-	char	*ofs;
-	
-	for (ofs = path+1 ; *ofs ; ofs++)
-	{
-		if (*ofs == '/')
-		{	// create the directory
-			*ofs = 0;
-			Sys_mkdir (path);
-			*ofs = '/';
-		}
-	}
-}
-
 
 /*
 ===========
@@ -1451,17 +1266,6 @@ int COM_FOpenFile (char *filename, FILE **file)
 	return -1;
 }
 
-/*
-============
-COM_LoadFile
-
-Filename are reletive to the quake directory.
-Allways appends a 0 byte to the loaded data.
-============
-*/
-cache_user_t *loadcache;
-byte	*loadbuf;
-int		loadsize;
 byte *COM_LoadFile (char *path, int usehunk)
 {
 	FILE	*h;
@@ -1513,34 +1317,6 @@ byte *COM_LoadFile (char *path, int usehunk)
 	return buf;
 }
 
-byte *COM_LoadHunkFile (char *path)
-{
-	return COM_LoadFile (path, 1);
-}
-
-byte *COM_LoadTempFile (char *path)
-{
-	return COM_LoadFile (path, 2);
-}
-
-void COM_LoadCacheFile (char *path, struct cache_user_s *cu)
-{
-	loadcache = cu;
-	COM_LoadFile (path, 3);
-}
-
-// uses temp hunk if larger than bufsize
-byte *COM_LoadStackFile (char *path, void *buffer, int bufsize)
-{
-	byte	*buf;
-	
-	loadbuf = (byte *)buffer;
-	loadsize = bufsize;
-	buf = COM_LoadFile (path, 4);
-	
-	return buf;
-}
-
 /*
 =================
 COM_LoadPackFile
@@ -1577,9 +1353,6 @@ pack_t *COM_LoadPackFile (char *packfile)
 	if (numpackfiles > MAX_FILES_IN_PACK)
 		Sys_Error ("%s has %i files", packfile, numpackfiles);
 
-	if (numpackfiles != PAK0_COUNT)
-		com_modified = true;	// not the original file
-
 	newfiles = Z_Malloc (numpackfiles * sizeof(packfile_t));
 
 	fseek (packhandle, header.dirofs, SEEK_SET);
@@ -1591,8 +1364,6 @@ pack_t *COM_LoadPackFile (char *packfile)
 //	CRC_Init (&crc);
 //	for (i=0 ; i<header.dirlen ; i++)
 //		CRC_ProcessByte (&crc, ((byte *)info)[i]);
-	if (crc != PAK0_CRC)
-		com_modified = true;
 
 // parse the directory
 	for (i=0 ; i<numpackfiles ; i++)
@@ -1852,38 +1623,7 @@ byte	COM_BlockSequenceCheckByte (byte *base, int length, int sequence, unsigned 
 }
 #endif
 
-/*
-====================
-COM_BlockSequenceCRCByte
 
-For proxy protecting
-====================
-*/
-byte	COM_BlockSequenceCRCByte (byte *base, int length, int sequence)
-{
-	unsigned short crc;
-	byte	*p;
-	byte chkb[60 + 4];
-
-	p = chktbl + (sequence % (sizeof(chktbl) - 8));
-
-	if (length > 60)
-		length = 60;
-	memcpy (chkb, base, length);
-
-	chkb[length] = (sequence & 0xff) ^ p[0];
-	chkb[length+1] = p[1];
-	chkb[length+2] = ((sequence>>8) & 0xff) ^ p[2];
-	chkb[length+3] = p[3];
-
-	length += 4;
-
-	crc = CRC_Block(chkb, length);
-
-	crc &= 0xff;
-
-	return crc;
-}
 
 // char *date = "Oct 24 1996";
 static char *date = __DATE__ ;

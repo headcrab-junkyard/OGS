@@ -25,8 +25,6 @@ cvar_t	teamplay = {"teamplay","0",false,true};
 cvar_t	maxclients = {"maxclients","8", false, true};
 cvar_t	deathmatch = {"deathmatch","1", false, true};			// 0, 1, or 2
 
-cvar_t	hostname = {"hostname","unnamed", false, true};
-
 FILE	*sv_logfile;
 FILE	*sv_fraglogfile;
 
