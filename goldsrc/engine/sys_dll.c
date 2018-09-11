@@ -331,7 +331,7 @@ void Sys_Error(const char *error, ...)
 	if(!in_sys_error3)
 	{
 		in_sys_error3 = 1;
-		VID_ForceUnlockedAndReturnState();
+		//VID_ForceUnlockedAndReturnState(); // TODO
 	};
 
 	va_start(argptr, error);
@@ -365,7 +365,7 @@ void Sys_Error(const char *error, ...)
 		if(!in_sys_error0)
 		{
 			in_sys_error0 = 1;
-			VID_SetDefaultMode();
+			//VID_SetDefaultMode(); // TODO
 			MessageBox(NULL, text, "Engine Error", MB_OK | MB_SETFOREGROUND | MB_ICONSTOP);
 		}
 		else
