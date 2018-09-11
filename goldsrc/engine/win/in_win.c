@@ -30,9 +30,7 @@
 #define DINPUT_BUFFERSIZE 16
 #define iDirectInputCreate(a, b, c, d) pDirectInputCreate(a, b, c, d)
 
-HRESULT(WINAPI *pDirectInputCreate)
-(HINSTANCE hinst, DWORD dwVersion,
- LPDIRECTINPUT *lplpDirectInput, LPUNKNOWN punkOuter);
+HRESULT(WINAPI *pDirectInputCreate)(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUT *lplpDirectInput, LPUNKNOWN punkOuter);
 
 // mouse variables
 cvar_t m_filter = { "m_filter", "0" };
@@ -373,7 +371,7 @@ qboolean IN_InitDInput()
 	}
 
 	// register with DirectInput and get an IDirectInput to play with.
-	hr = iDirectInputCreate(global_hInstance, DIRECTINPUT_VERSION, &g_pdi, NULL);
+	hr = iDirectInputCreate(0 /*global_hInstance*/, DIRECTINPUT_VERSION, &g_pdi, NULL); // TODO
 
 	if(FAILED(hr))
 	{
