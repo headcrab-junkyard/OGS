@@ -652,9 +652,9 @@ void R_DrawParticles(void)
 	float scale;
 
 	GL_Bind(particletexture);
-	glEnable(GL_BLEND);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glBegin(GL_TRIANGLES);
+	qglEnable(GL_BLEND);
+	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	qglBegin(GL_TRIANGLES);
 
 	VectorScale(vup, 1.5, up);
 	VectorScale(vright, 1.5, right);
@@ -707,13 +707,13 @@ void R_DrawParticles(void)
 			scale = 1;
 		else
 			scale = 1 + scale * 0.004;
-		glColor3ubv((byte *)&d_8to24table[(int)p->color]);
-		glTexCoord2f(0, 0);
-		glVertex3fv(p->org);
-		glTexCoord2f(1, 0);
-		glVertex3f(p->org[0] + up[0] * scale, p->org[1] + up[1] * scale, p->org[2] + up[2] * scale);
-		glTexCoord2f(0, 1);
-		glVertex3f(p->org[0] + right[0] * scale, p->org[1] + right[1] * scale, p->org[2] + right[2] * scale);
+		qglColor3ubv((byte *)&d_8to24table[(int)p->color]);
+		qglTexCoord2f(0, 0);
+		qglVertex3fv(p->org);
+		qglTexCoord2f(1, 0);
+		qglVertex3f(p->org[0] + up[0] * scale, p->org[1] + up[1] * scale, p->org[2] + up[2] * scale);
+		qglTexCoord2f(0, 1);
+		qglVertex3f(p->org[0] + right[0] * scale, p->org[1] + right[1] * scale, p->org[2] + right[2] * scale);
 #else
 		D_DrawParticle(p);
 #endif
@@ -781,9 +781,9 @@ void R_DrawParticles(void)
 	}
 
 #ifdef GLQUAKE
-	glEnd();
-	glDisable(GL_BLEND);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	qglEnd();
+	qglDisable(GL_BLEND);
+	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 #else
 	D_EndParticles();
 #endif
