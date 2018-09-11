@@ -536,10 +536,8 @@ void Sbar_DrawInventory()
 			else
 			{
 				//MED 01/04/97 changed keys
-				if(!hipnotic || (i > 1))
-				{
+				if(i > 1)
 					Sbar_DrawPic(192 + i * 16, -16, sb_items[i]);
-				}
 			}
 			if(time && time > cl.time - 2)
 				sb_updates = 0;
@@ -639,6 +637,8 @@ void Sbar_DrawFace()
 
 	// PGM 01/19/97 - team color drawing
 	// PGM 03/02/97 - fixed so color swatch only appears in CTF modes
+	// TODO
+	/*
 	if(rogue &&
 	   (cl.maxclients != 1) &&
 	   (teamplay.value > 3) &&
@@ -687,6 +687,7 @@ void Sbar_DrawFace()
 
 		return;
 	}
+	*/
 	// PGM 01/19/97 - team color drawing
 
 	if((cl.items & (IT_INVISIBILITY | IT_INVULNERABILITY)) == (IT_INVISIBILITY | IT_INVULNERABILITY))
