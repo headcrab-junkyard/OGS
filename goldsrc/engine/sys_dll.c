@@ -293,7 +293,7 @@ void Sys_MakeCodeWriteable(unsigned long startaddr, unsigned long length)
 #endif
 };
 
-#ifndef _M_IX86
+//#ifndef _M_IX86 // TODO: check for non-Intel?
 
 void Sys_SetFPCW()
 {
@@ -311,7 +311,7 @@ void MaskExceptions()
 {
 };
 
-#endif
+//#endif // _M_IX86
 
 void Sys_Error(const char *error, ...)
 {
