@@ -25,6 +25,8 @@
 char *pr_strings;
 globalvars_t gGlobalVariables;
 
+DLL_FUNCTIONS gEntityInterface; // TODO
+
 /*
 =================
 ED_ClearEdict
