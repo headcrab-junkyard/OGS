@@ -601,10 +601,10 @@ void Host_Savegame_f()
 			fprintf(f, "m\n");
 	}
 
-	ED_WriteGlobals(f);
+	//ED_WriteGlobals(f); // TODO
 	for(i = 0; i < sv.num_edicts; i++)
 	{
-		ED_Write(f, EDICT_NUM(i));
+		//ED_Write(f, EDICT_NUM(i)); // TODO
 		fflush(f);
 	}
 	fclose(f);
@@ -726,7 +726,7 @@ void Host_Loadgame_f()
 
 		if(entnum == -1)
 		{ // parse the global vars
-			ED_ParseGlobals(start);
+			//ED_ParseGlobals(start); // TODO
 		}
 		else
 		{ // parse an edict
@@ -734,7 +734,7 @@ void Host_Loadgame_f()
 			ent = EDICT_NUM(entnum);
 			memset(&ent->v, 0, sizeof(ent->v));
 			ent->free = false;
-			ED_ParseEdict(start, ent);
+			//ED_ParseEdict(start, ent); // TODO
 
 			// link it into the bsp tree
 			if(!ent->free)
@@ -802,7 +802,7 @@ void SaveGamestate()
 		//if ((int)ent->v.flags & FL_ARCHIVE_OVERRIDE) // TODO
 		//continue;
 		fprintf(f, "%i\n", i);
-		ED_Write(f, ent);
+		//ED_Write(f, ent); // TODO
 		fflush(f);
 	}
 	fclose(f);
@@ -895,7 +895,7 @@ int LoadGamestate(char *level, char *startspot)
 		ent = EDICT_NUM(entnum);
 		memset(&ent->v, 0, sizeof(ent->v));
 		ent->free = false;
-		ED_ParseEdict(start, ent);
+		//ED_ParseEdict(start, ent); // TODO
 
 		// link it into the bsp tree
 		if(!ent->free)
