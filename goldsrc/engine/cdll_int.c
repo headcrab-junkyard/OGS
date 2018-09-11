@@ -245,7 +245,7 @@ void UnloadClientDLL()
 {
 	if(gpClientDLL)
 	{
-		Sys_UnloadModule(gpClientDLL);
+		Sys_UnloadModule_Wrapper(gpClientDLL);
 		gpClientDLL = NULL;
 	};
 };
@@ -256,13 +256,8 @@ qboolean LoadClientDLLF()
 
 	//memcpy(&gEngFuncs, 0, sizeof(cl_enginefunc_t));
 	//memcpy(&cl_funcs, 0, sizeof(cldll_func_t));
-
-	gpClientDLL = Sys_LoadModule("goldsrctest/cl_dll/client"); // TODO: FS_LoadLibrary or something else that will load it from the game folder instead of app folder
-
-	if(!gpClientDLL)
-		return false;
-
-	fnGetClientDLL = (pfnGetClientDLL)Sys_GetExport(gpClientDLL, "F"); // TODO: GetClientDLL?
+	
+	fnGetClientDLL = (pfnGetClientDLL)Sys_GetExport_Wrapper(gpClientDLL, "F"); // TODO: GetClientDLL?
 
 	if(!fnGetClientDLL)
 		return false;
@@ -277,8 +272,17 @@ qboolean LoadClientDLLF()
 
 void LoadClientDLL()
 {
-	// TODO: per-export loading as a fallback
+	char sClientDLLPath[256];
+	snprintf(sClientDLLPath, sizeof(sClientDLLPath) - 1, "goldsrctest/cl_dll/client");
+	
+	gpClientDLL = FS_LoadLibrary(sClientDLLPath);
+
+	if(!gpClientDLL)
+	{
+		Sys_Error("could not load library %s", sClientDLLPath);
+		//return;
+	};
 
 	if(!LoadClientDLLF())
-		return;
+		return; // TODO: per-export loading as a fallback
 };
