@@ -39,22 +39,22 @@ void LoadThisDll(const char *name)
 	pfnGetEntityAPI fnGetEntityAPI = NULL;
 	pfnGetEntityAPI2 fnGetEntityAPI2 = NULL;
 
-	gamedll = Sys_LoadModule(name);
+	gamedll = FS_LoadLibrary(name); // TODO: was Sys_LoadModule
 
 	if(!gamedll)
 		Sys_Error("PR_LoadProgs: couldn't load game dll");
 
 	//pr_strings = (char *)progs + progs->ofs_strings; // TODO
 
-	fnGiveFnptrsToDll = (pfnGiveFnptrsToDll)Sys_GetExport(gamedll, "GiveFnptrsToDll");
+	fnGiveFnptrsToDll = (pfnGiveFnptrsToDll)Sys_GetExport_Wrapper(gamedll, "GiveFnptrsToDll");
 
 	if(!fnGiveFnptrsToDll)
 		return;
 
 	//fnGiveFnptrsToDll(&gEngFuncs, &gGlobalVariables); // TODO
 
-	fnGetEntityAPI = (pfnGetEntityAPI)Sys_GetExport(gamedll, "GetEntityAPI");
-	fnGetEntityAPI2 = (pfnGetEntityAPI2)Sys_GetExport(gamedll, "GetEntityAPI2");
+	fnGetEntityAPI = (pfnGetEntityAPI)Sys_GetExport_Wrapper(gamedll, "GetEntityAPI");
+	fnGetEntityAPI2 = (pfnGetEntityAPI2)Sys_GetExport_Wrapper(gamedll, "GetEntityAPI2");
 
 	if(fnGetEntityAPI2)
 	{
