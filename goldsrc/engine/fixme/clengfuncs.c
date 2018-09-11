@@ -524,12 +524,12 @@ cl_enginefunc_t gClEngFuncs =
 	COM_ParseFile,
 	COM_FreeFile,
 
-	&triapi,
-	&efxapi,
-	&event_api,
-	&demoapi,
-	&netapi,
-	&gpVoiceTweak,
+	NULL, //&triapi, // TODO
+	NULL, //&efxapi, // TODO
+	NULL, //&event_api, // TODO
+	NULL, //&demoapi, // TODO
+	NULL, //&netapi, // TODO
+	NULL, //&gpVoiceTweak, // TODO
 
 	IsSpectateOnly,
 	LoadMapSprite,
