@@ -649,3 +649,9 @@ void V_Init()
 	BuildGammaTable(1.0); // no gamma yet
 	Cvar_RegisterVariable(&v_gamma);
 };
+
+// TODO: temp
+float V_CalcRoll(vec3_t angles, vec3_t velocity)
+{
+	return 0.0f;
+};
