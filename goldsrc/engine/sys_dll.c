@@ -24,10 +24,10 @@
 #ifdef _WIN32
 qboolean WinNT;
 
-static double pfreq{0.0};
-static double curtime{0.0};
-static double lastcurtime{0.0};
-static int lowshift{0};
+static double pfreq;
+static double curtime;
+static double lastcurtime;
+static int lowshift;
 #endif
 
 int starttime;
