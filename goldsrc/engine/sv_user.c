@@ -26,6 +26,8 @@ extern cvar_t sv_friction;
 cvar_t sv_edgefriction = { "edgefriction", "2" };
 extern cvar_t sv_stopspeed;
 
+extern vec3_t player_mins;
+
 static vec3_t forward, right, up;
 
 vec3_t wishdir;
@@ -41,6 +43,73 @@ int onground; // TODO: was qboolean here but marked as int in decl...
 usercmd_t cmd;
 
 cvar_t sv_idealpitchscale = { "sv_idealpitchscale", "0.8" };
+
+vec3_t pmove_mins, pmove_maxs;
+
+/*
+====================
+AddLinksToPmove
+
+====================
+*/
+void AddLinksToPmove ( areanode_t *node )
+{
+	link_t		*l, *next;
+	edict_t		*check;
+	int			pl;
+	int			i;
+	physent_t	*pe;
+
+	pl = EDICT_TO_PROG(sv_player);
+
+	// touch linked edicts
+	for (l = node->solid_edicts.next ; l != &node->solid_edicts ; l = next)
+	{
+		next = l->next;
+		check = EDICT_FROM_AREA(l);
+
+		if (check->v.owner == pl)
+			continue;		// player's own missile
+		if (check->v.solid == SOLID_BSP 
+			|| check->v.solid == SOLID_BBOX 
+			|| check->v.solid == SOLID_SLIDEBOX)
+		{
+			if (check == sv_player)
+				continue;
+
+			for (i=0 ; i<3 ; i++)
+				if (check->v.absmin[i] > pmove_maxs[i]
+				|| check->v.absmax[i] < pmove_mins[i])
+					break;
+			if (i != 3)
+				continue;
+			if (pmove->numphysent == MAX_PHYSENTS)
+				return;
+			pe = &pmove->physents[pmove->numphysent];
+			pmove->numphysent++;
+
+			VectorCopy (check->v.origin, pe->origin);
+			pe->info = NUM_FOR_EDICT(check);
+			if (check->v.solid == SOLID_BSP)
+				pe->model = sv.models[(int)(check->v.modelindex)];
+			else
+			{
+				pe->model = NULL;
+				VectorCopy (check->v.mins, pe->mins);
+				VectorCopy (check->v.maxs, pe->maxs);
+			}
+		}
+	}
+	
+// recurse down both sides
+	if (node->axis == -1)
+		return;
+
+	if ( pmove_maxs[node->axis] > node->dist )
+		AddLinksToPmove ( node->children[0] );
+	if ( pmove_mins[node->axis] < node->dist )
+		AddLinksToPmove ( node->children[1] );
+}
 
 /*
 ===========
@@ -83,7 +152,7 @@ void SV_RunCmd(usercmd_t *ucmd)
 	}
 
 	if(!sv_player->v.fixangle)
-		VectorCopy(ucmd->angles, sv_player->v.v_angle);
+		VectorCopy(ucmd->viewangles, sv_player->v.v_angle);
 
 	sv_player->v.button0 = ucmd->buttons & 1;
 	sv_player->v.button2 = (ucmd->buttons & 2) >> 1;
@@ -108,37 +177,36 @@ void SV_RunCmd(usercmd_t *ucmd)
 	if(host_frametime > 0.1)
 		host_frametime = 0.1;
 
-	if(!host_client->spectator)
+	//if(!host_client->spectator) // TODO
 	{
-		pr_global_struct->frametime = host_frametime;
+		gGlobalVariables.frametime = host_frametime;
 
-		pr_global_struct->time = sv.time;
-		pr_global_struct->self = EDICT_TO_PROG(sv_player);
-		PR_ExecuteProgram(pr_global_struct->PlayerPreThink);
+		gGlobalVariables.time = sv.time;
+		gEntityInterface.pfnPlayerPreThink(sv_player);
 
 		SV_RunThink(sv_player);
 	}
 
 	for(i = 0; i < 3; i++)
-		pmove.origin[i] = sv_player->v.origin[i] + (sv_player->v.mins[i] - player_mins[i]);
-	VectorCopy(sv_player->v.velocity, pmove.velocity);
-	VectorCopy(sv_player->v.v_angle, pmove.angles);
+		pmove->origin[i] = sv_player->v.origin[i] + (sv_player->v.mins[i] - player_mins[i]);
+	VectorCopy(sv_player->v.velocity, pmove->velocity);
+	VectorCopy(sv_player->v.v_angle, pmove->angles);
 
-	pmove.spectator = host_client->spectator;
-	pmove.waterjumptime = sv_player->v.teleport_time;
-	pmove.numphysent = 1;
-	pmove.physents[0].model = sv.worldmodel;
-	pmove.cmd = *ucmd;
-	pmove.dead = sv_player->v.health <= 0;
-	pmove.oldbuttons = host_client->oldbuttons;
+	//pmove->spectator = host_client->spectator; // TODO
+	pmove->waterjumptime = sv_player->v.teleport_time;
+	pmove->numphysent = 1;
+	pmove->physents[0].model = sv.worldmodel;
+	pmove->cmd = *ucmd;
+	pmove->dead = sv_player->v.health <= 0;
+	//pmove->oldbuttons = host_client->oldbuttons; // TODO
 
-	movevars.entgravity = host_client->entgravity;
-	movevars.maxspeed = host_client->maxspeed;
+	//movevars.entgravity = host_client->entgravity; // TODO
+	//movevars.maxspeed = host_client->maxspeed; // TODO
 
 	for(i = 0; i < 3; i++)
 	{
-		pmove_mins[i] = pmove.origin[i] - 256;
-		pmove_maxs[i] = pmove.origin[i] + 256;
+		pmove_mins[i] = pmove->origin[i] - 256;
+		pmove_maxs[i] = pmove->origin[i] + 256;
 	}
 #if 1
 	AddLinksToPmove(sv_areanodes);
@@ -150,9 +218,9 @@ void SV_RunCmd(usercmd_t *ucmd)
 {
 	int before, after;
 
-before = PM_TestPlayerPosition (pmove.origin);
+before = PM_TestPlayerPosition (pmove->origin);
 	PlayerMove ();
-after = PM_TestPlayerPosition (pmove.origin);
+after = PM_TestPlayerPosition (pmove->origin);
 
 if (sv_player->v.health > 0 && before && !after )
 	Con_Printf ("player %s got stuck in playermove!!!!\n", host_client->name);
@@ -161,45 +229,43 @@ if (sv_player->v.health > 0 && before && !after )
 	PlayerMove();
 #endif
 
-	host_client->oldbuttons = pmove.oldbuttons;
-	sv_player->v.teleport_time = pmove.waterjumptime;
+	//host_client->oldbuttons = pmove->oldbuttons; // TODO
+	sv_player->v.teleport_time = pmove->waterjumptime;
 	sv_player->v.waterlevel = waterlevel;
 	sv_player->v.watertype = watertype;
 	if(onground != -1)
 	{
 		sv_player->v.flags = (int)sv_player->v.flags | FL_ONGROUND;
-		sv_player->v.groundentity = EDICT_TO_PROG(EDICT_NUM(pmove.physents[onground].info));
+		sv_player->v.groundentity = EDICT_TO_PROG(EDICT_NUM(pmove->physents[onground].info));
 	}
 	else
 		sv_player->v.flags = (int)sv_player->v.flags & ~FL_ONGROUND;
 	for(i = 0; i < 3; i++)
-		sv_player->v.origin[i] = pmove.origin[i] - (sv_player->v.mins[i] - player_mins[i]);
+		sv_player->v.origin[i] = pmove->origin[i] - (sv_player->v.mins[i] - player_mins[i]);
 
 #if 0
 	// truncate velocity the same way the net protocol will
 	for (i=0 ; i<3 ; i++)
-		sv_player->v.velocity[i] = (int)pmove.velocity[i];
+		sv_player->v.velocity[i] = (int)pmove->velocity[i];
 #else
-	VectorCopy(pmove.velocity, sv_player->v.velocity);
+	VectorCopy(pmove->velocity, sv_player->v.velocity);
 #endif
 
-	VectorCopy(pmove.angles, sv_player->v.v_angle);
+	VectorCopy(pmove->angles, sv_player->v.v_angle);
 
-	if(!host_client->spectator)
+	//if(!host_client->spectator) // TODO
 	{
 		// link into place and touch triggers
 		SV_LinkEdict(sv_player, true);
 
 		// touch other objects
-		for(i = 0; i < pmove.numtouch; i++)
+		for(i = 0; i < pmove->numtouch; i++)
 		{
-			n = pmove.physents[pmove.touchindex[i]].info;
+			n = pmove->physents[pmove->touchindex[i]].info;
 			ent = EDICT_NUM(n);
-			if(!ent->v.touch || (playertouch[n / 8] & (1 << (n % 8))))
+			if(!gEntityInterface.pfnTouch || (playertouch[n / 8] & (1 << (n % 8))))
 				continue;
-			pr_global_struct->self = EDICT_TO_PROG(ent);
-			pr_global_struct->other = EDICT_TO_PROG(sv_player);
-			PR_ExecuteProgram(ent->v.touch);
+			gEntityInterface.pfnTouch(ent, sv_player);
 			playertouch[n / 8] |= 1 << (n % 8);
 		}
 	}
@@ -215,18 +281,16 @@ void SV_PostRunCmd()
 {
 	// run post-think
 
-	if(!host_client->spectator)
+	//if(!host_client->spectator) // TODO
 	{
-		pr_global_struct->time = sv.time;
-		pr_global_struct->self = EDICT_TO_PROG(sv_player);
-		PR_ExecuteProgram(pr_global_struct->PlayerPostThink);
-		SV_RunNewmis();
+		gGlobalVariables.time = sv.time;
+		gEntityInterface.pfnPlayerPostThink(sv_player);
+		//SV_RunNewmis(); // TODO: unused
 	}
-	else if(SpectatorThink)
+	//else if(gEntityInterface.pfnSpectatorThink) // TODO
 	{
-		pr_global_struct->time = sv.time;
-		pr_global_struct->self = EDICT_TO_PROG(sv_player);
-		PR_ExecuteProgram(SpectatorThink);
+		//gGlobalVariables.time = sv.time;
+		//gEntityInterface.pfnSpectatorThink(sv_player);
 	}
 }
 
@@ -582,7 +646,7 @@ void SV_ClientThink()
 	//
 	// angles
 	// show 1/3 the pitch angle and all the roll angle
-	cmd = host_client->cmd;
+	//cmd = host_client->cmd; // TODO
 	angles = sv_player->v.angles;
 
 	VectorAdd(sv_player->v.v_angle, sv_player->v.punchangle, v_angle);
@@ -858,7 +922,7 @@ void SV_ExecuteClientMessage(client_t *cl)
 		if(msg_badread)
 		{
 			Con_Printf("SV_ReadClientMessage: badread\n");
-			SV_DropClient(cl);
+			SV_DropClient(cl, false, "badread");
 			return;
 		}
 
@@ -870,7 +934,7 @@ void SV_ExecuteClientMessage(client_t *cl)
 		{
 		default:
 			Con_Printf("SV_ReadClientMessage: unknown command char\n");
-			SV_DropClient(cl);
+			SV_DropClient(cl, false, "unknown command char");
 			return;
 
 		case clc_nop:
@@ -886,24 +950,24 @@ void SV_ExecuteClientMessage(client_t *cl)
 
 			move_issued = true;
 
-			checksumIndex = MSG_GetReadCount();
+			//checksumIndex = MSG_GetReadCount(); // TODO
 			checksum = (byte)MSG_ReadByte();
 
 			// read loss percentage
-			cl->lossage = MSG_ReadByte();
+			//cl->lossage = MSG_ReadByte(); // TODO
 
-			MSG_ReadDeltaUsercmd(&nullcmd, &oldest);
+			//MSG_ReadDeltaUsercmd(&nullcmd, &oldest); // TODO
 			MSG_ReadDeltaUsercmd(&oldest, &oldcmd);
 			MSG_ReadDeltaUsercmd(&oldcmd, &newcmd);
 
-			if(cl->state != cs_spawned)
+			if(!cl->spawned)
 				break;
 
 			// if the checksum fails, ignore the rest of the packet
-			calculatedChecksum = COM_BlockSequenceCRCByte(
-			net_message.data + checksumIndex + 1,
-			MSG_GetReadCount() - checksumIndex - 1,
-			seq_hash);
+			//calculatedChecksum = COM_BlockSequenceCRCByte( // TODO
+			//net_message.data + checksumIndex + 1,
+			//MSG_GetReadCount() - checksumIndex - 1,
+			//seq_hash);
 
 			if(calculatedChecksum != checksum)
 			{
@@ -938,25 +1002,31 @@ void SV_ExecuteClientMessage(client_t *cl)
 			break;
 
 		case clc_stringcmd:
+			// TODO: SV_ParseStringCommand
 			s = MSG_ReadString();
-			SV_ExecuteUserCommand(s);
+			//SV_ExecuteUserCommand(s); // TODO
 			break;
 
 		case clc_tmove:
+		// TODO
+		/*
 			o[0] = MSG_ReadCoord();
 			o[1] = MSG_ReadCoord();
 			o[2] = MSG_ReadCoord();
 			// only allowed by spectators
-			if(host_client->spectator)
+			//if(host_client->spectator)
 			{
 				VectorCopy(o, sv_player->v.origin);
 				SV_LinkEdict(sv_player, false);
 			}
+		*/
 			break;
-
+		// TODO
+		/*
 		case clc_upload:
 			SV_NextUpload();
 			break;
+		*/
 		}
 	}
 }
