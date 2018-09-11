@@ -22,10 +22,25 @@
 
 #include "quakedef.h"
 
+#define MAX_IPFILTERS 1024
+
+typedef struct
+{
+	unsigned mask;
+	unsigned compare;
+} ipfilter_t;
+
 server_t sv;         // local server
 server_static_t svs; // persistent server info
 
+ipfilter_t ipfilters[MAX_IPFILTERS];
+int numipfilters;
+
+char localinfo[MAX_LOCALINFO_STRING+1]; // local game info
+
 char localmodels[MAX_MODELS][5]; // inline model names for precache
+
+cvar_t sv_filterban = { "sv_filterban", "1" };
 
 cvar_t sv_timeout = { "sv_timeout", "60" }; // seconds without any message
 
@@ -134,6 +149,8 @@ void SV_Spawn_f() // TODO: was Host_Spawn_f
 
 	for(i = 0, client = svs.clients; i < svs.maxclients; i++, client++)
 	{
+		// TODO
+		/*
 		MSG_WriteByte(&host_client->netchan.message, svc_updatename);
 		MSG_WriteByte(&host_client->netchan.message, i);
 		MSG_WriteString(&host_client->netchan.message, client->name);
@@ -144,6 +161,7 @@ void SV_Spawn_f() // TODO: was Host_Spawn_f
 		MSG_WriteByte(&host_client->netchan.message, i);
 		MSG_WriteByte(&host_client->netchan.message, client->topcolor);
 		MSG_WriteByte(&host_client->netchan.message, client->bottomcolor);
+		*/
 	}
 
 	// send all current light styles
@@ -157,6 +175,8 @@ void SV_Spawn_f() // TODO: was Host_Spawn_f
 	//
 	// send some stats
 	//
+	// TODO
+	/*
 	MSG_WriteByte(&host_client->netchan.message, svc_updatestat);
 	MSG_WriteByte(&host_client->netchan.message, STAT_TOTALSECRETS);
 	MSG_WriteLong(&host_client->netchan.message, gGlobalVariables.total_secrets);
@@ -172,6 +192,7 @@ void SV_Spawn_f() // TODO: was Host_Spawn_f
 	MSG_WriteByte(&host_client->netchan.message, svc_updatestat);
 	MSG_WriteByte(&host_client->netchan.message, STAT_MONSTERS);
 	MSG_WriteLong(&host_client->netchan.message, gGlobalVariables.killed_monsters);
+	*/
 
 	//
 	// send a fixangle
@@ -221,21 +242,24 @@ void SV_New_f ()
 
 //NOTE:  This doesn't go through ClientReliableWrite since it's before the user
 //spawns.  These functions are written to not overflow
+	// TODO
+	/*
 	if (host_client->num_backbuf) {
 		Con_Printf("WARNING %s: [SV_New] Back buffered (%d0, clearing", host_client->name, host_client->netchan.message.cursize); 
 		host_client->num_backbuf = 0;
 		SZ_Clear(&host_client->netchan.message);
 	}
+	*/
 
 	// send the serverdata
-	MSG_WriteByte (&host_client->netchan.message, svc_serverdata);
+	//MSG_WriteByte (&host_client->netchan.message, svc_serverdata); // TODO
 	MSG_WriteLong (&host_client->netchan.message, PROTOCOL_VERSION);
 	MSG_WriteLong (&host_client->netchan.message, svs.spawncount);
 	MSG_WriteString (&host_client->netchan.message, gamedir);
 
 	playernum = NUM_FOR_EDICT(host_client->edict)-1;
-	if (host_client->spectator)
-		playernum |= 128;
+	//if (host_client->spectator) // TODO
+		//playernum |= 128;
 	MSG_WriteByte (&host_client->netchan.message, playernum);
 
 	// send full levelname
@@ -262,6 +286,17 @@ void SV_New_f ()
 	MSG_WriteString (&host_client->netchan.message, va("fullserverinfo \"%s\"\n", svs.info) );
 };
 
+// TODO
+void SV_SendServerInfoChange(const char *key, const char *value)
+{
+	if (!sv.state)
+		return;
+
+	MSG_WriteByte (&sv.reliable_datagram, svc_serverinfo);
+	MSG_WriteString (&sv.reliable_datagram, key);
+	MSG_WriteString (&sv.reliable_datagram, value);
+};
+
 /*
 ===========
 SV_Serverinfo_f
@@ -269,7 +304,7 @@ SV_Serverinfo_f
   Examine or change the serverinfo string
 ===========
 */
-char *CopyString(char *s);
+char *CopyString(const char *s);
 void SV_Serverinfo_f ()
 {
 	cvar_t	*var;
@@ -337,6 +372,37 @@ void SV_Localinfo_f ()
 	Info_SetValueForKey (localinfo, Cmd_Argv(1), Cmd_Argv(2), MAX_LOCALINFO_STRING);
 };
 
+// TODO
+/*
+==================
+SV_SetPlayer
+
+Sets host_client and sv_player to the player with idnum Cmd_Argv(1)
+==================
+*/
+qboolean SV_SetPlayer ()
+{
+	client_t	*cl;
+	int			i;
+	int			idnum;
+
+	idnum = atoi(Cmd_Argv(1));
+
+	for (i=0,cl=svs.clients ; i<svs.maxclients ; i++,cl++)
+	{
+		if (!cl->connected)
+			continue;
+		if (cl->userid == idnum)
+		{
+			host_client = cl;
+			sv_player = host_client->edict;
+			return true;
+		}
+	}
+	Con_Printf ("Userid %i is not on the server\n", idnum);
+	return false;
+};
+
 /*
 ===========
 SV_User_f
@@ -356,6 +422,53 @@ void SV_User_f ()
 		return;
 
 	Info_Print (host_client->userinfo);
+};
+
+/*
+=================
+StringToFilter
+=================
+*/
+qboolean StringToFilter(const char *s, ipfilter_t *f)
+{
+	char num[128];
+	int i, j;
+	byte b[4];
+	byte m[4];
+
+	for(i = 0; i < 4; i++)
+	{
+		b[i] = 0;
+		m[i] = 0;
+	}
+
+	for(i = 0; i < 4; i++)
+	{
+		if(*s < '0' || *s > '9')
+		{
+			Con_Printf("Bad filter address: %s\n", s);
+			return false;
+		}
+
+		j = 0;
+		while(*s >= '0' && *s <= '9')
+		{
+			num[j++] = *s++;
+		}
+		num[j] = 0;
+		b[i] = atoi(num);
+		if(b[i] != 0)
+			m[i] = 255;
+
+		if(!*s)
+			break;
+		s++;
+	}
+
+	f->mask = *(unsigned *)m;
+	f->compare = *(unsigned *)b;
+
+	return true;
 };
 
 /*
@@ -559,66 +672,6 @@ If 0, then only addresses matching the list will be allowed.  This lets you easi
 ==============================================================================
 */
 
-typedef struct
-{
-	unsigned mask;
-	unsigned compare;
-} ipfilter_t;
-
-#define MAX_IPFILTERS 1024
-
-ipfilter_t ipfilters[MAX_IPFILTERS];
-int numipfilters;
-
-cvar_t sv_filterban = { "sv_filterban", "1" };
-
-/*
-=================
-StringToFilter
-=================
-*/
-qboolean StringToFilter(char *s, ipfilter_t *f)
-{
-	char num[128];
-	int i, j;
-	byte b[4];
-	byte m[4];
-
-	for(i = 0; i < 4; i++)
-	{
-		b[i] = 0;
-		m[i] = 0;
-	}
-
-	for(i = 0; i < 4; i++)
-	{
-		if(*s < '0' || *s > '9')
-		{
-			Con_Printf("Bad filter address: %s\n", s);
-			return false;
-		}
-
-		j = 0;
-		while(*s >= '0' && *s <= '9')
-		{
-			num[j++] = *s++;
-		}
-		num[j] = 0;
-		b[i] = atoi(num);
-		if(b[i] != 0)
-			m[i] = 255;
-
-		if(!*s)
-			break;
-		s++;
-	}
-
-	f->mask = *(unsigned *)m;
-	f->compare = *(unsigned *)b;
-
-	return true;
-}
-
 /*
 =================
 SV_FilterPacket
@@ -731,11 +784,11 @@ void SV_CheckTimeouts()
 	{
 		if(cl->connected || cl->spawned)
 		{
-			if(!cl->spectator)
-				nclients++;
+			//if(!cl->spectator) // TODO
+				//nclients++;
 			if(cl->netchan.last_received < droptime)
 			{
-				SV_BroadcastPrintf(PRINT_HIGH, "%s timed out\n", cl->name);
+				SV_BroadcastPrintf(/*PRINT_HIGH,*/ "%s timed out\n", cl->name); // TODO
 				SV_DropClient(cl, false, "Timed out");
 				cl->active = false; // don't bother with zombie state
 			}
@@ -745,10 +798,11 @@ void SV_CheckTimeouts()
 		//cl->active = false;	// can now be reused
 	};
 
-	if(sv.paused && !nclients)
+	// TODO: non-GS behavior
+	//if(sv.paused && !nclients)
 	{
 		// nobody left, unpause the server
-		SV_TogglePause("Pause released since no players are left.\n");
+		//SV_TogglePause("Pause released since no players are left.\n");
 	}
 }
 
@@ -892,13 +946,13 @@ void SVC_Status()
 	for(i = 0; i < MAX_CLIENTS; i++)
 	{
 		cl = &svs.clients[i];
-		if((cl->connected || cl->spawned) && !cl->spectator)
+		if((cl->connected || cl->spawned) /*&& !cl->spectator*/) // TODO
 		{
 			top = atoi(Info_ValueForKey(cl->userinfo, "topcolor"));
 			bottom = atoi(Info_ValueForKey(cl->userinfo, "bottomcolor"));
 			top = (top < 0) ? 0 : ((top > 13) ? 13 : top);
 			bottom = (bottom < 0) ? 0 : ((bottom > 13) ? 13 : bottom);
-			ping = SV_CalcPing(cl);
+			//ping = SV_CalcPing(cl); // TODO
 			Con_Printf("%i %i %i %i \"%s\" \"%s\" %i %i\n", cl->userid,
 			           cl->old_frags, (int)(realtime - cl->connection_started) / 60,
 			           ping, cl->name, Info_ValueForKey(cl->userinfo, "skin"), top, bottom);
@@ -917,6 +971,8 @@ SV_CheckLog
 #define LOG_FLUSH 10 * 60
 void SV_CheckLog()
 {
+	// TODO
+/*
 	sizebuf_t *sz;
 
 	sz = &svs.log[svs.logsequence & 1];
@@ -932,6 +988,7 @@ void SV_CheckLog()
 		sz->cursize = 0;
 		Con_Printf("beginning fraglog sequence %i\n", svs.logsequence);
 	}
+*/
 }
 
 /*
@@ -946,6 +1003,8 @@ instead of the data.
 */
 void SVC_Log()
 {
+	// TODO
+/*
 	int seq;
 	char data[MAX_DATAGRAM + 64];
 
@@ -967,6 +1026,7 @@ void SVC_Log()
 	strcat(data, (char *)svs.log_buf[((svs.logsequence - 1) & 1)]);
 
 	NET_SendPacket(NS_SERVER, strlen(data) + 1, data, net_from);
+*/
 }
 
 /*
@@ -1029,6 +1089,9 @@ void SVC_GetChallenge()
 	// send it back
 	Netchan_OutOfBandPrint(NS_SERVER, net_from, "%c%i", S2C_CHALLENGE, svs.challenges[i].challenge);
 }
+
+// TODO
+void SV_ExtractFromUserinfo (client_t *cl);
 
 /*
 ==================
@@ -1109,6 +1172,8 @@ void SVC_DirectConnect()
 	else
 	{
 		s = Info_ValueForKey(userinfo, "password");
+		// TODO
+		/*
 		if(password.string[0] &&
 		   stricmp(password.string, "none") &&
 		   strcmp(password.string, s))
@@ -1117,6 +1182,7 @@ void SVC_DirectConnect()
 			Netchan_OutOfBandPrint(NS_SERVER, net_from, "%c\nserver requires a password\n\n", A2C_PRINT);
 			return;
 		}
+		*/
 		spectator = false;
 		Info_RemoveKey(userinfo, "password"); // remove passwd
 	}
@@ -1130,7 +1196,7 @@ void SVC_DirectConnect()
 	newcl->userid = userid;
 
 	// works properly
-	if(!sv_highchars.value)
+	//if(!sv_highchars.value) // TODO
 	{
 		byte *p, *q;
 
@@ -1139,8 +1205,8 @@ void SVC_DirectConnect()
 			if(*q > 31 && *q <= 127)
 				*p++ = *q;
 	}
-	else
-		strncpy(newcl->userinfo, userinfo, sizeof(newcl->userinfo) - 1);
+	//else// TODO
+		//strncpy(newcl->userinfo, userinfo, sizeof(newcl->userinfo) - 1);
 
 	// if there is allready a slot for this ip, drop it
 	for(i = 0, cl = svs.clients; i < MAX_CLIENTS; i++, cl++)
@@ -1169,17 +1235,17 @@ void SVC_DirectConnect()
 	{
 		if(!cl->active)
 			continue;
-		if(cl->spectator)
-			spectators++;
-		else
+		//if(cl->spectator) // TODO
+			//spectators++;
+		//else
 			clients++;
 	}
 
 	// if at server limits, refuse connection
-	if(maxplayers.value > MAX_CLIENTS)
-		Cvar_SetValue("maxplayers", MAX_CLIENTS);
+	//if(maxplayers.value > MAX_CLIENTS) // TODO
+		//Cvar_SetValue("maxplayers", MAX_CLIENTS);
 
-	if((spectator && spectators >= (int)maxspectators.value) || (!spectator && clients >= (int)maxplayers.value))
+	if(/*(spectator && spectators >= (int)maxspectators.value) ||*/ (!spectator && clients >= 4/*(int)maxplayers.value*/)) // TODO
 	{
 		Con_Printf("%s:full connect\n", NET_AdrToString(adr));
 		Netchan_OutOfBandPrint(NS_SERVER, adr, "%c\nserver is full\n\n", A2C_PRINT);
@@ -1221,7 +1287,7 @@ void SVC_DirectConnect()
 	newcl->datagram.maxsize = sizeof(newcl->datagram_buf);
 
 	// spectator mode can ONLY be set at join time
-	newcl->spectator = spectator;
+	//newcl->spectator = spectator; // TODO
 
 	ent = EDICT_NUM(edictnum);
 	newcl->edict = ent;
@@ -1237,13 +1303,14 @@ void SVC_DirectConnect()
 	//newcl->lockedtill = 0;
 
 	// call the progs to get default spawn parms for the new client
-	gEntityInterface.pfnSetNewParms();
+	gEntityInterface.pfnParmsNewLevel();
 	for(i = 0; i < NUM_SPAWN_PARMS; i++)
 		newcl->spawn_parms[i] = (&gGlobalVariables.parm1)[i];
 
-	if(newcl->spectator)
-		Con_Printf("Spectator %s connected\n", newcl->name);
-	else
+	// TODO
+	//if(newcl->spectator)
+		//Con_Printf("Spectator %s connected\n", newcl->name);
+	//else
 		Con_DPrintf("Client %s connected\n", newcl->name);
 
 	newcl->sendinfo = true;
@@ -1251,11 +1318,14 @@ void SVC_DirectConnect()
 
 int Rcon_Validate()
 {
+	// TODO
+/*
 	if(!strlen(rcon_password.string))
 		return 0;
 
 	if(strcmp(Cmd_Argv(1), rcon_password.string))
 		return 0;
+*/
 
 	return 1;
 }
@@ -1320,7 +1390,7 @@ void SV_ConnectionlessPacket()
 	MSG_BeginReading();
 	MSG_ReadLong(); // skip the -1 marker
 
-	s = MSG_ReadStringLine();
+	//s = MSG_ReadStringLine(); // TODO
 
 	Cmd_TokenizeString(s);
 
@@ -2016,10 +2086,12 @@ void SV_WriteClientdataToMessage(edict_t *ent, sizebuf_t *msg)
 	MSG_WriteByte(msg, ent->v.ammo_rockets);
 	MSG_WriteByte(msg, ent->v.ammo_cells);
 
-	if(standard_quake)
+	// TODO
+	//if(standard_quake)
 	{
 		MSG_WriteByte(msg, ent->v.weapon);
 	}
+	/*
 	else
 	{
 		for(i = 0; i < 32; i++)
@@ -2031,6 +2103,7 @@ void SV_WriteClientdataToMessage(edict_t *ent, sizebuf_t *msg)
 			}
 		}
 	}
+	*/
 }
 
 /*
@@ -2093,7 +2166,7 @@ void SV_ExtractFromUserinfo(client_t *cl)
 	{
 		for(i = 0, client = svs.clients; i < MAX_CLIENTS; i++, client++)
 		{
-			if(client->state != cs_spawned || client == cl)
+			if(!client->spawned || client == cl)
 				continue;
 			if(!stricmp(client->name, val))
 				break;
@@ -2122,6 +2195,8 @@ void SV_ExtractFromUserinfo(client_t *cl)
 	{
 		if(!sv.paused)
 		{
+			// TODO
+			/*
 			if(!cl->lastnametime || realtime - cl->lastnametime > 5)
 			{
 				cl->lastnamecount = 0;
@@ -2129,15 +2204,16 @@ void SV_ExtractFromUserinfo(client_t *cl)
 			}
 			else if(cl->lastnamecount++ > 4)
 			{
-				SV_BroadcastPrintf(PRINT_HIGH, "%s was kicked for name spam\n", cl->name);
-				SV_ClientPrintf(cl, PRINT_HIGH, "You were kicked from the game for name spamming\n");
+				SV_BroadcastPrintf(/*PRINT_HIGH,/ "%s was kicked for name spam\n", cl->name); // TODO
+				SV_ClientPrintf(cl, /*PRINT_HIGH,/ "You were kicked from the game for name spamming\n"); // TODO
 				SV_DropClient(cl);
 				return;
 			}
+			*/
 		}
 
-		if(cl->state >= cs_spawned && !cl->spectator)
-			SV_BroadcastPrintf(PRINT_HIGH, "%s changed name to %s\n", cl->name, val);
+		if(cl->spawned /*&& !cl->spectator*/) // TODO: was cl->state >= cs_spawned
+			SV_BroadcastPrintf(/*PRINT_HIGH,*/ "%s changed name to %s\n", cl->name, val); // TODO
 	}
 
 	strncpy(cl->name, val, sizeof(cl->name) - 1);
@@ -2158,7 +2234,7 @@ void SV_ExtractFromUserinfo(client_t *cl)
 	val = Info_ValueForKey(cl->userinfo, "msg");
 	if(strlen(val))
 	{
-		cl->messagelevel = atoi(val);
+		//cl->messagelevel = atoi(val); // TODO
 	}
 }
 
@@ -2189,10 +2265,12 @@ qboolean SV_SendClientDatagram(client_t *client)
 		SZ_Write(&msg, sv.datagram.data, sv.datagram.cursize);
 
 	// send the datagram
-	if(NET_SendUnreliableMessage(client->netchan, &msg) == -1)
+	// TODO
+	Netchan_Transmit(&client->netchan, msg.cursize, msg.data);
+	//if(NET_SendUnreliableMessage(client->netchan, &msg) == -1)
 	{
-		SV_DropClient(client, true, "datagram"); // if the message couldn't send, kick off
-		return false;
+		//SV_DropClient(client, true, "datagram"); // if the message couldn't send, kick off
+		//return false;
 	}
 
 	return true;
@@ -2217,9 +2295,9 @@ void SV_UpdateToReliableMessages()
 			{
 				if(!client->active)
 					continue;
-				MSG_WriteByte(&client->netchan.message, svc_updatefrags);
-				MSG_WriteByte(&client->netchan.message, i);
-				MSG_WriteShort(&client->netchan.message, host_client->edict->v.frags);
+				//MSG_WriteByte(&client->netchan.message, svc_updatefrags); // TODO
+				//MSG_WriteByte(&client->netchan.message, i); // TODO
+				//MSG_WriteShort(&client->netchan.message, host_client->edict->v.frags); // TODO
 			}
 
 			host_client->old_frags = host_client->edict->v.frags;
@@ -2255,9 +2333,12 @@ void SV_SendNop(client_t *client)
 
 	MSG_WriteChar(&msg, svc_nop);
 
-	if(NET_SendUnreliableMessage(client->netchan, &msg) == -1)
-		SV_DropClient(client, true, "NOP"); // if the message couldn't send, kick off
-	                                        //client->last_message = realtime;
+	// TODO
+	Netchan_Transmit(&client->netchan, msg.cursize, msg.data);
+	//if(NET_SendUnreliableMessage(client->netchan, &msg) == -1)
+		//SV_DropClient(client, true, "NOP"); // if the message couldn't send, kick off
+	
+	//client->last_message = realtime;
 }
 
 /*
@@ -2338,7 +2419,7 @@ void SV_SendClientMessages()
 		{
 			SZ_Clear(&c->netchan.message);
 			SZ_Clear(&c->datagram);
-			SV_BroadcastPrintf(PRINT_HIGH, "%s overflowed\n", c->name);
+			SV_BroadcastPrintf(/*PRINT_HIGH,*/ "%s overflowed\n", c->name); // TODO
 			Con_Printf("WARNING: reliable overflow for %s\n", c->name);
 			SV_DropClient(c, true, "Overflowed!");
 			c->send_message = true;
@@ -2548,8 +2629,8 @@ void SV_SaveSpawnparms()
 			continue;
 
 		// call the progs to get default spawn parms for the new client
-		gGlobalVariables.self = EDICT_TO_PROG(host_client->edict);
-		gEntityInterface.pfnSetChangeParms();
+		//gGlobalVariables.self = EDICT_TO_PROG(host_client->edict); // TODO
+		gEntityInterface.pfnParmsChangeLevel();
 		for(j = 0; j < NUM_SPAWN_PARMS; j++)
 			host_client->spawn_parms[j] = (&gGlobalVariables.parm1)[j];
 	}
