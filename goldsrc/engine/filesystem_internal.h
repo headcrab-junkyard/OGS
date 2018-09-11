@@ -51,7 +51,7 @@ typedef int WaitForResourcesHandle_t;
 ////////////
 // TODO: here or somewhere else?????
 
-void FileSystem_Init(char *basedir, void *filesystemFactory); // TODO: return bool/int?
+void FileSystem_Init(const char *basedir, void *filesystemFactory); // TODO: return bool/int?
 void FileSystem_Shutdown();
 ////////////
 

@@ -23,7 +23,7 @@
 
 IFileSystem *gpFileSystem{ nullptr };
 
-void FileSystem_Init(char *basedir, void *filesystemFactory)
+void FileSystem_Init(const char *basedir, void *filesystemFactory)
 {
 	// TODO
 
