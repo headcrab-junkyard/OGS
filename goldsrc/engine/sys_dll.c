@@ -352,9 +352,9 @@ void Sys_Error(const char *error, ...)
 		//WriteFile(houtput, text4, strlen(text4), &dummy, NULL); // TODO
 
 		starttime = Sys_FloatTime();
-		sc_return_on_enter = true; // so Enter will get us out of here
+		//sc_return_on_enter = true; // so Enter will get us out of here // TODO
 
-		while(!Sys_ConsoleInput() && ((Sys_FloatTime() - starttime) < CONSOLE_ERROR_TIMEOUT))
+		//while(!Sys_ConsoleInput() && ((Sys_FloatTime() - starttime) < CONSOLE_ERROR_TIMEOUT)) // TODO
 		{
 		};
 	}
