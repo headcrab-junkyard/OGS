@@ -123,7 +123,8 @@ typedef struct
 typedef enum {
 	ca_dedicated,    // a dedicated server with no ability to start a client
 	ca_disconnected, // full screen console with no connection
-	ca_connected     // valid netcon, talking to a server
+	ca_connected,    // valid netcon, talking to a server
+	ca_active
 } cactive_t;
 
 /*
@@ -361,13 +362,6 @@ void CL_DecayLights();
 
 void CL_Init();
 
-/*
-void CL_Signon1 ();
-void CL_Signon2 ();
-void CL_Signon3 ();
-void CL_Signon4 ();
-*/
-
 void CL_Disconnect();
 void CL_Disconnect_f();
 void CL_NextDemo();
@@ -421,8 +415,23 @@ void CL_TimeDemo_f();
 //
 // cl_parse.c
 //
+// TODO: qw
+/*
+#define NET_TIMINGS 256
+#define NET_TIMINGSMASK 255
+extern int	packet_latency[NET_TIMINGS];
+int CL_CalcNet ();
+*/
 void CL_ParseServerMessage();
 void CL_NewTranslation(int slot);
+// TODO: qw
+/*
+qboolean CL_CheckOrDownloadFile(const char *filename);
+qboolean CL_IsUploading();
+void CL_NextUpload();
+void CL_StartUpload(byte *data, int size);
+void CL_StopUpload();
+*/
 
 //
 // view
@@ -442,6 +451,7 @@ void V_SetContentsColor(int contents);
 //
 void CL_InitTEnts();
 void CL_SignonReply();
+//void CL_ClearTEnts(); // TODO: qw
 
 //
 // cl_ents.c
