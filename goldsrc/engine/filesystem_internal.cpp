@@ -88,7 +88,12 @@ qboolean FS_IsDirectory(const char *pFileName)
 	return gpFileSystem->IsDirectory(pFileName);
 };
 
-FileHandle_t FS_Open(const char *pFileName, const char *pOptions, const char *pathID)
+FileHandle_t FS_Open(const char *pFileName, const char *pOptions)
+{
+	return gpFileSystem->Open(pFileName, pOptions, "");
+};
+
+FileHandle_t FS_OpenPathID(const char *pFileName, const char *pOptions, const char *pathID)
 {
 	return gpFileSystem->Open(pFileName, pOptions, pathID);
 };
@@ -348,29 +353,14 @@ int FS_FileOpenWrite(const char *path)
 	return gpFileSystem->FileOpen(path, "wb");
 };
 
-void FS_FileClose(int handle)
-{
-	gpFileSystem->FileClose(handle);
-};
-
 void FS_FileSeek(int handle, int position)
 {
 	gpFileSystem->FileSeek(handle, position); // fseek(sys_handles[handle], position, SEEK_SET);
 };
 
-int FS_FileRead(int handle, void *dest, int count)
-{
-	return gpFileSystem->FileRead(handle, dest, count);
-};
-
 int FS_FileWrite(int handle, const void *data, int count)
 {
 	return gpFileSystem->FileWrite(handle, data, count);
-};
-
-int FS_FileTime(const char *path)
-{
-	return gpFileSystem->GetFileTime(path);
 };
 */
 

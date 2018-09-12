@@ -72,7 +72,8 @@ void FS_CreateDirHierarchy(const char *path, const char *pathID);
 qboolean FS_FileExists(const char *pFileName);
 qboolean FS_IsDirectory(const char *pFileName);
 
-FileHandle_t FS_Open(const char *pFileName, const char *pOptions, const char *pathID);
+FileHandle_t FS_Open(const char *pFileName, const char *pOptions);
+FileHandle_t FS_OpenPathID(const char *pFileName, const char *pOptions, const char *pathID);
 void FS_Close(FileHandle_t file);
 
 void FS_Seek(FileHandle_t file, int pos, FileSystemSeek_t seekType);
@@ -156,15 +157,8 @@ void *FS_LoadLibrary(const char *path); // TODO: wraps Sys_LoadModule
 /// the file should be in BINARY mode for stupid OSs that care
 int FS_FileOpenRead(const char *path, int *hndl);
 
-int FS_FileOpenWrite(const char *path);
-
-void FS_FileClose(int handle);
-
 void FS_FileSeek(int handle, int position);
 
-int FS_FileRead(int handle, void *dest, int count);
 int FS_FileWrite(int handle, const void *data, int count);
-
-int FS_FileTime(const char *path);
 
 void FS_mkdir(const char *path);
