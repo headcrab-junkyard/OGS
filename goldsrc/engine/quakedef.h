@@ -18,7 +18,7 @@
  */
 
 /// @file
-/// @brief primary header for both client and server
+/// @brief primary header for both client and server (contains defs common to client and server)
 
 #pragma once
 
@@ -70,6 +70,7 @@ void VID_UnlockBuffer();
 
 #endif
 
+//#if (defined(_M_IX86) || defined(__i386__)) && !defined(id386) // TODO
 #if defined __i386__ // && !defined __sun__
 #define id386 1
 #else
@@ -110,8 +111,8 @@ void VID_UnlockBuffer();
 
 #define ON_EPSILON 0.1 // point on plane side epsilon
 
-#define MAX_MSGLEN 8000   // max length of a reliable message
-#define MAX_DATAGRAM 1024 // max length of unreliable message
+#define MAX_MSGLEN 8000   // max length of a reliable message // TODO: 1450 in qw
+#define MAX_DATAGRAM 1024 // max length of unreliable message // TODO: 1450 in qw
 
 //
 // per-level limits
@@ -130,11 +131,11 @@ void VID_UnlockBuffer();
 //
 #define MAX_CL_STATS 32
 #define STAT_HEALTH 0
-#define STAT_FRAGS 1
+//#define STAT_FRAGS 1
 #define STAT_WEAPON 2
 #define STAT_AMMO 3
 #define STAT_ARMOR 4
-#define STAT_WEAPONFRAME 5
+#define STAT_WEAPONFRAME 5 // TODO: unused in qw
 #define STAT_SHELLS 6
 #define STAT_NAILS 7
 #define STAT_ROCKETS 8
@@ -189,11 +190,19 @@ void VID_UnlockBuffer();
 #define IT_SIGIL3 (1 << 30)
 #define IT_SIGIL4 (1 << 31)
 
-//===========================================
-
-#define MAX_SCOREBOARD 16
+#define MAX_SCOREBOARD 32 // max numbers of players
 
 #define SOUND_CHANNELS 8
+
+//
+// print flags
+//
+#define	PRINT_LOW			0		// pickup messages
+#define	PRINT_MEDIUM		1		// death messages
+#define	PRINT_HIGH			2		// critical messages
+#define	PRINT_CHAT			3		// chat messages
+
+//===========================================
 
 #ifdef __cplusplus
 extern "C" {
@@ -220,6 +229,7 @@ extern "C" {
 #include "cmd.h"
 #include "sbar.h"
 #include "sound.h"
+#include "vox.h" // TODO
 #include "render.h"
 #include "progs.h"
 #include "server.h"
@@ -240,6 +250,7 @@ extern "C" {
 #include "pmove.h"
 #include "keys.h"
 #include "console.h"
+#include "gameconsolewrap.h" // TODO
 #include "view.h"
 #include "menu.h"
 #include "crc.h"
@@ -262,22 +273,6 @@ extern "C" {
 
 //=============================================================================
 
-// the host system specifies the base of the directory tree, the
-// command line parms passed to the program, and the amount of memory
-// available for the program to use
-
-typedef struct
-{
-	char *basedir;
-	char *cachedir; // for development over ISDN lines
-	int argc;
-	char **argv;
-	void *membase;
-	int memsize;
-} quakeparms_t;
-
-//=============================================================================
-
 //#define MAX_NUM_ARGVS	50 // TODO: qw
 
 extern qboolean noclip_anglehack;
@@ -285,36 +280,7 @@ extern qboolean noclip_anglehack;
 //
 // host
 //
-extern quakeparms_t host_parms;
-
-extern cvar_t sys_ticrate;
-extern cvar_t sys_nostdout;
-extern cvar_t developer;
-
-//extern cvar_t password; // TODO: qw
-
-extern qboolean host_initialized; // true if into command execution
-extern double host_frametime;
-extern byte *host_basepal;
-extern byte *host_colormap;
-extern int host_framecount; // incremented every frame, never reset
-extern double realtime;     // not bounded in any way, changed at
-                            // start of every frame, never reset
-
-void Host_ClearMemory();
-void Host_InitCommands();
-void Host_Init(quakeparms_t *parms);
-void Host_Shutdown();
-void Host_Error(const char *error, ...);
-void Host_EndGame(const char *message, ...);
-//qboolean Host_SimulationTime(float time); // TODO: qw
-void Host_Frame(float time); // TODO: state, stateinfo
-//void Host_ServerFrame(); // TODO: qw
-void Host_Quit_f();
-void Host_ClientCommands(const char *fmt, ...);
-void Host_ShutdownServer(qboolean crash);
-//void Host_WriteConfiguration ();
-void Host_UpdateStatus(float *fps, int *nActive, /*int *nSpectators*/ int *nMaxPlayers, const char *pszMap);
+#include "host.h"
 
 extern qboolean msg_suppress_1; // suppresses resolution and cache size console output
                                 //  an fullscreen DIB focus gain/loss
