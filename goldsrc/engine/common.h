@@ -22,7 +22,12 @@
 
 #include "const.h"
 
+#define	MAX_SERVERINFO_STRING 512
+#define	MAX_LOCALINFO_STRING 32768
+
 //============================================================================
+
+typedef struct usercmd_s usercmd_t; // TODO
 
 typedef struct sizebuf_s
 {
@@ -35,8 +40,8 @@ typedef struct sizebuf_s
 	int cursize;
 } sizebuf_t;
 
-void SZ_Alloc(sizebuf_t *buf, int startsize);
-void SZ_Free(sizebuf_t *buf);
+void SZ_Alloc(sizebuf_t *buf, int startsize); // TODO: not present in qw
+void SZ_Free(sizebuf_t *buf); // TODO: not present in qw
 void SZ_Clear(sizebuf_t *buf);
 void *SZ_GetSpace(sizebuf_t *buf, int length);
 void SZ_Write(sizebuf_t *buf, const void *data, int length);
@@ -85,6 +90,9 @@ extern float (*LittleFloat)(float l);
 
 //============================================================================
 
+//struct usercmd_s; // TODO: qw
+extern struct usercmd_s nullcmd;
+
 void MSG_WriteChar(sizebuf_t *sb, int c);
 void MSG_WriteByte(sizebuf_t *sb, int c);
 void MSG_WriteShort(sizebuf_t *sb, int c);
@@ -93,23 +101,31 @@ void MSG_WriteFloat(sizebuf_t *sb, float f);
 void MSG_WriteString(sizebuf_t *sb, const char *s);
 void MSG_WriteCoord(sizebuf_t *sb, float f);
 void MSG_WriteAngle(sizebuf_t *sb, float f);
+//void MSG_WriteAngle16(sizebuf_t *sb, float f); // TODO: qw
+//void MSG_WriteDeltaUsercmd(sizebuf_t *sb, struct usercmd_s *from, struct usercmd_s *cmd); // TODO: qw
 
+// TODO: not present in qw??
 extern int msg_readcount;
 extern qboolean msg_badread; // set if a read goes beyond end of message
 
 void MSG_BeginReading();
+int MSG_GetReadCount(); // TODO: used by sv_user
 int MSG_ReadChar();
 int MSG_ReadByte();
 int MSG_ReadShort();
 int MSG_ReadLong();
 float MSG_ReadFloat();
 char *MSG_ReadString();
+//char *MSG_ReadStringLine(); // TODO: qw
 
 float MSG_ReadCoord();
 float MSG_ReadAngle();
+//float MSG_ReadAngle16(); // TODO: qw
+void MSG_ReadDeltaUsercmd(struct usercmd_s *from, struct usercmd_s *cmd); // TODO: used by sv_user and cl_ents
 
 //============================================================================
 
+//
 void Q_memset(void *dest, int fill, int count);
 void Q_memcpy(void *dest, const void *src, int count);
 int Q_memcmp(const void *m1, const void *m2, int count);
@@ -123,6 +139,33 @@ int Q_strcmp(const char *s1, const char *s2);
 int Q_strncmp(const char *s1, const char *s2, int count);
 int Q_strcasecmp(const char *s1, const char *s2);
 int Q_strncasecmp(const char *s1, const char *s2, int n);
+//
+// TODO: qw
+/*
+#define Q_memset(d, f, c) memset((d), (f), (c))
+#define Q_memcpy(d, s, c) memcpy((d), (s), (c))
+#define Q_memcmp(m1, m2, c) memcmp((m1), (m2), (c))
+#define Q_strcpy(d, s) strcpy((d), (s))
+#define Q_strncpy(d, s, n) strncpy((d), (s), (n))
+#define Q_strlen(s) ((int)strlen(s))
+#define Q_strrchr(s, c) strrchr((s), (c))
+#define Q_strcat(d, s) strcat((d), (s))
+#define Q_strcmp(s1, s2) strcmp((s1), (s2))
+#define Q_strncmp(s1, s2, n) strncmp((s1), (s2), (n))
+
+#ifdef _WIN32
+
+#define Q_strcasecmp(s1, s2) _stricmp((s1), (s2))
+#define Q_strncasecmp(s1, s2, n) _strnicmp((s1), (s2), (n))
+
+#else
+
+#define Q_strcasecmp(s1, s2) strcasecmp((s1), (s2))
+#define Q_strncasecmp(s1, s2, n) strncasecmp((s1), (s2), (n))
+
+#endif
+*/
+//
 
 int Q_atoi(const char *str);
 float Q_atof(const char *str);
@@ -138,7 +181,9 @@ extern int com_argc;
 extern char **com_argv;
 
 int COM_CheckParm(const char *parm);
-void COM_Init(const char *path);
+//void COM_AddParm(const char *parm); // TODO: qw
+
+void COM_Init(const char *path); // TODO: nothing in qw
 void COM_InitArgv(int argc, char **argv);
 
 const char *COM_SkipPath(const char *pathname);
@@ -157,13 +202,23 @@ struct cache_user_s;
 extern char com_gamedir[MAX_OSPATH];
 
 void COM_WriteFile(const char *filename, void *data, int len);
-int COM_OpenFile(const char *filename, int *hndl);
+int COM_OpenFile(const char *filename, int *hndl); // TODO: not present in qw
 int COM_FOpenFile(const char *filename, FILE **file);
-void COM_CloseFile(int h);
+//void COM_CloseFile(int h); // TODO: void COM_CloseFile(FILE *h); in qw
 
 byte *COM_LoadStackFile(const char *path, void *buffer, int bufsize);
 byte *COM_LoadTempFile(const char *path);
 byte *COM_LoadHunkFile(const char *path);
 void COM_LoadCacheFile(const char *path, struct cache_user_s *cu);
 
-extern qboolean standard_quake, rogue, hipnotic;
+// TODO: qw
+/*
+void COM_CreatePath(const char *path);
+void COM_GameDir(const char *dir);
+
+unsigned Com_BlockChecksum(void *buffer, int length);
+void Com_BlockFullChecksum(void *buffer, int len, unsigned char *outbuf);
+byte COM_BlockSequenceCheckByte(byte *base, int length, int sequence, unsigned mapchecksum);
+
+int build_number();
+*/

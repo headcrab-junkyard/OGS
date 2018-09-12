@@ -28,22 +28,11 @@ static char *argvdummy = " ";
 static char *safeargvs[NUM_SAFE_ARGVS] =
 { "-stdvid", "-nolan", "-nosound", "-nocdaudio", "-nojoy", "-nomouse", "-dibonly" };
 
-cvar_t registered = { "registered", "0" };
-cvar_t cmdline = { "cmdline", "0", false, true };
-
-qboolean com_modified; // set true if using non-id files
-
 qboolean proghack;
 
-int static_registered = 1; // only for startup check, then set
-
-qboolean msg_suppress_1 = 0;
+qboolean msg_suppress_1 = false;
 
 void COM_InitFilesystem();
-
-// if a packfile directory differs from this, it is assumed to be hacked
-#define PAK0_COUNT 339
-#define PAK0_CRC 32981
 
 char com_token[1024];
 int com_argc;
@@ -52,14 +41,12 @@ char **com_argv;
 #define CMDLINE_LENGTH 256
 char com_cmdline[CMDLINE_LENGTH];
 
-qboolean standard_quake = true, rogue, hipnotic;
-
 /*
 
 
-All of Quake's data access is through a hierchal file system, but the contents of the file system can be transparently merged from several sources.
+All of engine's data access is through a hierchal file system, but the contents of the file system can be transparently merged from several sources.
 
-The "base directory" is the path to the directory holding the quake.exe and all game directories.  The sys_* files pass this to host_init in quakeparms_t->basedir.  This can be overridden with the "-basedir" command line parm to allow code debugging in a different directory.  The base directory is
+The "base directory" is the path to the directory holding the hl.exe and all game directories.  The sys_* files pass this to host_init in quakeparms_t->basedir.  This can be overridden with the "-basedir" command line parm to allow code debugging in a different directory.  The base directory is
 only used during filesystem initialization.
 
 The "game directory" is the first tree on the search path and directory that all generated files (savegames, screenshots, demos, config files) will be saved to.  This can be overridden with the "-game" command line parameter.  The game directory can never be changed while quake is executing.  This is a precacution against having a malicious server instruct clients to write files over areas they shouldn't.
@@ -481,6 +468,8 @@ Handles byte ordering and avoids alignment errors
 ==============================================================================
 */
 
+usercmd_t nullcmd; // guaranteed to be zero
+
 //
 // writing functions
 //
@@ -578,6 +567,11 @@ void MSG_BeginReading()
 {
 	msg_readcount = 0;
 	msg_badread = false;
+}
+
+int MSG_GetReadCount()
+{
+	return msg_readcount;
 }
 
 // returns -1 and sets msg_badread if no more characters are available
@@ -695,6 +689,44 @@ float MSG_ReadCoord()
 float MSG_ReadAngle()
 {
 	return MSG_ReadChar() * (360.0 / 256);
+}
+
+void MSG_ReadDeltaUsercmd(usercmd_t *from, usercmd_t *move)
+{
+	// TODO
+/*
+	int bits;
+
+	memcpy (move, from, sizeof(*move));
+
+	bits = MSG_ReadByte ();
+		
+// read current angles
+	if (bits & CM_ANGLE1)
+		move->angles[0] = MSG_ReadAngle16 ();
+	if (bits & CM_ANGLE2)
+		move->angles[1] = MSG_ReadAngle16 ();
+	if (bits & CM_ANGLE3)
+		move->angles[2] = MSG_ReadAngle16 ();
+		
+// read movement
+	if (bits & CM_FORWARD)
+		move->forwardmove = MSG_ReadShort ();
+	if (bits & CM_SIDE)
+		move->sidemove = MSG_ReadShort ();
+	if (bits & CM_UP)
+		move->upmove = MSG_ReadShort ();
+	
+// read buttons
+	if (bits & CM_BUTTONS)
+		move->buttons = MSG_ReadByte ();
+
+	if (bits & CM_IMPULSE)
+		move->impulse = MSG_ReadByte ();
+
+// read time to run command
+	move->msec = MSG_ReadByte ();
+*/
 }
 
 //===========================================================================
@@ -966,16 +998,6 @@ int COM_CheckParm(const char *parm)
 	return 0;
 }
 
-void COM_CheckRegistered()
-{
-	// Check CD-key...
-
-	Cvar_Set("cmdline", com_cmdline);
-	//Con_Printf ("Playing registered version.\n");
-}
-
-void COM_Path_f();
-
 /*
 ================
 COM_InitArgv
@@ -1029,18 +1051,6 @@ void COM_InitArgv(int argc, char **argv)
 
 	largv[com_argc] = argvdummy;
 	com_argv = largv;
-
-	if(COM_CheckParm("-rogue"))
-	{
-		rogue = true;
-		standard_quake = false;
-	}
-
-	if(COM_CheckParm("-hipnotic"))
-	{
-		hipnotic = true;
-		standard_quake = false;
-	}
 }
 
 /*
@@ -1074,12 +1084,9 @@ void COM_Init(const char *basedir)
 		LittleFloat = FloatSwap;
 	}
 
-	Cvar_RegisterVariable(&registered);
-	Cvar_RegisterVariable(&cmdline);
-	Cmd_AddCommand("path", COM_Path_f);
+	//Cmd_AddCommand("path", COM_Path_f); // TODO: unused?
 
 	COM_InitFilesystem();
-	COM_CheckRegistered();
 }
 
 /*
@@ -1117,7 +1124,7 @@ int memsearch(byte *start, int count, int search)
 /*
 =============================================================================
 
-QUAKE FILESYSTEM
+ENGINE FILESYSTEM
 
 =============================================================================
 */
@@ -1137,7 +1144,7 @@ typedef struct
 typedef struct pack_s
 {
 	char filename[MAX_OSPATH];
-	int handle;
+	FileHandle_t handle;
 	int numfiles;
 	packfile_t *files;
 } pack_t;
@@ -1145,6 +1152,7 @@ typedef struct pack_s
 //
 // on disk
 //
+
 typedef struct
 {
 	char name[56];
@@ -1203,28 +1211,28 @@ The filename will be prefixed by the current game directory
 */
 void COM_WriteFile(const char *filename, void *data, int len)
 {
-	int handle;
+	FileHandle_t handle;
 	char name[MAX_OSPATH];
 
 	sprintf(name, "%s/%s", com_gamedir, filename);
 
-	handle = FS_FileOpenWrite(name);
-	if(handle == -1)
+	handle = FS_Open(name, "wb");
+	if(!handle)
 	{
 		Sys_Printf("COM_WriteFile: failed on %s\n", name);
 		return;
 	}
 
 	Sys_Printf("COM_WriteFile: %s\n", name);
-	FS_FileWrite(handle, data, len);
-	FS_FileClose(handle);
+	FS_Write(data, len, handle);
+	FS_Close(handle);
 }
 
 /*
 ============
 COM_CreatePath
 
-Only used for CopyFile
+Only used for CopyFile and download
 ============
 */
 void COM_CreatePath(const char *path)
@@ -1253,13 +1261,14 @@ needed.  This is for the convenience of developers using ISDN from home.
 */
 void COM_CopyFile(const char *netpath, char *cachepath)
 {
-	int in, out;
+	FileHandle_t in, out;
 	int remaining, count;
 	char buf[4096];
 
-	remaining = FS_FileOpenRead(netpath, &in);
+	in = FS_Open(netpath, "rb");
+	remaining = FS_Size(in);
 	COM_CreatePath(cachepath); // create directories up to the cache file
-	out = FS_FileOpenWrite(cachepath);
+	out = FS_Open(cachepath, "wb");
 
 	while(remaining)
 	{
@@ -1267,13 +1276,13 @@ void COM_CopyFile(const char *netpath, char *cachepath)
 			count = remaining;
 		else
 			count = sizeof(buf);
-		FS_FileRead(in, buf, count);
-		FS_FileWrite(out, buf, count);
+		FS_Read(buf, count, in);
+		FS_Write(buf, count, out);
 		remaining -= count;
 	}
 
-	FS_FileClose(in);
-	FS_FileClose(out);
+	FS_Close(in);
+	FS_Close(out);
 }
 
 /*
@@ -1291,6 +1300,7 @@ int COM_FindFile(const char *filename, int *handle, FILE **file)
 	char cachepath[MAX_OSPATH];
 	pack_t *pak;
 	int i;
+	FileHandle_t pFile;
 	int findtime, cachetime;
 
 	if(file && handle)
@@ -1322,11 +1332,11 @@ int COM_FindFile(const char *filename, int *handle, FILE **file)
 					if(handle)
 					{
 						*handle = pak->handle;
-						FS_FileSeek(pak->handle, pak->files[i].filepos);
+						FS_Seek(pak->handle, pak->files[i].filepos, SEEK_SET);
 					}
 					else
 					{ // open a new file on the pakfile
-						*file = fopen(pak->filename, "rb");
+						*file = FS_Open(pak->filename, "rb");
 						if(*file)
 							fseek(*file, pak->files[i].filepos, SEEK_SET);
 					}
@@ -1337,15 +1347,10 @@ int COM_FindFile(const char *filename, int *handle, FILE **file)
 		else
 		{
 			// check a file in the directory tree
-			if(!static_registered)
-			{ // if not a registered version, don't ever go beyond base
-				if(strchr(filename, '/') || strchr(filename, '\\'))
-					continue;
-			}
 
 			sprintf(netpath, "%s/%s", search->filename, filename);
 
-			findtime = FS_FileTime(netpath);
+			findtime = FS_GetFileTime(netpath);
 			if(findtime == -1)
 				continue;
 
@@ -1363,7 +1368,7 @@ int COM_FindFile(const char *filename, int *handle, FILE **file)
 				sprintf(cachepath, "%s%s", com_cachedir, netpath);
 #endif
 
-				cachetime = FS_FileTime(cachepath);
+				cachetime = FS_GetFileTime(cachepath);
 
 				if(cachetime < findtime)
 					COM_CopyFile(netpath, cachepath);
@@ -1371,13 +1376,14 @@ int COM_FindFile(const char *filename, int *handle, FILE **file)
 			}
 
 			Sys_Printf("FindFile: %s\n", netpath);
-			com_filesize = FS_FileOpenRead(netpath, &i);
+			pFile = FS_Open(netpath, "rb"); // TODO: was i =
+			com_filesize = FS_Size(pFile); // TODO: was i
 			if(handle)
 				*handle = i;
 			else
 			{
-				FS_FileClose(i);
-				*file = fopen(netpath, "rb");
+				FS_Close(pFile);
+				*file = FS_Open(netpath, "rb");
 			}
 			return com_filesize;
 		}
@@ -1395,20 +1401,6 @@ int COM_FindFile(const char *filename, int *handle, FILE **file)
 
 /*
 ===========
-COM_OpenFile
-
-filename never has a leading slash, but may contain directory walks
-returns a handle and a length
-it may actually be inside a pak file
-===========
-*/
-int COM_OpenFile(const char *filename, int *handle)
-{
-	return COM_FindFile(filename, handle, NULL);
-}
-
-/*
-===========
 COM_FOpenFile
 
 If the requested file is inside a packfile, a new FILE * will be opened
@@ -1422,28 +1414,10 @@ int COM_FOpenFile(const char *filename, FILE **file)
 
 /*
 ============
-COM_CloseFile
-
-If it is a pak file handle, don't really close it
-============
-*/
-void COM_CloseFile(int h)
-{
-	searchpath_t *s;
-
-	for(s = com_searchpaths; s; s = s->next)
-		if(s->pack && s->pack->handle == h)
-			return;
-
-	FS_FileClose(h);
-}
-
-/*
-============
 COM_LoadFile
 
-Filename are reletive to the quake directory.
-Allways appends a 0 byte.
+Filename are relative to the quake directory.
+Always appends a 0 byte to the loaded data.
 ============
 */
 cache_user_t *loadcache;
@@ -1451,7 +1425,7 @@ byte *loadbuf;
 int loadsize;
 byte *COM_LoadFile(const char *path, int usehunk)
 {
-	int h;
+	FileHandle_t h;
 	byte *buf;
 	char base[32];
 	int len;
@@ -1459,9 +1433,11 @@ byte *COM_LoadFile(const char *path, int usehunk)
 	buf = NULL; // quiet compiler warning
 
 	// look for it in the filesystem or pack files
-	len = COM_OpenFile(path, &h);
-	if(h == -1)
+	h = FS_Open(path, "rb");
+	if(!h)
 		return NULL;
+	
+	len = FS_Size(h);
 
 	// extract the filename base name for hunk tag
 	COM_FileBase(path, base);
@@ -1490,8 +1466,8 @@ byte *COM_LoadFile(const char *path, int usehunk)
 	((byte *)buf)[len] = 0;
 
 	Draw_BeginDisc();
-	FS_FileRead(h, buf, len);
-	COM_CloseFile(h);
+	FS_Read(buf, len, h);
+	FS_Close(h);
 	Draw_EndDisc();
 
 	return buf;
@@ -1542,16 +1518,16 @@ pack_t *COM_LoadPackFile(const char *packfile)
 	packfile_t *newfiles;
 	int numpackfiles;
 	pack_t *pack;
-	int packhandle;
+	FileHandle_t packhandle;
 	dpackfile_t info[MAX_FILES_IN_PACK];
-	unsigned short crc;
+	CRC32_t crc;
 
-	if(FS_FileOpenRead(packfile, &packhandle) == -1)
+	if((packhandle = FS_Open(packfile, "rb")) == NULL)
 	{
 		//              Con_Printf ("Couldn't open %s\n", packfile);
 		return NULL;
 	}
-	FS_FileRead(packhandle, (void *)&header, sizeof(header));
+	FS_Read((void *)&header, sizeof(header), packhandle);
 	if(header.id[0] != 'P' || header.id[1] != 'A' || header.id[2] != 'C' || header.id[3] != 'K')
 		Sys_Error("%s is not a packfile", packfile);
 	header.dirofs = LittleLong(header.dirofs);
@@ -1562,20 +1538,15 @@ pack_t *COM_LoadPackFile(const char *packfile)
 	if(numpackfiles > MAX_FILES_IN_PACK)
 		Sys_Error("%s has %i files", packfile, numpackfiles);
 
-	if(numpackfiles != PAK0_COUNT)
-		com_modified = true; // not the original file
-
 	newfiles = Hunk_AllocName(numpackfiles * sizeof(packfile_t), "packfile");
 
-	FS_FileSeek(packhandle, header.dirofs);
-	FS_FileRead(packhandle, (void *)info, header.dirlen);
+	FS_Seek(packhandle, header.dirofs, SEEK_SET);
+	FS_Read((void *)info, header.dirlen, packhandle);
 
 	// crc the directory to check for modifications
-	CRC_Init(&crc);
+	CRC32_Init(&crc);
 	for(i = 0; i < header.dirlen; i++)
-		CRC_ProcessByte(&crc, ((byte *)info)[i]);
-	if(crc != PAK0_CRC)
-		com_modified = true;
+		CRC32_ProcessByte(&crc, ((byte *)info)[i]);
 
 	// parse the directory
 	for(i = 0; i < numpackfiles; i++)
@@ -1692,11 +1663,6 @@ void COM_InitFilesystem()
 	//
 	COM_AddGameDirectory(va("%s/" GAMENAME, basedir));
 
-	if(COM_CheckParm("-rogue"))
-		COM_AddGameDirectory(va("%s/rogue", basedir));
-	if(COM_CheckParm("-hipnotic"))
-		COM_AddGameDirectory(va("%s/hipnotic", basedir));
-
 	//
 	// -game <gamedir>
 	// Adds basedir/gamedir as an override game
@@ -1704,7 +1670,6 @@ void COM_InitFilesystem()
 	i = COM_CheckParm("-game");
 	if(i && i < com_argc - 1)
 	{
-		com_modified = true;
 		COM_AddGameDirectory(va("%s/%s", basedir, com_argv[i + 1]));
 	}
 
@@ -1715,7 +1680,6 @@ void COM_InitFilesystem()
 	i = COM_CheckParm("-path");
 	if(i)
 	{
-		com_modified = true;
 		com_searchpaths = NULL;
 		while(++i < com_argc)
 		{
