@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(OGSEngine)
+project(OGSEngine VERSION 0.5)
 
 # Define available options
 option(OGS_DEV "Developer Build" OFF)
