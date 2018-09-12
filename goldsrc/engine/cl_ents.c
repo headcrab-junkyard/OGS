@@ -33,12 +33,14 @@ static struct predicted_player
 
 //============================================================
 
+// TODO: already defined in cl_main
 /*
 ===============
 CL_AllocDlight
 
 ===============
 */
+/*
 dlight_t *CL_AllocDlight(int key)
 {
 	int i;
@@ -76,6 +78,7 @@ dlight_t *CL_AllocDlight(int key)
 	dl->key = key;
 	return dl;
 }
+*/
 
 /*
 ===============
@@ -123,12 +126,14 @@ void CL_NewDlight(int key, float x, float y, float z, float radius, float time,
 	}
 }
 
+// TODO: already defined in cl_main
 /*
 ===============
 CL_DecayLights
 
 ===============
 */
+/*
 void CL_DecayLights(void)
 {
 	int i;
@@ -145,6 +150,7 @@ void CL_DecayLights(void)
 			dl->radius = 0;
 	}
 }
+*/
 
 /*
 =========================================================================
@@ -612,7 +618,7 @@ void CL_ParseProjectiles(void)
 		pr = &cl_projectiles[cl_num_projectiles];
 		cl_num_projectiles++;
 
-		pr->modelindex = cl_spikeindex;
+		//pr->modelindex = cl_spikeindex; // TODO
 		pr->origin[0] = ((bits[0] + ((bits[1] & 15) << 8)) << 1) - 4096;
 		pr->origin[1] = (((bits[1] >> 4) + (bits[2] << 4)) << 1) - 4096;
 		pr->origin[2] = ((bits[3] + ((bits[4] & 15) << 8)) << 1) - 4096;
@@ -665,7 +671,8 @@ cl_entity_t *CL_NewTempEntity(void);
 CL_ParsePlayerinfo
 ===================
 */
-extern int parsecountmod;
+//extern int parsecountmod;
+int parsecountmod; // TODO: temp
 // TODO: unused?
 /*
 extern double parsecounttime;
@@ -747,6 +754,7 @@ CL_AddFlagModels
 Called when the CTF flags are set
 ================
 */
+/*
 void CL_AddFlagModels(cl_entity_t *ent, int team)
 {
 	int i;
@@ -816,6 +824,7 @@ void CL_AddFlagModels(cl_entity_t *ent, int team)
 	VectorCopy(ent->angles, newent->angles)
 	newent->angles[2] -= 45;
 }
+*/
 
 /*
 =============
