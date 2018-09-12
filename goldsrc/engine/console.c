@@ -111,7 +111,7 @@ void Con_Dump_f()
 {
 	int l, x;
 	char *line;
-	FileHandle_t *f;
+	FileHandle_t f;
 	char buffer[1024];
 	char name[MAX_OSPATH];
 
@@ -121,11 +121,11 @@ void Con_Dump_f()
 		return;
 	};
 
-	Q_sprintf(name, sizeof(name), "%s/%s.txt", FS_Gamedir(), Cmd_Argv(1));
+	snprintf(name, sizeof(name), "%s/%s.txt", com_gamedir, Cmd_Argv(1)); // TODO: COM_Gamedir()
 
 	Con_Printf("Dumped console text to %s.\n", name);
-	FS_CreatePath(name);
-	f = FS_FileOpen(name, "w");
+	COM_CreatePath(name);
+	f = FS_Open(name, "w"/*, "GAMEFOLDER"*/); // TODO: FS_OpenPathID?
 	if(!f)
 	{
 		Con_Printf("ERROR: couldn't open.\n");
@@ -162,7 +162,7 @@ void Con_Dump_f()
 		FS_FPrintf(f, "%s\n", buffer);
 	}
 
-	FS_FileClose(f);
+	FS_Close(f);
 }
 
 /*
