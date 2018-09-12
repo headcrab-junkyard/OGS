@@ -60,6 +60,9 @@ cvar_t cl_solid_players = { "cl_solid_players", "1" };
 
 cvar_t localid = { "localid", "" };
 
+cvar_t show_fps = {"cl_showfps", "0"}; // set for running times
+int fps_count; // TODO: used by gl_screen
+
 //
 // info mirrors
 //
