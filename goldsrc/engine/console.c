@@ -438,20 +438,33 @@ void Con_Printf(const char *fmt, ...)
 	vsprintf(msg, fmt, argptr);
 	va_end(argptr);
 
+	// add to redirected message
+	if(sv_redirected)
+	{
+		if(Q_strlen(msg) + Q_strlen(outputbuf) > sizeof(outputbuf) - 1)
+			SV_FlushRedirect();
+		Q_strcat(outputbuf, msg);
+		return;
+	};
+	
 	// also echo to debugging console
-	Sys_Printf("%s", msg); // also echo to debugging console
+	Sys_Printf("%s", msg);
 
 	// log all messages to file
 	if(con_debuglog)
 		Con_DebugLog(va("%s/qconsole.log", com_gamedir), "%s", msg);
 
+	// TODO
+	//if(sv_logfile)
+		//fprintf(sv_logfile, "%s", msg);
+	
 	if(!con_initialized)
 		return;
 
 	if(cls.state == ca_dedicated)
 		return; // no graphics mode
 
-	GameConsole_Print(msg); // TODO: VguiWrap2_ConPrintf(msg);
+	GameConsole_Printf(msg); // TODO: VguiWrap2_ConPrintf(msg);
 
 	// write it to the scrollable buffer
 	Con_Print(msg);
