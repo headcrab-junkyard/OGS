@@ -125,8 +125,8 @@ void IN_MLookDown()
 void IN_MLookUp()
 {
 	KeyUp(&in_mlook);
-	if(!(in_mlook.state & 1) && lookspring.value)
-		V_StartPitchDrift();
+	//if(!(in_mlook.state & 1) && lookspring.value) // TODO
+		//V_StartPitchDrift(); // TODO
 }
 void IN_UpDown()
 {
@@ -342,7 +342,7 @@ void CL_AdjustAngles()
 	}
 	if(in_klook.state & 1)
 	{
-		V_StopPitchDrift();
+		//V_StopPitchDrift(); // TODO
 		cl.viewangles[PITCH] -= speed * cl_pitchspeed.value * CL_KeyState(&in_forward);
 		cl.viewangles[PITCH] += speed * cl_pitchspeed.value * CL_KeyState(&in_back);
 	}
@@ -353,8 +353,8 @@ void CL_AdjustAngles()
 	cl.viewangles[PITCH] -= speed * cl_pitchspeed.value * up;
 	cl.viewangles[PITCH] += speed * cl_pitchspeed.value * down;
 
-	if(up || down)
-		V_StopPitchDrift();
+	//if(up || down)
+		//V_StopPitchDrift(); // TODO
 
 	if(cl.viewangles[PITCH] > 80)
 		cl.viewangles[PITCH] = 80;
