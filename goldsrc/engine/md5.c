@@ -191,7 +191,7 @@ void MD5Transform(UINT4 state[4], const unsigned char block[64])
 	memset(x, 0, sizeof(x));
 }
 
-void MD5Update(MD5Context_t *md5, const void *input, unsigned int inputLen)
+void MD5Update(MD5Context_t *md5, const unsigned char *input, unsigned int inputLen)
 {
 	unsigned int i, index, partLen;
 	/* Compute number of bytes mod 64 */
