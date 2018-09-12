@@ -25,6 +25,8 @@
 //#include "resource.h"
 #include <commctrl.h>
 
+#include "glw_win.h"
+
 #define MAX_MODE_LIST 30
 #define VID_ROW_SIZE 3
 #define WARP_WIDTH 320
@@ -159,6 +161,8 @@ cvar_t _windowed_mouse = { "_windowed_mouse", "1", true };
 int window_center_x, window_center_y, window_x, window_y, window_width, window_height;
 RECT window_rect;
 
+glwstate_t glw_state; // TODO: glw_imp.c
+
 // direct draw software compatability stuff
 
 void VID_HandlePause(qboolean pause)
@@ -242,7 +246,7 @@ qboolean VID_SetWindowedMode(int modenum)
 	height,
 	NULL,
 	NULL,
-	global_hInstance,
+	0, //global_hInstance, // TODO
 	NULL);
 
 	if(!dibwindow)
@@ -331,7 +335,7 @@ qboolean VID_SetFullDIBMode(int modenum)
 	height,
 	NULL,
 	NULL,
-	global_hInstance,
+	0, //global_hInstance, // TODO
 	NULL);
 
 	if(!dibwindow)
@@ -1595,12 +1599,12 @@ void VID_Init(unsigned char *palette)
 
 	//hIcon = LoadIcon(global_hInstance, MAKEINTRESOURCE(IDI_ICON2)); // TODO
 
-	InitCommonControls();
+	//InitCommonControls(); // TODO
 
-	VID_InitDIB(global_hInstance);
+	VID_InitDIB(0 /*global_hInstance*/); // TODO
 	basenummodes = nummodes = 1;
 
-	VID_InitFullDIB(global_hInstance);
+	VID_InitFullDIB(0 /*global_hInstance*/);
 
 	if(COM_CheckParm("-window"))
 	{
@@ -1789,7 +1793,7 @@ void VID_Init(unsigned char *palette)
 	vid.colormap = host_colormap;
 	vid.fullbright = 256 - LittleLong(*((int *)vid.colormap + 2048));
 
-	DestroyWindow(hwnd_dialog);
+	//DestroyWindow(hwnd_dialog); // TODO
 
 	Check_Gamma(palette);
 	VID_SetPalette(palette);

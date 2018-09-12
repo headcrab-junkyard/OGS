@@ -3038,7 +3038,7 @@ qboolean QGL_Init( const char *dllname )
 		char envbuffer[1024];
 		float g;
 
-		g = 2.00 * ( 0.8 - ( v_gamma.value - 0.5 ) ) + 1.0F; // TODO: was vid_gamme
+		g = 2.00 * ( 0.8 - ( v_gamma.value - 0.5 ) ) + 1.0F; // TODO: was vid_gamma
 		snprintf( envbuffer, sizeof(envbuffer), "SSTV2_GAMMA=%f", g );
 		putenv( envbuffer );
 		snprintf( envbuffer, sizeof(envbuffer), "SST_GAMMA=%f", g );
@@ -3441,7 +3441,7 @@ void GLimp_EnableLogging( qboolean enable )
 
 			asctime( newtime );
 
-			snprintf( buffer, sizeof(buffer), "%s/gl.log", /*ri.*/FS_Gamedir() );  // TODO
+			snprintf( buffer, sizeof(buffer), "%s/gl.log", com_gamedir/*ri.*//*FS_Gamedir()*/ );  // TODO: was FS_Gamedir
 			glw_state.log_fp = fopen( buffer, "wt" );
 
 			fprintf( glw_state.log_fp, "%s\n", asctime( newtime ) );

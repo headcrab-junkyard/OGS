@@ -22,11 +22,21 @@
 
 extern model_t *loadmodel;
 
+//
 int skytexturenum;
 
 int solidskytexture;
 int alphaskytexture;
 float speedscale; // for top sky and bottom sky
+//
+// Q2
+/*
+char	skyname[MAX_QPATH];
+float	skyrotate;
+vec3_t	skyaxis;
+image_t	*sky_images[6];
+*/
+//
 
 msurface_t *warpface;
 

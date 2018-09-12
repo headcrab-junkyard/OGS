@@ -105,21 +105,25 @@ void R_RenderDlight(dlight_t *light)
 	rad = light->radius * 0.35;
 
 	VectorSubtract(light->origin, r_origin, v);
+	
 	if(Length(v) < rad)
-	{ // view is inside the dlight
+	{
+		// view is inside the dlight
 		AddLightBlend(1, 0.5, 0, light->radius * 0.0003);
 		return;
-	}
+	};
 
 	qglBegin(GL_TRIANGLE_FAN);
-	qglColor3f(0.2, 0.1, 0.0); // TODO: unused in qw
+	qglColor3f(0.2, 0.1, 0.0); // TODO: unused in qw, qglColor3f (light->color[0]*0.2, light->color[1]*0.2, light->color[2]*0.2); in q2
 	//qglColor3f (0.2,0.1,0.05); // changed dimlight effect
 	//qglColor4f (light->color[0], light->color[1], light->color[2], light->color[3]); // TODO: qw
 	
 	for(i = 0; i < 3; i++)
 		v[i] = light->origin[i] - vpn[i] * rad;
+	
 	qglVertex3fv(v);
 	qglColor3f(0, 0, 0);
+	
 	for(i = 16; i >= 0; i--)
 	{
 		a = i / 16.0 * M_PI * 2; // TODO: unused in qw
@@ -148,7 +152,7 @@ void R_RenderDlights(void)
 	int i;
 	dlight_t *l;
 
-	if(!gl_flashblend.value)
+	if(!gl_flashblend.value) // TODO: if(!gl_flashblend->value) in q2
 		return;
 
 	r_dlightframecount = r_framecount + 1; // because the count hasn't
@@ -159,11 +163,11 @@ void R_RenderDlights(void)
 	qglEnable(GL_BLEND);
 	qglBlendFunc(GL_ONE, GL_ONE);
 
-	l = cl_dlights;
-	for(i = 0; i < MAX_DLIGHTS; i++, l++)
+	l = cl_dlights; // TODO: = r_newrefdef.dlights in q2
+	for(i = 0; i < MAX_DLIGHTS; i++, l++) // TODO: for (i=0 ; i<r_newrefdef.num_dlights ; i++, l++) in q2
 	{
-		if(l->die < cl.time || !l->radius)
-			continue;
+		if(l->die < cl.time || !l->radius) // TODO: not present in q2
+			continue; // TODO: not present in q2
 		R_RenderDlight(l);
 	}
 
@@ -194,7 +198,7 @@ void R_MarkLights(dlight_t *light, int bit, mnode_t *node)
 	msurface_t *surf;
 	int i;
 
-	if(node->contents < 0)
+	if(node->contents < 0) // TODO: if(node->contents != -1) in q2
 		return;
 
 	splitplane = node->plane;
@@ -237,18 +241,18 @@ void R_PushDlights(void)
 	int i;
 	dlight_t *l;
 
-	if(gl_flashblend.value)
+	if(gl_flashblend.value) // TODO: if(gl_flashblend->value) in q2
 		return;
 
 	r_dlightframecount = r_framecount + 1; // because the count hasn't
 	                                       //  advanced yet for this frame
-	l = cl_dlights;
+	l = cl_dlights; // TODO: = r_newrefdef.dlights in q2
 
-	for(i = 0; i < MAX_DLIGHTS; i++, l++)
+	for(i = 0; i < MAX_DLIGHTS; i++, l++) // TODO: for (i=0 ; i<r_newrefdef.num_dlights ; i++, l++) in q2
 	{
-		if(l->die < cl.time || !l->radius)
-			continue;
-		R_MarkLights(l, 1 << i, cl.worldmodel->nodes);
+		if(l->die < cl.time || !l->radius) // TODO: not present in q2
+			continue; // TODO: not present in q2
+		R_MarkLights(l, 1 << i, cl.worldmodel->nodes); // TODO: cl.worldmodel -> r_worldmodel
 	}
 }
 
@@ -260,7 +264,8 @@ LIGHT SAMPLING
 =============================================================================
 */
 
-mplane_t *lightplane;
+//vec3_t pointcolor; // TODO: q2
+mplane_t *lightplane; // used as shadow plane
 vec3_t lightspot;
 
 int RecursiveLightPoint(mnode_t *node, vec3_t start, vec3_t end)
@@ -275,10 +280,10 @@ int RecursiveLightPoint(mnode_t *node, vec3_t start, vec3_t end)
 	int i;
 	mtexinfo_t *tex;
 	byte *lightmap;
-	unsigned scale;
+	unsigned scale; // TODO: not present in q2
 	int maps;
 
-	if(node->contents < 0)
+	if(node->contents < 0) // TODO: if(node->contents != -1) in q2
 		return -1; // didn't hit anything
 
 	// calculate mid point

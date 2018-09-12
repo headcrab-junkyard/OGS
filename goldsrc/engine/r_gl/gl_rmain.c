@@ -559,7 +559,7 @@ void R_DrawAliasModel(cl_entity_t *e)
 	}
 
 	if(gl_smoothmodels.value)
-		glShadeModel(GL_SMOOTH);
+		qglShadeModel(GL_SMOOTH);
 	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 	if(gl_affinemodels.value)

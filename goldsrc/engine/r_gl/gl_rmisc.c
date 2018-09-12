@@ -66,6 +66,7 @@ byte dottexture[8][8] =
   { 0, 0, 0, 0, 0, 0, 0, 0 },
   { 0, 0, 0, 0, 0, 0, 0, 0 },
 };
+
 void R_InitParticleTexture(void)
 {
 	int x, y;
@@ -87,12 +88,34 @@ void R_InitParticleTexture(void)
 			data[y][x][3] = dottexture[x][y] * 255;
 		}
 	}
+	
+	//
 	qglTexImage2D(GL_TEXTURE_2D, 0, gl_alpha_format, 8, 8, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
 	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	// Q2
+	/*
+	r_particletexture = GL_LoadPic ("***particle***", (byte *)data, 8, 8, it_sprite, 32);
+
+	//
+	// also use this for bad textures, but without alpha
+	//
+	for (x=0 ; x<8 ; x++)
+	{
+		for (y=0 ; y<8 ; y++)
+		{
+			data[y][x][0] = dottexture[x&3][y&3]*255;
+			data[y][x][1] = 0; // dottexture[x&3][y&3]*255;
+			data[y][x][2] = 0; //dottexture[x&3][y&3]*255;
+			data[y][x][3] = 255;
+		}
+	}
+	r_notexture = GL_LoadPic ("***r_notexture***", (byte *)data, 8, 8, it_wall, 32);
+	*/
+	//
 }
 
 /*

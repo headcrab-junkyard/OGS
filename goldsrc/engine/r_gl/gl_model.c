@@ -294,7 +294,7 @@ model_t *Mod_LoadModel(model_t *mod, qboolean crash)
 		break;
 
 	// TODO
-	//case STUDIOHEADER:
+	//case IDSTUDIOHEADER:
 		//Mod_LoadStudioModel(mod, buf);
 		//break;
 
@@ -1893,6 +1893,48 @@ void Mod_LoadSpriteModel(model_t *mod, void *buffer)
 	mod->type = mod_sprite;
 }
 
+/*
+==============================================================================
+
+STUDIO MODELS
+
+==============================================================================
+*/
+
+/*
+================
+Mod_LoadStudioModel
+================
+*/
+void Mod_LoadStudioModel(model_t *mod, void *buffer)
+{
+	// TODO
+/*
+	int version;
+	dstudiomodel_t *pin;
+	mstudiomodel_t *pstudiomdl;
+	int size;
+	
+	pin = (dstudiomodel_t*)buffer;
+	
+	version = LittleLong(pin->version);
+	
+	if(version != STUDIO_VERSION)
+		Sys_Error("%s has wrong version number (%d should be %d)", mod->name, version, STUDIO_VERSION);
+	
+	size = sizeof(mstudiomodel_t); // TODO
+	
+	pstudiomdl = Hunk_AllocName(size, loadname);
+	
+	mod->cache.data = pstudiomdl;
+	
+	pstudiomdl->type = LittleLong(pin->type);
+	mod->synctype = LittleLong(pin->synctype);
+	
+	mod->type = mod_studio;
+*/
+};
+
 //=============================================================================
 
 /*
@@ -1911,28 +1953,3 @@ void Mod_Print(void)
 		Con_Printf("%8p : %s\n", mod->cache.data, mod->name);
 	}
 }
-
-// STUDIOMODEL WIP
-
-/*
-================
-Mod_LoadStudioModel
-================
-*/
-/*
-void Mod_LoadStudioModel(model_t *mod, void *buffer)
-{
-	int version;
-	dstudiomodel_t *pin;
-	mstudiomodel_t *pstudiomdl;
-	
-	pin = (dstudiomodel_t*)buffer;
-	
-	version = LittleLong(pin->version);
-	
-	if(version != STUDIO_VERSION)
-		Sys_Error("Boom!");
-		
-	mod->type = mod_studio;
-};
-*/

@@ -309,7 +309,7 @@ void Draw_CharToConback(int num, byte *dest)
 
 typedef struct
 {
-	char *name;
+	const char *name;
 	int minimize, maximize;
 } glmode_t;
 
@@ -838,7 +838,12 @@ Fills a box of pixels with a single color
 */
 void Draw_Fill(int x, int y, int w, int h, int c)
 {
+	//if((unsigned)c > 255) // TODO
+		//ri.Sys_Error(ERR_FATAL, "Draw_Fill: bad color"); // TODO
+	
 	qglDisable(GL_TEXTURE_2D);
+	
+	//color.c = d_8to24table[c]; // TODO
 	qglColor3f(host_basepal[c * 3] / 255.0,
 	          host_basepal[c * 3 + 1] / 255.0,
 	          host_basepal[c * 3 + 2] / 255.0);

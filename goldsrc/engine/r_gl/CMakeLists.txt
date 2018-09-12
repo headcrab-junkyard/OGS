@@ -2,6 +2,11 @@ project(ogs-render-gl)
 
 file(GLOB PROJECT_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/*.c
+if(WIN32)
+	${CMAKE_CURRENT_SOURCE_DIR}/win/*.c
+elseif(UNIX)
+	#${CMAKE_CURRENT_SOURCE_DIR}/linux/*.c
+endif()
 )
 
 if(OGS_USE_INTERNAL_RENDER) #if(OGS_EVOL)

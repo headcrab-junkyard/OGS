@@ -111,6 +111,7 @@ vrect_t scr_vrect;
 qboolean scr_disabled_for_loading;
 qboolean scr_drawloading;
 float scr_disabled_time;
+qboolean scr_skipupdate;
 
 qboolean block_drawing;
 
@@ -630,7 +631,7 @@ void SCR_ScreenShot_f(void)
 		pcxname[5] = i / 10 + '0';
 		pcxname[6] = i % 10 + '0';
 		sprintf(checkname, "%s/%s", com_gamedir, pcxname);
-		if(FS_FileTime(checkname) == -1)
+		if(FS_GetFileTime(checkname) == -1)
 			break; // file doesn't exist
 	}
 	if(i == 100)
@@ -988,12 +989,12 @@ void SCR_EndLoadingPlaque(void)
 
 //=============================================================================
 
-char *scr_notifystring;
+const char *scr_notifystring;
 qboolean scr_drawdialog;
 
 void SCR_DrawNotifyString(void)
 {
-	char *start;
+	const char *start;
 	int l;
 	int j;
 	int x, y;
