@@ -34,8 +34,10 @@ int starttime;
 
 qboolean isDedicated;
 
-void MaskExceptions();
 void Sys_InitFloatTime();
+
+void MaskExceptions();
+void Sys_SetFPCW();
 void Sys_PushFPCW_SetHigh();
 void Sys_PopFPCW();
 
@@ -271,11 +273,15 @@ Sys_MakeCodeWriteable
 void Sys_MakeCodeWriteable(unsigned long startaddr, unsigned long length)
 {
 #ifdef _WIN32
+
+#ifndef SWDS
 	DWORD flOldProtect;
 
 	// TODO: copy on write or just read-write?
 	if(!VirtualProtect((LPVOID)startaddr, length, PAGE_READWRITE, &flOldProtect))
 		Sys_Error("Protection change failed\n");
+#endif
+
 #else
 	int r;
 	unsigned long addr;
@@ -413,16 +419,22 @@ void Sys_Error(const char *error, ...)
 #endif
 };
 
+/*
+================
+Sys_Quit
+================
+*/
 void Sys_Quit()
 {
 #ifdef _WIN32
-	VID_ForceUnlockedAndReturnState();
+
+#ifndef SWDS
+	//VID_ForceUnlockedAndReturnState(); // TODO
 
 	Host_Shutdown();
 
-#ifndef SWDS
-	if(tevent)
-		CloseHandle(tevent);
+	//if(tevent) // TODO
+		//CloseHandle(tevent); // TODO
 
 	//if(qwclsemaphore) // TODO
 		//CloseHandle(qwclsemaphore); // TODO
@@ -548,8 +560,12 @@ double Sys_FloatTime()
 void Sys_Sleep()
 {
 #ifdef _WIN32
+
+#ifndef SWDS
 	Sleep(1); // TODO: nothing in QW
-#ifdef __linux__
+#endif
+
+#elif __linux__
 	usleep(1 * 1000);
 #elif sun
 	// Nothing?
