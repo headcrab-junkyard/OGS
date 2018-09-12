@@ -434,7 +434,7 @@ void CL_SendMove(usercmd_t *cmd)
 	if(cl.spectator)
 		Cam_Track(cmd);
 
-	CL_FinishMove(cmd);
+	//CL_FinishMove(cmd); // TODO
 
 	Cam_FinishMove(cmd);
 
@@ -456,7 +456,7 @@ void CL_SendMove(usercmd_t *cmd)
 	MSG_WriteByte(&buf, 0);
 
 	// write our lossage percentage
-	lost = CL_CalcNet();
+	lost = 0; //CL_CalcNet(); // TODO
 	MSG_WriteByte(&buf, (byte)lost);
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
