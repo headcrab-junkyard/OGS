@@ -23,6 +23,8 @@
 
 #include "public/FileSystem.h"
 
+typedef struct pack_s pack_t;
+
 class CFileSystem final : public IFileSystem
 {
 public:
@@ -119,6 +121,11 @@ public:
 	void AddSearchPathNoWrite(const char *sPath, const char *sPathID) override;
 private:
 	static constexpr auto MAX_HANDLES{10};
+	
+	FileHandle_t FindFile(const char *filename);
+	
+	pack_t *LoadPackFile(const char *packfile);
+	void AddGameDirectory(const char *dir);
 	
 	int findhandle() const;
 	int filelength(FILE *f);
