@@ -20,6 +20,8 @@ include_directories(
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/../ogs-sdk ${CMAKE_BINARY_DIR}/ogs-sdk)
 
+add_subdirectory(dlls)
+
 add_subdirectory(filesystem)
 add_subdirectory(engine)
 add_subdirectory(dedicated)
