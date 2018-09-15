@@ -39,7 +39,7 @@ void LoadThisDll(const char *name)
 	pfnGetEntityAPI fnGetEntityAPI = NULL;
 	pfnGetEntityAPI2 fnGetEntityAPI2 = NULL;
 
-	gamedll = FS_LoadLibrary(name); // TODO: was Sys_LoadModule
+	gamedll = FS_LoadLibrary(va("%s/%s", com_gamedir, name)); // TODO: was Sys_LoadModule
 
 	if(!gamedll)
 		Sys_Error("PR_LoadProgs: couldn't load game dll");
