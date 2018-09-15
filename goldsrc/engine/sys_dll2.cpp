@@ -92,6 +92,9 @@ void Sys_InitGame(const char *lpOrgCmdLine, const char *pBaseDir /*TODO: szBaseD
 	
 	isDedicated = bIsDedicated; // TODO: was (COM_CheckParm ("-dedicated") != 0);
 	
+	if(isDedicated)
+		cls.state = ca_dedicated;
+	
 	//printf("Host_Init\n");
 	Host_Init(&parms);
 	
@@ -243,8 +246,12 @@ CDedicatedServerAPI::~CDedicatedServerAPI() = default;
 
 bool CDedicatedServerAPI::Init(const char *basedir, const char *cmdline, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory)
 {
+	FileSystem_Init(basedir, (void*)filesystemFactory);
+	
 	if(!gpEngine->Load(true, basedir, cmdline))
 		return false;
+	
+	FileSystem_Shutdown();
 
 	return true;
 };
@@ -258,8 +265,8 @@ int CDedicatedServerAPI::Shutdown()
 
 bool CDedicatedServerAPI::RunFrame()
 {
-	//gpEngine->Frame();
-	return false;
+	gpEngine->Frame();
+	return true; // TODO
 };
 
 void CDedicatedServerAPI::AddConsoleText(const char *text)
