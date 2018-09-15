@@ -22,11 +22,13 @@
 #include "quakedef.h"
 #include "icdaudio.h"
 
+extern ICDAudio *CreateCDAudio();
+
 ICDAudio *gpCDAudio{ nullptr };
 
 int CDAudio_Init()
 {
-	gpCDAudio = nullptr; //new CCDAudioNull(); // TODO
+	gpCDAudio = CreateCDAudio(); // TODO
 
 	return gpCDAudio->Init();
 };

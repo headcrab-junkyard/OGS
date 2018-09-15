@@ -66,6 +66,9 @@ private:
 	bool mbEnabled{ false };
 };
 
+CCDAudio::CCDAudio() = default;
+CCDAudio::~CCDAudio() = default;
+
 int CCDAudio::Init()
 {
 	DWORD dwReturn;
@@ -499,4 +502,10 @@ int CCDAudio::GetAudioDiskInfo()
 	maxTrack = mciStatusParms.dwReturn;
 
 	return 0;
+};
+
+// TODO: temp
+ICDAudio *CreateCDAudio()
+{
+	return new CCDAudio();
 };

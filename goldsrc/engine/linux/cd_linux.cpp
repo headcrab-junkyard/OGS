@@ -441,3 +441,9 @@ int CCDAudio::GetAudioDiskInfo()
 
 	return 0;
 };
+
+// TODO: temp
+ICDAudio *CreateCDAudio()
+{
+	return new CCDAudio();
+};

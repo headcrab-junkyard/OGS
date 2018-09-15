@@ -67,3 +67,9 @@ extern "C" LONG CDAudio_MessageHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 	return 0;
 };
 #endif
+
+// TODO: temp
+ICDAudio *CreateCDAudio()
+{
+	return new CCDAudio();
+};
