@@ -60,9 +60,9 @@ void PlayerPostThink(edict_t *pent){};
 
 void StartFrame(){};
 
-void ParmsNewLevel(){};
+void ParmsNewLevel(){}; // TODO: SetNewParms?
 
-void ParmsChangeLevel(){};
+void ParmsChangeLevel(){}; // TODO: SetChangeParms?
 
 const char *GetGameDescription()
 {

@@ -1,5 +1,7 @@
 /// @file
 
+#include <cstring>
+
 #include "eiface.h"
 
 #ifdef _WIN32
@@ -9,6 +11,8 @@
 #endif
 
 #define C_EXPORT extern "C" EXPORT
+
+typedef struct globalvars_s globalvars_t;
 
 //
 // required prog functions
@@ -40,10 +44,13 @@ static DLL_FUNCTIONS gGameFuncs =
 	// TODO
 };
 
+// TODO
+/*
 static NEW_DLL_FUNCTIONS gNewGameFuncs =
 {
 	// TODO
 };
+*/
 
 C_EXPORT void GiveFnPtrsToDll(enginefuncs_t *pEngFuncs, globalvars_t *pGlobals)
 {
@@ -87,6 +94,8 @@ C_EXPORT int GetEntityAPI2(DLL_FUNCTIONS *pGameFuncs, int *pInterfaceVersion)
 	return 1;
 };
 
+// TODO
+/*
 int GetNewDLLFunctions(NEW_DLL_FUNCTIONS *pFuncs, int *pInterfaceVersion)
 {
 	if(!pFuncs || !pInterfaceVersion)
@@ -101,3 +110,4 @@ int GetNewDLLFunctions(NEW_DLL_FUNCTIONS *pFuncs, int *pInterfaceVersion)
 	memcpy(pFuncs, &gNewGameFuncs, sizeof(NEW_DLL_FUNCTIONS));
 	return 1;
 };
+*/
