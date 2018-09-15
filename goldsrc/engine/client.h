@@ -172,7 +172,7 @@ typedef struct
 	qboolean demoplayback;
 	qboolean timedemo;
 	int forcetrack; // -1 = use normal cd track
-	FILE *demofile;
+	FileHandle_t demofile;
 	int td_lastframe;   // to meter out one message a frame
 	int td_startframe;  // host_framecount at start
 	float td_starttime; // realtime at second frame of timedemo

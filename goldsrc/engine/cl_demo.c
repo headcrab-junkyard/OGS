@@ -242,7 +242,7 @@ void CL_Record_f()
 	COM_DefaultExtension(name, ".dem");
 
 	Con_Printf("recording to %s.\n", name);
-	cls.demofile = fopen(name, "wb");
+	cls.demofile = FS_Open(name, "wb");
 	if(!cls.demofile)
 	{
 		Con_Printf("ERROR: couldn't open.\n");
@@ -250,7 +250,7 @@ void CL_Record_f()
 	}
 
 	cls.forcetrack = track;
-	fprintf(cls.demofile, "%i\n", cls.forcetrack);
+	FS_FPrintf(cls.demofile, "%i\n", cls.forcetrack);
 
 	cls.demorecording = true;
 }
@@ -289,7 +289,7 @@ void CL_PlayDemo_f()
 	COM_DefaultExtension(name, ".dem");
 
 	Con_Printf("Playing demo from %s.\n", name);
-	COM_FOpenFile(name, &cls.demofile);
+	cls.demofile = FS_Open(name, "rb");
 	if(!cls.demofile)
 	{
 		Con_Printf("ERROR: couldn't open.\n");
@@ -301,7 +301,7 @@ void CL_PlayDemo_f()
 	cls.state = ca_connected;
 	cls.forcetrack = 0;
 
-	while((c = getc(cls.demofile)) != '\n')
+	while((c = fgetc((FILE*)cls.demofile)) != '\n') // TODO
 		if(c == '-')
 			neg = true;
 		else
