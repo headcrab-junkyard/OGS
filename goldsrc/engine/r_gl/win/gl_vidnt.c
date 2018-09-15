@@ -811,6 +811,8 @@ void VID_Shutdown()
 			ReleaseDC(dibwindow, maindc);
 
 		AppActivate(false, false);
+		
+		QGL_Shutdown();
 	}
 }
 
@@ -1596,6 +1598,12 @@ void VID_Init(unsigned char *palette)
 	Cmd_AddCommand("vid_describecurrentmode", VID_DescribeCurrentMode_f);
 	Cmd_AddCommand("vid_describemode", VID_DescribeMode_f);
 	Cmd_AddCommand("vid_describemodes", VID_DescribeModes_f);
+	
+	if(!QGL_Init("opengl32"))
+	{
+		QGL_Shutdown();
+		Sys_Error("QGL Initialization failed!");
+	};
 
 	//hIcon = LoadIcon(global_hInstance, MAKEINTRESOURCE(IDI_ICON2)); // TODO
 
