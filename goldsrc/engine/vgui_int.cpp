@@ -20,21 +20,23 @@
 
 #include "quakedef.h"
 #include "vgui_int.h"
+#include "vguiwrap.h"
+#include "vguiwrap2.h"
 
 void VGui_Startup()
 {
-	// TODO: VGuiWrap2_Startup();
+	VGuiWrap2_Startup();
 };
 
 void VGui_Shutdown()
 {
-	// TODO: VGuiWrap2_Shutdown();
+	VGuiWrap2_Shutdown();
 };
 
 /*
 void VGui_Frame()
 {
-	CEGUI::System::renderAllGUIContexts();
+	// TODO: VGuiWrap2_Frame();
 };
 */
 
