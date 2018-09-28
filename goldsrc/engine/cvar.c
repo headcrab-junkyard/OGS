@@ -56,6 +56,21 @@ float Cvar_VariableValue(const char *var_name)
 
 /*
 ============
+Cvar_VariableInt
+============
+*/
+int Cvar_VariableInt(const char *var_name)
+{
+	cvar_t *var;
+
+	var = Cvar_FindVar(var_name);
+	if(!var)
+		return 0;
+	return Q_atoi(var->string); // TODO
+};
+
+/*
+============
 Cvar_VariableString
 ============
 */
