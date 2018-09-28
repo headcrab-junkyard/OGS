@@ -452,7 +452,7 @@ void Con_Printf(const char *fmt, ...)
 
 	// log all messages to file
 	if(con_debuglog)
-		Con_DebugLog(va("%s/qconsole.log", com_gamedir), "%s", msg);
+		Con_DebugLog("qconsole.log", "%s", msg);
 
 	// TODO
 	//if(sv_logfile)
