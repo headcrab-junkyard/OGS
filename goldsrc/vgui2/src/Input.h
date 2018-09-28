@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "vgui2/IInput.hpp"
+#include "vgui2/IInput.h"
 
 namespace vgui2
 {

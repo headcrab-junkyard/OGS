@@ -348,7 +348,7 @@ void CSurface::MovePopupToBack(VPANEL panel)
 {
 };
 
-void CSurface::SolveTraverse(VPANEL panel, bool forceApplySchemeSettings = false)
+void CSurface::SolveTraverse(VPANEL panel, bool forceApplySchemeSettings)
 {
 };
 

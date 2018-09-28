@@ -20,16 +20,46 @@
 
 #include "VGUI.h"
 
-//namespace vgui2
-//{
+//#define CEGUI_STATIC
+
+//#include "CEGUI/CEGUI.h"
+//#include "CEGUI/RendererModules/OpenGL/GLRenderer.h"
+
+// Hi, Windows!
+#ifdef PostMessage
+#undef PostMessage
+#endif
+
+namespace vgui2
+{
+
+///CEGUI::OpenGLRenderer *gpRenderer{nullptr};
 
 bool CVGui::Init(CreateInterfaceFn *factoryList, int numFactories)
 {
-	return false;
+	// TODO
+	
+	// * CEGUI::OpenGLRenderer for r_gl
+	// * CEGUI::OpenGL3Renderer for r_gl3
+
+	///*gpRenderer = CEGUI::OpenGLRenderer::bootstrapSystem();
+	
+	///CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
+	//CEGUI::Window *myRoot = wmgr.createWindow("DefaultWindow", "root");
+	//CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow(myRoot);
+	
+	///CEGUI::FrameWindow *fWnd = static_cast<CEGUI::FrameWindow*>(wmgr.createWindow( "TaharezLook/FrameWindow", "testWindow" ));
+	
+	return true;
 };
 
 void CVGui::Shutdown()
 {
+	// TODO
+	
+	//CEGUI::System::destroy();
+	//CEGUI::OpenGLRenderer::destroy(gpRenderer);
+	///CEGUI::OpenGLRenderer::destroySystem();
 };
 
 void CVGui::Start()
@@ -49,6 +79,7 @@ bool CVGui::IsRunning()
 
 void CVGui::RunFrame()
 {
+	///CEGUI::System::getSingleton().renderAllGUIContexts();
 };
 
 void CVGui::ShutdownMessage(unsigned int shutdownID)
@@ -90,15 +121,15 @@ void CVGui::MarkPanelForDeletion(VPANEL panel)
 {
 };
 
-void CVGui::AddTickSignal(VPANEL panel, int intervalMilliseconds = 0)
+void CVGui::AddTickSignal(VPANEL panel, int intervalMilliseconds)
 {
 };
 
-void CVGui::RemoveTickSignal(VPANEL panekl)
+void CVGui::RemoveTickSignal(VPANEL panel)
 {
 };
 
-void CVGui::PostMessage(VPANEL target, KeyValues *params, VPANEL from, float delaySeconds = 0.0f)
+void CVGui::PostMessage(VPANEL target, KeyValues *params, VPANEL from, float delaySeconds)
 {
 };
 
@@ -117,10 +148,12 @@ void CVGui::AssociatePanelWithContext(HContext context, VPANEL pRoot)
 
 void CVGui::ActivateContext(HContext context)
 {
+	//mContexts[context]->SetActive(true); // Activate()
 };
 
 void CVGui::SetSleep(bool state)
 {
+	mbSleeping = state;
 };
 
 bool CVGui::GetShouldVGuiControlSleep()
@@ -132,4 +165,4 @@ void CVGui::DispatchMessages()
 {
 };
 
-//}; // namespace vgui2
+}; // namespace vgui2

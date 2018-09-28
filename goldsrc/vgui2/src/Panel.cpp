@@ -18,6 +18,8 @@
 
 /// @file
 
+#include "Panel.h"
+
 namespace vgui2
 {
 
@@ -196,7 +198,7 @@ void CPanel::PerformApplySchemeSettings(VPANEL vguiPanel)
 {
 };
 
-void CPanel::PaintTraverse(VPANEL vguiPanel, bool forceRepaint, bool allowForce = true)
+void CPanel::PaintTraverse(VPANEL vguiPanel, bool forceRepaint, bool allowForce)
 {
 };
 
@@ -226,7 +228,7 @@ bool CPanel::RequestInfo(VPANEL vguiPanel, KeyValues *outputData)
 	return false;
 };
 
-void CPanel::RequestFocus(VPANEL vguiPanel, int direction = 0)
+void CPanel::RequestFocus(VPANEL vguiPanel, int direction)
 {
 };
 

@@ -70,6 +70,7 @@ private:
 	void DispatchMessages();
 	
 	bool mbRunning{false};
+	bool mbSleeping{false};
 };
 
 }; // namespace vgui2
