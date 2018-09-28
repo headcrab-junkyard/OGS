@@ -90,9 +90,16 @@ TODO: should be located somewhere here around 222 line, called by Sys_InitGame
 */
 void Host_InitializeGameDLL()
 {
+	static qboolean bLoaded = false;
+	
+	if(bLoaded)
+		return;
+	
 	Cbuf_Execute();
 	
 	PR_LoadProgs(); // TODO: LoadEntityDLLs
+	
+	bLoaded = true;
 };
 
 /*
