@@ -28,8 +28,10 @@ add_subdirectory(dedicated)
 
 # If not building as dedicated server then build these modules too
 if(NOT OGS_DEDICATED)
-	#add_subdirectory(vgui3) # vgui2?
+	add_subdirectory(vgui2)
 
+	add_subdirectory(cl_dll)
+	
 	#add_subdirectory(gameui)
 	
 	add_subdirectory(launcher)
