@@ -34,8 +34,56 @@ cldll_func_t cl_funcs;
 
 typedef int /*CL_DLLEXPORT*/ (*pfnGetClientDLL)(void *pv);
 
+void UnloadClientDLL()
+{
+	if(gpClientDLL)
+	{
+		Sys_UnloadModule_Wrapper(gpClientDLL);
+		gpClientDLL = NULL;
+	};
+};
+
+qboolean LoadClientDLLF()
+{
+	pfnGetClientDLL fnGetClientDLL = NULL;
+
+	//memcpy(&gEngFuncs, 0, sizeof(cl_enginefunc_t));
+	//memcpy(&cl_funcs, 0, sizeof(cldll_func_t));
+	
+	fnGetClientDLL = (pfnGetClientDLL)Sys_GetExport_Wrapper(gpClientDLL, "F"); // TODO: GetClientDLL?
+
+	if(!fnGetClientDLL)
+		return false;
+
+	fnGetClientDLL(&cl_funcs);
+
+	if(!&cl_funcs || (cl_funcs.pfnInitialize && !cl_funcs.pfnInitialize(&gEngFuncs, CLDLL_INTERFACE_VERSION)))
+		Sys_Error("Can't initialize the client dll!");
+
+	return true;
+};
+
+void LoadClientDLL()
+{
+	char sClientDLLPath[256];
+	snprintf(sClientDLLPath, sizeof(sClientDLLPath) - 1, "%s/cl_dlls/client", com_gamedir);
+	
+	gpClientDLL = FS_LoadLibrary(sClientDLLPath);
+
+	if(!gpClientDLL)
+	{
+		Sys_Error("could not load library %s", sClientDLLPath);
+		//return;
+	};
+
+	if(!LoadClientDLLF())
+		return; // TODO: per-export loading as a fallback
+};
+
 void ClientDLL_Init()
 {
+	LoadClientDLL();
+	
 	// TODO
 	ClientDLL_HudInit();
 	ClientDLL_HudVidInit();
@@ -241,48 +289,11 @@ void ClientDLL_ChatInputPosition(int *x, int *y){
 	// TODO
 };
 
-void UnloadClientDLL()
 {
-	if(gpClientDLL)
-	{
-		Sys_UnloadModule_Wrapper(gpClientDLL);
-		gpClientDLL = NULL;
-	};
 };
 
-qboolean LoadClientDLLF()
 {
-	pfnGetClientDLL fnGetClientDLL = NULL;
-
-	//memcpy(&gEngFuncs, 0, sizeof(cl_enginefunc_t));
-	//memcpy(&cl_funcs, 0, sizeof(cldll_func_t));
-	
-	fnGetClientDLL = (pfnGetClientDLL)Sys_GetExport_Wrapper(gpClientDLL, "F"); // TODO: GetClientDLL?
-
-	if(!fnGetClientDLL)
-		return false;
-
-	fnGetClientDLL(&cl_funcs);
-
-	if(!cl_funcs.pfnInitialize(&gEngFuncs, CLDLL_INTERFACE_VERSION)) // TODO: So.... Are you alive?
-		return false;
-
-	return true;
 };
 
-void LoadClientDLL()
 {
-	char sClientDLLPath[256];
-	snprintf(sClientDLLPath, sizeof(sClientDLLPath) - 1, "goldsrctest/cl_dll/client");
-	
-	gpClientDLL = FS_LoadLibrary(sClientDLLPath);
-
-	if(!gpClientDLL)
-	{
-		Sys_Error("could not load library %s", sClientDLLPath);
-		//return;
-	};
-
-	if(!LoadClientDLLF())
-		return; // TODO: per-export loading as a fallback
 };
