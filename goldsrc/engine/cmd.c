@@ -409,6 +409,8 @@ cmd_source_t cmd_source;
 
 static cmd_function_t *cmd_functions; // possible commands to execute
 
+void Cmd_List_f(); // TODO
+
 /*
 ============
 Cmd_Init
@@ -425,6 +427,7 @@ void Cmd_Init()
 	Cmd_AddCommand("alias", Cmd_Alias_f);
 	Cmd_AddCommand("cmd", Cmd_ForwardToServer);
 	Cmd_AddCommand("wait", Cmd_Wait_f);
+	Cmd_AddCommand("cmdlist", Cmd_List_f); // TODO
 }
 
 /*
@@ -684,3 +687,38 @@ int Cmd_CheckParm(const char *parm)
 
 	return 0;
 }
+
+/*
+============
+Cmd_List_f
+============
+*/
+void Cmd_List_f()
+{
+	cmd_function_t	*cmd;
+	int				i;
+
+	i = 0;
+	for (cmd=cmd_functions ; cmd ; cmd=cmd->next, i++)
+		Con_Printf ("%s\n", cmd->name);
+	Con_Printf ("%i commands\n", i);
+
+/*
+CmdList           : List all commands
+CmdList [Partial] : List commands starting with 'Partial'
+CmdList log [Partial] : Logs commands to file "cmdlist.txt" in the gamedir.
+log cmdlist.txt wt  Couldn't open [%s] for writing!
+    Command List
+--------------
+    %-16.16s
+   %-16.16s
+   %-16.16s
+   %-16.16s
+   --------------
+%3i Commands for [%s]
+CmdList ? for syntax
+  --------------
+%3i Total Commands
+CmdList ? for syntax
+*/
+};
