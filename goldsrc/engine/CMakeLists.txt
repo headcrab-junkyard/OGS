@@ -8,8 +8,11 @@ endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_subdirectory(r_gl)
-add_subdirectory(r_soft)
+if(OGS_ENGINE_HW)
+	add_subdirectory(r_gl)
+else()
+	add_subdirectory(r_soft)
+endif()
 
 file(GLOB PROJECT_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/*.c
