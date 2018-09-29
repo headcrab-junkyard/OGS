@@ -32,6 +32,8 @@ typedef void (*pfnGiveFnptrsToDll)(enginefuncs_t *apEngFuncs, globalvars_t *apGl
 typedef int (*pfnGetEntityAPI)(DLL_FUNCTIONS *apFuncs, int anVersion);
 typedef int (*pfnGetEntityAPI2)(DLL_FUNCTIONS *apFuncs, int *apVersion);
 
+extern enginefuncs_t gEngineFuncs; // TODO
+
 void LoadThisDll(const char *name)
 {
 	static void *gamedll = NULL;
@@ -51,7 +53,7 @@ void LoadThisDll(const char *name)
 	if(!fnGiveFnptrsToDll)
 		return;
 
-	//fnGiveFnptrsToDll(&gEngFuncs, &gGlobalVariables); // TODO
+	fnGiveFnptrsToDll(&gEngineFuncs, &gGlobalVariables); // TODO
 
 	fnGetEntityAPI = (pfnGetEntityAPI)Sys_GetExport_Wrapper(gamedll, "GetEntityAPI");
 	fnGetEntityAPI2 = (pfnGetEntityAPI2)Sys_GetExport_Wrapper(gamedll, "GetEntityAPI2");
