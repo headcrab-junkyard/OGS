@@ -1,19 +1,19 @@
 /*
- *	This file is part of OGS Engine
- *	Copyright (C) 2018 BlackPhrase
+ * This file is part of OGS Engine
+ * Copyright (C) 2018 BlackPhrase
  *
- *	OGS Engine is free software: you can redistribute it and/or modify
- *	it under the terms of the GNU General Public License as published by
- *	the Free Software Foundation, either version 3 of the License, or
- *	(at your option) any later version.
+ * OGS Engine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *	OGS Engine is distributed in the hope that it will be useful,
- *	but WITHOUT ANY WARRANTY; without even the implied warranty of
- *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *	GNU General Public License for more details.
+ * OGS Engine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *	You should have received a copy of the GNU General Public License
- *	along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
 
 /// @file
@@ -27,9 +27,25 @@ CGameUI::~CGameUI() = default;
 
 void CGameUI::Initialize(CreateInterfaceFn *factories, int count)
 {
+	// TODO
+	/*
+	for(int i = 0; i < count; ++i)
+	{
+		mpVGUI = (IVGUI*)*factories[i](VGUI_INTERFACE_VERSION, nullptr);
+		mpFileSystem = (IFileSystem*)*factories[i](FILESYSTEM_INTERFACE_VERSION, nullptr);
+		mpGameUIFuncs = (IGameUIFuncs*)*factories[i](GAMEUIFUNCS_INTERFACE_VERSION, nullptr);
+		mpGameClientExports = (IGameClientExports*)*factories[i](GAMECLIENTEXPORTS_INTERFACE_VERSION, nullptr);
+	};
+	
+	if(!mpGameUIFuncs)
+		return;
+	
+	if(!mpGameClientExports)
+		mpGameClientExports = new CDefaultGameClientExports();
+	*/
 };
 
-void CGameUI::Start(/*cl_enginefunc_t*/ struct cl_enginefuncs_s *engineFuncs, int interfaceVersion, /*void*/ IBaseSystem *system)
+void CGameUI::Start(/*cl_enginefunc_t*/ struct cl_enginefuncs_s *engineFuncs, int interfaceVersion, void /*IBaseSystem*/ *system)
 {
 };
 
@@ -109,6 +125,7 @@ void CGameUI::SetSecondaryProgressBarText(const char *statusText)
 
 void CGameUI::ValidateCDKey(bool force, bool inConnect)
 {
+	// UNUSED
 };
 
 void CGameUI::OnDisconnectFromServer(int eSteamLoginFailure, const char *username)
