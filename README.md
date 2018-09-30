@@ -1,16 +1,16 @@
 <p align="center">
-	<a href="https://github.com/BlackPhrase/OGS"><img width="256" heigth="256" src="./docs/OGSLogo512x512.png?raw=true" alt="OGS Logo"/></a>
+	<a href="https://gitlab.com/BlackPhrase/OGS"><img width="256" heigth="256" src="./docs/OGSLogo512x512.png?raw=true" alt="OGS Logo"/></a>
 </p>
 
 <p align="center">
 	<a href="https://ci.appveyor.com/project/BlackPhrase/OGS">
-		<img src="https://ci.appveyor.com/api/projects/status/github/BlackPhrase/OGS?svg=true"/>
+		<img src="https://ci.appveyor.com/api/projects/status/gitlab/BlackPhrase/OGS?svg=true"/>
 	</a>
 	<a href="https://travis-ci.org/BlackPhrase/OGS">
 		<img src="https://travis-ci.org/BlackPhrase/OGS.svg"/>
 	</a>
-	<a href="https://codeclimate.com/github/BlackPhrase/OGS/issues">
-		<img src="https://img.shields.io/codeclimate/issues/github/BlackPhrase/OGS.svg"/>
+	<a href="https://codeclimate.com/gitlab/BlackPhrase/OGS/issues">
+		<img src="https://img.shields.io/codeclimate/issues/gitlab/BlackPhrase/OGS.svg"/>
 	</a>
 </p>
 
@@ -57,6 +57,6 @@ showcasing its features using some recreated HL Alpha maps)
 
 ## License
 
-[![license](https://img.shields.io/github/license/BlackPhrase/OGS.svg)](https://github.com/BlackPhrase/OGS/blob/master/LICENSE)
+[![license](https://img.shields.io/gitlab/license/BlackPhrase/OGS.svg)](https://gitlab.com/BlackPhrase/OGS/blob/master/LICENSE)
 
 GNU GPL v3+
