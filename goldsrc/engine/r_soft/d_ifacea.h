@@ -20,6 +20,8 @@
 /// @file
 /// @brief Include file for asm driver interface
 
+#pragma once
+
 //
 // !!! note that this file must match the corresponding C structures in
 // d_iface.h at all times !!!

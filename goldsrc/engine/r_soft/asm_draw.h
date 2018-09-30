@@ -20,6 +20,8 @@
 /// @file
 /// @brief Include file for asm drawing routines
 
+#pragma once
+
 //
 // !!! note that this file must match the corresponding C structures at all
 // times !!!
