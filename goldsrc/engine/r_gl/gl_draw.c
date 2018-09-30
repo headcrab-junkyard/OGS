@@ -488,7 +488,7 @@ void Draw_Init(void)
 	//
 	// get the other pics we need
 	//
-	draw_disc = Draw_PicFromWad("disc");
+	//draw_disc = Draw_PicFromWad("disc"); // TODO
 	draw_backtile = Draw_PicFromWad("backtile");
 }
 

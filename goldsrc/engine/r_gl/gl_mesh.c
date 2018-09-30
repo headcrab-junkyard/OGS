@@ -283,7 +283,7 @@ void GL_MakeAliasModelDisplayLists(model_t *m, aliashdr_t *hdr)
 	int *cmds;
 	trivertx_t *verts;
 	char cache[MAX_QPATH], fullpath[MAX_OSPATH];
-	FILE *f;
+	FileHandle_t f;
 
 	aliasmodel = m;
 	paliashdr = hdr; // (aliashdr_t *)Mod_Extradata (m);
@@ -295,14 +295,14 @@ void GL_MakeAliasModelDisplayLists(model_t *m, aliashdr_t *hdr)
 	COM_StripExtension(m->name + strlen("progs/"), cache + strlen("glquake/"));
 	strcat(cache, ".ms2");
 
-	COM_FOpenFile(cache, &f);
+	f = FS_Open(cache, "rb");
 	if(f)
 	{
-		fread(&numcommands, 4, 1, f);
-		fread(&numorder, 4, 1, f);
-		fread(&commands, numcommands * sizeof(commands[0]), 1, f);
-		fread(&vertexorder, numorder * sizeof(vertexorder[0]), 1, f);
-		fclose(f);
+		FS_Read(&numcommands, 4, f);
+		FS_Read(&numorder, 4, f);
+		FS_Read(&commands, numcommands * sizeof(commands[0]), f);
+		FS_Read(&vertexorder, numorder * sizeof(vertexorder[0]), f);
+		FS_Close(f);
 	}
 	else
 	{
@@ -317,7 +317,7 @@ void GL_MakeAliasModelDisplayLists(model_t *m, aliashdr_t *hdr)
 		// save out the cached version
 		//
 		sprintf(fullpath, "%s/%s", com_gamedir, cache);
-		f = fopen(fullpath, "wb");
+		f = FS_Open(fullpath, "wb");
 // TODO
 /*
 		if (!f)
@@ -331,11 +331,11 @@ void GL_MakeAliasModelDisplayLists(model_t *m, aliashdr_t *hdr)
 */
 		if(f)
 		{
-			fwrite(&numcommands, 4, 1, f);
-			fwrite(&numorder, 4, 1, f);
-			fwrite(&commands, numcommands * sizeof(commands[0]), 1, f);
-			fwrite(&vertexorder, numorder * sizeof(vertexorder[0]), 1, f);
-			fclose(f);
+			FS_Write(&numcommands, 4, f);
+			FS_Write(&numorder, 4, f);
+			FS_Write(&commands, numcommands * sizeof(commands[0]), f);
+			FS_Write(&vertexorder, numorder * sizeof(vertexorder[0]), f);
+			FS_Close(f);
 		}
 	}
 

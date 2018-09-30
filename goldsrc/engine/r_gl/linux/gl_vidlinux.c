@@ -240,6 +240,8 @@ void VID_SetPalette(unsigned char *palette)
 		b = pal[2];
 		pal += 3;
 
+//		v = (255<<24) + (r<<16) + (g<<8) + (b<<0);
+//		v = (255<<0) + (r<<8) + (g<<16) + (b<<24);
 		v = (255 << 24) + (r << 0) + (g << 8) + (b << 16);
 		*table++ = v;
 	}

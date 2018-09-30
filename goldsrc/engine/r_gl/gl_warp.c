@@ -449,12 +449,12 @@ typedef struct _TargaHeader
 TargaHeader targa_header;
 byte *targa_rgba;
 
-int fgetLittleShort(FILE *f)
+int fgetLittleShort(FileHandle_t f)
 {
 	byte b1, b2;
 
-	b1 = fgetc(f);
-	b2 = fgetc(f);
+	b1 = FS_GetC(f);
+	b2 = FS_GetC(f);
 
 	return (short)(b1 + b2 * 256);
 }
@@ -476,25 +476,25 @@ int fgetLittleLong(FILE *f)
 LoadTGA
 =============
 */
-void LoadTGA(FILE *fin)
+void LoadTGA(FileHandle_t fin)
 {
 	int columns, rows, numPixels;
 	byte *pixbuf;
 	int row, column;
 
-	targa_header.id_length = fgetc(fin);
-	targa_header.colormap_type = fgetc(fin);
-	targa_header.image_type = fgetc(fin);
+	targa_header.id_length = FS_GetC(fin);
+	targa_header.colormap_type = FS_GetC(fin);
+	targa_header.image_type = FS_GetC(fin);
 
 	targa_header.colormap_index = fgetLittleShort(fin);
 	targa_header.colormap_length = fgetLittleShort(fin);
-	targa_header.colormap_size = fgetc(fin);
+	targa_header.colormap_size = FS_GetC(fin);
 	targa_header.x_origin = fgetLittleShort(fin);
 	targa_header.y_origin = fgetLittleShort(fin);
 	targa_header.width = fgetLittleShort(fin);
 	targa_header.height = fgetLittleShort(fin);
-	targa_header.pixel_size = fgetc(fin);
-	targa_header.attributes = fgetc(fin);
+	targa_header.pixel_size = FS_GetC(fin);
+	targa_header.attributes = FS_GetC(fin);
 
 	if(targa_header.image_type != 2 && targa_header.image_type != 10)
 		Sys_Error("LoadTGA: Only type 2 and 10 targa RGB images supported\n");
@@ -509,7 +509,7 @@ void LoadTGA(FILE *fin)
 	targa_rgba = malloc(numPixels * 4);
 
 	if(targa_header.id_length != 0)
-		fseek(fin, targa_header.id_length, SEEK_CUR); // skip TARGA image comment
+		FS_Seek(fin, targa_header.id_length, SEEK_CUR); // skip TARGA image comment
 
 	if(targa_header.image_type == 2)
 	{ // Uncompressed, RGB images
@@ -523,19 +523,19 @@ void LoadTGA(FILE *fin)
 				{
 				case 24:
 
-					blue = getc(fin);
-					green = getc(fin);
-					red = getc(fin);
+					blue = FS_GetC(fin);
+					green = FS_GetC(fin);
+					red = FS_GetC(fin);
 					*pixbuf++ = red;
 					*pixbuf++ = green;
 					*pixbuf++ = blue;
 					*pixbuf++ = 255;
 					break;
 				case 32:
-					blue = getc(fin);
-					green = getc(fin);
-					red = getc(fin);
-					alphabyte = getc(fin);
+					blue = FS_GetC(fin);
+					green = FS_GetC(fin);
+					red = FS_GetC(fin);
+					alphabyte = FS_GetC(fin);
 					*pixbuf++ = red;
 					*pixbuf++ = green;
 					*pixbuf++ = blue;
@@ -553,23 +553,23 @@ void LoadTGA(FILE *fin)
 			pixbuf = targa_rgba + row * columns * 4;
 			for(column = 0; column < columns;)
 			{
-				packetHeader = getc(fin);
+				packetHeader = FS_GetC(fin);
 				packetSize = 1 + (packetHeader & 0x7f);
 				if(packetHeader & 0x80)
 				{ // run-length packet
 					switch(targa_header.pixel_size)
 					{
 					case 24:
-						blue = getc(fin);
-						green = getc(fin);
-						red = getc(fin);
+						blue = FS_GetC(fin);
+						green = FS_GetC(fin);
+						red = FS_GetC(fin);
 						alphabyte = 255;
 						break;
 					case 32:
-						blue = getc(fin);
-						green = getc(fin);
-						red = getc(fin);
-						alphabyte = getc(fin);
+						blue = FS_GetC(fin);
+						green = FS_GetC(fin);
+						red = FS_GetC(fin);
+						alphabyte = FS_GetC(fin);
 						break;
 					}
 
@@ -598,19 +598,19 @@ void LoadTGA(FILE *fin)
 						switch(targa_header.pixel_size)
 						{
 						case 24:
-							blue = getc(fin);
-							green = getc(fin);
-							red = getc(fin);
+							blue = FS_GetC(fin);
+							green = FS_GetC(fin);
+							red = FS_GetC(fin);
 							*pixbuf++ = red;
 							*pixbuf++ = green;
 							*pixbuf++ = blue;
 							*pixbuf++ = 255;
 							break;
 						case 32:
-							blue = getc(fin);
-							green = getc(fin);
-							red = getc(fin);
-							alphabyte = getc(fin);
+							blue = FS_GetC(fin);
+							green = FS_GetC(fin);
+							red = FS_GetC(fin);
+							alphabyte = FS_GetC(fin);
 							*pixbuf++ = red;
 							*pixbuf++ = green;
 							*pixbuf++ = blue;
@@ -634,7 +634,7 @@ void LoadTGA(FILE *fin)
 		}
 	}
 
-	fclose(fin);
+	FS_Close(fin);
 }
 
 /*
@@ -646,14 +646,14 @@ char *suf[6] = { "rt", "bk", "lf", "ft", "up", "dn" };
 void R_LoadSkys(void)
 {
 	int i;
-	FILE *f;
+	FileHandle_t f;
 	char name[64];
 
 	for(i = 0; i < 6; i++)
 	{
 		GL_Bind(SKY_TEX + i);
 		sprintf(name, "gfx/env/bkgtst%s.tga", suf[i]);
-		COM_FOpenFile(name, &f);
+		f = FS_Open(name, "rb");
 		if(!f)
 		{
 			Con_Printf("Couldn't load %s\n", name);

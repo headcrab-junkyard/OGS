@@ -111,7 +111,6 @@ vrect_t scr_vrect;
 qboolean scr_disabled_for_loading;
 qboolean scr_drawloading;
 float scr_disabled_time;
-qboolean scr_skipupdate;
 
 qboolean block_drawing;
 
@@ -393,9 +392,9 @@ void SCR_Init(void)
 	Cmd_AddCommand("sizeup", SCR_SizeUp_f);
 	Cmd_AddCommand("sizedown", SCR_SizeDown_f);
 
-	scr_ram = Draw_PicFromWad("ram");
-	scr_net = Draw_PicFromWad("net");
-	scr_turtle = Draw_PicFromWad("turtle");
+	//scr_ram = Draw_PicFromWad("ram");
+	//scr_net = Draw_PicFromWad("net");
+	//scr_turtle = Draw_PicFromWad("turtle");
 
 	scr_initialized = true;
 }
@@ -454,7 +453,7 @@ void SCR_DrawNet(void)
 	if(cls.demoplayback)
 		return;
 
-	Draw_Pic(scr_vrect.x + 64, scr_vrect.y, scr_net);
+	//Draw_Pic(scr_vrect.x + 64, scr_vrect.y, scr_net); // TODO
 }
 
 void SCR_DrawFPS (void)

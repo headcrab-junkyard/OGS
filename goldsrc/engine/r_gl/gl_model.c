@@ -22,6 +22,7 @@
 // on the same machine.
 
 #include "quakedef.h"
+#include "studio.h"
 
 model_t *loadmodel;
 char loadname[32]; // for hunk tags
@@ -293,10 +294,9 @@ model_t *Mod_LoadModel(model_t *mod, qboolean crash)
 		Mod_LoadSpriteModel(mod, buf);
 		break;
 
-	// TODO
-	//case IDSTUDIOHEADER:
-		//Mod_LoadStudioModel(mod, buf);
-		//break;
+	case IDSTUDIOHEADER:
+		Mod_LoadStudioModel(mod, buf);
+		break;
 
 	default:
 		Mod_LoadBrushModel(mod, buf);
@@ -381,16 +381,21 @@ void Mod_LoadTextures(lump_t *l)
 		for(j = 0; j < MIPLEVELS; j++)
 			tx->offsets[j] = mt->offsets[j] + sizeof(texture_t) - sizeof(miptex_t);
 		// the pixels immediately follow the structures
-		memcpy(tx + 1, mt + 1, pixels);
+		//memcpy(tx + 1, mt + 1, pixels); // TODO
 
-		if(!Q_strncmp(mt->name, "sky", 3))
-			R_InitSky(tx);
-		else
+#ifndef SWDS
+		if(!isDedicated)
 		{
-			texture_mode = GL_LINEAR_MIPMAP_NEAREST; //_LINEAR;
-			//tx->gl_texturenum = GL_LoadTexture(mt->name, tx->width, tx->height, (byte *)(tx + 1), true, false); // TODO
-			texture_mode = GL_LINEAR;
-		}
+			if(!Q_strncmp(mt->name, "sky", 3))
+				R_InitSky(tx);
+			else
+			{
+				texture_mode = GL_LINEAR_MIPMAP_NEAREST; //_LINEAR;
+				//tx->gl_texturenum = GL_LoadTexture(mt->name, tx->width, tx->height, (byte *)(tx + 1), true, false); // TODO
+				texture_mode = GL_LINEAR;
+			};
+		};
+#endif
 	}
 
 	//
@@ -1555,26 +1560,26 @@ void Mod_LoadAliasModel(model_t *mod, void *buffer)
 
 // TODO
 /*
-if (!strcmp(loadmodel->name, "progs/player.mdl") ||
-		!strcmp(loadmodel->name, "progs/eyes.mdl")) {
+if (!strcmp(loadmodel->name, "models/player.mdl") ||
+		!strcmp(loadmodel->name, "models/eyes.mdl")) {
 		unsigned short crc;
 		byte *p;
 		int len;
 		char st[40];
 
-		CRC_Init(&crc);
-		for (len = com_filesize, p = buffer; len; len--, p++)
-			CRC_ProcessByte(&crc, *p);
+		CRC32_Init(&crc);
+		for (len = FS_FileSize(loadmodel->name), p = buffer; len; len--, p++)
+			CRC32_ProcessByte(&crc, *p);
 	
 		sprintf(st, "%d", (int) crc);
 		Info_SetValueForKey (cls.userinfo, 
-			!strcmp(loadmodel->name, "progs/player.mdl") ? pmodel_name : emodel_name,
+			!strcmp(loadmodel->name, "models/player.mdl") ? pmodel_name : emodel_name,
 			st, MAX_INFO_STRING);
 
 		if (cls.state >= ca_connected) {
 			MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
 			sprintf(st, "setinfo %s %d", 
-				!strcmp(loadmodel->name, "progs/player.mdl") ? pmodel_name : emodel_name,
+				!strcmp(loadmodel->name, "models/player.mdl") ? pmodel_name : emodel_name,
 				(int)crc);
 			SZ_Print (&cls.netchan.message, st);
 		}
@@ -1909,6 +1914,7 @@ Mod_LoadStudioModel
 void Mod_LoadStudioModel(model_t *mod, void *buffer)
 {
 	// TODO
+	Sys_Error("Studip models are not supported yet!");
 /*
 	int version;
 	dstudiomodel_t *pin;
