@@ -1,0 +1,5 @@
+if(OGS_ENGINE_HW)
+	add_subdirectory(gl)
+else()
+	add_subdirectory(soft)
+endif()
