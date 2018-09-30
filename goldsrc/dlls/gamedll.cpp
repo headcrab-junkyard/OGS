@@ -1,11 +1,14 @@
 /// @file
 
-#include "quakedef.h"
+#include "eiface.h"
 #include "custom.h" // TODO: temp?
 
-void GameInit(){};
+extern enginefuncs_t gEngFuncs;
 
-void GameShutdown(){};
+void GameInit()
+{
+	//gEngFuncs.pfnPrecacheModel("models/player.mdl"); // TODO: studio models are not supported yet...
+};
 
 int EntitySpawn(edict_t *pent){};
 
@@ -35,7 +38,7 @@ void RestoreGlobalState(SAVERESTOREDATA *pSaveRestoreData){};
 
 void ResetGlobalState(){};
 
-qboolean ClientConnect(edict_t *pEntity, const char *name, const char *adr, char *sRejectReason[128])
+qboolean ClientConnect(edict_t *pEntity, const char *name, const char *adr, char sRejectReason[128])
 {
 	return true;
 };
@@ -132,7 +135,11 @@ int AllowLagCompensation()
 	return 0;
 };
 
+//
+
 void OnFreeEntPrivateData(edict_t *pent){};
+
+void GameShutdown(){};
 
 int ShouldCollide(edict_t *pent, edict_t *pother)
 {
