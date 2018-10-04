@@ -26,6 +26,87 @@ Also, please note that it won't do all hl models....
 Nor will it work 100%
 */
 
+///////////////////////////////////////////////
+// INTERNAL STUDIO MODELS HEADER
+///////////////////////////////////////////////
+/*
+ -----------------------------------------------------------------------------------------------------------------------
+    halflife model internal structure
+ -----------------------------------------------------------------------------------------------------------------------
+*/
+
+// TODO
+/*
+#define MAX_ANIM_GROUPS	16	//submodel files containing anim data.
+typedef struct	//this is stored as the cache. an hlmodel_t is generated when drawing
+{
+	//updated while rendering...
+	float	controller[5];				// Position of bone controllers
+	float	adjust[5];
+
+	hlmdl_header_t			*header;
+	hlmdl_bone_t			*bones;
+	hlmdl_bonecontroller_t	*bonectls;
+	hlmdl_sequencefile_t	*animcache[MAX_ANIM_GROUPS];
+	zonegroup_t				*memgroup;
+	struct hlmodelshaders_s
+	{
+		char name[MAX_QPATH];
+		texnums_t defaulttex;
+		shader_t *shader;
+		int w, h;
+	} *shaders;
+	short *skinref;
+	int numskinrefs;
+	int numskingroups;
+
+	int numgeomsets;
+	struct
+	{
+		int numalternatives;
+		struct hlalternative_s
+		{
+			mesh_t mesh;
+			int numsubmeshes;
+			struct
+			{
+				int firstindex;
+				int numindexes;
+			} *submesh;
+		} *alternatives;
+	} *geomset;
+} hlmodel_t;
+*/
+
+// HL mathlib prototypes:
+void	QuaternionGLAngle(const vec3_t angles, vec4_t quaternion);
+void	QuaternionGLMatrix(float x, float y, float z, float w, vec4_t *GLM);
+//void	UploadTexture(hlmdl_tex_t *ptexture, byte *data, byte *pal);
+
+qboolean /*QDECL*/ Mod_LoadStudioModel (model_t *mod, void *buffer, size_t fsize);
+
+// physics stuff
+void *Mod_GetHalfLifeModelData(model_t *mod);
+
+// reflectioney things, including bone data
+int HLMDL_BoneForName(model_t *mod, const char *name);
+int HLMDL_FrameForName(model_t *mod, const char *name);
+const char *HLMDL_FrameNameForNum(model_t *model, int surfaceidx, int num);
+qboolean HLMDL_FrameInfoForNum(model_t *model, int surfaceidx, int num, char **name, int *numframes, float *duration, qboolean *loop);
+qboolean HLMDL_GetModelEvent(model_t *model, int animation, int eventidx, float *timestamp, int *eventcode, char **eventdata);
+int HLMDL_GetNumBones(model_t *mod, qboolean tagstoo);
+int HLMDL_GetBoneParent(model_t *mod, int bonenum);
+const char *HLMDL_GetBoneName(model_t *mod, int bonenum);
+//int HLMDL_GetBoneData(model_t *model, int firstbone, int lastbone, framestate_t *fstate, float *result); // TODO
+int HLMDL_GetAttachment(model_t *model, int tagnum, float *resultmatrix);
+
+#ifndef SWDS
+// stuff only useful for clients that need to draw stuff
+void R_DrawHLModel(cl_entity_t *curent);
+void HLMDL_DrawHitBoxes(cl_entity_t *ent);
+#endif
+///////////////////////////////////////////////
+
 qboolean HLMDL_Trace(struct model_s *model, int hulloverride, framestate_t *framestate, vec3_t axis[3], vec3_t p1, vec3_t p2, vec3_t mins, vec3_t maxs, qboolean capsule, unsigned int against, struct trace_s *trace);
 unsigned int HLMDL_Contents(struct model_s *model, int hulloverride, framestate_t *framestate, vec3_t axis[3], vec3_t p, vec3_t mins, vec3_t maxs);
 
@@ -72,7 +153,7 @@ matrix3x4 transform_matrix[MAX_BONES]; // Vertex transformation matrix
 #ifndef SWDS
 void GL_Draw_HL_AliasFrame(short *order, vec3_t *transformed, float tex_w, float tex_h);
 
-struct hlvremaps
+struct hlvremaps // TODO: mstudiotrivert_t ?
 {
 	unsigned short vertidx;
 	unsigned short normalidx;
@@ -101,7 +182,7 @@ static index_t HLMDL_DeDupe(unsigned short *order, struct hlvremaps *rem, size_t
 };
 
 // parse the vertex info, pull out what we can
-static void HLMDL_PrepareVerticies (hlmodel_t *model, hlmdl_submodel_t *amodel, struct hlalternative_s *submodel)
+static void HLMDL_PrepareVerticies (hlmodel_t *model, mstudiomodel_t *amodel, struct hlalternative_s *submodel)
 {
 	struct hlvremaps *uvert;
 	size_t uvertcount, uvertstart;
@@ -123,7 +204,7 @@ static void HLMDL_PrepareVerticies (hlmodel_t *model, hlmdl_submodel_t *amodel, 
 
 	for(m = 0; m < amodel->nummesh; m++)
 	{
-		hlmdl_mesh_t	*inmesh = (hlmdl_mesh_t *) ((qbyte *) model->header + amodel->meshindex) + m;
+		mstudiomesh_t	*inmesh = (mstudiomesh_t *) ((qbyte *) model->header + amodel->meshindex) + m;
 		unsigned short *order = (unsigned short *) ((qbyte *) model->header + inmesh->index);
 
 		uvertstart = uvertcount;
@@ -236,20 +317,20 @@ static void HLMDL_PrepareVerticies (hlmodel_t *model, hlmdl_submodel_t *amodel, 
 Mod_LoadHLModel - read in the model's constituent parts
 ================
 */
-qboolean QDECL Mod_LoadStudioModel(model_t *mod, void *buffer, size_t fsize)
+qboolean /*QDECL*/ Mod_LoadStudioModel(model_t *mod, void *buffer, size_t fsize)
 {
 #ifndef SWDS
 	int i;
 	int body;
 	struct hlmodelshaders_s *shaders;
-	hlmdl_tex_t	*tex;
+	mstudiotexture_t	*tex;
 #endif
 
 	hlmodel_t *model;
-	hlmdl_header_t *header;
-	hlmdl_header_t *texheader;
-	hlmdl_bone_t	*bones;
-	hlmdl_bonecontroller_t	*bonectls;
+	studiohdr_t *header;
+	studiohdr_t *texheader;
+	mstudiobone_t	*bones;
+	mstudiobonecontroller_t	*bonectls;
 	void *texmem = NULL;
 
 	// load the model into hunk
@@ -270,18 +351,18 @@ qboolean QDECL Mod_LoadStudioModel(model_t *mod, void *buffer, size_t fsize)
 
 	if (header->version != 10)
 	{
-		Con_Printf(CON_ERROR "Cannot load model %s - unknown version %i\n", mod->name, header->version);
+		Con_Printf("Error: Cannot load model %s - unknown version %i\n", mod->name, header->version);
 		return false;
 	};
 
 	if (header->numcontrollers > MAX_BONE_CONTROLLERS)
 	{
-		Con_Printf(CON_ERROR "Cannot load model %s - too many controllers %i\n", mod->name, header->numcontrollers);
+		Con_Printf("Error: Cannot load model %s - too many controllers %i\n", mod->name, header->numcontrollers);
 		return false;
 	};
 	if (header->numbones > MAX_BONES)
 	{
-		Con_Printf(CON_ERROR "Cannot load model %s - too many bones %i\n", mod->name, header->numbones);
+		Con_Printf("Error: Cannot load model %s - too many bones %i\n", mod->name, header->numbones);
 		return false;
 	};
 
@@ -291,9 +372,9 @@ qboolean QDECL Mod_LoadStudioModel(model_t *mod, void *buffer, size_t fsize)
 		size_t fz;
 		char texmodelname[MAX_QPATH];
 		COM_StripExtension(mod->name, texmodelname, sizeof(texmodelname));
-		Q_strncatz(texmodelname, "t.mdl", sizeof(texmodelname));
+		Q_strncatz(texmodelname, "T.mdl", sizeof(texmodelname));
 		// no textures? eesh. They must be stored externally.
-		texheader = texmem = (hlmdl_header_t*)FS_LoadMallocFile(texmodelname, &fz);
+		texheader = texmem = (studiohdr_t*)FS_LoadMallocFile(texmodelname, &fz);
 		if (texheader)
 		{
 			if (texheader->version != 10)
@@ -306,15 +387,15 @@ qboolean QDECL Mod_LoadStudioModel(model_t *mod, void *buffer, size_t fsize)
 	else
 		header->numtextures = texheader->numtextures;
 
-	bones = (hlmdl_bone_t *) ((qbyte *) header + header->boneindex);
-	bonectls = (hlmdl_bonecontroller_t *) ((qbyte *) header + header->controllerindex);
+	bones = (mstudiobone_t *) ((qbyte *) header + header->boneindex);
+	bonectls = (mstudiobonecontroller_t *) ((qbyte *) header + header->controllerindex);
 
 	model->header = header;
 	model->bones = bones;
 	model->bonectls = bonectls;
 
 #ifndef SWDS
-	tex = (hlmdl_tex_t *) ((qbyte *) texheader + texheader->textures);
+	tex = (mstudiotexture_t *) ((qbyte *) texheader + texheader->textures);
 
 	shaders = ZG_Malloc(&mod->memgroup, texheader->numtextures*sizeof(shader_t));
 	model->shaders = shaders;
@@ -347,13 +428,13 @@ qboolean QDECL Mod_LoadStudioModel(model_t *mod, void *buffer, size_t fsize)
 	model->geomset = ZG_Malloc(&mod->memgroup, sizeof(*model->geomset) * model->numgeomsets);
 	for (body = 0; body < model->numgeomsets; body++)
 	{
-		hlmdl_bodypart_t	*bodypart = (hlmdl_bodypart_t *) ((qbyte *) model->header + model->header->bodypartindex) + body;
+		mstudiobodyparts_t	*bodypart = (mstudiobodyparts_t *) ((qbyte *) model->header + model->header->bodypartindex) + body;
 		int					bodyindex;
 		model->geomset[body].numalternatives = bodypart->nummodels;
 		model->geomset[body].alternatives = ZG_Malloc(&mod->memgroup, sizeof(*model->geomset[body].alternatives) * bodypart->nummodels);
 		for (bodyindex = 0; bodyindex < bodypart->nummodels; bodyindex++)
 		{
-			hlmdl_submodel_t		*amodel = (hlmdl_submodel_t *) ((qbyte *) model->header + bodypart->modelindex) + bodyindex;
+			mstudiomodel_t		*amodel = (mstudiomodel_t *) ((qbyte *) model->header + bodypart->modelindex) + bodyindex;
 			model->geomset[body].alternatives[bodyindex].numsubmeshes = amodel->nummesh;
 			model->geomset[body].alternatives[bodyindex].submesh = ZG_Malloc(&mod->memgroup, sizeof(*model->geomset[body].alternatives[bodyindex].submesh) * amodel->nummesh);
 			HLMDL_PrepareVerticies(model, amodel, &model->geomset[body].alternatives[bodyindex]);
@@ -379,8 +460,8 @@ void *Mod_GetHalfLifeModelData(model_t *mod)
 int HLMDL_FrameForName(model_t *mod, const char *name)
 {
 	int i;
-	hlmdl_header_t *h;
-	hlmdl_sequencelist_t *seqs;
+	studiohdr_t *h;
+	mstudioseqdesc_t *seqs;
 	hlmodel_t *mc;
 	if (!mod || mod->type != mod_halflife)
 		return -1;	// halflife models only, please
@@ -388,7 +469,7 @@ int HLMDL_FrameForName(model_t *mod, const char *name)
 	mc = Mod_Extradata(mod);
 
 	h = mc->header;
-	seqs = (hlmdl_sequencelist_t*)((char*)h+h->seqindex);
+	seqs = (mstudioseqdesc_t*)((char*)h+h->seqindex);
 
 	for (i = 0; i < h->numseq; i++)
 	{
@@ -401,12 +482,12 @@ int HLMDL_FrameForName(model_t *mod, const char *name)
 qboolean HLMDL_GetModelEvent(model_t *model, int animation, int eventidx, float *timestamp, int *eventcode, char **eventdata)
 {
 	hlmodel_t *mc = Mod_Extradata(model);
-	hlmdl_header_t *h = mc->header;
-	hlmdl_event_t *ev;
-	hlmdl_sequencelist_t *seq = animation + (hlmdl_sequencelist_t*)((char*)h+h->seqindex);
+	studiohdr_t *h = mc->header;
+	mstudioevent_t *ev;
+	mstudioseqdesc_t *seq = animation + (mstudioseqdesc_t*)((char*)h+h->seqindex);
 	if (animation < 0 || animation >= h->numseq || eventidx < 0 || eventidx >= seq->num_events)
 		return false;
-	ev = eventidx + (hlmdl_event_t*)((char*)h+seq->ofs_events);
+	ev = eventidx + (mstudioevent_t*)((char*)h+seq->ofs_events);
 	*timestamp = ev->pose / seq->timing;
 	*eventcode = ev->code;
 	*eventdata = ev->data;
@@ -416,8 +497,8 @@ qboolean HLMDL_GetModelEvent(model_t *model, int animation, int eventidx, float 
 int HLMDL_BoneForName(model_t *mod, const char *name)
 {
 	int i;
-	hlmdl_header_t *h;
-	hlmdl_bone_t *bones;
+	studiohdr_t *h;
+	mstudiobone_t *bones;
 	hlmodel_t *mc;
 	if (!mod || mod->type != mod_halflife)
 		return -1;	// halflife models only, please
@@ -425,7 +506,7 @@ int HLMDL_BoneForName(model_t *mod, const char *name)
 	mc = Mod_Extradata(mod);
 
 	h = mc->header;
-	bones = (hlmdl_bone_t*)((char*)h+h->boneindex);
+	bones = (mstudiobone_t*)((char*)h+h->boneindex);
 
 	for (i = 0; i < h->numbones; i++)
 	{
@@ -446,8 +527,8 @@ void HL_CalculateBones
 (
 	int				frame,
 	vec4_t			adjust,
-	hlmdl_bone_t	*bone,
-	hlmdl_anim_t	*animation,
+	mstudiobone_t	*bone,
+	mstudioanim_t	*animation,
 	float			*organg
 )
 {
@@ -462,7 +543,7 @@ void HL_CalculateBones
 		{
 			/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 			int					tempframe;
-			hlmdl_animvalue_t	*animvalue = (hlmdl_animvalue_t *) ((qbyte *) animation + animation->offset[i]);
+			mstudioanimvalue_t	*animvalue = (mstudioanimvalue_t *) ((qbyte *) animation + animation->offset[i]);
 			/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 			/* find values including the required frame */
@@ -497,7 +578,7 @@ void HL_CalcBoneAdj(hlmodel_t *model)
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 	int						i;
 	float					value;
-	hlmdl_bonecontroller_t	*control = (hlmdl_bonecontroller_t *)
+	mstudiobonecontroller_t	*control = (mstudiobonecontroller_t *)
 									  ((qbyte *) model->header + model->header->controllerindex);
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -554,12 +635,12 @@ void HL_SetupBones(hlmodel_t *model, int seqnum, int firstbone, int lastbone, fl
 
 	int frame1, frame2;
 
-	hlmdl_sequencelist_t	*sequence = (hlmdl_sequencelist_t *) ((qbyte *) model->header + model->header->seqindex) +
+	mstudioseqdesc_t	*sequence = (mstudioseqdesc_t *) ((qbyte *) model->header + model->header->seqindex) +
 										 ((unsigned int)seqnum>=model->header->numseq?0:seqnum);
-	hlmdl_sequencedata_t	*sequencedata = (hlmdl_sequencedata_t *)
+	mstudioseqgroup_t	*sequencedata = (mstudioseqgroup_t *)
 										 ((qbyte *) model->header + model->header->seqgroups) +
 										 sequence->seqindex;
-	hlmdl_anim_t			*animation;
+	mstudioanim_t			*animation;
 	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	matrix += firstbone*12;
@@ -579,10 +660,10 @@ void HL_SetupBones(hlmodel_t *model, int seqnum, int firstbone, int lastbone, fl
 			Sys_Error("Unable to load %s\n", sequencedata->name+32);
 			return;
 		};
-		animation = (hlmdl_anim_t *)((qbyte*)model->animcache[sequence->seqindex] + sequence->index);
+		animation = (mstudioanim_t *)((qbyte*)model->animcache[sequence->seqindex] + sequence->index);
 	}
 	else
-		animation = (hlmdl_anim_t *) ((qbyte *) model->header + sequencedata->data + sequence->index);
+		animation = (mstudioanim_t *) ((qbyte *) model->header + sequencedata->data + sequence->index);
 
 	frametime *= sequence->timing;
 	if (frametime < 0)
@@ -663,7 +744,7 @@ void HL_SetupBones(hlmodel_t *model, int seqnum, int firstbone, int lastbone, fl
 		{
 			int frame;
 			float weight;
-			hlmdl_anim_t *anim;
+			mstudioanim_t *anim;
 		} blend[8];
 		// right, so, this stuff is annoying.
 		// we have two different blend factors.
@@ -865,7 +946,7 @@ int HLMDL_GetBoneParent(model_t *mod, int bonenum)
 	bonenum -= model->header->numbones;
 	if (bonenum >= 0 && bonenum < model->header->num_attachments)
 	{
-		hlmdl_attachment_t *attachments = bonenum+(hlmdl_attachment_t*)((char*)model->header + model->header->ofs_attachments);
+		mstudioattachment_t *attachments = bonenum+(mstudioattachment_t*)((char*)model->header + model->header->ofs_attachments);
 		return attachments->bone;
 	};
 	return -1;
@@ -880,7 +961,7 @@ const char *HLMDL_GetBoneName(model_t *mod, int bonenum)
 	bonenum -= model->header->numbones;
 	if (bonenum >= 0 && bonenum < model->header->num_attachments)
 	{
-		hlmdl_attachment_t *attachments = bonenum+(hlmdl_attachment_t*)((char*)model->header + model->header->ofs_attachments);
+		mstudioattachment_t *attachments = bonenum+(mstudioattachment_t*)((char*)model->header + model->header->ofs_attachments);
 		if (*attachments->name)
 			return attachments->name;
 		return "Unnamed Attachment";
@@ -893,7 +974,7 @@ int HLMDL_GetAttachment(model_t *mod, int tagnum, float *resultmatrix)
 	hlmodel_t *model = Mod_Extradata(mod);
 	if (tagnum >= 0 && tagnum < model->header->num_attachments)
 	{
-		hlmdl_attachment_t *attachments = tagnum+(hlmdl_attachment_t*)((char*)model->header + model->header->ofs_attachments);
+		mstudioattachment_t *attachments = tagnum+(mstudioattachment_t*)((char*)model->header + model->header->ofs_attachments);
 		resultmatrix[3] = attachments->org[0];
 		resultmatrix[7] = attachments->org[1];
 		resultmatrix[11] = attachments->org[2];
@@ -929,7 +1010,7 @@ int HLMDL_GetBoneData(model_t *mod, int firstbone, int lastbone, framestate_t *f
 const char *HLMDL_FrameNameForNum(model_t *mod, int surfaceidx, int seqnum)
 {
 	hlmodel_t *model = Mod_Extradata(mod);
-	hlmdl_sequencelist_t	*sequence = (hlmdl_sequencelist_t *) ((qbyte *) model->header + model->header->seqindex) +
+	mstudioseqdesc_t	*sequence = (mstudioseqdesc_t *) ((qbyte *) model->header + model->header->seqindex) +
 										 ((unsigned int)seqnum>=model->header->numseq?0:seqnum);
 	return sequence->name;
 };
@@ -937,7 +1018,7 @@ const char *HLMDL_FrameNameForNum(model_t *mod, int surfaceidx, int seqnum)
 qboolean HLMDL_FrameInfoForNum(model_t *mod, int surfaceidx, int seqnum, char **name, int *numframes, float *duration, qboolean *loop)
 {
 	hlmodel_t *model = Mod_Extradata(mod);
-	hlmdl_sequencelist_t	*sequence = (hlmdl_sequencelist_t *) ((qbyte *) model->header + model->header->seqindex) +
+	mstudioseqdesc_t	*sequence = (mstudioseqdesc_t *) ((qbyte *) model->header + model->header->seqindex) +
 										 ((unsigned int)seqnum>=model->header->numseq?0:seqnum);
 
 	*name = sequence->name;
@@ -956,7 +1037,7 @@ qboolean HLMDL_Trace(model_t *model, int hulloverride, framestate_t *framestate,
 	int b, i;
 	vec3_t norm, p1l, p2l;
 	float inverse[12];
-	hlmdl_hitbox_t *hitbox = (hlmdl_hitbox_t*)((char*)hm->header+hm->header->ofs_hitboxes);
+	mstudiobbox_t *hitbox = (mstudiobbox_t*)((char*)hm->header+hm->header->ofs_hitboxes);
 	float dist, d1, d2, f, enterfrac, enterdist, exitfrac;
 	qboolean startout, endout;
 	int enterplane;
@@ -1132,7 +1213,7 @@ unsigned int HLMDL_Contents	(model_t *model, int hulloverride, framestate_t *fra
 };
 
 #ifndef SWDS
-void R_HL_BuildFrame(hlmodel_t *model, hlmdl_submodel_t *amodel, entity_t *curent, int bodypart, int bodyidx, int meshidx, float tex_s, float tex_t, mesh_t *mesh, qboolean gpubones)
+void R_HL_BuildFrame(hlmodel_t *model, mstudiomodel_t *amodel, entity_t *curent, int bodypart, int bodyidx, int meshidx, float tex_s, float tex_t, mesh_t *mesh, qboolean gpubones)
 {
 	int b;
 	int cbone;
@@ -1262,16 +1343,16 @@ static void R_HalfLife_WalkMeshes(entity_t *rent, batch_t *b, batch_t **batches)
 	for (body = 0; body < model->numgeomsets; body++)
 	{
 		/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-		hlmdl_bodypart_t	*bodypart = (hlmdl_bodypart_t *) ((qbyte *) model->header + model->header->bodypartindex) + body;
+		mstudiobodyparts_t	*bodypart = (mstudiobodyparts_t *) ((qbyte *) model->header + model->header->bodypartindex) + body;
 		int					bodyindex = ((sk && body < MAX_GEOMSETS && sk->geomset[body] >= 1)?sk->geomset[body]-1:(entity_body / bodypart->base)) % bodypart->nummodels;
-		hlmdl_submodel_t	*amodel = (hlmdl_submodel_t *) ((qbyte *) model->header + bodypart->modelindex) + bodyindex;
+		mstudiomodel_t	*amodel = (mstudiomodel_t *) ((qbyte *) model->header + bodypart->modelindex) + bodyindex;
 		/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 		// Draw each mesh
 		for(m = 0; m < amodel->nummesh; m++)
 		{
 			/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-			hlmdl_mesh_t	*mesh = (hlmdl_mesh_t *) ((qbyte *) model->header + amodel->meshindex) + m;
+			mstudiomesh_t	*mesh = (mstudiomesh_t *) ((qbyte *) model->header + amodel->meshindex) + m;
 			float			tex_w;
 			float			tex_h;
 			struct hlmodelshaders_s *s;
@@ -1383,7 +1464,7 @@ void R_HalfLife_GenerateBatches(entity_t *e, batch_t **batches)
 void HLMDL_DrawHitBoxes(entity_t *rent)
 {
 	hlmodel_t *model = Mod_Extradata(rent->model);
-	hlmdl_hitbox_t *hitbox = (hlmdl_hitbox_t*)((char*)model->header+model->header->ofs_hitboxes);
+	mstudiobbox_t *hitbox = (mstudiobbox_t*)((char*)model->header+model->header->ofs_hitboxes);
 	matrix3x4 entitymatrix;
 
 	shader_t *shader = R_RegisterShader("hitbox_nodepth", SUF_NONE,
