@@ -1,6 +1,6 @@
 /*
  *	This file is part of OGS Engine
- *	Copyright (C) 1996-1997 Id Software, Inc.
+ *	Copyright (C) 1996-2001 Id Software, Inc.
  *	Copyright (C) 2018 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
@@ -36,6 +36,7 @@
 */
 
 #ifdef _WIN32
+//#include <winsock.h>
 #include <wsipx.h>
 #include "winquake.h"
 #endif
@@ -68,8 +69,8 @@ typedef struct
 	int			get, send;
 } loopback_t;
 
-static qboolean noudp;
-static qboolean noipx;
+static qboolean noudp; // TODO: handle
+static qboolean noipx; // TODO: handle
 
 loopback_t loopbacks[2];
 int ip_sockets[2];
@@ -96,7 +97,7 @@ int net_send_socket; // blocking, for sends
 byte net_message_buffer[MAX_UDP_PACKET];
 
 #ifdef _WIN32
-WSADATA winsockdata;
+/*static*/ WSADATA winsockdata;
 #endif
 
 #ifndef _WIN32
@@ -117,6 +118,8 @@ cvar_t ipx_clientport = {"ipx_clientport", "0"/*, CVAR_NOSET*/};
 cvar_t port = {"port", ""/*, CVAR_NOSET*/};
 cvar_t hostport = {"hostport", "0"/*, CVAR_NOSET*/};
 cvar_t clientport = {"clientport", ""/*, CVAR_NOSET*/};
+
+//cvar_t net_shownet = {TODO};
 
 char *NET_ErrorString();
 
@@ -498,7 +501,81 @@ qboolean NET_GetPacket(netsrc_t sock, netadr_t *net_from, sizebuf_t *net_message
 	if(NET_GetLoopPacket(sock, net_from, net_message))
 		return true;
 	
-	fromlen = sizeof(from);
+#ifdef _WIN32
+	for (protocol = 0 ; protocol < 2 ; protocol++)
+	{
+		if (protocol == 0)
+			net_socket = ip_sockets[sock];
+		else
+			net_socket = ipx_sockets[sock];
+
+		if (!net_socket)
+			continue;
+
+		fromlen = sizeof(from);
+		ret = recvfrom (net_socket, net_message->data, net_message->maxsize, 0, (struct sockaddr *)&from, &fromlen);
+		
+		if (ret == -1)
+		{
+			err = WSAGetLastError();
+
+			if (err == WSAEWOULDBLOCK)
+				continue;
+			if (isDedicated)	// let dedicated servers continue after errors
+				Con_Printf ("NET_GetPacket: %s", NET_ErrorString());
+			else
+				Sys_Error (/*ERR_DROP,*/ "NET_GetPacket: %s", NET_ErrorString());
+			continue;
+		}
+
+		SockadrToNetadr (&from, net_from);
+
+		if (ret == net_message->maxsize)
+		{
+			Con_Printf ("Oversize packet from %s\n", NET_AdrToString (*net_from));
+			continue;
+		}
+
+		net_message->cursize = ret;
+		return true;
+	}
+#else
+	for (protocol = 0 ; protocol < 2 ; protocol++)
+	{
+		if (protocol == 0)
+			net_socket = ip_sockets[sock];
+		else
+			net_socket = ipx_sockets[sock];
+
+		if (!net_socket)
+			continue;
+
+		fromlen = sizeof(from);
+		ret = recvfrom (net_socket, net_message->data, net_message->maxsize, 0, (struct sockaddr *)&from, &fromlen);
+		if (ret == -1)
+		{
+			err = errno;
+
+			if (err == EWOULDBLOCK || err == ECONNREFUSED)
+				continue;
+			Con_Printf ("NET_GetPacket: %s", NET_ErrorString());
+			continue;
+		}
+
+		if (ret == net_message->maxsize)
+		{
+			Con_Printf ("Oversize packet from %s\n", NET_AdrToString (*net_from));
+			continue;
+		}
+
+		net_message->cursize = ret;
+		SockadrToNetadr (&from, net_from);
+		return true;
+	}
+#endif
+	
+	// TODO: quake
+/*
 	ret = recvfrom(net_socket, net_message->data, net_message->maxsize, 0, (struct sockaddr *)&from, &fromlen);
 	
 #ifdef _WIN32
@@ -541,8 +618,9 @@ qboolean NET_GetPacket(netsrc_t sock, netadr_t *net_from, sizebuf_t *net_message
 #else
 	SockadrToNetadr(&from, net_from);
 #endif
+*/
 
-	return ret;
+	return false;
 }
 
 //=============================================================================
@@ -550,7 +628,8 @@ qboolean NET_GetPacket(netsrc_t sock, netadr_t *net_from, sizebuf_t *net_message
 void NET_SendPacket(netsrc_t sock, int length, void *data, netadr_t to)
 {
 	int ret;
-	struct sockaddr_in addr;
+	//struct sockaddr_in addr;
+	struct sockaddr	addr;
 	int net_socket;
 
 	if(to.type == NA_LOOPBACK)
@@ -588,7 +667,7 @@ void NET_SendPacket(netsrc_t sock, int length, void *data, netadr_t to)
 	
 	NetadrToSockadr(&to, &addr);
 
-	ret = sendto(net_socket, data, length, 0, (struct sockaddr *)&addr, sizeof(addr));
+	ret = sendto(net_socket, data, length, 0, /*(struct sockaddr *)*/&addr, sizeof(addr));
 	if(ret == -1)
 	{
 #ifdef _WIN32
@@ -602,19 +681,24 @@ void NET_SendPacket(netsrc_t sock, int length, void *data, netadr_t to)
 		if((err == WSAEADDRNOTAVAIL) && ((to.type == NA_BROADCAST) || (to.type == NA_BROADCAST_IPX)))
 			return;
 
-#ifndef SWDS
-		if(err == WSAEADDRNOTAVAIL)
-			Con_DPrintf("NET_SendPacket Warning: %i\n", err);
+		if (isDedicated) // let dedicated servers continue after errors
+			Con_Printf ("NET_SendPacket ERROR: %s\n", NET_ErrorString());
 		else
+		{
+#ifndef SWDS // TODO: u sure?
+			if (err == WSAEADDRNOTAVAIL)
+				Con_DPrintf ("NET_SendPacket Warning: %s : %s\n", NET_ErrorString(), NET_AdrToString (to)); // TODO: was Con_DPrintf("NET_SendPacket Warning: %i\n", err);
+			else
 #endif
-			Con_Printf("NET_SendPacket ERROR: %i\n", err);
-#else
+				Sys_Error (/*ERR_DROP,*/ "NET_SendPacket ERROR: %s\n", NET_ErrorString()); // TODO: was Con_Printf("NET_SendPacket ERROR: %i\n", err);
+		}
+#else // if not _WIN32
 		if(errno == EWOULDBLOCK)
 			return;
 		if(errno == ECONNREFUSED)
 			return;
 		Sys_Printf("NET_SendPacket: %s\n", strerror(errno));
-#endif
+#endif // _WIN32
 	}
 }
 
@@ -942,6 +1026,40 @@ void NET_Config(qboolean multiplayer)
 	}
 }
 
+// TODO: unused
+// sleeps msec or until net socket is ready
+/*
+void NET_Sleep(int msec)
+{
+#ifdef _WIN32
+    struct timeval timeout;
+	fd_set	fdset;
+	extern cvar_t *dedicated;
+	int i;
+
+	if (!dedicated || !dedicated->value)
+		return; // we're not a server, just run full speed
+
+	FD_ZERO(&fdset);
+	i = 0;
+	if (ip_sockets[NS_SERVER]) {
+		FD_SET(ip_sockets[NS_SERVER], &fdset); // network socket
+		i = ip_sockets[NS_SERVER];
+	}
+	if (ipx_sockets[NS_SERVER]) {
+		FD_SET(ipx_sockets[NS_SERVER], &fdset); // network socket
+		if (ipx_sockets[NS_SERVER] > i)
+			i = ipx_sockets[NS_SERVER];
+	}
+	timeout.tv_sec = msec/1000;
+	timeout.tv_usec = (msec%1000)*1000;
+	select(i+1, &fdset, NULL, NULL, &timeout);
+#endif // _WIN32
+}
+*/
+
+//===================================================================
+
 /*
 ====================
 NET_Init
@@ -959,10 +1077,8 @@ void NET_Init()
 
 	if(r)
 		Sys_Error("Winsock initialization failed.");
-	
-	//Con_Printf("Winsock Initialized\n"); // TODO
 #endif
-
+	
 	//
 	// init the message buffer
 	//
@@ -983,10 +1099,12 @@ void NET_Init()
 	Cvar_RegisterVariable(&hostport);
 	Cvar_RegisterVariable(&clientport);
 	
+	//net_shownet = Cvar_RegisterVariable("net_shownet", "0", 0);
+	
 	Cvar_Set("port", va("%i", PORT_SERVER));
 	Cvar_Set("clientport", va("%i", PORT_CLIENT));
 
-	Con_Printf("UDP Initialized\n");
+	Con_Printf("Base networking initialized.\n");
 }
 
 /*
@@ -1010,6 +1128,57 @@ NET_ErrorString
 */
 char *NET_ErrorString()
 {
-	// TODO
-	return NULL;
-};
+#ifdef _WIN32
+	int		code;
+
+	code = WSAGetLastError ();
+	switch (code)
+	{
+	case WSAEINTR: return "WSAEINTR";
+	case WSAEBADF: return "WSAEBADF";
+	case WSAEACCES: return "WSAEACCES";
+	case WSAEDISCON: return "WSAEDISCON";
+	case WSAEFAULT: return "WSAEFAULT";
+	case WSAEINVAL: return "WSAEINVAL";
+	case WSAEMFILE: return "WSAEMFILE";
+	case WSAEWOULDBLOCK: return "WSAEWOULDBLOCK";
+	case WSAEINPROGRESS: return "WSAEINPROGRESS";
+	case WSAEALREADY: return "WSAEALREADY";
+	case WSAENOTSOCK: return "WSAENOTSOCK";
+	case WSAEDESTADDRREQ: return "WSAEDESTADDRREQ";
+	case WSAEMSGSIZE: return "WSAEMSGSIZE";
+	case WSAEPROTOTYPE: return "WSAEPROTOTYPE";
+	case WSAENOPROTOOPT: return "WSAENOPROTOOPT";
+	case WSAEPROTONOSUPPORT: return "WSAEPROTONOSUPPORT";
+	case WSAESOCKTNOSUPPORT: return "WSAESOCKTNOSUPPORT";
+	case WSAEOPNOTSUPP: return "WSAEOPNOTSUPP";
+	case WSAEPFNOSUPPORT: return "WSAEPFNOSUPPORT";
+	case WSAEAFNOSUPPORT: return "WSAEAFNOSUPPORT";
+	case WSAEADDRINUSE: return "WSAEADDRINUSE";
+	case WSAEADDRNOTAVAIL: return "WSAEADDRNOTAVAIL";
+	case WSAENETDOWN: return "WSAENETDOWN";
+	case WSAENETUNREACH: return "WSAENETUNREACH";
+	case WSAENETRESET: return "WSAENETRESET";
+	case WSAECONNABORTED: return "WSWSAECONNABORTEDAEINTR";
+	case WSAECONNRESET: return "WSAECONNRESET";
+	case WSAENOBUFS: return "WSAENOBUFS";
+	case WSAEISCONN: return "WSAEISCONN";
+	case WSAENOTCONN: return "WSAENOTCONN";
+	case WSAESHUTDOWN: return "WSAESHUTDOWN";
+	case WSAETOOMANYREFS: return "WSAETOOMANYREFS";
+	case WSAETIMEDOUT: return "WSAETIMEDOUT";
+	case WSAECONNREFUSED: return "WSAECONNREFUSED";
+	case WSAELOOP: return "WSAELOOP";
+	case WSAENAMETOOLONG: return "WSAENAMETOOLONG";
+	case WSAEHOSTDOWN: return "WSAEHOSTDOWN";
+	case WSASYSNOTREADY: return "WSASYSNOTREADY";
+	case WSAVERNOTSUPPORTED: return "WSAVERNOTSUPPORTED";
+	case WSANOTINITIALISED: return "WSANOTINITIALISED";
+	case WSAHOST_NOT_FOUND: return "WSAHOST_NOT_FOUND";
+	case WSATRY_AGAIN: return "WSATRY_AGAIN";
+	case WSANO_RECOVERY: return "WSANO_RECOVERY";
+	case WSANO_DATA: return "WSANO_DATA";
+	default: return "NO ERROR";
+	}
+#endif // _WIN32
+}
