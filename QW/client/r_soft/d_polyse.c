@@ -30,7 +30,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 									// 1 extra for spanpackage that marks end
 
 // !!! if this is changed, it must be changed in asm_draw.h too !!!
-typedef struct {
+typedef struct
+{
 	void			*pdest;
 	short			*pz;
 	int				count;
@@ -38,7 +39,8 @@ typedef struct {
 	int				sfrac, tfrac, light, zi;
 } spanpackage_t;
 
-typedef struct {
+typedef struct
+{
 	int		isflattop;
 	int		numleftedges;
 	int		*pleftedgevert0;
@@ -93,7 +95,8 @@ int						d_sfracbasestep, d_tfracbasestep;
 int						d_ziextrastep, d_zibasestep;
 int						d_pzextrastep, d_pzbasestep;
 
-typedef struct {
+typedef struct
+{
 	int		quotient;
 	int		remainder;
 } adivtab_t;
@@ -128,8 +131,7 @@ void D_PolysetDraw (void)
 			((CACHE_SIZE - 1) / sizeof(spanpackage_t)) + 1];
 						// one extra because of cache line pretouching
 
-	a_spans = (spanpackage_t *)
-			(((long)&spans[0] + CACHE_SIZE - 1) & ~(CACHE_SIZE - 1));
+	a_spans = (spanpackage_t *)(((long)&spans[0] + CACHE_SIZE - 1) & ~(CACHE_SIZE - 1));
 
 	if (r_affinetridesc.drawtype)
 	{
@@ -140,7 +142,6 @@ void D_PolysetDraw (void)
 		D_DrawNonSubdiv ();
 	}
 }
-
 
 /*
 ================
@@ -173,7 +174,6 @@ void D_PolysetDrawFinalVerts (finalvert_t *fv, int numverts)
 		}
 	}
 }
-
 
 /*
 ================
@@ -234,7 +234,6 @@ void D_DrawSubdiv (void)
 		}
 	}
 }
-
 
 /*
 ================
@@ -303,7 +302,6 @@ void D_DrawNonSubdiv (void)
 	}
 }
 
-
 /*
 ================
 D_PolysetRecursiveTriangle
@@ -368,7 +366,6 @@ split:
 	if ((lp2[1] == lp1[1]) && (lp2[0] < lp1[0]))
 		goto nodraw;
 
-
 	z = new[5]>>16;
 	zbuf = zspantable[new[1]] + new[0];
 	if (z >= *zbuf)
@@ -387,7 +384,6 @@ nodraw:
 }
 
 #endif	// !id386
-
 
 /*
 ================
@@ -410,7 +406,6 @@ void D_PolysetUpdateTables (void)
 	}
 }
 
-
 #if	!id386
 
 /*
@@ -420,7 +415,6 @@ D_PolysetScanLeftEdge
 */
 void D_PolysetScanLeftEdge (int height)
 {
-
 	do
 	{
 		d_pedgespanpackage->pdest = d_pdest;
@@ -481,7 +475,6 @@ void D_PolysetScanLeftEdge (int height)
 
 #endif	// !id386
 
-
 /*
 ===================
 D_PolysetSetUpForLineScan
@@ -519,7 +512,6 @@ void D_PolysetSetUpForLineScan(fixed8_t startvertu, fixed8_t startvertv,
 		erroradjustdown = dn;
 	}
 }
-
 
 #if	!id386
 
@@ -673,7 +665,6 @@ void D_PolysetDrawSpans8 (spanpackage_t *pspanpackage)
 	} while (pspanpackage->count != -999999);
 }
 #endif	// !id386
-
 
 /*
 ================

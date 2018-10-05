@@ -281,7 +281,6 @@ void R_RocketTrail (vec3_t start, vec3_t end, int type)
 			
 		}
 		
-
 		VectorAdd (start, vec, start);
 	}
 }
@@ -312,10 +311,10 @@ void R_DrawParticles (void)
 	alphaTestEnabled = glIsEnabled(GL_ALPHA_TEST);
 	
 	if (alphaTestEnabled)
-		glDisable(GL_ALPHA_TEST);
-	glEnable (GL_BLEND);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glBegin (GL_TRIANGLES);
+		qglDisable(GL_ALPHA_TEST);
+	qglEnable (GL_BLEND);
+	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	qglBegin (GL_TRIANGLES);
 
 	VectorScale (vup, 1.5, up);
 	VectorScale (vright, 1.5, right);
@@ -364,8 +363,7 @@ void R_DrawParticles (void)
 
 #ifdef GLQUAKE
 		// hack a scale up to keep particles from disapearing
-		scale = (p->org[0] - r_origin[0])*vpn[0] + (p->org[1] - r_origin[1])*vpn[1]
-			+ (p->org[2] - r_origin[2])*vpn[2];
+		scale = (p->org[0] - r_origin[0])*vpn[0] + (p->org[1] - r_origin[1])*vpn[1] + (p->org[2] - r_origin[2])*vpn[2];
 		if (scale < 20)
 			scale = 1;
 		else
@@ -378,15 +376,15 @@ void R_DrawParticles (void)
 //			theAlpha = 255*(8-p->ramp)/8;
 		else
 			theAlpha = 255;
-		glColor4ub (*at, *(at+1), *(at+2), theAlpha);
-//		glColor3ubv (at);
-//		glColor3ubv ((byte *)&d_8to24table[(int)p->color]);
-		glTexCoord2f (0,0);
-		glVertex3fv (p->org);
-		glTexCoord2f (1,0);
-		glVertex3f (p->org[0] + up[0]*scale, p->org[1] + up[1]*scale, p->org[2] + up[2]*scale);
-		glTexCoord2f (0,1);
-		glVertex3f (p->org[0] + right[0]*scale, p->org[1] + right[1]*scale, p->org[2] + right[2]*scale);
+		qglColor4ub (*at, *(at+1), *(at+2), theAlpha);
+//		qglColor3ubv (at);
+//		qglColor3ubv ((byte *)&d_8to24table[(int)p->color]);
+		qglTexCoord2f (0,0);
+		qglVertex3fv (p->org);
+		qglTexCoord2f (1,0);
+		qglVertex3f (p->org[0] + up[0]*scale, p->org[1] + up[1]*scale, p->org[2] + up[2]*scale);
+		qglTexCoord2f (0,1);
+		qglVertex3f (p->org[0] + right[0]*scale, p->org[1] + right[1]*scale, p->org[2] + right[2]*scale);
 #else
 		D_DrawParticle (p);
 #endif
@@ -450,13 +448,12 @@ void R_DrawParticles (void)
 	}
 
 #ifdef GLQUAKE
-	glEnd ();
-	glDisable (GL_BLEND);
+	qglEnd ();
+	qglDisable (GL_BLEND);
 	if (alphaTestEnabled)
 		glEnable(GL_ALPHA_TEST);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 #else
 	D_EndParticles ();
 #endif
 }
-

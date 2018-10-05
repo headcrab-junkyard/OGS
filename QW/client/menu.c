@@ -1,26 +1,8 @@
-/*
-Copyright (C) 1996-1997 Id Software, Inc.
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
 #include "quakedef.h"
 #include "winquake.h"
 
-void (*vid_menudrawfn)(void);
+void (*vid_menudrawfn)();
 void (*vid_menukeyfn)(int key);
 
 enum {m_none, m_main, m_singleplayer, m_load, m_save, m_multiplayer, m_setup, m_net, m_options, m_video, m_keys, m_help, m_quit, m_serialconfig, m_modemconfig, m_lanconfig, m_gameoptions, m_search, m_slist} m_state;
@@ -82,20 +64,6 @@ void M_GameOptions_Key (int key);
 void M_Search_Key (int key);
 void M_ServerList_Key (int key);
 
-qboolean	m_entersound;		// play after drawing a frame, so caching
-								// won't disrupt the sound
-qboolean	m_recursiveDraw;
-
-int			m_return_state;
-qboolean	m_return_onerror;
-char		m_return_reason [32];
-
-#define StartingGame	(m_multiplayer_cursor == 1)
-#define JoiningGame		(m_multiplayer_cursor == 0)
-#define SerialConfig	(m_net_cursor == 0)
-#define DirectConfig	(m_net_cursor == 1)
-#define	IPXConfig		(m_net_cursor == 2)
-#define	TCPIPConfig		(m_net_cursor == 3)
 
 void M_ConfigureNetSubsystem();
 
@@ -109,186 +77,8 @@ M_DrawCharacter
 Draws one solid graphics character
 ================
 */
-void M_DrawCharacter (int cx, int line, int num)
-{
-	Draw_Character ( cx + ((vid.width - 320)>>1), line, num);
-}
-
-void M_Print (int cx, int cy, char *str)
-{
-	while (*str)
-	{
-		M_DrawCharacter (cx, cy, (*str)+128);
-		str++;
-		cx += 8;
-	}
-}
-
-void M_PrintWhite (int cx, int cy, char *str)
-{
-	while (*str)
-	{
-		M_DrawCharacter (cx, cy, *str);
-		str++;
-		cx += 8;
-	}
-}
-
-void M_DrawTransPic (int x, int y, qpic_t *pic)
-{
-	Draw_TransPic (x + ((vid.width - 320)>>1), y, pic);
-}
-
-void M_DrawPic (int x, int y, qpic_t *pic)
-{
-	Draw_Pic (x + ((vid.width - 320)>>1), y, pic);
-}
-
-byte identityTable[256];
-byte translationTable[256];
-
-void M_BuildTranslationTable(int top, int bottom)
-{
-	int		j;
-	byte	*dest, *source;
-
-	for (j = 0; j < 256; j++)
-		identityTable[j] = j;
-	dest = translationTable;
-	source = identityTable;
-	memcpy (dest, source, 256);
-
-	if (top < 128)	// the artists made some backwards ranges.  sigh.
-		memcpy (dest + TOP_RANGE, source + top, 16);
-	else
-		for (j=0 ; j<16 ; j++)
-			dest[TOP_RANGE+j] = source[top+15-j];
-
-	if (bottom < 128)
-		memcpy (dest + BOTTOM_RANGE, source + bottom, 16);
-	else
-		for (j=0 ; j<16 ; j++)
-			dest[BOTTOM_RANGE+j] = source[bottom+15-j];		
-}
-
-
-void M_DrawTransPicTranslate (int x, int y, qpic_t *pic)
-{
-	Draw_TransPicTranslate (x + ((vid.width - 320)>>1), y, pic, translationTable);
-}
-
-
-void M_DrawTextBox (int x, int y, int width, int lines)
-{
-	qpic_t	*p;
-	int		cx, cy;
-	int		n;
-
-	// draw left side
-	cx = x;
-	cy = y;
-	p = Draw_CachePic ("gfx/box_tl.lmp");
-	M_DrawTransPic (cx, cy, p);
-	p = Draw_CachePic ("gfx/box_ml.lmp");
-	for (n = 0; n < lines; n++)
-	{
-		cy += 8;
-		M_DrawTransPic (cx, cy, p);
-	}
-	p = Draw_CachePic ("gfx/box_bl.lmp");
-	M_DrawTransPic (cx, cy+8, p);
-
-	// draw middle
-	cx += 8;
-	while (width > 0)
-	{
-		cy = y;
-		p = Draw_CachePic ("gfx/box_tm.lmp");
-		M_DrawTransPic (cx, cy, p);
-		p = Draw_CachePic ("gfx/box_mm.lmp");
-		for (n = 0; n < lines; n++)
-		{
-			cy += 8;
-			if (n == 1)
-				p = Draw_CachePic ("gfx/box_mm2.lmp");
-			M_DrawTransPic (cx, cy, p);
-		}
-		p = Draw_CachePic ("gfx/box_bm.lmp");
-		M_DrawTransPic (cx, cy+8, p);
-		width -= 2;
-		cx += 16;
-	}
-
-	// draw right side
-	cy = y;
-	p = Draw_CachePic ("gfx/box_tr.lmp");
-	M_DrawTransPic (cx, cy, p);
-	p = Draw_CachePic ("gfx/box_mr.lmp");
-	for (n = 0; n < lines; n++)
-	{
-		cy += 8;
-		M_DrawTransPic (cx, cy, p);
-	}
-	p = Draw_CachePic ("gfx/box_br.lmp");
-	M_DrawTransPic (cx, cy+8, p);
-}
-
-//=============================================================================
-
-int m_save_demonum;
-		
-/*
-================
-M_ToggleMenu_f
-================
-*/
-void M_ToggleMenu_f (void)
-{
-	m_entersound = true;
-
-	if (key_dest == key_menu)
-	{
-		if (m_state != m_main)
-		{
-			M_Menu_Main_f ();
-			return;
-		}
-		key_dest = key_game;
-		m_state = m_none;
-		return;
-	}
-	if (key_dest == key_console)
-	{
-		Con_ToggleConsole_f ();
-	}
-	else
-	{
-		M_Menu_Main_f ();
-	}
-}
-
-		
-//=============================================================================
-/* MAIN MENU */
-
-int	m_main_cursor;
-#define	MAIN_ITEMS	5
-
-
-void M_Menu_Main_f (void)
-{
-	if (key_dest != key_menu)
-	{
-		m_save_demonum = cls.demonum;
-		cls.demonum = -1;
-	}
-	key_dest = key_menu;
-	m_state = m_main;
-	m_entersound = true;
-}
 				
-
-void M_Main_Draw (void)
+void M_Main_Draw ()
 {
 	int		f;
 	qpic_t	*p;
@@ -303,7 +93,6 @@ void M_Main_Draw (void)
 	M_DrawTransPic (54, 32 + m_main_cursor * 20,Draw_CachePic( va("gfx/menudot%i.lmp", f+1 ) ) );
 }
 
-
 void M_Main_Key (int key)
 {
 	switch (key)
@@ -312,7 +101,7 @@ void M_Main_Key (int key)
 		key_dest = key_game;
 		m_state = m_none;
 		cls.demonum = m_save_demonum;
-		if (cls.demonum != -1 && !cls.demoplayback && cls.state == ca_disconnected)
+		if(cls.demonum != -1 && !cls.demoplayback && cls.state == ca_disconnected)
 			CL_NextDemo ();
 		break;
 		
@@ -356,7 +145,6 @@ void M_Main_Key (int key)
 	}
 }
 
-
 //=============================================================================
 /* OPTIONS MENU */
 
@@ -366,7 +154,7 @@ void M_Main_Key (int key)
 
 int		options_cursor;
 
-void M_Menu_Options_f (void)
+void M_Menu_Options_f ()
 {
 	key_dest = key_menu;
 	m_state = m_options;
@@ -1107,13 +895,10 @@ void M_Quit_Draw (void)
 #endif
 }
 
-
-
 //=============================================================================
 /* Menu Subsystem */
 
-
-void M_Init (void)
+void M_Init ()
 {
 	Cmd_AddCommand ("togglemenu", M_ToggleMenu_f);
 
@@ -1125,8 +910,7 @@ void M_Init (void)
 	Cmd_AddCommand ("menu_quit", M_Menu_Quit_f);
 }
 
-
-void M_Draw (void)
+void M_Draw ()
 {
 	if (m_state == m_none || key_dest != key_menu)
 		return;
@@ -1240,7 +1024,6 @@ void M_Draw (void)
 	S_ExtraUpdate ();
 	VID_LockBuffer ();
 }
-
 
 void M_Keydown (int key)
 {

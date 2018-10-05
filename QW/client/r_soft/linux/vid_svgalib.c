@@ -771,11 +771,13 @@ void VID_Update(vrect_t *rects)
 			{
 				register int i = offset % 0x10000;
 	
-				if ((offset / 0x10000) != vidpage) {
+				if ((offset / 0x10000) != vidpage)
+				{
 					vidpage=offset / 0x10000;
 					vga_setpage(vidpage);
 				}
-				if (rects->width + i > 0x10000) {
+				if (rects->width + i > 0x10000)
+				{
 					memcpy(framebuffer_ptr + i, 
 							vid.buffer + offset, 
 							0x10000 - i);
@@ -783,7 +785,8 @@ void VID_Update(vrect_t *rects)
 					memcpy(framebuffer_ptr,
 							vid.buffer + offset + 0x10000 - i, 
 							rects->width - 0x10000 + i);
-				} else
+				}
+				else
 					memcpy(framebuffer_ptr + i, 
 							vid.buffer + offset, 
 							rects->width);
@@ -800,7 +803,7 @@ void VID_Update(vrect_t *rects)
 
 static int dither;
 
-void VID_DitherOn(void)
+void VID_DitherOn()
 {
     if (dither == 0)
     {
@@ -809,7 +812,7 @@ void VID_DitherOn(void)
     }
 }
 
-void VID_DitherOff(void)
+void VID_DitherOff()
 {
     if (dither)
     {
@@ -818,7 +821,7 @@ void VID_DitherOff(void)
     }
 }
 
-void Sys_SendKeyEvents(void)
+void Sys_SendKeyEvents()
 {
 	if (!svgalib_inited)
 		return;
@@ -827,11 +830,10 @@ void Sys_SendKeyEvents(void)
 		while (keyboard_update());
 }
 
-void Force_CenterView_f (void)
+void Force_CenterView_f ()
 {
 	cl.viewangles[PITCH] = 0;
 }
-
 
 void mousehandler(int buttonstate, int dx, int dy)
 {
@@ -840,9 +842,8 @@ void mousehandler(int buttonstate, int dx, int dy)
 	my += dy;
 }
 
-void IN_Init(void)
+void IN_Init()
 {
-
 	int mtype;
 	char *mousedev;
 	int mouserate;
@@ -861,12 +862,14 @@ void IN_Init(void)
 		mtype = vga_getmousetype();
 
 		mousedev = "/dev/mouse";
-		if (getenv("MOUSEDEV")) mousedev = getenv("MOUSEDEV");
+		if (getenv("MOUSEDEV"))
+			mousedev = getenv("MOUSEDEV");
 		if (COM_CheckParm("-mdev"))
 			mousedev = com_argv[COM_CheckParm("-mdev")+1];
 
 		mouserate = 1200;
-		if (getenv("MOUSERATE")) mouserate = atoi(getenv("MOUSERATE"));
+		if (getenv("MOUSERATE"))
+			mouserate = atoi(getenv("MOUSERATE"));
 		if (COM_CheckParm("-mrate"))
 			mouserate = atoi(com_argv[COM_CheckParm("-mrate")+1]);
 
@@ -879,12 +882,10 @@ void IN_Init(void)
 		}
 		else
 			mouse_seteventhandler(mousehandler);
-
 	}
-
 }
 
-void IN_Shutdown(void)
+void IN_Shutdown()
 {
 	if (UseMouse)
 		mouse_close();
@@ -895,9 +896,9 @@ void IN_Shutdown(void)
 IN_Commands
 ===========
 */
-void IN_Commands (void)
+void IN_Commands ()
 {
-	if (UseMouse /*&& cls.state != ca_dedicated*/)
+	if (UseMouse && cls.state != ca_dedicated)
 	{
 		// poll mouse values
 		while (mouse_update())
@@ -990,7 +991,6 @@ void IN_Move (usercmd_t *cmd)
 {
 	IN_MouseMove(cmd);
 }
-
 
 /*
 ================

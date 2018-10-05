@@ -262,12 +262,14 @@ void	VID_SetPalette (unsigned char *palette)
  			g = ((i & 0x03E0) >> 2)+4;
  			b = ((i & 0x7C00) >> 7)+4;
 			pal = (unsigned char *)d_8to24table;
-			for (v=0,k=0,bestdist=10000.0; v<256; v++,pal+=4) {
+			for (v=0,k=0,bestdist=10000.0; v<256; v++,pal+=4)
+			{
  				r1 = (int)r - (int)pal[0];
  				g1 = (int)g - (int)pal[1];
  				b1 = (int)b - (int)pal[2];
 				dist = sqrt(((r1*r1)+(g1*g1)+(b1*b1)));
-				if (dist < bestdist) {
+				if (dist < bestdist)
+				{
 					k=v;
 					bestdist = dist;
 				}
@@ -470,7 +472,7 @@ void Init_KBD()
 
 #define NUM_RESOLUTIONS 3
 
-static resolutions[NUM_RESOLUTIONS][3]={ 
+static resolutions[NUM_RESOLUTIONS][3] = {
   { 512, 384, GR_RESOLUTION_512x384 },
   { 640, 400, GR_RESOLUTION_640x400 },
   { 640, 480, GR_RESOLUTION_640x480 }
@@ -520,7 +522,7 @@ void VID_Init8bitPalette()
 		*newPalette++ = *oldPalette++;
 		oldPalette++;
 	}
-	glColorTableEXT(GL_SHARED_TEXTURE_PALETTE_EXT, GL_RGB, 256, GL_RGB, GL_UNSIGNED_BYTE, (void *) thePalette);
+	qglColorTableEXT(GL_SHARED_TEXTURE_PALETTE_EXT, GL_RGB, 256, GL_RGB, GL_UNSIGNED_BYTE, (void *) thePalette);
 	is8bit = true;
 }
 
@@ -714,7 +716,7 @@ IN_Commands
 */
 void IN_Commands ()
 {
-	if (UseMouse)
+	if (UseMouse && cls.state != ca_dedicated)
 	{
 		// poll mouse values
 		while (mouse_update())

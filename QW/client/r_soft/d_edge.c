@@ -46,7 +46,6 @@ void D_DrawPoly (void)
 // this driver takes spans, not polygons
 }
 
-
 /*
 =============
 D_MipLevelForScale
@@ -70,7 +69,6 @@ int D_MipLevelForScale (float scale)
 
 	return lmiplevel;
 }
-
 
 /*
 ==============
@@ -114,7 +112,6 @@ void D_DrawSolidSurface (surf_t *surf, int color)
 	}
 }
 
-
 /*
 ==============
 D_CalcGradients
@@ -152,11 +149,9 @@ void D_CalcGradients (msurface_t *pface)
 
 	t = 0x10000*mipscale;
 	sadjust = ((fixed16_t)(DotProduct (p_temp1, p_saxis) * 0x10000 + 0.5)) -
-			((pface->texturemins[0] << 16) >> miplevel)
-			+ pface->texinfo->vecs[0][3]*t;
+			((pface->texturemins[0] << 16) >> miplevel) + pface->texinfo->vecs[0][3]*t;
 	tadjust = ((fixed16_t)(DotProduct (p_temp1, p_taxis) * 0x10000 + 0.5)) -
-			((pface->texturemins[1] << 16) >> miplevel)
-			+ pface->texinfo->vecs[1][3]*t;
+			((pface->texturemins[1] << 16) >> miplevel) + pface->texinfo->vecs[1][3]*t;
 
 //
 // -1 (-epsilon) so we never wander off the edge of the texture
@@ -164,7 +159,6 @@ void D_CalcGradients (msurface_t *pface)
 	bbextents = ((pface->extents[0] << 16) >> miplevel) - 1;
 	bbextentt = ((pface->extents[1] << 16) >> miplevel) - 1;
 }
-
 
 /*
 ==============
@@ -241,8 +235,7 @@ void D_DrawSurfaces (void)
 			{
 				pface = s->data;
 				miplevel = 0;
-				cacheblock = (pixel_t *)
-						((byte *)pface->texinfo->texture +
+				cacheblock = (pixel_t *)((byte *)pface->texinfo->texture +
 						pface->texinfo->texture->offsets[0]);
 				cachewidth = 64;
 
@@ -298,8 +291,7 @@ void D_DrawSurfaces (void)
 				}
 
 				pface = s->data;
-				miplevel = D_MipLevelForScale (s->nearzi * scale_for_mip
-				* pface->texinfo->mipadjust);
+				miplevel = D_MipLevelForScale (s->nearzi * scale_for_mip * pface->texinfo->mipadjust);
 
 			// FIXME: make this passed in to D_CacheSurface
 				pcurrentcache = D_CacheSurface (pface, miplevel);

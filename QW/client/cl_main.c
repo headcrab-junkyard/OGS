@@ -489,6 +489,7 @@ Just sent as a hint to the client that they should
 drop to full console
 =================
 */
+/*
 void CL_Changing_f ()
 {
 	if (cls.download)  // don't change when downloading
@@ -499,6 +500,7 @@ void CL_Changing_f ()
 	cls.state = ca_connected;	// not active anymore, but not disconnected
 	Con_Printf ("\nChanging map...\n");
 }
+*/
 
 
 /*
@@ -596,6 +598,7 @@ void CL_ReadPackets ()
 CL_Download_f
 =====================
 */
+/*
 void CL_Download_f ()
 {
 	char *p, *q;
@@ -632,6 +635,7 @@ void CL_Download_f ()
 	MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
 	SZ_Print (&cls.netchan.message, va("download %s\n",Cmd_Argv(1)));
 }
+*/
 
 void CL_Init ()
 {
@@ -641,10 +645,10 @@ void CL_Init ()
 
 	Cmd_AddCommand ("version", CL_Version_f);
 
-	Cmd_AddCommand ("changing", CL_Changing_f);
+	//Cmd_AddCommand ("changing", CL_Changing_f);
 	
 	Cmd_AddCommand ("skins", Skin_Skins_f);
-	Cmd_AddCommand ("allskins", Skin_AllSkins_f);
+	//Cmd_AddCommand ("allskins", Skin_AllSkins_f);
 
 	Cmd_AddCommand ("quit", CL_Quit_f);
 
@@ -661,10 +665,10 @@ void CL_Init ()
 	Cmd_AddCommand ("fullserverinfo", CL_FullServerinfo_f);
 
 	Cmd_AddCommand ("color", CL_Color_f);
-	Cmd_AddCommand ("download", CL_Download_f);
+	//Cmd_AddCommand ("download", CL_Download_f);
 
-	Cmd_AddCommand ("nextul", CL_NextUpload);
-	Cmd_AddCommand ("stopul", CL_StopUpload);
+	//Cmd_AddCommand ("nextul", CL_NextUpload);
+	//Cmd_AddCommand ("stopul", CL_StopUpload);
 
 //
 // forward to server commands

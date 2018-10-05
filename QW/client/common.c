@@ -706,25 +706,7 @@ char *MSG_ReadString (void)
 	return string;
 }
 
-char *MSG_ReadStringLine (void)
-{
-	static char	string[2048];
-	int		l,c;
-	
-	l = 0;
-	do
-	{
-		c = MSG_ReadChar ();
-		if (c == -1 || c == 0 || c == '\n')
-			break;
-		string[l] = c;
-		l++;
-	} while (l < sizeof(string)-1);
-	
-	string[l] = 0;
-	
-	return string;
-}
+
 
 float MSG_ReadCoord (void)
 {
@@ -1238,12 +1220,7 @@ int COM_FOpenFile (char *filename, FILE **file)
 		}
 		else
 		{		
-	// check a file in the directory tree
-			if (!static_registered)
-			{	// if not a registered version, don't ever go beyond base
-				if ( strchr (filename, '/') || strchr (filename,'\\'))
-					continue;
-			}
+			// check a file in the directory tree
 			
 			sprintf (netpath, "%s/%s",search->filename, filename);
 			

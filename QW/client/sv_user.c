@@ -18,10 +18,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-usercmd_t	cmd;
-
 cvar_t	cl_rollspeed = {"cl_rollspeed", "200"};
 cvar_t	cl_rollangle = {"cl_rollangle", "2.0"};
+
 cvar_t	sv_spectalk = {"sv_spectalk", "1"};
 
 cvar_t	sv_mapcheck	= {"sv_mapcheck", "1"};
@@ -30,6 +29,7 @@ cvar_t	sv_mapcheck	= {"sv_mapcheck", "1"};
 
 extern int fp_messages, fp_persecond, fp_secondsdead;
 extern char fp_msg[];
+
 extern cvar_t pausable;
 
 /*

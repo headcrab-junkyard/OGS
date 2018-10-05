@@ -13,7 +13,7 @@ cvar_t	allow_download_models = {"sv_allow_download_models", "1"};
 cvar_t	allow_download_sounds = {"sv_allow_download_sounds", "1"};
 cvar_t	allow_download_maps = {"sv_allow_download_maps", "1"};
 
-cvar_t pausable	= {"pausable", "1"};
+
 
 
 //
@@ -318,17 +318,6 @@ SV_InitLocal
 */
 void SV_InitLocal ()
 {
-	int		i;
-	extern	cvar_t	sv_maxvelocity;
-	extern	cvar_t	sv_gravity;
-	extern	cvar_t	sv_aim;
-	extern	cvar_t	sv_stopspeed;
-	extern	cvar_t	sv_spectatormaxspeed;
-	extern	cvar_t	sv_accelerate;
-	extern	cvar_t	sv_airaccelerate;
-	extern	cvar_t	sv_wateraccelerate;
-	extern	cvar_t	sv_friction;
-	extern	cvar_t	sv_waterfriction;
 
 	SV_InitOperatorCommands	();
 	SV_UserInit ();
@@ -339,21 +328,6 @@ void SV_InitLocal ()
 	Cvar_RegisterVariable (&maxplayers);
 	Cvar_RegisterVariable (&hostname);
 	Cvar_RegisterVariable (&deathmatch);
-
-	Cvar_RegisterVariable (&sv_maxvelocity);
-	Cvar_RegisterVariable (&sv_gravity);
-	Cvar_RegisterVariable (&sv_stopspeed);
-	Cvar_RegisterVariable (&sv_maxspeed);
-	Cvar_RegisterVariable (&sv_spectatormaxspeed);
-	Cvar_RegisterVariable (&sv_accelerate);
-	Cvar_RegisterVariable (&sv_airaccelerate);
-	Cvar_RegisterVariable (&sv_wateraccelerate);
-	Cvar_RegisterVariable (&sv_friction);
-	Cvar_RegisterVariable (&sv_waterfriction);
-
-	Cvar_RegisterVariable (&sv_aim);
-
-	Cvar_RegisterVariable (&sv_filterban);
 	
 	Cvar_RegisterVariable (&allow_download);
 	Cvar_RegisterVariable (&allow_download_skins);
@@ -361,7 +335,7 @@ void SV_InitLocal ()
 	Cvar_RegisterVariable (&allow_download_sounds);
 	Cvar_RegisterVariable (&allow_download_maps);
 
-	Cvar_RegisterVariable (&pausable);
+	
 
 	for (i=0 ; i<MAX_MODELS ; i++)
 		sprintf (localmodels[i], "*%i", i);
