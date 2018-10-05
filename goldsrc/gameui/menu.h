@@ -21,17 +21,20 @@
 
 #pragma once
 
-typedef void (*pfnM_Keydown)(int key);
-typedef void (*pfnM_Draw)();
+#ifdef _WIN32
+	#define EXPORT [[dllexport]]
+#else
+	#define EXPORT [[visibility(default)]]
+#endif
 
-extern pfnM_Keydown fnM_Keydown;
-extern pfnM_Draw fnM_Draw;
+#define C_EXPORT extern "C" EXPORT
 
 //
 // menus
 //
-void M_Keydown(int key);
-void M_Draw();
+void M_Init();
+C_EXPORT void M_Keydown(int key);
+C_EXPORT void M_Draw();
 
 void M_ToggleMenu_f();
 //qpic_t *M_CachePic(const char *path); // TODO: qw
