@@ -21,6 +21,7 @@
 
 #include "quakedef.h"
 #include "delta.h"
+#include "usermsg.h"
 
 cvar_t sv_aim = { "sv_aim", "0.93" };
 
@@ -236,6 +237,27 @@ void PF_changelevel_I(const char *s1, const char *s2)
 			Cbuf_AddText(va("changelevel2 %s %s\n", s1, s2));
 	else
 		Cbuf_AddText(va("changelevel %s\n", s1));
+};
+
+/*
+==============
+PF_setspawnparms
+==============
+*/
+void PF_setspawnparms_I(edict_t *ent)
+{
+	int i;
+	client_t *client;
+
+	i = NUM_FOR_EDICT(ent);
+	if(i < 1 || i > svs.maxclients)
+		Host_Error("Entity is not a client");
+
+	// copy spawn parms out of the client_t
+	client = svs.clients + (i - 1);
+
+	for(i = 0; i < NUM_SPAWN_PARMS; i++)
+		(&gGlobalVariables.parm1)[i] = client->spawn_parms[i];
 };
 
 void SaveSpawnParms(edict_t *ent)
@@ -834,6 +856,45 @@ int PF_pointcontents_I(const float *vPoint)
 	return SV_PointContents(v);
 };
 
+/*
+===============================================================================
+
+MESSAGE WRITING
+
+===============================================================================
+*/
+
+sizebuf_t *WriteDest(int dest)
+{
+	int entnum;
+	edict_t *ent;
+
+	switch(dest)
+	{
+	case MSG_BROADCAST:
+		return &sv.datagram;
+
+	case MSG_ONE:
+		ent = PROG_TO_EDICT(gGlobalVariables.msg_entity);
+		entnum = NUM_FOR_EDICT(ent);
+		if(entnum < 1 || entnum > svs.maxclients)
+			Host_Error("WriteDest: not a client");
+		return &svs.clients[entnum - 1].message;
+
+	case MSG_ALL:
+		return &sv.reliable_datagram;
+
+	case MSG_INIT:
+		return &sv.signon;
+
+	default:
+		Host_Error("WriteDest: bad destination");
+		break;
+	}
+
+	return NULL;
+}
+
 void PF_MessageBegin_I(int msg_dest, int msg_type, const float *vOrigin, edict_t *ed)
 {
 	// TODO
@@ -884,15 +945,21 @@ void PF_WriteEntity_I(edict_t *ent)
 	MSG_WriteShort(WriteDest(), EDICT_NUM(ent));
 };
 
-CVarRegister()
+void CVarRegister(struct cvar_s *var)
 {
 	// TODO
 };
 
+/*
+=================
+PF_cvar
+
+float cvar (string)
+=================
+*/
 float CVarGetFloat(const char *name)
 {
-	// TODO
-	return 0.0f;
+	return Cvar_VariableValue(name);
 };
 
 const char *CVarGetString(const char *name)
@@ -906,15 +973,441 @@ void CVarSetFloat(const char *name, float value)
 	// TODO
 };
 
+/*
+=================
+PF_cvar_set
+=================
+*/
 void CVarSetString(const char *name, const char *value)
+{
+	Cvar_Set(name, value);
+};
+
+void AlertMessage(ALERT_TYPE aType, const char *sMsg, ...)
 {
 	// TODO
 };
 
-// TODO: already defined
-void PF_changeyaw()
+void EngineFprintf(void *pFile, const char *sMsg, ...)
 {
 	// TODO
+};
+
+void *PvAllocEntPrivateData(edict_t *pEnt, int32 cb)
+{
+	// TODO
+	return NULL;
+};
+
+void *PvEntPrivateData(edict_t *pEnt)
+{
+	// TODO
+	return NULL;
+};
+
+void FreeEntPrivateData(edict_t *pEnt)
+{
+	// TODO
+};
+
+const char *SzFromIndex(int nString)
+{
+	// TODO
+	return "";
+};
+
+int AllocEngineString(const char *sValue)
+{
+	// TODO
+	return 0;
+};
+
+struct entvars_s *GetVarsOfEnt(edict_t *pEnt)
+{
+	// TODO
+	return NULL;
+};
+
+edict_t *PEntityOfEntOffset(int nOffset)
+{
+	// TODO
+	return NULL;
+};
+
+int EntOffsetOfPEntity(const edict_t *pEnt)
+{
+	// TODO
+	return 0;
+};
+
+int IndexOfEdict(const edict_t *pEnt)
+{
+	// TODO
+	return 0;
+};
+
+edict_t *PEntityOfEntIndex(int nIndex)
+{
+	// TODO
+	return NULL;
+};
+
+edict_t *FindEntityByVars(struct entvars_s *pVars)
+{
+	// TODO
+	return NULL;
+};
+
+void *GetModelPtr(edict_t *pEnt)
+{
+	// TODO
+	return NULL;
+};
+
+void AnimationAutomove(const edict_t *pEnt, float fTime)
+{
+	// TODO
+};
+
+void GetBonePosition(const edict_t *pEnt, int nBone, float *vOrigin, float *vAngles)
+{
+	// TODO
+};
+
+uint32 FunctionFromName(const char *sName)
+{
+	// TODO
+	return 0;
+};
+
+const char *NameForFunction(uint32 nFunction)
+{
+	// TODO
+	return "";
+};
+
+void ClientPrintf(edict_t *pEnt, PRINT_TYPE aType, const char *sMsg)
+{
+	// TODO
+};
+
+void ServerPrint(const char *sMsg)
+{
+	// TODO
+};
+
+void GetAttachment(const edict_t *pEnt, int nAttachment, float *vOrigin, float *vAngles)
+{
+	// TODO
+};
+
+int32 RandomLong(int32 nLow, int32 nHigh)
+{
+	// TODO
+	return 0;
+};
+
+float RandomFloat(float fLow, float fHigh)
+{
+	// TODO
+	return 0.0f;
+};
+
+void PF_setview_I(const edict_t *pEnt, const edict_t *pViewEnt)
+{
+	// TODO
+};
+
+float PF_Time()
+{
+	// TODO
+	return 0.0f;
+};
+
+void PF_crosshairangle_I(const edict_t *pClient, float pitch, float yaw)
+{
+	// TODO
+};
+
+// TODO
+//pfnCvar_RegisterVariable = 0x981fd7a4 <meta_CVarRegister(cvar_s*)>,
+
+void PF_FadeVolume(const edict_t *pClient, int nFadePercent, int nFadeOutSeconds, int nHoldTime, int nFadeInSeconds)
+{
+	// TODO
+};
+
+void PF_SetClientMaxspeed(const edict_t *pClient, float fSpeed)
+{
+	// TODO
+};
+
+edict_t *PF_CreateFakeClient_I(const char *netname)
+{
+	// TODO
+	return NULL;
+};
+
+void PF_RunPlayerMove_I(edict_t *fakeclient, const float *viewangles, float forwardmove, float sidemove, float upmove, unsigned short buttons, byte impulse, byte msec)
+{
+	// TODO
+};
+
+int PF_NumberOfEntities_I()
+{
+	// TODO
+	return 0;
+};
+
+char *PF_GetInfoKeyBuffer_I(edict_t *pent)
+{
+	// TODO
+	return NULL;
+};
+
+char *PF_InfoKeyValue_I(char *infobuffer, char *key)
+{
+	// TODO
+	return NULL;
+};
+
+void PF_SetKeyValue_I(char *infobuffer, char *key, char *value)
+{
+	// TODO
+};
+
+void PF_SetClientKeyValue_I(int clientIndex, char *infobuffer, char *key, char *value)
+{
+	// TODO
+};
+
+int PF_IsMapValid_I(char *filename)
+{
+	// TODO
+	return 0;
+};
+
+void PF_StaticDecal(const float *origin, int decalIndex, int entityIndex, int modelIndex)
+{
+	// TODO
+};
+
+int PF_precache_generic_I(char *name)
+{
+	// TODO
+	return 0;
+};
+
+int PF_GetPlayerUserId(edict_t *player)
+{
+	// TODO
+	return 0;
+};
+
+void PF_BuildSoundMsg_I()
+{
+	// TODO
+};
+
+int PF_IsDedicatedServer()
+{
+	return isDedicated;
+};
+
+cvar_t *CVarGetPointer(const char *name)
+{
+	// TODO
+	return NULL;
+};
+
+uint PF_GetPlayerWONId(edict_t *player)
+{
+	// TODO
+	return 0;
+};
+
+void PF_RemoveKey_I(char *infobuffer, const char *key)
+{
+	// TODO
+};
+
+const char *PF_GetPhysicsKeyValue(const edict_t *pClient, const char *key)
+{
+	// TODO
+	return "";
+};
+
+void PF_SetPhysicsKeyValue(const edict_t *pClient, const char *key, const char *value)
+{
+	// TODO
+};
+
+const char *PF_GetPhysicsInfoString(const edict_t *pClient)
+{
+	// TODO
+	return NULL;
+};
+
+unsigned short EV_Precache()
+{
+};
+
+void EV_Playback()
+{
+};
+
+byte *SV_FatPVS(float *org)
+{
+	// TODO
+	return NULL;
+};
+
+byte *SV_FatPAS(float *org)
+{
+	// TODO
+	return NULL;
+};
+
+int SV_CheckVisibility(const edict_t *entity, byte *pset)
+{
+	// TODO
+	return 0;
+};
+
+int PF_GetCurrentPlayer()
+{
+	// TODO
+	return 0;
+};
+
+int PF_CanSkipPlayer(const edict_t *player)
+{
+	// TODO
+	return 0;
+};
+
+void PF_SetGroupMask(int mask, int op)
+{
+	// TODO
+};
+
+int PF_CreateInstancedBaseline(int classname, struct entity_state_s *baseline)
+{
+	// TODO
+	return 0;
+};
+
+void PF_Cvar_DirectSet(struct cvar_s *var, char *value)
+{
+	// TODO
+};
+
+void PF_ForceUnmodified(FORCE_TYPE type, float *mins, float *maxs, const char *filename)
+{
+	// TODO
+};
+
+void PF_GetPlayerStats(const edict_t *pPlayer, int *ping, int *packet_loss)
+{
+	// TODO
+};
+
+// TODO
+//pfnAddServerCommand = 0x981fd63f <meta_AddServerCommand(char*, void (*)())>,
+
+qboolean Voice_GetClientListening(int nReceiver, int nSender)
+{
+	// TODO
+	return false;
+};
+
+qboolean Voice_SetClientListening(int nReceiver, int nSender, qboolean bListen)
+{
+	// TODO
+	return false;
+};
+
+const char *pfnGetPlayerAuthId(edict_t *player)
+{
+	// TODO
+	return "";
+};
+
+sequenceEntry_s *pfnSequenceGet(const char *fileName, const char *entryName)
+{
+	// TODO
+	return NULL;
+};
+
+sequenceEntry_s *pfnSequencePickSentence(const char *groupName, int pickMethod, int *pPicked)
+{
+	// TODO
+	return NULL;
+};
+
+int pfnGetFileSize(char *filename)
+{
+	// TODO
+	return 0;
+};
+
+uint pfnGetApproxWavePlayLen(const char *filepath)
+{
+	// TODO
+	return 0;
+};
+
+int pfnIsCareerMatch()
+{
+	// TODO
+	return 0;
+};
+
+int pfnGetLocalizedStringLength(const char *label)
+{
+	// TODO
+	return 0;
+};
+
+void pfnRegisterTutorMessageShown(int mid)
+{
+	// TODO
+};
+
+int pfnGetTimesTutorMessageShown(int mid)
+{
+	// TODO
+};
+
+void ProcessTutorMessageDecayBuffer(int *buffer, int bufferLength)
+{
+	// TODO
+};
+
+void ConstructTutorMessageDecayBuffer(int *buffer, int bufferLength)
+{
+	// TODO
+};
+
+void ResetTutorMessageDecayData()
+{
+	// TODO
+};
+
+void pfnQueryClientCvarValue(const edict_t *player, const char *cvarName)
+{
+	// TODO
+};
+
+void pfnQueryClientCvarValue2(const edict_t *player, const char *cvarName, int requestID)
+{
+	// TODO
+};
+
+int pfnCheckParm(const char *sCmdLineToken, char **ppnext)
+{
+	// TODO
+	return 0;
 };
 
 enginefuncs_t gEngineFuncs[] =
@@ -930,7 +1423,7 @@ enginefuncs_t gEngineFuncs[] =
 	
 	PF_changelevel_I,
 	
-	NULL, // PF_GetSpawnParms
+	PF_setspawnparms_I,
 	SaveSpawnParms,
 	
 	PF_vectoyaw_I,
@@ -1002,10 +1495,11 @@ enginefuncs_t gEngineFuncs[] =
 	PF_WriteString_I,
 	PF_WriteEntity_I,
 	
-	pfnCVarRegister = 0x981fd7a4 <meta_CVarRegister(cvar_s*)>,
+	CVarRegister,
 	
 	CVarGetFloat,
 	CVarGetString,
+	
 	CVarSetFloat,
 	CVarSetString,
 	
@@ -1028,7 +1522,7 @@ enginefuncs_t gEngineFuncs[] =
 	
 	GetModelPtr,
 	
-	pfnRegUserMsg = 0x981fd94a <meta_RegUserMsg(char const*, int)>,
+	RegUserMsg,
 	
 	AnimationAutomove,
 	
@@ -1068,7 +1562,7 @@ enginefuncs_t gEngineFuncs[] =
 	COM_CompareFileTime,
 	COM_GetGameDir,
 	
-	pfnCvar_RegisterVariable = 0x981fd7a4 <meta_CVarRegister(cvar_s*)>,
+	NULL, // TODO: pfnCvar_RegisterVariable = 0x981fd7a4 <meta_CVarRegister(cvar_s*)>,
 	
 	PF_FadeVolume,
 	
@@ -1089,7 +1583,7 @@ enginefuncs_t gEngineFuncs[] =
 	PF_IsMapValid_I,
 	
 	PF_StaticDecal,
-	
+
 	PF_precache_generic_I,
 	
 	PF_GetPlayerUserId,
@@ -1139,7 +1633,7 @@ enginefuncs_t gEngineFuncs[] =
 	
 	PF_GetPlayerStats,
 	
-	pfnAddServerCommand = 0x981fd63f <meta_AddServerCommand(char*, void (*)())>,
+	NULL, // TODO: pfnAddServerCommand = 0x981fd63f <meta_AddServerCommand(char*, void (*)())>,
 	
 	Voice_GetClientListening,
 	Voice_SetClientListening,
