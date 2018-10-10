@@ -28,31 +28,71 @@ typedef int (*pfnUserMsgHook)(const char *sName, int nSize, void *pBuf);
 
 typedef struct usermsg_s
 {
+	int index;
 	int size; ///< Byte size of message, or -1 for variable sized
 	const char *name;
 	pfnUserMsgHook mfnHook; ///< Client only dispatch function for message
 } usermsg_t;
 
-usermsg_t cl_messages[MAX_USERMSGS];
+// TODO: add cl_messages concmd
 
 // SERVER ONLY
 
-void RegisterUserMsg(char *szMsgName, int size)
+usermsg_t gSvUserMsgs[MAX_USERMSGS];
+int num_svusermsgs = 0;
+
+int gnLastIndex = svc_sendcvarvalue2 + 1; // We'll start assigning ids right after the internal protocol entries
+
+int RegUserMsg(/*const*/ char *szMsgName, int size)
 {
-	// TODO
+	// Check if already registered
+	for(int i = 0; i < MAX_USERMSGS; i++)
+		if(!strcmp(gSvUserMsgs[num_svusermsgs].name, szMsgName))
+			return 0;
+	
+	if(num_svusermsgs >= MAX_USERMSGS)
+		return 0;
+	
+	gSvUserMsgs[num_svusermsgs].index = gnLastIndex;
+	strcpy(gSvUserMsgs[num_svusermsgs].name, szMsgName);
+	gSvUserMsgs[num_svusermsgs].size = size;
+	
+	num_svusermsgs++;
+	
+	return ++gnLastIndex;
 };
 
 // CLIENT ONLY
 
+usermsg_t gClUserMsgs[MAX_USERMSGS];
+int num_clusermsgs = 0;
+
+void RegClUserMsg(int index, int size, const char *szMsgName)
+{
+	// Check if already registered
+	for(int i = 0; i < MAX_USERMSGS; i++)
+		if(!strcmp(gClUserMsgs[num_clusermsgs].name, szMsgName))
+			return;
+	
+	if(num_clusermsgs >= MAX_USERMSGS)
+		return 0;
+	
+	gClUserMsgs[num_clusermsgs].index = index;
+	strcpy(gClUserMsgs[num_clusermsgs].name, szMsgName);
+	gClUserMsgs[num_clusermsgs].size = size;
+	
+	num_clusermsgs++;
+};
+
 int HookUserMsg(char *szMsgName, pfnUserMsgHook afnHook)
 {
 	for(int i = 0; i < MAX_USERMSGS; i++)
-		if(!Q_strcmp(cl_messages[i].name, szMsgName))
+		if(!Q_strcmp(gClUserMsgs[i].name, szMsgName))
 		{
-			if(cl_messages[i].mfnHook)
+			if(gClUserMsgs[i].mfnHook)
 				return 0; // TODO: already hooked
 			
-			cl_messages[i].mfnHook = afnHook;
+			gClUserMsgs[i].mfnHook = afnHook;
 			return 1;
 		};
 	
@@ -61,11 +101,11 @@ int HookUserMsg(char *szMsgName, pfnUserMsgHook afnHook)
 
 void DispatchUserMsg(int id)
 {
-	if(!cl_messages[id].mfnHook)
-		Sys_Error("UserMsg: No pfn %s %d", cl_messages[id].name, id);
+	if(!gClUserMsgs[id].mfnHook)
+		Sys_Error("UserMsg: No pfn %s %d", gClUserMsgs[id].name, id);
 	
 	if(id < 0 || i > MAX_USERMSGS)
 		Sys_Error("DispatchUserMsg:  Illegal User Msg %d", i);
 	
-	cl_messages[id].mfnHook(cl_messages[id].name, net_message.cursize, net_message.data);
+	gClUserMsgs[id].mfnHook(gClUserMsgs[id].name, net_message.cursize, net_message.data);
 };
