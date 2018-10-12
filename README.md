@@ -55,6 +55,11 @@ GoldSrc engine. You need to reimplement the game code yourself or use the reimpl
 I doubt that anyone else decides to rewrite the game code for this engine, so it probably end up being used as a tech demo of the GoldSrc 
 showcasing its features using some recreated HL Alpha maps)
 
+## Screenshots
+
+![Console Test](docs/ogs-console-test.png)
+![Menu Test](docs/ogs-menu-test.png)
+
 ## License
 
 [![license](https://img.shields.io/gitlab/license/BlackPhrase/OGS.svg)](https://gitlab.com/BlackPhrase/OGS/blob/master/LICENSE)
