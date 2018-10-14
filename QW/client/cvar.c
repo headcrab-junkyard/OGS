@@ -1,15 +1,4 @@
 
-cvar_t *Cvar_FindVar (char *var_name)
-{
-}
-
-float	Cvar_VariableValue (char *var_name)
-{
-}
-
-char *Cvar_VariableString (char *var_name)
-{
-}
 
 char *Cvar_CompleteVariable (char *partial)
 {
@@ -75,10 +64,6 @@ void Cvar_Set (char *var_name, char *value)
 	var->string = Z_Malloc (Q_strlen(value)+1);
 	Q_strcpy (var->string, value);
 	var->value = Q_atof (var->string);
-}
-
-void Cvar_SetValue (char *var_name, float value)
-{
 }
 
 void Cvar_RegisterVariable (cvar_t *variable)

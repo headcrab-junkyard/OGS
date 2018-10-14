@@ -144,20 +144,6 @@ char	*Cmd_Argv (int arg)
 	return cmd_argv[arg];	
 }
 
-/*
-============
-Cmd_Args
-
-Returns a single string containing argv(1) to argv(argc()-1)
-============
-*/
-char		*Cmd_Args (void)
-{
-	if (!cmd_args)
-		return "";
-	return cmd_args;
-}
-
 char *Cmd_CompleteCommand (char *partial)
 {
 	cmd_function_t	*cmd;

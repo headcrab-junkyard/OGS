@@ -86,19 +86,6 @@ char *svc_strings[] =
 	"svc_setinfo",
 	"svc_serverinfo",
 	"svc_updatepl",
-	"NEW PROTOCOL",
-	"NEW PROTOCOL",
-	"NEW PROTOCOL",
-	"NEW PROTOCOL",
-	"NEW PROTOCOL",
-	"NEW PROTOCOL",
-	"NEW PROTOCOL",
-	"NEW PROTOCOL",
-	"NEW PROTOCOL",
-	"NEW PROTOCOL",
-	"NEW PROTOCOL",
-	"NEW PROTOCOL",
-	"NEW PROTOCOL"
 };
 
 int	oldparsecountmod;
