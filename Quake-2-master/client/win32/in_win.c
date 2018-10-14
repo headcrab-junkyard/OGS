@@ -39,7 +39,12 @@ extern	unsigned	sys_msg_time;
 
 enum _ControlList
 {
-	AxisNada = 0, AxisForward, AxisLook, AxisSide, AxisTurn, AxisUp
+	AxisNada = 0,
+	AxisForward,
+	AxisLook,
+	AxisSide,
+	AxisTurn,
+	AxisUp
 };
 
 DWORD	dwAxisFlags[JOY_MAX_AXES] =
@@ -53,7 +58,6 @@ PDWORD	pdwRawValue[JOY_MAX_AXES];
 
 cvar_t	*in_mouse;
 cvar_t	*in_joystick;
-
 
 // none of these cvars are saved over a session
 // this means that advanced controller configuration needs to be executed
@@ -108,10 +112,14 @@ cvar_t	*m_filter;
 
 qboolean	mlooking;
 
-void IN_MLookDown (void) { mlooking = true; }
-void IN_MLookUp (void) {
-mlooking = false;
-if (!freelook->value && lookspring->value)
+void IN_MLookDown (void)
+{
+	mlooking = true;
+}
+void IN_MLookUp (void)
+{
+	mlooking = false;
+	if (!freelook->value && lookspring->value)
 		IN_CenterView ();
 }
 
@@ -131,7 +139,6 @@ qboolean	mouseparmsvalid;
 
 int			window_center_x, window_center_y;
 RECT		window_rect;
-
 
 /*
 ===========
@@ -186,7 +193,6 @@ void IN_ActivateMouse (void)
 		;
 }
 
-
 /*
 ===========
 IN_DeactivateMouse
@@ -211,8 +217,6 @@ void IN_DeactivateMouse (void)
 	while (ShowCursor (TRUE) < 0)
 		;
 }
-
-
 
 /*
 ===========
@@ -262,7 +266,6 @@ void IN_MouseEvent (int mstate)
 		
 	mouse_oldbuttonstate = mstate;
 }
-
 
 /*
 ===========
@@ -325,7 +328,6 @@ void IN_MouseMove (usercmd_t *cmd)
 		SetCursorPos (window_center_x, window_center_y);
 }
 
-
 /*
 =========================================================================
 
@@ -336,7 +338,6 @@ VIEW CENTERING
 
 cvar_t	*v_centermove;
 cvar_t	*v_centerspeed;
-
 
 /*
 ===========
@@ -393,7 +394,6 @@ void IN_Shutdown (void)
 	IN_DeactivateMouse ();
 }
 
-
 /*
 ===========
 IN_Activate
@@ -408,7 +408,6 @@ void IN_Activate (qboolean active)
 	in_appactive = active;
 	mouseactive = !active;		// force a new window check or turn off
 }
-
 
 /*
 ==================
@@ -428,9 +427,7 @@ void IN_Frame (void)
 		return;
 	}
 
-	if ( !cl.refresh_prepped
-		|| cls.key_dest == key_console
-		|| cls.key_dest == key_menu)
+	if ( !cl.refresh_prepped || cls.key_dest == key_console || cls.key_dest == key_menu)
 	{
 		// temporarily deactivate if in fullscreen
 		if (Cvar_VariableValue ("vid_fullscreen") == 0)
@@ -456,7 +453,6 @@ void IN_Move (usercmd_t *cmd)
 		IN_JoyMove (cmd);
 }
 
-
 /*
 ===================
 IN_ClearStates
@@ -468,7 +464,6 @@ void IN_ClearStates (void)
 	my_accum = 0;
 	mouse_oldbuttonstate = 0;
 }
-
 
 /*
 =========================================================================
@@ -548,7 +543,6 @@ void IN_StartupJoystick (void)
 	Com_Printf ("\njoystick detected\n\n"); 
 }
 
-
 /*
 ===========
 RawValuePointer
@@ -573,7 +567,6 @@ PDWORD RawValuePointer (int axis)
 	}
 }
 
-
 /*
 ===========
 Joy_AdvancedUpdate_f
@@ -581,7 +574,6 @@ Joy_AdvancedUpdate_f
 */
 void Joy_AdvancedUpdate_f (void)
 {
-
 	// called once by IN_ReadJoystick and by user whenever an update is needed
 	// cvars are now available
 	int	i;
@@ -645,7 +637,6 @@ void Joy_AdvancedUpdate_f (void)
 	}
 }
 
-
 /*
 ===========
 IN_Commands
@@ -661,7 +652,6 @@ void IN_Commands (void)
 		return;
 	}
 
-	
 	// loop through the joystick buttons
 	// key a joystick event or auxillary event for higher number buttons for each state change
 	buttonstate = ji.dwButtons;
@@ -715,7 +705,6 @@ void IN_Commands (void)
 	}
 }
 
-
 /* 
 =============== 
 IN_ReadJoystick
@@ -723,7 +712,6 @@ IN_ReadJoystick
 */  
 qboolean IN_ReadJoystick (void)
 {
-
 	memset (&ji, 0, sizeof(ji));
 	ji.dwSize = sizeof(ji);
 	ji.dwFlags = joy_flags;
@@ -742,7 +730,6 @@ qboolean IN_ReadJoystick (void)
 		return false;
 	}
 }
-
 
 /*
 ===========
@@ -858,7 +845,6 @@ void IN_JoyMove (usercmd_t *cmd)
 					{
 						cl.viewangles[YAW] += (fAxisValue * joy_yawsensitivity->value) * speed * 180.0;
 					}
-
 				}
 			}
 			break;
@@ -886,4 +872,3 @@ void IN_JoyMove (usercmd_t *cmd)
 		}
 	}
 }
-

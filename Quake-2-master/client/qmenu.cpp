@@ -17,23 +17,14 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-#include <string.h>
-#include <ctype.h>
+
+#include <cstring>
+#include <cctype>
 
 #include "client.h"
 #include "qmenu.h"
 
-static void	 Action_DoEnter( menuaction_s *a );
-static void	 Action_Draw( menuaction_s *a );
 static void  Menu_DrawStatusBar( const char *string );
-static void	 Menulist_DoEnter( menulist_s *l );
-static void	 MenuList_Draw( menulist_s *l );
-static void	 Separator_Draw( menuseparator_s *s );
-static void	 Slider_DoSlide( menuslider_s *s, int dir );
-static void	 Slider_Draw( menuslider_s *s );
-static void	 SpinControl_DoEnter( menulist_s *s );
-static void	 SpinControl_Draw( menulist_s *s );
-static void	 SpinControl_DoSlide( menulist_s *s, int dir );
 
 #define RCOLUMN_OFFSET  16
 #define LCOLUMN_OFFSET -16
@@ -47,43 +38,44 @@ extern viddef_t viddef;
 #define Draw_Char re.DrawChar
 #define Draw_Fill re.DrawFill
 
-void Action_DoEnter( menuaction_s *a )
+void menuaction_s::Action_DoEnter()
 {
-	if ( a->generic.callback )
-		a->generic.callback( a );
-}
+	if ( this->callback )
+		this->callback( this );
+};
 
-void Action_Draw( menuaction_s *a )
+void menuaction_s::Action_Draw()
 {
-	if ( a->generic.flags & QMF_LEFT_JUSTIFY )
+	if ( this->generic.flags & QMF_LEFT_JUSTIFY )
 	{
-		if ( a->generic.flags & QMF_GRAYED )
-			Menu_DrawStringDark( a->generic.x + a->generic.parent->x + LCOLUMN_OFFSET, a->generic.y + a->generic.parent->y, a->generic.name );
+		if ( this->generic.flags & QMF_GRAYED )
+			Menu_DrawStringDark( this->generic.x + this->generic.parent->x + LCOLUMN_OFFSET, this->generic.y + this->generic.parent->y, this->generic.name );
 		else
-			Menu_DrawString( a->generic.x + a->generic.parent->x + LCOLUMN_OFFSET, a->generic.y + a->generic.parent->y, a->generic.name );
+			Menu_DrawString( this->generic.x + this->generic.parent->x + LCOLUMN_OFFSET, this->generic.y + this->generic.parent->y, this->generic.name );
 	}
 	else
 	{
-		if ( a->generic.flags & QMF_GRAYED )
-			Menu_DrawStringR2LDark( a->generic.x + a->generic.parent->x + LCOLUMN_OFFSET, a->generic.y + a->generic.parent->y, a->generic.name );
+		if ( this->generic.flags & QMF_GRAYED )
+			Menu_DrawStringR2LDark( this->generic.x + this->generic.parent->x + LCOLUMN_OFFSET, this->generic.y + this->generic.parent->y, this->generic.name );
 		else
-			Menu_DrawStringR2L( a->generic.x + a->generic.parent->x + LCOLUMN_OFFSET, a->generic.y + a->generic.parent->y, a->generic.name );
-	}
-	if ( a->generic.ownerdraw )
-		a->generic.ownerdraw( a );
-}
+			Menu_DrawStringR2L( this->generic.x + this->generic.parent->x + LCOLUMN_OFFSET, this->generic.y + this->generic.parent->y, this->generic.name );
+	};
+	
+	if ( this->generic.ownerdraw )
+		this->generic.ownerdraw( this );
+};
 
-qboolean Field_DoEnter( menufield_s *f )
+bool menufield_s::Field_DoEnter( menufield_s *f )
 {
 	if ( f->generic.callback )
 	{
 		f->generic.callback( f );
 		return true;
-	}
+	};
 	return false;
-}
+};
 
-void Field_Draw( menufield_s *f )
+void menufield_s::Field_Draw( menufield_s *f )
 {
 	int i;
 	char tempbuffer[128]="";
@@ -103,7 +95,7 @@ void Field_Draw( menufield_s *f )
 	{
 		Draw_Char( f->generic.x + f->generic.parent->x + 24 + i * 8, f->generic.y + f->generic.parent->y - 4, 19 );
 		Draw_Char( f->generic.x + f->generic.parent->x + 24 + i * 8, f->generic.y + f->generic.parent->y + 4, 25 );
-	}
+	};
 
 	Menu_DrawString( f->generic.x + f->generic.parent->x + 24, f->generic.y + f->generic.parent->y, tempbuffer );
 
@@ -127,11 +119,11 @@ void Field_Draw( menufield_s *f )
 			Draw_Char( f->generic.x + f->generic.parent->x + ( offset + 2 ) * 8 + 8,
 					   f->generic.y + f->generic.parent->y,
 					   ' ' );
-		}
-	}
-}
+		};
+	};
+};
 
-qboolean Field_Key( menufield_s *f, int key )
+bool menufield_s::Field_Key( menufield_s *f, int key )
 {
 	extern int keydown[];
 
@@ -179,7 +171,7 @@ qboolean Field_Key( menufield_s *f, int key )
 	case K_KP_DEL:
 		key = '.';
 		break;
-	}
+	};
 
 	if ( key > 127 )
 	{
@@ -188,8 +180,8 @@ qboolean Field_Key( menufield_s *f, int key )
 		case K_DEL:
 		default:
 			return false;
-		}
-	}
+		};
+	};
 
 	/*
 	** support pasting from the clipboard
@@ -210,9 +202,9 @@ qboolean Field_Key( menufield_s *f, int key )
 				f->visible_offset = 0;
 
 			free( cbd );
-		}
+		};
 		return true;
-	}
+	};
 
 	switch ( key )
 	{
@@ -227,8 +219,8 @@ qboolean Field_Key( menufield_s *f, int key )
 			if ( f->visible_offset )
 			{
 				f->visible_offset--;
-			}
-		}
+			};
+		};
 		break;
 
 	case K_KP_DEL:
@@ -255,27 +247,27 @@ qboolean Field_Key( menufield_s *f, int key )
 			if ( f->cursor > f->visible_length )
 			{
 				f->visible_offset++;
-			}
-		}
-	}
+			};
+		};
+	};
 
 	return true;
-}
+};
 
-void Menu_AddItem( menuframework_s *menu, void *item )
+void menuframework_s::Menu_AddItem( void *item )
 {
-	if ( menu->nitems == 0 )
-		menu->nslots = 0;
+	if ( this->nitems == 0 )
+		this->nslots = 0;
 
-	if ( menu->nitems < MAXMENUITEMS )
+	if ( this->nitems < MAXMENUITEMS )
 	{
-		menu->items[menu->nitems] = item;
-		( ( menucommon_s * ) menu->items[menu->nitems] )->parent = menu;
-		menu->nitems++;
-	}
+		this->items[this->nitems] = item;
+		( ( menucommon_s * ) this->items[this->nitems] )->parent = this;
+		this->nitems++;
+	};
 
-	menu->nslots = Menu_TallySlots( menu );
-}
+	this->nslots = this->Menu_TallySlots();
+};
 
 /*
 ** Menu_AdjustCursor
@@ -284,7 +276,7 @@ void Menu_AddItem( menuframework_s *menu, void *item )
 ** to adjust the menu's cursor so that it's at the next available
 ** slot.
 */
-void Menu_AdjustCursor( menuframework_s *m, int dir )
+void menuframework_s::Menu_AdjustCursor( menuframework_s *m, int dir )
 {
 	menucommon_s *citem;
 
@@ -297,8 +289,8 @@ void Menu_AdjustCursor( menuframework_s *m, int dir )
 		{
 			if ( citem->type != MTYPE_SEPARATOR )
 				return;
-		}
-	}
+		};
+	};
 
 	/*
 	** it's not in a valid spot, so crawl in the direction indicated until we
@@ -315,7 +307,7 @@ void Menu_AdjustCursor( menuframework_s *m, int dir )
 			m->cursor += dir;
 			if ( m->cursor >= m->nitems )
 				m->cursor = 0;
-		}
+		};
 	}
 	else
 	{
@@ -328,21 +320,21 @@ void Menu_AdjustCursor( menuframework_s *m, int dir )
 			m->cursor += dir;
 			if ( m->cursor < 0 )
 				m->cursor = m->nitems - 1;
-		}
-	}
-}
+		};
+	};
+};
 
-void Menu_Center( menuframework_s *menu )
+void menuframework_s::Menu_Center()
 {
 	int height;
 
-	height = ( ( menucommon_s * ) menu->items[menu->nitems-1])->y;
+	height = ( ( menucommon_s * ) this->items[this->nitems-1])->y;
 	height += 10;
 
-	menu->y = ( VID_HEIGHT - height ) / 2;
-}
+	this->y = ( VID_HEIGHT - height ) / 2;
+};
 
-void Menu_Draw( menuframework_s *menu )
+void menuframework_s::Menu_Draw()
 {
 	int i;
 	menucommon_s *item;
@@ -350,52 +342,52 @@ void Menu_Draw( menuframework_s *menu )
 	/*
 	** draw contents
 	*/
-	for ( i = 0; i < menu->nitems; i++ )
+	for ( i = 0; i < this->nitems; i++ )
 	{
-		switch ( ( ( menucommon_s * ) menu->items[i] )->type )
+		switch ( ( ( menucommon_s * ) this->items[i] )->type )
 		{
 		case MTYPE_FIELD:
-			Field_Draw( ( menufield_s * ) menu->items[i] );
+			Field_Draw( ( menufield_s * ) this->items[i] );
 			break;
 		case MTYPE_SLIDER:
-			Slider_Draw( ( menuslider_s * ) menu->items[i] );
+			Slider_Draw( ( menuslider_s * ) this->items[i] );
 			break;
 		case MTYPE_LIST:
-			MenuList_Draw( ( menulist_s * ) menu->items[i] );
+			MenuList_Draw( ( menulist_s * ) this->items[i] );
 			break;
 		case MTYPE_SPINCONTROL:
-			SpinControl_Draw( ( menulist_s * ) menu->items[i] );
+			SpinControl_Draw( ( menulist_s * ) this->items[i] );
 			break;
 		case MTYPE_ACTION:
-			Action_Draw( ( menuaction_s * ) menu->items[i] );
+			this->( menuaction_s * )items[i]->Action_Draw();
 			break;
 		case MTYPE_SEPARATOR:
-			Separator_Draw( ( menuseparator_s * ) menu->items[i] );
+			this->( menuseparator_s * )items[i]->Separator_Draw();
 			break;
-		}
-	}
+		};
+	};
 
-	item = Menu_ItemAtCursor( menu );
+	item = this->Menu_ItemAtCursor();
 
 	if ( item && item->cursordraw )
 	{
 		item->cursordraw( item );
 	}
-	else if ( menu->cursordraw )
+	else if ( this->cursordraw )
 	{
-		menu->cursordraw( menu );
+		this->cursordraw( this );
 	}
 	else if ( item && item->type != MTYPE_FIELD )
 	{
 		if ( item->flags & QMF_LEFT_JUSTIFY )
 		{
-			Draw_Char( menu->x + item->x - 24 + item->cursor_offset, menu->y + item->y, 12 + ( ( int ) ( Sys_Milliseconds()/250 ) & 1 ) );
+			Draw_Char( this->x + item->x - 24 + item->cursor_offset, this->y + item->y, 12 + ( ( int ) ( Sys_Milliseconds()/250 ) & 1 ) );
 		}
 		else
 		{
-			Draw_Char( menu->x + item->cursor_offset, menu->y + item->y, 12 + ( ( int ) ( Sys_Milliseconds()/250 ) & 1 ) );
-		}
-	}
+			Draw_Char( this->x + item->cursor_offset, this->y + item->y, 12 + ( ( int ) ( Sys_Milliseconds()/250 ) & 1 ) );
+		};
+	};
 
 	if ( item )
 	{
@@ -404,14 +396,14 @@ void Menu_Draw( menuframework_s *menu )
 		else if ( item->statusbar )
 			Menu_DrawStatusBar( item->statusbar );
 		else
-			Menu_DrawStatusBar( menu->statusbar );
+			Menu_DrawStatusBar( this->statusbar );
 
 	}
 	else
 	{
-		Menu_DrawStatusBar( menu->statusbar );
-	}
-}
+		Menu_DrawStatusBar( this->statusbar );
+	};
+};
 
 void Menu_DrawStatusBar( const char *string )
 {
@@ -428,8 +420,8 @@ void Menu_DrawStatusBar( const char *string )
 	else
 	{
 		Draw_Fill( 0, VID_HEIGHT-8, VID_WIDTH, 8, 0 );
-	}
-}
+	};
+};
 
 void Menu_DrawString( int x, int y, const char *string )
 {
@@ -438,8 +430,8 @@ void Menu_DrawString( int x, int y, const char *string )
 	for ( i = 0; i < strlen( string ); i++ )
 	{
 		Draw_Char( ( x + i*8 ), y, string[i] );
-	}
-}
+	};
+};
 
 void Menu_DrawStringDark( int x, int y, const char *string )
 {
@@ -448,8 +440,8 @@ void Menu_DrawStringDark( int x, int y, const char *string )
 	for ( i = 0; i < strlen( string ); i++ )
 	{
 		Draw_Char( ( x + i*8 ), y, string[i] + 128 );
-	}
-}
+	};
+};
 
 void Menu_DrawStringR2L( int x, int y, const char *string )
 {
@@ -458,8 +450,8 @@ void Menu_DrawStringR2L( int x, int y, const char *string )
 	for ( i = 0; i < strlen( string ); i++ )
 	{
 		Draw_Char( ( x - i*8 ), y, string[strlen(string)-i-1] );
-	}
-}
+	};
+};
 
 void Menu_DrawStringR2LDark( int x, int y, const char *string )
 {
@@ -468,20 +460,20 @@ void Menu_DrawStringR2LDark( int x, int y, const char *string )
 	for ( i = 0; i < strlen( string ); i++ )
 	{
 		Draw_Char( ( x - i*8 ), y, string[strlen(string)-i-1]+128 );
-	}
-}
+	};
+};
 
-void *Menu_ItemAtCursor( menuframework_s *m )
+void *menuframework_s::Menu_ItemAtCursor()
 {
-	if ( m->cursor < 0 || m->cursor >= m->nitems )
+	if ( this->cursor < 0 || this->cursor >= this->nitems )
 		return 0;
 
-	return m->items[m->cursor];
-}
+	return this->items[this->cursor];
+};
 
-qboolean Menu_SelectItem( menuframework_s *s )
+qboolean menuframework_s::Menu_SelectItem()
 {
-	menucommon_s *item = ( menucommon_s * ) Menu_ItemAtCursor( s );
+	menucommon_s *item = ( menucommon_s * )this->Menu_ItemAtCursor();
 
 	if ( item )
 	{
@@ -490,53 +482,53 @@ qboolean Menu_SelectItem( menuframework_s *s )
 		case MTYPE_FIELD:
 			return Field_DoEnter( ( menufield_s * ) item ) ;
 		case MTYPE_ACTION:
-			Action_DoEnter( ( menuaction_s * ) item );
+			( menuaction_s * )item->Action_DoEnter();
 			return true;
 		case MTYPE_LIST:
-//			Menulist_DoEnter( ( menulist_s * ) item );
+//			( menulist_s * ) item->Menulist_DoEnter();
 			return false;
 		case MTYPE_SPINCONTROL:
-//			SpinControl_DoEnter( ( menulist_s * ) item );
+//			( menulist_s * ) item->SpinControl_DoEnter();
 			return false;
-		}
-	}
+		};
+	};
 	return false;
-}
+};
 
-void Menu_SetStatusBar( menuframework_s *m, const char *string )
+void menuframework_s::Menu_SetStatusBar(const char *string )
 {
-	m->statusbar = string;
-}
+	this->statusbar = string;
+};
 
-void Menu_SlideItem( menuframework_s *s, int dir )
+void menuframework_s::Menu_SlideItem(int dir )
 {
-	menucommon_s *item = ( menucommon_s * ) Menu_ItemAtCursor( s );
+	menucommon_s *item = ( menucommon_s * ) this->Menu_ItemAtCursor();
 
 	if ( item )
 	{
 		switch ( item->type )
 		{
 		case MTYPE_SLIDER:
-			Slider_DoSlide( ( menuslider_s * ) item, dir );
+			( menuslider_s * ) item->Slider_DoSlide(dir );
 			break;
 		case MTYPE_SPINCONTROL:
-			SpinControl_DoSlide( ( menulist_s * ) item, dir );
+			( menulist_s * ) item->SpinControl_DoSlide( dir );
 			break;
-		}
-	}
-}
+		};
+	};
+};
 
-int Menu_TallySlots( menuframework_s *menu )
+int menuframework_s::Menu_TallySlots()
 {
 	int i;
 	int total = 0;
 
-	for ( i = 0; i < menu->nitems; i++ )
+	for ( i = 0; i < this->nitems; i++ )
 	{
-		if ( ( ( menucommon_s * ) menu->items[i] )->type == MTYPE_LIST )
+		if ( ( ( menucommon_s * ) this->items[i] )->type == MTYPE_LIST )
 		{
 			int nitems = 0;
-			const char **n = ( ( menulist_s * ) menu->items[i] )->itemnames;
+			const char **n = ( ( menulist_s * )this->items[i] )->itemnames;
 
 			while (*n)
 				nitems++, n++;
@@ -546,129 +538,127 @@ int Menu_TallySlots( menuframework_s *menu )
 		else
 		{
 			total++;
-		}
-	}
+		};
+	};
 
 	return total;
-}
+};
 
-void Menulist_DoEnter( menulist_s *l )
+void menulist_s::Menulist_DoEnter()
 {
 	int start;
 
-	start = l->generic.y / 10 + 1;
+	start = this->generic.y / 10 + 1;
 
-	l->curvalue = l->generic.parent->cursor - start;
+	this->curvalue = this->parent->cursor - start;
 
-	if ( l->generic.callback )
-		l->generic.callback( l );
-}
+	if ( this->callback )
+		this->callback( this );
+};
 
-void MenuList_Draw( menulist_s *l )
+void menulist_s::MenuList_Draw()
 {
 	const char **n;
 	int y = 0;
 
-	Menu_DrawStringR2LDark( l->generic.x + l->generic.parent->x + LCOLUMN_OFFSET, l->generic.y + l->generic.parent->y, l->generic.name );
+	Menu_DrawStringR2LDark( this->x + this->parent->x + LCOLUMN_OFFSET, this->y + this->parent->y, this->name );
 
-	n = l->itemnames;
+	n = this->itemnames;
 
-  	Draw_Fill( l->generic.x - 112 + l->generic.parent->x, l->generic.parent->y + l->generic.y + l->curvalue*10 + 10, 128, 10, 16 );
+  	Draw_Fill( this->x - 112 + this->parent->x, this->parent->y + this->y + this->curvalue*10 + 10, 128, 10, 16 );
 	while ( *n )
 	{
-		Menu_DrawStringR2LDark( l->generic.x + l->generic.parent->x + LCOLUMN_OFFSET, l->generic.y + l->generic.parent->y + y + 10, *n );
+		Menu_DrawStringR2LDark( this->x + this->parent->x + LCOLUMN_OFFSET, this->y + this->parent->y + y + 10, *n );
 
 		n++;
 		y += 10;
-	}
-}
+	};
+};
 
-void Separator_Draw( menuseparator_s *s )
+void menuseparator_s::Separator_Draw()
 {
-	if ( s->generic.name )
-		Menu_DrawStringR2LDark( s->generic.x + s->generic.parent->x, s->generic.y + s->generic.parent->y, s->generic.name );
-}
+	if ( this->name )
+		Menu_DrawStringR2LDark( this->x + this->parent->x, this->y + this->parent->y, this->name );
+};
 
-void Slider_DoSlide( menuslider_s *s, int dir )
+void menuslider_s::Slider_DoSlide( int dir )
 {
-	s->curvalue += dir;
+	this->curvalue += dir;
 
-	if ( s->curvalue > s->maxvalue )
-		s->curvalue = s->maxvalue;
-	else if ( s->curvalue < s->minvalue )
-		s->curvalue = s->minvalue;
+	if ( this->curvalue > this->maxvalue )
+		this->curvalue = this->maxvalue;
+	else if ( this->curvalue < this->minvalue )
+		this->curvalue = this->minvalue;
 
-	if ( s->generic.callback )
-		s->generic.callback( s );
-}
+	if ( this->callback )
+		this->callback( this );
+};
 
 #define SLIDER_RANGE 10
 
-void Slider_Draw( menuslider_s *s )
+void menuslider_s::Slider_Draw()
 {
 	int	i;
 
-	Menu_DrawStringR2LDark( s->generic.x + s->generic.parent->x + LCOLUMN_OFFSET,
-		                s->generic.y + s->generic.parent->y, 
-						s->generic.name );
+	Menu_DrawStringR2LDark( this->generic.x + this->generic.parent->x + LCOLUMN_OFFSET,
+		                this->generic.y + this->generic.parent->y, 
+						this->generic.name );
 
-	s->range = ( s->curvalue - s->minvalue ) / ( float ) ( s->maxvalue - s->minvalue );
+	this->range = ( this->curvalue - this->minvalue ) / ( float ) ( this->maxvalue - this->minvalue );
 
-	if ( s->range < 0)
-		s->range = 0;
-	if ( s->range > 1)
-		s->range = 1;
-	Draw_Char( s->generic.x + s->generic.parent->x + RCOLUMN_OFFSET, s->generic.y + s->generic.parent->y, 128);
+	if ( this->range < 0)
+		this->range = 0;
+	if ( this->range > 1)
+		this->range = 1;
+	Draw_Char( this->generic.x + this->generic.parent->x + RCOLUMN_OFFSET, this->generic.y + this->generic.parent->y, 128);
 	for ( i = 0; i < SLIDER_RANGE; i++ )
-		Draw_Char( RCOLUMN_OFFSET + s->generic.x + i*8 + s->generic.parent->x + 8, s->generic.y + s->generic.parent->y, 129);
-	Draw_Char( RCOLUMN_OFFSET + s->generic.x + i*8 + s->generic.parent->x + 8, s->generic.y + s->generic.parent->y, 130);
-	Draw_Char( ( int ) ( 8 + RCOLUMN_OFFSET + s->generic.parent->x + s->generic.x + (SLIDER_RANGE-1)*8 * s->range ), s->generic.y + s->generic.parent->y, 131);
-}
+		Draw_Char( RCOLUMN_OFFSET + this->generic.x + i*8 + this->generic.parent->x + 8, this->generic.y + this->generic.parent->y, 129);
+	Draw_Char( RCOLUMN_OFFSET + this->generic.x + i*8 + this->generic.parent->x + 8, this->generic.y + this->generic.parent->y, 130);
+	Draw_Char( ( int ) ( 8 + RCOLUMN_OFFSET + this->generic.parent->x + this->generic.x + (SLIDER_RANGE-1)*8 * this->range ), this->generic.y + this->generic.parent->y, 131);
+};
 
-void SpinControl_DoEnter( menulist_s *s )
+void menulist_s::SpinControl_DoEnter()
 {
-	s->curvalue++;
-	if ( s->itemnames[s->curvalue] == 0 )
-		s->curvalue = 0;
+	this->curvalue++;
+	if ( this->itemnames[this->curvalue] == 0 )
+		this->curvalue = 0;
 
-	if ( s->generic.callback )
-		s->generic.callback( s );
-}
+	if ( this->callback )
+		this->callback( this );
+};
 
-void SpinControl_DoSlide( menulist_s *s, int dir )
+void menulist_s::SpinControl_DoSlide( int dir )
 {
-	s->curvalue += dir;
+	this->curvalue += dir;
 
-	if ( s->curvalue < 0 )
-		s->curvalue = 0;
-	else if ( s->itemnames[s->curvalue] == 0 )
-		s->curvalue--;
+	if ( this->curvalue < 0 )
+		this->curvalue = 0;
+	else if ( this->itemnames[this->curvalue] == 0 )
+		this->curvalue--;
 
-	if ( s->generic.callback )
-		s->generic.callback( s );
-}
+	if ( this->callback )
+		this->callback( this );
+};
 
-void SpinControl_Draw( menulist_s *s )
+void menulist_s::SpinControl_Draw()
 {
 	char buffer[100];
 
-	if ( s->generic.name )
+	if ( this->generic.name )
 	{
-		Menu_DrawStringR2LDark( s->generic.x + s->generic.parent->x + LCOLUMN_OFFSET, 
-							s->generic.y + s->generic.parent->y, 
-							s->generic.name );
-	}
-	if ( !strchr( s->itemnames[s->curvalue], '\n' ) )
-	{
-		Menu_DrawString( RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x, s->generic.y + s->generic.parent->y, s->itemnames[s->curvalue] );
-	}
+		Menu_DrawStringR2LDark( this->generic.x + this->generic.parent->x + LCOLUMN_OFFSET, 
+							this->generic.y + this->generic.parent->y, 
+							this->generic.name );
+	};
+	
+	if ( !strchr( this->itemnames[this->curvalue], '\n' ) )
+		Menu_DrawString( RCOLUMN_OFFSET + this->generic.x + this->generic.parent->x, this->generic.y + this->generic.parent->y, this->itemnames[this->curvalue] );
 	else
 	{
-		strcpy( buffer, s->itemnames[s->curvalue] );
+		strcpy( buffer, this->itemnames[this->curvalue] );
 		*strchr( buffer, '\n' ) = 0;
-		Menu_DrawString( RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x, s->generic.y + s->generic.parent->y, buffer );
-		strcpy( buffer, strchr( s->itemnames[s->curvalue], '\n' ) + 1 );
-		Menu_DrawString( RCOLUMN_OFFSET + s->generic.x + s->generic.parent->x, s->generic.y + s->generic.parent->y + 10, buffer );
-	}
-}
-
+		Menu_DrawString( RCOLUMN_OFFSET + this->generic.x + this->generic.parent->x, this->generic.y + this->generic.parent->y, buffer );
+		strcpy( buffer, strchr( this->itemnames[this->curvalue], '\n' ) + 1 );
+		Menu_DrawString( RCOLUMN_OFFSET + this->generic.x + this->generic.parent->x, this->generic.y + this->generic.parent->y + 10, buffer );
+	};
+};

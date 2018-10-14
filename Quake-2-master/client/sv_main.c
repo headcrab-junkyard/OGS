@@ -880,50 +880,7 @@ void Master_Shutdown (void)
 //============================================================================
 
 
-/*
-=================
-SV_UserinfoChanged
 
-Pull specific info from a newly changed userinfo string
-into a more C freindly form.
-=================
-*/
-void SV_UserinfoChanged (client_t *cl)
-{
-	char	*val;
-	int		i;
-
-	// call prog code to allow overrides
-	ge->ClientUserinfoChanged (cl->edict, cl->userinfo);
-	
-	// name for C code
-	strncpy (cl->name, Info_ValueForKey (cl->userinfo, "name"), sizeof(cl->name)-1);
-	// mask off high bit
-	for (i=0 ; i<sizeof(cl->name) ; i++)
-		cl->name[i] &= 127;
-
-	// rate command
-	val = Info_ValueForKey (cl->userinfo, "rate");
-	if (strlen(val))
-	{
-		i = atoi(val);
-		cl->rate = i;
-		if (cl->rate < 100)
-			cl->rate = 100;
-		if (cl->rate > 15000)
-			cl->rate = 15000;
-	}
-	else
-		cl->rate = 5000;
-
-	// msg command
-	val = Info_ValueForKey (cl->userinfo, "msg");
-	if (strlen(val))
-	{
-		cl->messagelevel = atoi(val);
-	}
-
-}
 
 
 //============================================================================

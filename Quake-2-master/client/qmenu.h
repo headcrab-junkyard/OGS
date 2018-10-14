@@ -17,17 +17,21 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-#ifndef __QMENU_H__
-#define __QMENU_H__
+
+#pragma once
 
 #define MAXMENUITEMS	64
 
-#define MTYPE_SLIDER		0
-#define MTYPE_LIST			1
-#define MTYPE_ACTION		2
-#define MTYPE_SPINCONTROL	3
-#define MTYPE_SEPARATOR  	4
-#define MTYPE_FIELD			5
+enum eMenuType
+{
+	MTYPE_INVALID = -1,
+	MTYPE_SLIDER = 0,
+	MTYPE_LIST,
+	MTYPE_ACTION,
+	MTYPE_SPINCONTROL,
+	MTYPE_SEPARATOR,
+	MTYPE_FIELD
+};
 
 #define	K_TAB			9
 #define	K_ENTER			13
@@ -46,8 +50,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define QMF_GRAYED			0x00000002
 #define QMF_NUMBERSONLY		0x00000004
 
-typedef struct _tag_menuframework
+struct menuframework_s
 {
+	void	Menu_AddItem( void *item );
+	void	Menu_AdjustCursor( menuframework_s *menu, int dir );
+	void	Menu_Center();
+	void	Menu_Draw();
+	void	*Menu_ItemAtCursor();
+	qboolean Menu_SelectItem();
+	void	Menu_SetStatusBar( const char *string );
+	void	Menu_SlideItem( int dir );
+	int		Menu_TallySlots();
+
 	int x, y;
 	int	cursor;
 
@@ -59,82 +73,77 @@ typedef struct _tag_menuframework
 
 	void (*cursordraw)( struct _tag_menuframework *m );
 	
-} menuframework_s;
+};
 
-typedef struct
+struct menucommon_s
 {
-	int type;
-	const char *name;
-	int x, y;
-	menuframework_s *parent;
-	int cursor_offset;
-	int	localdata[4];
-	unsigned flags;
+	eMenuType type{MTYPE_INVALID};
+	const char *name{""};
+	int x{0}, y{0};
+	menuframework_s *parent{nullptr};
+	int cursor_offset{0};
+	int	localdata[4]{};
+	unsigned int flags{0};
 
-	const char *statusbar;
+	const char *statusbar{""};
 
 	void (*callback)( void *self );
 	void (*statusbarfunc)( void *self );
 	void (*ownerdraw)( void *self );
 	void (*cursordraw)( void *self );
-} menucommon_s;
+};
 
-typedef struct
+struct menufield_s : public menucommon_s
 {
-	menucommon_s generic;
+	bool Field_DoEnter( menufield_s *f );
+	void Field_Draw( menufield_s *f );
+	bool Field_Key( menufield_s *field, int key );
+	
+	char buffer[80]{};
+	int cursor{0};
+	int length{0};
+	int visible_length{0};
+	int visible_offset{0};
+};
 
-	char		buffer[80];
-	int			cursor;
-	int			length;
-	int			visible_length;
-	int			visible_offset;
-} menufield_s;
-
-typedef struct 
+struct menuslider_s : public menucommon_s
 {
-	menucommon_s generic;
+	void Slider_DoSlide( int dir );
+	void Slider_Draw();
 
-	float minvalue;
-	float maxvalue;
-	float curvalue;
+	float minvalue{0.0f};
+	float maxvalue{0.0f};
+	float curvalue{0.0f};
 
-	float range;
-} menuslider_s;
+	float range{0.0f};
+};
 
-typedef struct
+struct menulist_s : public menucommon_s
 {
-	menucommon_s generic;
+	void Menulist_DoEnter();
+	void MenuList_Draw();
 
-	int curvalue;
+	void SpinControl_DoEnter();
+	void SpinControl_Draw();
+	void SpinControl_DoSlide( int dir );
 
-	const char **itemnames;
-} menulist_s;
+	int curvalue{0};
 
-typedef struct
+	const char **itemnames{""};
+};
+
+struct menuaction_s : public menucommon_s
 {
-	menucommon_s generic;
-} menuaction_s;
+	void Action_DoEnter();
+	void Action_Draw();
+};
 
-typedef struct
+struct menuseparator_s : public menucommon_s
 {
-	menucommon_s generic;
-} menuseparator_s;
-
-qboolean Field_Key( menufield_s *field, int key );
-
-void	Menu_AddItem( menuframework_s *menu, void *item );
-void	Menu_AdjustCursor( menuframework_s *menu, int dir );
-void	Menu_Center( menuframework_s *menu );
-void	Menu_Draw( menuframework_s *menu );
-void	*Menu_ItemAtCursor( menuframework_s *m );
-qboolean Menu_SelectItem( menuframework_s *s );
-void	Menu_SetStatusBar( menuframework_s *s, const char *string );
-void	Menu_SlideItem( menuframework_s *s, int dir );
-int		Menu_TallySlots( menuframework_s *menu );
+	void Separator_Draw();
+};
 
 void	 Menu_DrawString( int, int, const char * );
 void	 Menu_DrawStringDark( int, int, const char * );
 void	 Menu_DrawStringR2L( int, int, const char * );
 void	 Menu_DrawStringR2LDark( int, int, const char * );
-
-#endif

@@ -94,78 +94,7 @@ qboolean	NET_StringToSockaddr (char *s, struct sockaddr *sadr)
 	return true;
 }
 
-/*
-=============
-NET_StringToAdr
-
-localhost
-idnewt
-idnewt:28000
-192.246.40.70
-192.246.40.70:28000
-=============
-*/
-qboolean	NET_StringToAdr (char *s, netadr_t *a)
-{
-	struct sockaddr_in sadr;
-	
-	if (!strcmp (s, "localhost"))
-	{
-		memset (a, 0, sizeof(*a));
-		a->type = NA_LOOPBACK;
-		return true;
-	}
-
-	if (!NET_StringToSockaddr (s, (struct sockaddr *)&sadr))
-		return false;
-	
-	SockadrToNetadr (&sadr, a);
-
-	return true;
-}
-
 //=============================================================================
-
-qboolean	NET_GetPacket (netsrc_t sock, netadr_t *net_from, sizebuf_t *net_message)
-{
-	
-
-	for (protocol = 0 ; protocol < 2 ; protocol++)
-	{
-		if (protocol == 0)
-			net_socket = ip_sockets[sock];
-		else
-			net_socket = ipx_sockets[sock];
-
-		if (!net_socket)
-			continue;
-
-		fromlen = sizeof(from);
-		ret = recvfrom (net_socket, net_message->data, net_message->maxsize
-			, 0, (struct sockaddr *)&from, &fromlen);
-		if (ret == -1)
-		{
-			err = errno;
-
-			if (err == EWOULDBLOCK || err == ECONNREFUSED)
-				continue;
-			Com_Printf ("NET_GetPacket: %s", NET_ErrorString());
-			continue;
-		}
-
-		if (ret == net_message->maxsize)
-		{
-			Com_Printf ("Oversize packet from %s\n", NET_AdrToString (*net_from));
-			continue;
-		}
-
-		net_message->cursize = ret;
-		SockadrToNetadr (&from, net_from);
-		return true;
-	}
-
-	return false;
-}
 
 void NET_SendPacket (netsrc_t sock, int length, void *data, netadr_t to)
 {
@@ -250,37 +179,3 @@ int NET_Socket (char *net_interface, int port)
 
 	return newsocket;
 }
-
-/*
-====================
-NET_ErrorString
-====================
-*/
-char *NET_ErrorString (void)
-{
-	int		code;
-
-	code = errno;
-	return strerror (code);
-}
-
-// sleeps msec or until net socket is ready
-void NET_Sleep(int msec)
-{
-    struct timeval timeout;
-	fd_set	fdset;
-	extern cvar_t *dedicated;
-	extern qboolean stdin_active;
-
-	if (!ip_sockets[NS_SERVER] || (dedicated && !dedicated->value))
-		return; // we're not a server, just run full speed
-
-	FD_ZERO(&fdset);
-	if (stdin_active)
-		FD_SET(0, &fdset); // stdin is processed too
-	FD_SET(ip_sockets[NS_SERVER], &fdset); // network socket
-	timeout.tv_sec = msec/1000;
-	timeout.tv_usec = (msec%1000)*1000;
-	select(ip_sockets[NS_SERVER]+1, &fdset, NULL, NULL, &timeout);
-}
-

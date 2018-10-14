@@ -470,33 +470,6 @@ ucmd_t ucmds[] =
 };
 
 /*
-==================
-SV_ExecuteUserCommand
-==================
-*/
-void SV_ExecuteUserCommand (char *s)
-{
-	ucmd_t	*u;
-	
-	Cmd_TokenizeString (s, true);
-	sv_player = sv_client->edict;
-
-//	SV_BeginRedirect (RD_CLIENT);
-
-	for (u=ucmds ; u->name ; u++)
-		if (!strcmp (Cmd_Argv(0), u->name) )
-		{
-			u->func ();
-			break;
-		}
-
-	if (!u->name && sv.state == ss_game)
-		ge->ClientCommand (sv_player);
-
-//	SV_EndRedirect ();
-}
-
-/*
 ===========================================================================
 
 USER CMD EXECUTION

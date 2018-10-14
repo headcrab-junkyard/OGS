@@ -25,7 +25,6 @@ key up events are sent even if in console mode
 
 */
 
-
 #define		MAXCMDLINE	256
 char	key_lines[32][MAXCMDLINE];
 int		key_linepos;
@@ -193,7 +192,6 @@ Interactive line editing and console scrollback
 */
 void Key_Console (int key)
 {
-
 	switch ( key )
 	{
 	case K_KP_SLASH:
@@ -314,8 +312,8 @@ void Key_Console (int key)
 		do
 		{
 			history_line = (history_line - 1) & 31;
-		} while (history_line != edit_line
-				&& !key_lines[history_line][1]);
+		}
+		while (history_line != edit_line && !key_lines[history_line][1]);
 		if (history_line == edit_line)
 			history_line = (edit_line+1)&31;
 		strcpy(key_lines[edit_line], key_lines[history_line]);
@@ -326,13 +324,13 @@ void Key_Console (int key)
 	if ( ( key == K_DOWNARROW ) || ( key == K_KP_DOWNARROW ) ||
 		 ( ( key == 'n' ) && keydown[K_CTRL] ) )
 	{
-		if (history_line == edit_line) return;
+		if (history_line == edit_line)
+			return;
 		do
 		{
 			history_line = (history_line + 1) & 31;
 		}
-		while (history_line != edit_line
-			&& !key_lines[history_line][1]);
+		while (history_line != edit_line && !key_lines[history_line][1]);
 		if (history_line == edit_line)
 		{
 			key_lines[edit_line][0] = ']';
@@ -381,7 +379,6 @@ void Key_Console (int key)
 		key_linepos++;
 		key_lines[edit_line][key_linepos] = 0;
 	}
-
 }
 
 //============================================================================
@@ -392,7 +389,6 @@ int			chat_bufferlen = 0;
 
 void Key_Message (int key)
 {
-
 	if ( key == K_ENTER || key == K_KP_ENTER )
 	{
 		if (chat_team)
@@ -437,7 +433,6 @@ void Key_Message (int key)
 }
 
 //============================================================================
-
 
 /*
 ===================
@@ -494,7 +489,6 @@ char *Key_KeynumToString (int keynum)
 
 	return "<UNKNOWN KEYNUM>";
 }
-
 
 /*
 ===================
@@ -558,7 +552,6 @@ void Key_Unbindall_f (void)
 			Key_SetBinding (i, "");
 }
 
-
 /*
 ===================
 Key_Bind_f
@@ -620,7 +613,6 @@ void Key_WriteBindings (FILE *f)
 			fprintf (f, "bind %s \"%s\"\n", Key_KeynumToString(i), keybindings[i]);
 }
 
-
 /*
 ============
 Key_Bindlist_f
@@ -635,7 +627,6 @@ void Key_Bindlist_f (void)
 		if (keybindings[i] && keybindings[i][0])
 			Com_Printf ("%s \"%s\"\n", Key_KeynumToString(i), keybindings[i]);
 }
-
 
 /*
 ===================
@@ -754,13 +745,7 @@ void Key_Event (int key, qboolean down, unsigned time)
 	if (down)
 	{
 		key_repeats[key]++;
-		if (key != K_BACKSPACE 
-			&& key != K_PAUSE 
-			&& key != K_PGUP 
-			&& key != K_KP_PGUP 
-			&& key != K_PGDN
-			&& key != K_KP_PGDN
-			&& key_repeats[key] > 1)
+		if (key != K_BACKSPACE && key != K_PAUSE && key != K_PGUP && key != K_KP_PGUP && key != K_PGDN && key != K_KP_PGDN && key_repeats[key] > 1)
 			return;	// ignore most autorepeats
 			
 		if (key >= 200 && !keybindings[key])
@@ -860,9 +845,7 @@ void Key_Event (int key, qboolean down, unsigned time)
 //
 // if not a consolekey, send to the interpreter no matter what mode is
 //
-	if ( (cls.key_dest == key_menu && menubound[key])
-	|| (cls.key_dest == key_console && !consolekeys[key])
-	|| (cls.key_dest == key_game && ( cls.state == ca_active || !consolekeys[key] ) ) )
+	if ( (cls.key_dest == key_menu && menubound[key]) || (cls.key_dest == key_console && !consolekeys[key]) || (cls.key_dest == key_game && ( cls.state == ca_active || !consolekeys[key] ) ) )
 	{
 		kb = keybindings[key];
 		if (kb)
@@ -925,7 +908,6 @@ void Key_ClearStates (void)
 	}
 }
 
-
 /*
 ===================
 Key_GetKey
@@ -940,4 +922,3 @@ int Key_GetKey (void)
 
 	return key_waiting;
 }
-

@@ -444,42 +444,7 @@ void Cvar_WriteVariables (char *path)
 	fclose (f);
 }
 
-/*
-============
-Cvar_List_f
 
-============
-*/
-void Cvar_List_f (void)
-{
-	cvar_t	*var;
-	int		i;
-
-	i = 0;
-	for (var = cvar_vars ; var ; var = var->next, i++)
-	{
-		if (var->flags & CVAR_ARCHIVE)
-			Com_Printf ("*");
-		else
-			Com_Printf (" ");
-		if (var->flags & CVAR_USERINFO)
-			Com_Printf ("U");
-		else
-			Com_Printf (" ");
-		if (var->flags & CVAR_SERVERINFO)
-			Com_Printf ("S");
-		else
-			Com_Printf (" ");
-		if (var->flags & CVAR_NOSET)
-			Com_Printf ("-");
-		else if (var->flags & CVAR_LATCH)
-			Com_Printf ("L");
-		else
-			Com_Printf (" ");
-		Com_Printf (" %s \"%s\"\n", var->name, var->string);
-	}
-	Com_Printf ("%i cvars\n", i);
-}
 
 
 qboolean userinfo_modified;
@@ -512,16 +477,4 @@ char	*Cvar_Serverinfo (void)
 	return Cvar_BitInfo (CVAR_SERVERINFO);
 }
 
-/*
-============
-Cvar_Init
 
-Reads in all archived cvars
-============
-*/
-void Cvar_Init (void)
-{
-	Cmd_AddCommand ("set", Cvar_Set_f);
-	Cmd_AddCommand ("cvarlist", Cvar_List_f);
-
-}
