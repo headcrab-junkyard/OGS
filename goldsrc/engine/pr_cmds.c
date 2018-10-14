@@ -303,22 +303,22 @@ void PF_vectoangles_I(const float *valueIn, float *valueOut)
 	if(!valueIn || !valueOut)
 		return;
 
-	if(value1[1] == 0 && value1[0] == 0)
+	if(valueIn[1] == 0 && valueIn[0] == 0)
 	{
 		yaw = 0;
-		if(value1[2] > 0)
+		if(valueIn[2] > 0)
 			pitch = 90;
 		else
 			pitch = 270;
 	}
 	else
 	{
-		yaw = (int)(atan2(value1[1], value1[0]) * 180 / M_PI);
+		yaw = (int)(atan2(valueIn[1], valueIn[0]) * 180 / M_PI);
 		if(yaw < 0)
 			yaw += 360;
 
-		forward = sqrt(value1[0] * value1[0] + value1[1] * value1[1]);
-		pitch = (int)(atan2(value1[2], forward) * 180 / M_PI);
+		forward = sqrt(valueIn[0] * valueIn[0] + valueIn[1] * valueIn[1]);
+		pitch = (int)(atan2(valueIn[2], forward) * 180 / M_PI);
 		if(pitch < 0)
 			pitch += 360;
 	};
@@ -388,7 +388,7 @@ void PF_changepitch_I(edict_t *ent)
 
 	current = anglemod(ent->v.angles[0]);
 	ideal = ent->v.idealpitch;
-	speed = ent->v.pitch_speed;
+	//speed = ent->v.pitch_speed; // TODO
 
 	if(current == ideal)
 		return;
@@ -461,10 +461,13 @@ void PF_makevectors_I(const float *v)
 	AngleVectors(v, gGlobalVariables.v_forward, gGlobalVariables.v_right, gGlobalVariables.v_up);
 };
 
+// TODO: already defined in mathlib
+/*
 void AngleVectors(const float *v, float *forward, float *right, float *up)
 {
 	// TODO
 };
+*/
 
 edict_t *PF_Spawn_I()
 {
@@ -612,7 +615,7 @@ void PF_sound_I(edict_t *entity, int channel, const char *sample, int volume, fl
 	if(channel < 0 || channel > 7)
 		Sys_Error("SV_StartSound: channel = %i", channel);
 
-	SV_StartSound(entity, channel, sample, volume, attenuation);
+	SV_StartSound(entity, channel, sample, volume, attenuation, PITCH_NORM);
 };
 
 /*
@@ -711,7 +714,8 @@ void PF_aim_I(edict_t *ent, float speed, float *vReturn) // TODO: vReturn suppor
 	tr = SV_Move(start, vec3_origin, vec3_origin, end, false, ent);
 	if(tr.ent && tr.ent->v.takedamage == DAMAGE_AIM && (!teamplay.value || ent->v.team <= 0 || ent->v.team != tr.ent->v.team))
 	{
-		VectorCopy(gGlobalVariables.v_forward, G_VECTOR(OFS_RETURN));
+		if(vReturn)
+			VectorCopy(gGlobalVariables.v_forward, vReturn);
 		return;
 	};
 
@@ -751,10 +755,12 @@ void PF_aim_I(edict_t *ent, float speed, float *vReturn) // TODO: vReturn suppor
 		VectorScale(gGlobalVariables.v_forward, dist, end);
 		end[2] = dir[2];
 		VectorNormalize(end);
-		VectorCopy(end, G_VECTOR(OFS_RETURN));
+		if(vReturn)
+			VectorCopy(end, vReturn);
 	}
 	else
-		VectorCopy(bestdir, G_VECTOR(OFS_RETURN));
+		if(vReturn)
+			VectorCopy(bestdir, vReturn);
 };
 
 /*
@@ -790,7 +796,7 @@ void PF_stuffcmd_I(edict_t *client, const char *str, ...) // TODO: fmt support
 	int entnum;
 	client_t *old;
 
-	entnum = EDICT_NUM(OFS_PARM0);
+	entnum = NUM_FOR_EDICT(client);
 	if(entnum < 1 || entnum > svs.maxclients)
 		Host_Error("Parm 0 not a client");
 
@@ -834,9 +840,9 @@ void PF_lightstyle_I(int style, char *val)
 	for(j = 0, client = svs.clients; j < svs.maxclients; j++, client++)
 		if(client->active || client->spawned)
 		{
-			MSG_WriteChar(&client->message, svc_lightstyle);
-			MSG_WriteChar(&client->message, style);
-			MSG_WriteString(&client->message, val);
+			MSG_WriteChar(&client->netchan.message, svc_lightstyle);
+			MSG_WriteChar(&client->netchan.message, style);
+			MSG_WriteString(&client->netchan.message, val);
 		};
 };
 
@@ -853,7 +859,7 @@ PF_pointcontents
 */
 int PF_pointcontents_I(const float *vPoint)
 {
-	return SV_PointContents(v);
+	return SV_PointContents(vPoint);
 };
 
 /*
@@ -879,7 +885,7 @@ sizebuf_t *WriteDest(int dest)
 		entnum = NUM_FOR_EDICT(ent);
 		if(entnum < 1 || entnum > svs.maxclients)
 			Host_Error("WriteDest: not a client");
-		return &svs.clients[entnum - 1].message;
+		return &svs.clients[entnum - 1].netchan.message;
 
 	case MSG_ALL:
 		return &sv.reliable_datagram;
@@ -905,6 +911,8 @@ void PF_MessageEnd_I()
 	// TODO
 };
 
+// TODO
+/*
 void PF_WriteByte_I(int val)
 {
 	MSG_WriteByte(WriteDest(), val);
@@ -940,10 +948,11 @@ void PF_WriteString_I(const char *s)
 	MSG_WriteString(WriteDest(), s);
 };
 
-void PF_WriteEntity_I(edict_t *ent)
+void PF_WriteEntity_I(int val)
 {
-	MSG_WriteShort(WriteDest(), EDICT_NUM(ent));
+	MSG_WriteShort(WriteDest(), NUM_FOR_EDICT(EDICT_NUM(ent)));
 };
+*/
 
 void CVarRegister(struct cvar_s *var)
 {
@@ -993,7 +1002,7 @@ void EngineFprintf(void *pFile, const char *sMsg, ...)
 	// TODO
 };
 
-void *PvAllocEntPrivateData(edict_t *pEnt, int32 cb)
+void *PvAllocEntPrivateData(edict_t *pEnt, int32_t cb)
 {
 	// TODO
 	return NULL;
@@ -1007,7 +1016,13 @@ void *PvEntPrivateData(edict_t *pEnt)
 
 void FreeEntPrivateData(edict_t *pEnt)
 {
-	// TODO
+	if(!pEnt->pvPrivateData)
+		return;
+	
+	if(gNewDLLFuncs.pfnOnFreeEntPrivateData)
+		gNewDLLFuncs.pfnOnFreeEntPrivateData(pEnt);
+	
+	Mem_Free(pEnt->pvPrivateData);
 };
 
 const char *SzFromIndex(int nString)
@@ -1074,13 +1089,13 @@ void GetBonePosition(const edict_t *pEnt, int nBone, float *vOrigin, float *vAng
 	// TODO
 };
 
-uint32 FunctionFromName(const char *sName)
+uint32_t FunctionFromName(const char *sName)
 {
 	// TODO
 	return 0;
 };
 
-const char *NameForFunction(uint32 nFunction)
+const char *NameForFunction(uint32_t nFunction)
 {
 	// TODO
 	return "";
@@ -1101,7 +1116,7 @@ void GetAttachment(const edict_t *pEnt, int nAttachment, float *vOrigin, float *
 	// TODO
 };
 
-int32 RandomLong(int32 nLow, int32 nHigh)
+int32_t RandomLong(int32_t nLow, int32_t nHigh)
 {
 	// TODO
 	return 0;
@@ -1120,8 +1135,7 @@ void PF_setview_I(const edict_t *pEnt, const edict_t *pViewEnt)
 
 float PF_Time()
 {
-	// TODO
-	return 0.0f;
+	return sv.time;
 };
 
 void PF_crosshairangle_I(const edict_t *pClient, float pitch, float yaw)
@@ -1204,7 +1218,7 @@ int PF_GetPlayerUserId(edict_t *player)
 	return 0;
 };
 
-void PF_BuildSoundMsg_I()
+void PF_BuildSoundMsg_I(edict_t *entity, int channel, const char *sample, float volume, float attenuation, int nFlags, int pitch, int msg_dest, int msg_type, const float *vOrigin, edict_t *ed)
 {
 	// TODO
 };
@@ -1248,12 +1262,15 @@ const char *PF_GetPhysicsInfoString(const edict_t *pClient)
 	return NULL;
 };
 
-unsigned short EV_Precache()
+unsigned short EV_Precache(int type, const char *name)
 {
+	// TODO
+	return 0;
 };
 
-void EV_Playback()
+void EV_Playback(int flags, const edict_t *pInvoker, unsigned short eventindex, float delay, float *origin, float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2)
 {
+	// TODO
 };
 
 byte *SV_FatPVS(float *org)
@@ -1312,8 +1329,11 @@ void PF_GetPlayerStats(const edict_t *pPlayer, int *ping, int *packet_loss)
 	// TODO
 };
 
-// TODO
-//pfnAddServerCommand = 0x981fd63f <meta_AddServerCommand(char*, void (*)())>,
+void Cmd_AddServerCommand(char *cmd_name, void (*function)())
+{
+	// TODO
+	//Cmd_AddCommand(name);
+};
 
 qboolean Voice_GetClientListening(int nReceiver, int nSender)
 {
@@ -1410,7 +1430,7 @@ int pfnCheckParm(const char *sCmdLineToken, char **ppnext)
 	return 0;
 };
 
-enginefuncs_t gEngineFuncs[] =
+enginefuncs_t gEngineFuncs =
 {
 	PF_precache_model_I,
 	PF_precache_sound_I,
@@ -1425,7 +1445,9 @@ enginefuncs_t gEngineFuncs[] =
 	
 	PF_setspawnparms_I,
 	SaveSpawnParms,
-	
+
+	// TODO
+/*
 	PF_vectoyaw_I,
 	PF_vectoangles_I,
 	
@@ -1633,32 +1655,35 @@ enginefuncs_t gEngineFuncs[] =
 	
 	PF_GetPlayerStats,
 	
-	NULL, // TODO: pfnAddServerCommand = 0x981fd63f <meta_AddServerCommand(char*, void (*)())>,
+	Cmd_AddServerCommand,
 	
 	Voice_GetClientListening,
 	Voice_SetClientListening,
-	pfnGetPlayerAuthId = 0,
 	
-	pfnSequenceGet = 0,
-	pfnSequencePickSentence = 0,
-	pfnGetFileSize = 0,
+	pfnGetPlayerAuthId,
 	
-	pfnGetApproxWavePlayLen = 0,
+	pfnSequenceGet,
+	pfnSequencePickSentence,
 	
-	pfnIsCareerMatch = 0,
+	pfnGetFileSize,
 	
-	pfnGetLocalizedStringLength = 0,
+	pfnGetApproxWavePlayLen,
 	
-	pfnRegisterTutorMessageShown = 0,
-	pfnGetTimesTutorMessageShown = 0,
+	pfnIsCareerMatch,
 	
-	ProcessTutorMessageDecayBuffer = 0,
-	ConstructTutorMessageDecayBuffer = 0,
+	pfnGetLocalizedStringLength,
 	
-	ResetTutorMessageDecayData = 0,
+	pfnRegisterTutorMessageShown,
+	pfnGetTimesTutorMessageShown,
 	
-	pfnQueryClientCvarValue = 0,
-	pfnQueryClientCvarValue2 = 0,
+	ProcessTutorMessageDecayBuffer,
+	ConstructTutorMessageDecayBuffer,
 	
-	pfnCheckParm = 0
+	ResetTutorMessageDecayData,
+	
+	pfnQueryClientCvarValue,
+	pfnQueryClientCvarValue2,
+	
+	pfnCheckParm
+*/
 };
