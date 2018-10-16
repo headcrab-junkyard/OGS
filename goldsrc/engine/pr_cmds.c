@@ -22,6 +22,7 @@
 #include "quakedef.h"
 #include "delta.h"
 #include "usermsg.h"
+#include "Sequence.h"
 
 cvar_t sv_aim = { "sv_aim", "0.93" };
 
@@ -461,14 +462,6 @@ void PF_makevectors_I(const float *v)
 	AngleVectors(v, gGlobalVariables.v_forward, gGlobalVariables.v_right, gGlobalVariables.v_up);
 };
 
-// TODO: already defined in mathlib
-/*
-void AngleVectors(const float *v, float *forward, float *right, float *up)
-{
-	// TODO
-};
-*/
-
 edict_t *PF_Spawn_I()
 {
 	edict_t *ed = ED_Alloc();
@@ -483,7 +476,9 @@ void PF_Remove_I(edict_t *ed)
 edict_t *CreateNamedEntity(int nClassName)
 {
 	// TODO
-	return NULL;
+	edict_t *ed = ED_Alloc();
+	//Q_strcpy(ed->netname, );
+	return ed;
 };
 
 int SV_ModelIndex(const char *name); // TODO
@@ -973,13 +968,12 @@ float CVarGetFloat(const char *name)
 
 const char *CVarGetString(const char *name)
 {
-	// TODO
-	return "";
+	return Cvar_VariableString(name);
 };
 
 void CVarSetFloat(const char *name, float value)
 {
-	// TODO
+	Cvar_SetValue(name, value);
 };
 
 /*
@@ -995,6 +989,7 @@ void CVarSetString(const char *name, const char *value)
 void AlertMessage(ALERT_TYPE aType, const char *sMsg, ...)
 {
 	// TODO
+	//Obsolete API!!!!!!!!!!!!!!!!!!!!!
 };
 
 void EngineFprintf(void *pFile, const char *sMsg, ...)
@@ -1004,23 +999,30 @@ void EngineFprintf(void *pFile, const char *sMsg, ...)
 
 void *PvAllocEntPrivateData(edict_t *pEnt, int32_t cb)
 {
-	// TODO
-	return NULL;
+	if(!pEnt)
+		return NULL;
+	
+	return Mem_Alloc((size_t)cb); // TODO
 };
 
 void *PvEntPrivateData(edict_t *pEnt)
 {
-	// TODO
-	return NULL;
+	if(!pEnt)
+		return NULL;
+	
+	return pEnt->pvPrivateData;
 };
 
 void FreeEntPrivateData(edict_t *pEnt)
 {
+	if(!pEnt)
+		return;
+	
 	if(!pEnt->pvPrivateData)
 		return;
 	
-	if(gNewDLLFuncs.pfnOnFreeEntPrivateData)
-		gNewDLLFuncs.pfnOnFreeEntPrivateData(pEnt);
+	if(gNewDLLFunctions.pfnOnFreeEntPrivateData)
+		gNewDLLFunctions.pfnOnFreeEntPrivateData(pEnt);
 	
 	Mem_Free(pEnt->pvPrivateData);
 };
@@ -1039,8 +1041,10 @@ int AllocEngineString(const char *sValue)
 
 struct entvars_s *GetVarsOfEnt(edict_t *pEnt)
 {
-	// TODO
-	return NULL;
+	if(pEnt)
+		return NULL;
+	
+	return &pEnt->v;
 };
 
 edict_t *PEntityOfEntOffset(int nOffset)
@@ -1055,11 +1059,14 @@ int EntOffsetOfPEntity(const edict_t *pEnt)
 	return 0;
 };
 
+extern int IndexOfEdict(const edict_t *pEnt);
+/*
 int IndexOfEdict(const edict_t *pEnt)
 {
 	// TODO
 	return 0;
 };
+*/
 
 edict_t *PEntityOfEntIndex(int nIndex)
 {
@@ -1069,7 +1076,13 @@ edict_t *PEntityOfEntIndex(int nIndex)
 
 edict_t *FindEntityByVars(struct entvars_s *pVars)
 {
-	// TODO
+	if(!pVars)
+		return NULL;
+	
+	for(int i = 0; i < sv.edicts; i++)
+		if(&sv.edicts[i].v == pVars)
+			return &sv.edicts[i];
+	
 	return NULL;
 };
 
@@ -1103,12 +1116,37 @@ const char *NameForFunction(uint32_t nFunction)
 
 void ClientPrintf(edict_t *pEnt, PRINT_TYPE aType, const char *sMsg)
 {
-	// TODO
+	int entnum;
+	
+	entnum = EDICT_NUM(pEnt);
+
+	if(entnum < 1 || entnum > svs.maxclients)
+	{
+		Con_Printf("tried to sprint to a non-client\n");
+		return;
+	};
+
+	pEnt = &svs.clients[entnum - 1];
+	
+	switch(aType)
+	{
+	case print_console:
+		// TODO
+		break;
+	case print_center: // single print to a specific client
+		MSG_WriteChar(&pEnt->netchan.message, svc_centerprint);
+		break;
+	case print_chat:
+		MSG_WriteChar(&pEnt->netchan.message, svc_print);
+		break;
+	};
+	
+	MSG_WriteString(&pEnt->netchan.message, sMsg);
 };
 
 void ServerPrint(const char *sMsg)
 {
-	// TODO
+	SV_BroadcastPrintf("%s", sMsg);
 };
 
 void GetAttachment(const edict_t *pEnt, int nAttachment, float *vOrigin, float *vAngles)
@@ -1175,19 +1213,22 @@ int PF_NumberOfEntities_I()
 
 char *PF_GetInfoKeyBuffer_I(edict_t *pent)
 {
-	// TODO
-	return NULL;
+	if(!pent)
+		return NULL;
+	
+	return svs.clients[NUM_FOR_EDICT(pent)-1].userinfo;
 };
 
 char *PF_InfoKeyValue_I(char *infobuffer, char *key)
 {
 	// TODO
-	return NULL;
+	return NULL; //Info_ValueForKey(infobuffer, key);
 };
 
 void PF_SetKeyValue_I(char *infobuffer, char *key, char *value)
 {
 	// TODO
+	//Info_SetValueForKey(infobuffer, key, value);
 };
 
 void PF_SetClientKeyValue_I(int clientIndex, char *infobuffer, char *key, char *value)
@@ -1214,8 +1255,10 @@ int PF_precache_generic_I(char *name)
 
 int PF_GetPlayerUserId(edict_t *player)
 {
-	// TODO
-	return 0;
+	if(player)
+		return 0;
+	
+	return svs.clients[NUM_FOR_EDICT(player)-1].userid;
 };
 
 void PF_BuildSoundMsg_I(edict_t *entity, int channel, const char *sample, float volume, float attenuation, int nFlags, int pitch, int msg_dest, int msg_type, const float *vOrigin, edict_t *ed)
@@ -1230,8 +1273,7 @@ int PF_IsDedicatedServer()
 
 cvar_t *CVarGetPointer(const char *name)
 {
-	// TODO
-	return NULL;
+	return Cvar_FindVar(name);
 };
 
 uint PF_GetPlayerWONId(edict_t *player)
@@ -1242,7 +1284,7 @@ uint PF_GetPlayerWONId(edict_t *player)
 
 void PF_RemoveKey_I(char *infobuffer, const char *key)
 {
-	// TODO
+	Info_RemoveKey(infobuffer, key);
 };
 
 const char *PF_GetPhysicsKeyValue(const edict_t *pClient, const char *key)
@@ -1262,6 +1304,10 @@ const char *PF_GetPhysicsInfoString(const edict_t *pClient)
 	return NULL;
 };
 
+extern unsigned short EV_Precache(int type, const char *name);
+extern void EV_Playback(int flags, const edict_t *pInvoker, unsigned short eventindex, float delay, float *origin, float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2);
+
+/*
 unsigned short EV_Precache(int type, const char *name)
 {
 	// TODO
@@ -1272,12 +1318,16 @@ void EV_Playback(int flags, const edict_t *pInvoker, unsigned short eventindex, 
 {
 	// TODO
 };
+*/
 
+extern byte *SV_FatPVS(float *org);
+/*
 byte *SV_FatPVS(float *org)
 {
 	// TODO
 	return NULL;
 };
+*/
 
 byte *SV_FatPAS(float *org)
 {
@@ -1316,23 +1366,41 @@ int PF_CreateInstancedBaseline(int classname, struct entity_state_s *baseline)
 
 void PF_Cvar_DirectSet(struct cvar_s *var, char *value)
 {
-	// TODO
+	//Cvar_DirectSet(var, value); // TODO
 };
 
 void PF_ForceUnmodified(FORCE_TYPE type, float *mins, float *maxs, const char *filename)
 {
 	// TODO
+	
+	switch(type)
+	{
+	case force_exactfile:
+		break;
+	case force_model_samebounds:
+		break;
+	case force_model_specifybounds:
+		break;
+	case force_model_specifybounds_if_avail:
+		break;
+	};
 };
 
 void PF_GetPlayerStats(const edict_t *pPlayer, int *ping, int *packet_loss)
 {
 	// TODO
+	
+	if(ping)
+		*ping = 0;
+	
+	if(packet_loss)
+		*packet_loss = 0;
 };
 
 void Cmd_AddServerCommand(char *cmd_name, void (*function)())
 {
 	// TODO
-	//Cmd_AddCommand(name);
+	//Cmd_AddCommand(name, function, FCMD_EXTDLL);
 };
 
 qboolean Voice_GetClientListening(int nReceiver, int nSender)
@@ -1353,22 +1421,9 @@ const char *pfnGetPlayerAuthId(edict_t *player)
 	return "";
 };
 
-sequenceEntry_s *pfnSequenceGet(const char *fileName, const char *entryName)
-{
-	// TODO
-	return NULL;
-};
-
-sequenceEntry_s *pfnSequencePickSentence(const char *groupName, int pickMethod, int *pPicked)
-{
-	// TODO
-	return NULL;
-};
-
 int pfnGetFileSize(char *filename)
 {
-	// TODO
-	return 0;
+	return FS_FileSize(filename);
 };
 
 uint pfnGetApproxWavePlayLen(const char *filepath)
@@ -1446,8 +1501,6 @@ enginefuncs_t gEngineFuncs =
 	PF_setspawnparms_I,
 	SaveSpawnParms,
 
-	// TODO
-/*
 	PF_vectoyaw_I,
 	PF_vectoangles_I,
 	
@@ -1508,14 +1561,14 @@ enginefuncs_t gEngineFuncs =
 	PF_MessageBegin_I,
 	PF_MessageEnd_I,
 	
-	PF_WriteByte_I,
-	PF_WriteChar_I,
-	PF_WriteShort_I,
-	PF_WriteLong_I,
-	PF_WriteAngle_I,
-	PF_WriteCoord_I,
-	PF_WriteString_I,
-	PF_WriteEntity_I,
+	NULL, //PF_WriteByte_I,
+	NULL, //PF_WriteChar_I,
+	NULL, //PF_WriteShort_I,
+	NULL, //PF_WriteLong_I,
+	NULL, //PF_WriteAngle_I,
+	NULL, //PF_WriteCoord_I,
+	NULL, //PF_WriteString_I,
+	NULL, //PF_WriteEntity_I,
 	
 	CVarRegister,
 	
@@ -1685,5 +1738,4 @@ enginefuncs_t gEngineFuncs =
 	pfnQueryClientCvarValue2,
 	
 	pfnCheckParm
-*/
 };
