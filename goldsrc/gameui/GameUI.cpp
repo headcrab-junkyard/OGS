@@ -18,7 +18,15 @@
 
 /// @file
 
+#include <cstdlib>
 #include "GameUI.hpp"
+#include "menu.h"
+
+#include "IMenuExportsTemp.hpp"
+IMenuExportsTemp *gpMenuExports{nullptr};
+
+void VID_MenuDraw();
+void VID_MenuKey(int key);
 
 EXPOSE_SINGLE_INTERFACE(CGameUI, IGameUI, GAMEUI_INTERFACE_VERSION);
 
@@ -28,21 +36,42 @@ CGameUI::~CGameUI() = default;
 void CGameUI::Initialize(CreateInterfaceFn *factories, int count)
 {
 	// TODO
+	
+	// Load localization file
+	//gpVGuiLocalize->AddFile("resource/gameui_%language%.txt", "GAME", true);
+	
+	// Load localization file for kb_act.lst
+	//gpVGuiLocalize->AddFile("resource/valve_%language%.txt", "GAME", true);
+	
 	/*
 	for(int i = 0; i < count; ++i)
 	{
-		mpVGUI = (IVGUI*)*factories[i](VGUI_INTERFACE_VERSION, nullptr);
+		mpVGUI = (vgui2::IVGUI*)*factories[i](VGUI_INTERFACE_VERSION, nullptr);
+		mpVGUISurfave = (vgui2::ISurface*)*factories[i](VGUI_SURFACE_INTERFACE_VERSION, nullptr);
 		mpFileSystem = (IFileSystem*)*factories[i](FILESYSTEM_INTERFACE_VERSION, nullptr);
+		mpEngineVGui = (IEngineVGui*)*factories[i](VENGINE_VGUI_VERSION, nullptr);
 		mpGameUIFuncs = (IGameUIFuncs*)*factories[i](GAMEUIFUNCS_INTERFACE_VERSION, nullptr);
 		mpGameClientExports = (IGameClientExports*)*factories[i](GAMECLIENTEXPORTS_INTERFACE_VERSION, nullptr);
 	};
 	
 	if(!mpGameUIFuncs)
-		return;
+		return; // Sys_Error("CGameUI::Initialize() failed to get necessary interfaces\n");
 	
 	if(!mpGameClientExports)
 		mpGameClientExports = new CDefaultGameClientExports();
 	*/
+	
+	gpMenuExports = (IMenuExportsTemp*)factories[0](OGS_MENUEXPORTS_INTERFACE_VERSION, nullptr);
+	
+	if(!gpMenuExports)
+		return;
+	
+	M_Init(); // TODO: temp
+	
+#ifdef _WIN32 // TODO: ???
+	vid_menudrawfn = VID_MenuDraw;
+	vid_menukeyfn = VID_MenuKey;
+#endif
 };
 
 void CGameUI::Start(/*cl_enginefunc_t*/ struct cl_enginefuncs_s *engineFuncs, int interfaceVersion, void /*IBaseSystem*/ *system)
@@ -55,6 +84,8 @@ void CGameUI::Shutdown()
 
 int CGameUI::ActivateGameUI()
 {
+	M_ToggleMenu_f();
+	mbActive = true;
 	return true;
 };
 
@@ -82,11 +113,13 @@ void CGameUI::DisconnectFromServer()
 
 void CGameUI::HideGameUI()
 {
+	M_ToggleMenu_f();
+	mbActive = false;
 };
 
 bool CGameUI::IsGameUIActive()
 {
-	return true;
+	return mbActive;
 };
 
 void CGameUI::LoadingStarted(const char *resourceType, const char *resourceName)

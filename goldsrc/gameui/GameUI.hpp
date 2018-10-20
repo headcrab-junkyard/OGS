@@ -61,4 +61,6 @@ public:
 	void ValidateCDKey(bool force, bool inConnect) override;
 
 	void OnDisconnectFromServer(int eSteamLoginFailure, const char *username) override;
+private:
+	bool mbActive{false};
 };

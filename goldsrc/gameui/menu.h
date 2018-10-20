@@ -32,6 +32,10 @@
 //
 // menus
 //
+
+extern void (*vid_menudrawfn)();
+extern void (*vid_menukeyfn)(int key);
+
 void M_Init();
 C_EXPORT void M_Keydown(int key);
 C_EXPORT void M_Draw();

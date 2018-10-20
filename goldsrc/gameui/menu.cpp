@@ -20,29 +20,41 @@
 /// @file
 
 #include <cstdlib>
+#include <cstdio>
 #include <cstring>
+#include <cstdarg>
 
 #include "const.h"
 #include "keydefs.h"
 #include "menu.h"
 #include "keydefs.h"
 
+// TODO: duplicated here from quakedef header
+#define MAX_OSPATH 128 // max length of a filesystem pathname
+#define SAVEGAME_COMMENT_LENGTH 39
+
+// TODO: duplicated here from render header
+#define TOP_RANGE 16 // soldier uniform colors
+#define BOTTOM_RANGE 96
+
+// TODO: duplicated here from gl_vidnt.c
+#define VID_ROW_SIZE 3
+
+typedef struct qpic_s
+{
+	int width, height;
+	byte data[4]; // variably sized
+} qpic_t;
+
 typedef enum { key_game,
 	           key_console,
 	           key_message,
 	           key_menu } keydest_t;
 
-#ifdef _WIN32
-//#include "winquake.h"
-#endif
-
 #include "IMenuExportsTemp.hpp"
 extern IMenuExportsTemp *gpMenuExports;
 
-void (*vid_menudrawfn)();
-void (*vid_menukeyfn)(int key);
-
-enum
+enum menu_state_e
 {
 	m_none,
 	m_main,
@@ -83,6 +95,9 @@ void M_Menu_LanConfig_f();
 void M_Menu_GameOptions_f();
 void M_Menu_Search_f();
 void M_Menu_ServerList_f();
+
+void (*vid_menudrawfn)();
+void (*vid_menukeyfn)(int key);
 
 /*
 class CMenuMain
@@ -268,6 +283,27 @@ char m_return_reason[32];
 void M_ConfigureNetSubsystem();
 
 /*
+============
+va
+
+does a varargs printf into a temp buffer, so I don't need to have
+varargs versions of all text functions.
+FIXME: make this buffer size safe someday
+============
+*/
+char *va(const char *format, ...)
+{
+	va_list argptr;
+	static char string[1024];
+
+	va_start(argptr, format);
+	vsprintf(string, format, argptr);
+	va_end(argptr);
+
+	return string;
+};
+
+/*
 ================
 M_DrawCharacter
 
@@ -276,7 +312,7 @@ Draws one solid graphics character
 */
 void M_DrawCharacter(int cx, int line, int num)
 {
-	gpMenuExports->Draw_Character(cx + ((vid.width - 320) >> 1), line, num);
+	gpMenuExports->Draw_Character(cx + ((gpMenuExports->VID_GetWidth() - 320) >> 1), line, num);
 }
 
 void M_Print(int cx, int cy, const char *str)
@@ -301,12 +337,12 @@ void M_PrintWhite(int cx, int cy, const char *str)
 
 void M_DrawTransPic(int x, int y, qpic_t *pic)
 {
-	gpMenuExports->Draw_TransPic(x + ((vid.width - 320) >> 1), y, pic);
+	gpMenuExports->Draw_TransPic(x + ((gpMenuExports->VID_GetWidth() - 320) >> 1), y, pic);
 }
 
 void M_DrawPic(int x, int y, qpic_t *pic)
 {
-	gpMenuExports->Draw_Pic(x + ((vid.width - 320) >> 1), y, pic);
+	gpMenuExports->Draw_Pic(x + ((gpMenuExports->VID_GetWidth() - 320) >> 1), y, pic);
 }
 
 byte identityTable[256];
@@ -338,7 +374,7 @@ void M_BuildTranslationTable(int top, int bottom)
 
 void M_DrawTransPicTranslate(int x, int y, qpic_t *pic)
 {
-	gpMenuExports->Draw_TransPicTranslate(x + ((vid.width - 320) >> 1), y, pic, translationTable);
+	gpMenuExports->Draw_TransPicTranslate(x + ((gpMenuExports->VID_GetWidth() - 320) >> 1), y, pic, translationTable);
 }
 
 void M_DrawTextBox(int x, int y, int width, int lines)
@@ -458,7 +494,7 @@ void M_Main_Draw()
 	M_DrawPic((320 - p->width) / 2, 4, p);
 	M_DrawTransPic(72, 32, gpMenuExports->Draw_CachePic("gfx/mainmenu.lmp"));
 
-	f = (int)(host_time * 10) % 6;
+	f = (int)(gpMenuExports->Host_GetTime() * 10) % 6;
 
 	M_DrawTransPic(54, 32 + m_main_cursor * 20, gpMenuExports->Draw_CachePic(va("gfx/menudot%i.lmp", f + 1)));
 }
@@ -471,7 +507,7 @@ void M_Main_Key(int key)
 		gpMenuExports->SetKeyDest(key_game);
 		m_state = m_none;
 		gpMenuExports->CL_SetDemoNum(m_save_demonum);
-		if(gpMenuExports->CL_GetDemoNum() != -1 && !gpMenuExports->CL_DemoPlayback() && gpMenuExports->CL_GetState() != ca_connected)
+		if(gpMenuExports->CL_GetDemoNum() != -1 && !gpMenuExports->CL_DemoPlayback() && gpMenuExports->CL_IsConnected())
 			gpMenuExports->CL_NextDemo();
 		break;
 
@@ -538,7 +574,7 @@ void M_SinglePlayer_Draw()
 	M_DrawPic((320 - p->width) / 2, 4, p);
 	M_DrawTransPic(72, 32, gpMenuExports->Draw_CachePic("gfx/sp_menu.lmp"));
 
-	f = (int)(host_time * 10) % 6;
+	f = (int)(gpMenuExports->Host_GetTime() * 10) % 6;
 
 	M_DrawTransPic(54, 32 + m_singleplayer_cursor * 20, gpMenuExports->Draw_CachePic(va("gfx/menudot%i.lmp", f + 1)));
 }
@@ -610,7 +646,7 @@ void M_ScanSaves()
 	{
 		strcpy(m_filenames[i], "--- UNUSED SLOT ---");
 		loadable[i] = false;
-		sprintf(name, "%s/s%i.sav", com_gamedir, i);
+		sprintf(name, "%s/s%i.sav", gpMenuExports->GetGameDir(), i);
 		f = fopen(name, "r");
 		if(!f)
 			continue;
@@ -775,7 +811,7 @@ void M_MultiPlayer_Draw()
 	M_DrawPic((320 - p->width) / 2, 4, p);
 	M_DrawTransPic(72, 32, gpMenuExports->Draw_CachePic("gfx/mp_menu.lmp"));
 
-	f = (int)(host_time * 10) % 6;
+	f = (int)(gpMenuExports->Host_GetTime() * 10) % 6;
 
 	M_DrawTransPic(54, 32 + m_multiplayer_cursor * 20, gpMenuExports->Draw_CachePic(va("gfx/menudot%i.lmp", f + 1)));
 
@@ -845,10 +881,10 @@ void M_Menu_Setup_f()
 	gpMenuExports->SetKeyDest(key_menu);
 	m_state = m_setup;
 	m_entersound = true;
-	strcpy(setup_myname, cl_name.string);
-	strcpy(setup_hostname, hostname.string);
-	setup_top = setup_oldtop = ((int)gpMenuExports->Cvar_VariableValue("cl_color")) >> 4;
-	setup_bottom = setup_oldbottom = ((int)gpMenuExports->Cvar_VariableValue("cl_color")) & 15;
+	strcpy(setup_myname, gpMenuExports->Cvar_VariableString("name"));
+	strcpy(setup_hostname, gpMenuExports->Cvar_VariableString("hostname"));
+	setup_top = setup_oldtop = ((int)gpMenuExports->Cvar_VariableValue("topcolor")) >> 4;
+	setup_bottom = setup_oldbottom = ((int)gpMenuExports->Cvar_VariableValue("bottomcolor")) & 15;
 }
 
 void M_Setup_Draw()
@@ -940,9 +976,9 @@ void M_Setup_Key(int k)
 			goto forward;
 
 		// setup_cursor == 4 (OK)
-		if(strcmp(cl_name.string, setup_myname) != 0)
+		if(strcmp(gpMenuExports->Cvar_VariableString("name"), setup_myname) != 0)
 			gpMenuExports->Cbuf_AddText(va("name \"%s\"\n", setup_myname));
-		if(strcmp(hostname.string, setup_hostname) != 0)
+		if(strcmp(gpMenuExports->Cvar_VariableString("hostname"), setup_hostname) != 0)
 			gpMenuExports->Cvar_Set("hostname", setup_hostname);
 		if(setup_top != setup_oldtop || setup_bottom != setup_oldbottom)
 			gpMenuExports->Cbuf_AddText(va("color %i %i\n", setup_top, setup_bottom));
@@ -1115,7 +1151,7 @@ void M_Net_Draw()
 	M_Print(f, 158, net_helpMessage[m_net_cursor * 4 + 2]);
 	M_Print(f, 166, net_helpMessage[m_net_cursor * 4 + 3]);
 
-	f = (int)(host_time * 10) % 6;
+	f = (int)(gpMenuExports->Host_GetTime() * 10) % 6;
 	M_DrawTransPic(54, 32 + m_net_cursor * 20, gpMenuExports->Draw_CachePic(va("gfx/menudot%i.lmp", f + 1)));
 }
 
@@ -1198,7 +1234,7 @@ void M_Menu_Options_f()
 	m_entersound = true;
 
 #ifdef _WIN32
-	if((options_cursor == 13) && (modestate != MS_WINDOWED))
+	if((options_cursor == 13) && (!gpMenuExports->VID_IsWindowed()))
 	{
 		options_cursor = 0;
 	}
@@ -1212,48 +1248,48 @@ void M_AdjustSliders(int dir)
 	switch(options_cursor)
 	{
 	case 3: // screen size
-		scr_viewsize.value += dir * 10;
+		gpMenuExports->Cvar_SetValue("scr_viewsize", gpMenuExports->Cvar_VariableValue("scr_viewsize") + dir * 10);
 		if(gpMenuExports->Cvar_VariableValue("scr_viewsize") < 30)
-			scr_viewsize.value = 30;
+			gpMenuExports->Cvar_SetValue("scr_viewsize", 30);
 		if(gpMenuExports->Cvar_VariableValue("scr_viewsize") > 120)
-			scr_viewsize.value = 120;
-		gpMenuExports->Cvar_SetValue("viewsize", scr_viewsize.value);
+			gpMenuExports->Cvar_SetValue("scr_viewsize", 120);
+		gpMenuExports->Cvar_SetValue("viewsize", gpMenuExports->Cvar_VariableValue("scr_viewsize"));
 		break;
 	case 4: // gamma
-		v_gamma.value -= dir * 0.05;
+		gpMenuExports->Cvar_SetValue("v_gamma", gpMenuExports->Cvar_VariableValue("v_gamma") - dir * 0.05);
 		if(gpMenuExports->Cvar_VariableValue("v_gamma") < 0.5)
-			v_gamma.value = 0.5;
+			gpMenuExports->Cvar_SetValue("v_gamma", 0.5);
 		if(gpMenuExports->Cvar_VariableValue("v_gamma") > 1)
-			v_gamma.value = 1;
-		gpMenuExports->Cvar_SetValue("gamma", v_gamma.value);
+			gpMenuExports->Cvar_SetValue("v_gamma", 1);
+		gpMenuExports->Cvar_SetValue("gamma", gpMenuExports->Cvar_VariableValue("v_gamma"));
 		break;
 	case 5: // mouse speed
-		sensitivity.value += dir * 0.5;
+		gpMenuExports->Cvar_SetValue("sensitivity", gpMenuExports->Cvar_VariableValue("sensitivity") + dir * 0.5);
 		if(gpMenuExports->Cvar_VariableValue("sensitivity") < 1)
-			sensitivity.value = 1;
+			gpMenuExports->Cvar_SetValue("sensitivity", 1);
 		if(gpMenuExports->Cvar_VariableValue("sensitivity") > 11)
-			sensitivity.value = 11;
-		gpMenuExports->Cvar_SetValue("sensitivity", sensitivity.value);
+			gpMenuExports->Cvar_SetValue("sensitivity", 11);
+		gpMenuExports->Cvar_SetValue("sensitivity", gpMenuExports->Cvar_VariableValue("sensitivity"));
 		break;
 	case 6: // music volume
 #ifdef _WIN32
-		bgmvolume.value += dir * 1.0;
+		gpMenuExports->Cvar_SetValue("bgmvolume", gpMenuExports->Cvar_VariableValue("bgmvolume") + dir * 1.0);
 #else
-		bgmvolume.value += dir * 0.1;
+		gpMenuExports->Cvar_SetValue("bgmvolume", gpMenuExports->Cvar_VariableValue("bgmvolume") + dir * 0.1);
 #endif
 		if(gpMenuExports->Cvar_VariableValue("bgmvolume") < 0)
-			bgmvolume.value = 0;
+			gpMenuExports->Cvar_SetValue("bgmvolume", 0);
 		if(gpMenuExports->Cvar_VariableValue("bgmvolume") > 1)
-			bgmvolume.value = 1;
-		gpMenuExports->Cvar_SetValue("bgmvolume", bgmvolume.value);
+			gpMenuExports->Cvar_SetValue("bgmvolume", 1);
+		gpMenuExports->Cvar_SetValue("bgmvolume", gpMenuExports->Cvar_VariableValue("bgmvolume"));
 		break;
 	case 7: // sfx volume
-		volume.value += dir * 0.1;
+		gpMenuExports->Cvar_SetValue("volume", gpMenuExports->Cvar_VariableValue("volume") + dir * 0.1);
 		if(gpMenuExports->Cvar_VariableValue("volume") < 0)
-			volume.value = 0;
+			gpMenuExports->Cvar_SetValue("volume", 0);
 		if(gpMenuExports->Cvar_VariableValue("volume") > 1)
-			volume.value = 1;
-		gpMenuExports->Cvar_SetValue("volume", volume.value);
+			gpMenuExports->Cvar_SetValue("volume", 1);
+		gpMenuExports->Cvar_SetValue("volume", gpMenuExports->Cvar_VariableValue("volume"));
 		break;
 
 	case 8: // allways run
@@ -1367,7 +1403,7 @@ void M_Options_Draw()
 		M_Print(16, 128, "         Video Options");
 
 #ifdef _WIN32
-	if(modestate == MS_WINDOWED)
+	if(gpMenuExports->VID_IsWindowed())
 	{
 		M_Print(16, 136, "             Use Mouse");
 		//M_DrawCheckbox(220, 136, gpMenuExports->Cvar_VariableValue("_windowed_mouse")); // TODO
@@ -1441,7 +1477,7 @@ void M_Options_Key(int k)
 	}
 
 #ifdef _WIN32
-	if((options_cursor == 13) && (modestate != MS_WINDOWED))
+	if((options_cursor == 13) && (!gpMenuExports->VID_IsWindowed()))
 	{
 		if(k == K_UPARROW)
 			options_cursor = 12;
@@ -1488,12 +1524,12 @@ void M_Menu_Keys_f()
 	m_entersound = true;
 }
 
-void M_FindKeysForCommand(char *command, int *twokeys)
+void M_FindKeysForCommand(const char *command, int *twokeys)
 {
 	int count;
 	int j;
 	int l;
-	char *b;
+	const char *b;
 
 	twokeys[0] = twokeys[1] = -1;
 	l = strlen(command);
@@ -1501,7 +1537,7 @@ void M_FindKeysForCommand(char *command, int *twokeys)
 
 	for(j = 0; j < 256; j++)
 	{
-		b = keybindings[j];
+		b = gpMenuExports->Key_GetBinding(j);
 		if(!b)
 			continue;
 		if(!strncmp(b, command, l))
@@ -1514,21 +1550,21 @@ void M_FindKeysForCommand(char *command, int *twokeys)
 	}
 }
 
-void M_UnbindCommand(char *command)
+void M_UnbindCommand(const char *command)
 {
 	int j;
 	int l;
-	char *b;
+	const char *b;
 
 	l = strlen(command);
 
 	for(j = 0; j < 256; j++)
 	{
-		b = keybindings[j];
+		b = gpMenuExports->Key_GetBinding(j);
 		if(!b)
 			continue;
 		if(!strncmp(b, command, l))
-			Key_SetBinding(j, "");
+			gpMenuExports->Key_SetBinding(j, "");
 	}
 }
 
@@ -1678,7 +1714,7 @@ void M_Menu_Help_f()
 
 void M_Help_Draw()
 {
-	M_DrawPic(0, 0, Draw_CachePic(va("gfx/help%i.lmp", help_page)));
+	M_DrawPic(0, 0, gpMenuExports->Draw_CachePic(va("gfx/help%i.lmp", help_page)));
 }
 
 void M_Help_Key(int key)
@@ -1709,7 +1745,7 @@ void M_Help_Key(int key)
 /* QUIT MENU */
 
 int msgNumber;
-int m_quit_prevstate;
+menu_state_e m_quit_prevstate;
 bool wasInMenus;
 
 #ifndef _WIN32
@@ -2335,8 +2371,8 @@ void M_LanConfig_Draw()
 {
 	qpic_t *p;
 	int basex;
-	char *startJoin;
-	char *protocol;
+	const char *startJoin;
+	const char *protocol;
 
 	M_DrawTransPic(16, 4, gpMenuExports->Draw_CachePic("gfx/qplaque.lmp"));
 	p = gpMenuExports->Draw_CachePic("gfx/p_multi.lmp");
@@ -2586,9 +2622,9 @@ void M_Menu_GameOptions_f()
 	m_state = m_gameoptions;
 	m_entersound = true;
 	if(maxplayers == 0)
-		maxplayers = svs.maxclients;
+		maxplayers = gpMenuExports->GetMaxClients();
 	if(maxplayers < 2)
-		maxplayers = svs.maxclientslimit;
+		maxplayers = gpMenuExports->GetMaxClientsLimit();
 }
 
 int gameoptions_cursor_table[] = { 40, 56, 64, 72, 80, 88, 96, 112, 120 };
@@ -2620,7 +2656,7 @@ void M_GameOptions_Draw()
 	/*
 	if(rogue)
 	{
-		char *msg;
+		const char *msg;
 
 		switch((int)gpMenuExports->Cvar_VariableValue("teamplay"))
 		{
@@ -2651,7 +2687,7 @@ void M_GameOptions_Draw()
 	else
 	*/
 	{
-		char *msg;
+		const char *msg;
 
 		switch((int)gpMenuExports->Cvar_VariableValue("teamplay"))
 		{
@@ -2727,9 +2763,9 @@ void M_NetStart_Change(int dir)
 	{
 	case 1:
 		maxplayers += dir;
-		if(maxplayers > svs.maxclientslimit)
+		if(maxplayers > gpMenuExports->GetMaxClientsLimit())
 		{
-			maxplayers = svs.maxclientslimit;
+			maxplayers = gpMenuExports->GetMaxClientsLimit();
 			m_serverInfoMessage = true;
 			m_serverInfoMessageTime = gpMenuExports->Host_GetRealTime();
 		}
@@ -3049,9 +3085,9 @@ void M_Draw()
 	{
 		gpMenuExports->SCR_SetCopyEverything(true);
 
-		if(scr_con_current)
+		if(gpMenuExports->SCR_Con_Current())
 		{
-			gpMenuExports->Draw_ConsoleBackground(vid.height);
+			gpMenuExports->Draw_ConsoleBackground(gpMenuExports->VID_GetHeight());
 			gpMenuExports->VID_UnlockBuffer();
 			gpMenuExports->S_ExtraUpdate();
 			gpMenuExports->VID_LockBuffer();
@@ -3245,3 +3281,119 @@ void M_ConfigureNetSubsystem()
 	//if(IPXConfig || TCPIPConfig)
 		//net_hostport = lanConfig_port; // TODO
 }
+
+//========================================================
+// Video menu stuff
+//========================================================
+
+#ifdef _WIN32 // TODO: ???
+extern void M_Print(int cx, int cy, char *str);
+extern void M_PrintWhite(int cx, int cy, char *str);
+extern void M_DrawCharacter(int cx, int line, int num);
+extern void M_DrawTransPic(int x, int y, qpic_t *pic);
+extern void M_DrawPic(int x, int y, qpic_t *pic);
+
+static int vid_line, vid_wmodes;
+
+typedef struct
+{
+	int modenum;
+	const char *desc;
+	int iscur;
+} modedesc_t;
+
+#define MAX_COLUMN_SIZE 9
+#define MODE_AREA_HEIGHT (MAX_COLUMN_SIZE + 2)
+#define MAX_MODEDESCS (MAX_COLUMN_SIZE * 3)
+
+static modedesc_t modedescs[MAX_MODEDESCS];
+
+/*
+================
+VID_MenuDraw
+================
+*/
+void VID_MenuDraw()
+{
+	qpic_t *p;
+	const char *ptr;
+	int lnummodes, i, j, k, column, row, dup, dupmode;
+	char temp[100];
+	vmode_t *pv;
+
+	p = gpMenuExports->Draw_CachePic("gfx/vidmodes.lmp");
+	M_DrawPic((320 - p->width) / 2, 4, p);
+
+	vid_wmodes = 0;
+	lnummodes = gpMenuExports->VID_NumModes();
+
+	for(i = 1; (i < lnummodes) && (vid_wmodes < MAX_MODEDESCS); i++)
+	{
+		ptr = gpMenuExports->VID_GetModeDescription(i);
+		pv = gpMenuExports->VID_GetModePtr(i);
+
+		k = vid_wmodes;
+
+		modedescs[k].modenum = i;
+		modedescs[k].desc = ptr;
+		modedescs[k].iscur = 0;
+
+		if(i == gpMenuExports->VID_GetCurrentModeNum())
+			modedescs[k].iscur = 1;
+
+		vid_wmodes++;
+	}
+
+	if(vid_wmodes > 0)
+	{
+		M_Print(2 * 8, 36 + 0 * 8, "Fullscreen Modes (WIDTHxHEIGHTxBPP)");
+
+		column = 8;
+		row = 36 + 2 * 8;
+
+		for(i = 0; i < vid_wmodes; i++)
+		{
+			if(modedescs[i].iscur)
+				M_PrintWhite(column, row, modedescs[i].desc);
+			else
+				M_Print(column, row, modedescs[i].desc);
+
+			column += 13 * 8;
+
+			if((i % VID_ROW_SIZE) == (VID_ROW_SIZE - 1))
+			{
+				column = 8;
+				row += 8;
+			}
+		}
+	}
+
+	M_Print(3 * 8, 36 + MODE_AREA_HEIGHT * 8 + 8 * 2,
+	        "Video modes must be set from the");
+	M_Print(3 * 8, 36 + MODE_AREA_HEIGHT * 8 + 8 * 3,
+	        "command line with -width <width>");
+	M_Print(3 * 8, 36 + MODE_AREA_HEIGHT * 8 + 8 * 4,
+	        "and -bpp <bits-per-pixel>");
+	M_Print(3 * 8, 36 + MODE_AREA_HEIGHT * 8 + 8 * 6,
+	        "Select windowed mode with -window");
+}
+
+/*
+================
+VID_MenuKey
+================
+*/
+void VID_MenuKey(int key)
+{
+	switch(key)
+	{
+	case K_ESCAPE:
+		gpMenuExports->S_LocalSound("misc/menu1.wav");
+		M_Menu_Options_f();
+		break;
+
+	default:
+		break;
+	}
+}
+#endif // _WIN32
