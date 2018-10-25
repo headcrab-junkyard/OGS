@@ -30,6 +30,9 @@
 #undef PostMessage
 #endif
 
+using namespace vgui2;
+EXPOSE_SINGLE_INTERFACE(CVGui, IVGui, VGUI_IVGUI_INTERFACE_VERSION);
+
 namespace vgui2
 {
 
