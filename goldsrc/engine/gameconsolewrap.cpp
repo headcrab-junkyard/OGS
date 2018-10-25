@@ -25,18 +25,6 @@ IGameConsole *gpGameConsole{ nullptr };
 
 //void GameConsole_Initialize();
 
-void GameConsole_Activate()
-{
-	if(gpGameConsole)
-		gpGameConsole->Activate();
-};
-
-void GameConsole_Hide()
-{
-	if(gpGameConsole)
-		gpGameConsole->Hide();
-};
-
 void GameConsole_Clear()
 {
 	if(gpGameConsole)

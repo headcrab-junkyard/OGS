@@ -23,8 +23,6 @@
 
 //void GameConsole_Initialize();
 
-void GameConsole_Activate();
-void GameConsole_Hide();
 void GameConsole_Clear();
 
 qboolean GameConsole_IsVisible();
