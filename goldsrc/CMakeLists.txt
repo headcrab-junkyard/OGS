@@ -7,11 +7,11 @@ set(OGS_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Add include directories
 include_directories(
-	${CMAKE_SOURCE_DIR}/../ogs-sdk/ogs
-	${CMAKE_SOURCE_DIR}/../ogs-sdk/ogs/common
-	${CMAKE_SOURCE_DIR}/../ogs-sdk/ogs/engine
-	${CMAKE_SOURCE_DIR}/../ogs-sdk/ogs/pm_shared
-	${CMAKE_SOURCE_DIR}/../ogs-sdk/ogs/public
+	${CMAKE_SOURCE_DIR}/../ogs-sdk/goldsrc
+	${CMAKE_SOURCE_DIR}/../ogs-sdk/goldsrc/common
+	${CMAKE_SOURCE_DIR}/../ogs-sdk/goldsrc/engine
+	${CMAKE_SOURCE_DIR}/../ogs-sdk/goldsrc/pm_shared
+	${CMAKE_SOURCE_DIR}/../ogs-sdk/goldsrc/public
 	${OGS_ROOT}/public
 	${OGS_ROOT}/engine
 )
