@@ -33,6 +33,13 @@ m*_t structures are in-memory
 
 */
 
+// entity effects
+
+#define EF_BRIGHTFIELD 1
+#define EF_MUZZLEFLASH 2
+#define EF_BRIGHTLIGHT 4
+#define EF_DIMLIGHT 8
+
 /*
 ==============================================================================
 
@@ -55,32 +62,21 @@ BRUSH MODELS
 #define SURF_DRAWTURB 0x10
 #define SURF_DRAWTILED 0x20
 #define SURF_DRAWBACKGROUND 0x40
+#define SURF_UNDERWATER 0x80
+//#define SURF_DONTWARP		0x100 // TODO: qw
 
-typedef struct msurface_s
+#ifdef GLQUAKE
+#define VERTEXSIZE 7
+
+typedef struct glpoly_s
 {
-	int visframe; // should be drawn when node is crossed
-
-	int dlightframe;
-	int dlightbits;
-
-	mplane_t *plane;
-	int flags;
-
-	int firstedge; // look up in model->surfedges[], negative numbers
-	int numedges;  // are backwards edges
-
-	// surface generation data
-	struct surfcache_s *cachespots[MIPLEVELS];
-
-	short texturemins[2];
-	short extents[2];
-
-	mtexinfo_t *texinfo;
-
-	// lighting info
-	byte styles[MAXLIGHTMAPS];
-	byte *samples; // [numstyles*surfsize]
-} msurface_t;
+	struct glpoly_s *next;
+	struct glpoly_s *chain;
+	int numverts;
+	int flags;                  // for SURF_UNDERWATER
+	float verts[4][VERTEXSIZE]; // variable sized (xyz s1t1 s2t2)
+} glpoly_t;
+#endif
 
 /*
 ==============================================================================
@@ -95,9 +91,15 @@ typedef struct mspriteframe_s
 {
 	int width;
 	int height;
-	void *pcachespot; // remove?
+#ifndef GLQUAKE
+	void *pcachespot; // remove? // TODO: software render only
+#endif
 	float up, down, left, right;
+#ifdef GLQUAKE
+	int gl_texturenum;
+#else
 	byte pixels[4];
+#endif
 } mspriteframe_t;
 
 typedef struct
@@ -135,19 +137,27 @@ Alias models are position independent, so the cache manager can move them.
 
 typedef struct
 {
+#ifdef GLQUAKE
+	int firstpose;
+	int numposes;
+	float interval;
+#else
 	aliasframetype_t type;
+#endif
 	trivertx_t bboxmin;
 	trivertx_t bboxmax;
 	int frame;
 	char name[16];
 } maliasframedesc_t;
 
+#ifndef GLQUAKE
 typedef struct
 {
 	aliasskintype_t type;
 	void *pcachespot;
 	int skin;
 } maliasskindesc_t;
+#endif
 
 typedef struct
 {
@@ -163,12 +173,14 @@ typedef struct
 	maliasgroupframedesc_t frames[1];
 } maliasgroup_t;
 
+#ifndef GLQUAKE
 typedef struct
 {
 	int numskins;
 	int intervals;
 	maliasskindesc_t skindescs[1];
 } maliasskingroup_t;
+#endif
 
 // !!! if this is changed, it must be changed in asm_draw.h too !!!
 typedef struct mtriangle_s
@@ -177,6 +189,35 @@ typedef struct mtriangle_s
 	int vertindex[3];
 } mtriangle_t;
 
+#ifdef GLQUAKE
+#define MAX_SKINS 32
+typedef struct
+{
+	int ident;
+	int version;
+	vec3_t scale;
+	vec3_t scale_origin;
+	float boundingradius;
+	vec3_t eyeposition;
+	int numskins;
+	int skinwidth;
+	int skinheight;
+	int numverts;
+	int numtris;
+	int numframes;
+	synctype_t synctype;
+	int flags;
+	float size;
+
+	int numposes;
+	int poseverts;
+	int posedata; // numposes*poseverts trivert_t
+	int commands; // gl command list with embedded s/t
+	int gl_texturenum[MAX_SKINS][4];
+	int texels[MAX_SKINS];       // only for player skins
+	maliasframedesc_t frames[1]; // variable sized
+} aliashdr_t;
+#else // if not GLQUAKE
 typedef struct
 {
 	int model;
@@ -185,6 +226,19 @@ typedef struct
 	int triangles;
 	maliasframedesc_t frames[1];
 } aliashdr_t;
+#endif // GLQUAKE
+
+#ifdef GLQUAKE
+
+#define MAXALIASVERTS 1024
+#define MAXALIASFRAMES 256
+#define MAXALIASTRIS 2048
+extern aliashdr_t *pheader;
+extern stvert_t stverts[MAXALIASVERTS];
+extern mtriangle_t triangles[MAXALIASTRIS];
+extern trivertx_t *poseverts[MAXALIASFRAMES];
+
+#endif
 
 //===================================================================
 
