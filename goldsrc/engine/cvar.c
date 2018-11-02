@@ -25,6 +25,39 @@ char *cvar_null_string = "";
 
 /*
 ============
+Cvar_List_f
+
+============
+*/
+void Cvar_List_f()
+{
+	cvar_t	*var;
+	int		i;
+
+	i = 0;
+	for (var = cvar_vars ; var ; var = var->next, i++)
+	{
+		Con_Printf ("%s : %s", var->name, var->string);
+		
+		if (var->flags & FCVAR_ARCHIVE)
+			Con_Printf (", a");
+		
+		if (var->flags & FCVAR_USERINFO)
+			Con_Printf (", i");
+		
+		if (var->flags & FCVAR_SERVER)
+			Con_Printf (", sv");
+		
+		Con_Printf ("\n");
+	};
+	
+	Con_Printf("--------------\n");
+	Con_Printf("%i Total CVars\n", i);
+	Con_Printf("CvarList ? for syntax\n");
+}
+
+/*
+============
 Cvar_FindVar
 ============
 */
