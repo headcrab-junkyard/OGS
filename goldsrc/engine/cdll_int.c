@@ -32,7 +32,9 @@ void *gpClientDLL;
 static cl_enginefunc_t gEngFuncs; // TODO: name overlap with server-side version? cl_enginefuncs in GS
 cldll_func_t cl_funcs;
 
-typedef int /*CL_DLLEXPORT*/ (*pfnGetClientDLL)(void *pv);
+typedef int (*pfnGetClientDLL)(void *pv);
+
+extern qboolean LoadClientDLLClientGame();
 
 void UnloadClientDLL()
 {
@@ -46,19 +48,15 @@ void UnloadClientDLL()
 qboolean LoadClientDLLF()
 {
 	pfnGetClientDLL fnGetClientDLL = NULL;
-
-	//memcpy(&gEngFuncs, 0, sizeof(cl_enginefunc_t));
-	//memcpy(&cl_funcs, 0, sizeof(cldll_func_t));
 	
 	fnGetClientDLL = (pfnGetClientDLL)Sys_GetExport_Wrapper(gpClientDLL, "F"); // TODO: GetClientDLL?
 
 	if(!fnGetClientDLL)
 		return false;
-
+	
+	Q_memset(&cl_funcs, 0, sizeof(cl_funcs));
+	
 	fnGetClientDLL(&cl_funcs);
-
-	if(!&cl_funcs || (cl_funcs.pfnInitialize && !cl_funcs.pfnInitialize(&gEngFuncs, CLDLL_INTERFACE_VERSION)))
-		Sys_Error("Can't initialize the client dll!");
 
 	return true;
 };
@@ -76,8 +74,12 @@ void LoadClientDLL()
 		//return;
 	};
 
-	if(!LoadClientDLLF())
-		return; // TODO: per-export loading as a fallback
+	if(!LoadClientDLLClientGame()) // First check for IClientGame interface
+		if(!LoadClientDLLF()) // Then check there is an "F" export present
+			return; // TODO: per-export loading as a fallback
+	
+	if(!&cl_funcs || (cl_funcs.pfnInitialize && !cl_funcs.pfnInitialize(&gEngFuncs, CLDLL_INTERFACE_VERSION)))
+		Sys_Error("Can't initialize the client dll!");
 };
 
 void ClientDLL_Init()
@@ -87,12 +89,15 @@ void ClientDLL_Init()
 	// TODO
 	ClientDLL_HudInit();
 	ClientDLL_HudVidInit();
-	ClientDLL_ClientMoveInit(NULL /*TODO*/);
+	ClientDLL_ClientMoveInit(&clpmove);
 };
 
-void ClientDLL_Shutdown(){
-	//if(cl_funcs.pfnShutdown)
-	//cl_funcs.pfnShutdown();
+void ClientDLL_Shutdown()
+{
+	if(cl_funcs.pfnShutdown)
+		cl_funcs.pfnShutdown();
+	
+	UnloadClientDLL();
 };
 
 void ClientDLL_HudInit()
@@ -107,9 +112,20 @@ void ClientDLL_HudVidInit()
 		cl_funcs.pfnHudVidInit();
 };
 
-void ClientDLL_UpdateClientData(){
-	// TODO
+void ClientDLL_UpdateClientData()
+{
+	if(cl_funcs.pfnUpdateClientData)
+		cl_funcs.pfnUpdateClientData(NULL, 0.0f); // TODO
 };
+
+// TODO
+/*
+void ClientDLL_HudReset()
+{
+	if(cl_funcs.pfnHudReset)
+		cl_funcs.pfnHudReset();
+};
+*/
 
 void ClientDLL_Frame(double time)
 {
@@ -120,25 +136,33 @@ void ClientDLL_Frame(double time)
 void ClientDLL_HudRedraw(int intermission)
 {
 	if(cl_funcs.pfnHudRedraw)
-		cl_funcs.pfnHudRedraw(intermission);
+		cl_funcs.pfnHudRedraw(host_frametime /*cl.time*/, intermission); // TODO
 };
 
-void ClientDLL_MoveClient(struct playermove_s *ppmove){
-	// TODO
-};
-
-void ClientDLL_ClientMoveInit(struct playermove_s *ppmove){
-	// TODO
-};
-
-char ClientDLL_ClientTextureType(char *name)
+void ClientDLL_MoveClient(struct playermove_s *ppmove)
 {
-	// TODO
+	if(cl_funcs.pfnClientMove)
+		cl_funcs.pfnClientMove(ppmove, false);
+};
+
+void ClientDLL_ClientMoveInit(struct playermove_s *ppmove)
+{
+	if(cl_funcs.pfnClientMoveInit)
+		cl_funcs.pfnClientMoveInit(ppmove);
+};
+
+char ClientDLL_ClientTextureType(const char *name)
+{
+	if(cl_funcs.pfnClientTextureType)
+		return cl_funcs.pfnClientTextureType(name);
+	
 	return '\0';
 };
 
-void ClientDLL_CreateMove(float frametime, struct usercmd_s *cmd, int active){
-	// TODO
+void ClientDLL_CreateMove(float frametime, struct usercmd_s *cmd, int active)
+{
+	if(cl_funcs.pfnCreateMove)
+		cl_funcs.pfnCreateMove(frametime, cmd, active);
 };
 
 void ClientDLL_ActivateMouse()
@@ -167,28 +191,41 @@ void ClientDLL_ClearStates()
 
 int ClientDLL_IsThirdPerson()
 {
-	// TODO
+	if(cl_funcs.pfnIsThirdPerson)
+		return cl_funcs.pfnIsThirdPerson();
+	
 	return 0;
 };
 
-void ClientDLL_GetCameraOffsets(float *ofs){
-	// TODO
+void ClientDLL_GetCameraOffsets(float *ofs)
+{
+	if(cl_funcs.pfnGetCameraOffsets)
+		cl_funcs.pfnGetCameraOffsets(ofs);
 };
 
 int ClientDLL_GraphKeyDown()
 {
 	// TODO
+	//kbutton_s *pGraphKey = ClientDLL_FindKey("in_graph");
+	
+	//if(pGraphKey)
+		//return pGraphKey->down;
+	
 	return 0;
 };
 
 struct kbutton_s *ClientDLL_FindKey(const char *name)
 {
-	// TODO
+	if(cl_funcs.pfnFindKey)
+		return cl_funcs.pfnFindKey(name);
+	
 	return NULL;
 };
 
-void ClientDLL_CAM_Think(){
-	// TODO
+void ClientDLL_CAM_Think()
+{
+	if(cl_funcs.pfnCAM_Think)
+		cl_funcs.pfnCAM_Think();
 };
 
 void ClientDLL_IN_Accumulate()
@@ -197,66 +234,94 @@ void ClientDLL_IN_Accumulate()
 		cl_funcs.pfnIN_Accumulate();
 };
 
-void ClientDLL_CalcRefdef(struct ref_params_s *pparams){
-	// TODO
+void ClientDLL_CalcRefdef(struct ref_params_s *pparams)
+{
+	if(cl_funcs.pfnCalcRefdef)
+		cl_funcs.pfnCalcRefdef(pparams);
 };
 
 int ClientDLL_AddEntity(int type, struct cl_entity_s *ent)
 {
-	// TODO
+	if(cl_funcs.pfnAddEntity)
+		return cl_funcs.pfnAddEntity(type, ent, ""); // TODO
+	
 	return 0;
 };
 
-void ClientDLL_CreateEntities(){
-	// TODO
+void ClientDLL_CreateEntities()
+{
+	if(cl_funcs.pfnCreateEntities)
+		cl_funcs.pfnCreateEntities();
 };
 
-void ClientDLL_DrawNormalTriangles(){
-	// TODO
+void ClientDLL_DrawNormalTriangles()
+{
+	if(cl_funcs.pfnDrawNormalTriangles)
+		cl_funcs.pfnDrawNormalTriangles();
 };
 
-void ClientDLL_DrawTransparentTriangles(){
-	// TODO
+void ClientDLL_DrawTransparentTriangles()
+{
+	if(cl_funcs.pfnDrawTransparentTriangles)
+		cl_funcs.pfnDrawTransparentTriangles();
 };
 
-void ClientDLL_StudioEvent(const struct mstudioevent_s *event, const struct cl_entity_s *entity){
-	// TODO
+void ClientDLL_StudioEvent(const struct mstudioevent_s *event, const struct cl_entity_s *entity)
+{
+	if(cl_funcs.pfnStudioEvent)
+		cl_funcs.pfnStudioEvent(event, entity);
 };
 
-void ClientDLL_PostRunCmd(struct local_state_s *from, struct local_state_s *to, struct usercmd_s *cmd, int runfuncs, double time, unsigned int random_seed){
-	// TODO
+void ClientDLL_PostRunCmd(struct local_state_s *from, struct local_state_s *to, struct usercmd_s *cmd, int runfuncs, double time, unsigned int random_seed)
+{
+	if(cl_funcs.pfnPostRunCmd)
+		cl_funcs.pfnPostRunCmd(from, to, cmd, runfuncs, time, random_seed);
 };
 
-void ClientDLL_TxferLocalOverrides(struct entity_state_s *state, const struct clientdata_s *client){
-	// TODO
+void ClientDLL_TxferLocalOverrides(struct entity_state_s *state, const struct clientdata_s *client)
+{
+	if(cl_funcs.pfnTxferLocalOverrides)
+		cl_funcs.pfnTxferLocalOverrides(state, client);
 };
 
-void ClientDLL_ProcessPlayerState(struct entity_state_s *dst, const struct entity_state_s *src){
-	// TODO
+void ClientDLL_ProcessPlayerState(struct entity_state_s *dst, const struct entity_state_s *src)
+{
+	if(cl_funcs.pfnProcessPlayerState)
+		cl_funcs.pfnProcessPlayerState(dst, src);
 };
 
-void ClientDLL_TxferPredictionData(struct entity_state_s *ps, const struct entity_state_s *pps, struct clientdata_s *pcd, const struct clientdata_s *ppcd, struct weapon_data_s *wd, const struct weapon_data_s *pwd){
-	// TODO
+void ClientDLL_TxferPredictionData(struct entity_state_s *ps, const struct entity_state_s *pps, struct clientdata_s *pcd, const struct clientdata_s *ppcd, struct weapon_data_s *wd, const struct weapon_data_s *pwd)
+{
+	if(cl_funcs.pfnTxferPredictionData)
+		cl_funcs.pfnTxferPredictionData(ps, pps, pcd, ppcd, wd, pwd);
 };
 
-void ClientDLL_ReadDemoBuffer(int size, byte *buffer){
-	// TODO
+void ClientDLL_ReadDemoBuffer(int size, byte *buffer)
+{
+	if(cl_funcs.pfnReadDemoBuffer)
+		cl_funcs.pfnReadDemoBuffer(size, buffer);
 };
 
 int ClientDLL_ConnectionlessPacket(const struct netadr_s *net_from, const char *args, char *response_buffer, int *response_buffer_size)
 {
-	// TODO
+	if(cl_funcs.pfnConnectionlessPacket)
+		return cl_funcs.pfnConnectionlessPacket(net_from, args, response_buffer, response_buffer_size);
+	
 	return 0;
 };
 
 int ClientDLL_GetHullBounds(int hullnumber, float *mins, float *maxs)
 {
-	// TODO
+	if(cl_funcs.pfnGetHullBounds)
+		return cl_funcs.pfnGetHullBounds(hullnumber, mins, maxs);
+	
 	return 0;
 };
 
-void ClientDLL_VGui_ConsolePrint(const char *text){
+void ClientDLL_VGui_ConsolePrint(const char *text) // TODO: why it's here????
+{
 	// TODO
+	VGui_ConsolePrint(text);
 };
 
 int ClientDLL_Key_Event(int down, int keynum, const char *pszCurrentBinding)
@@ -267,33 +332,67 @@ int ClientDLL_Key_Event(int down, int keynum, const char *pszCurrentBinding)
 	return 0;
 };
 
-void ClientDLL_TempEntUpdate(double ft, double ct, double grav, struct tempent_s **ppFreeTE, struct tempent_s **ppActiveTE, int (*addEntity)(struct cl_entity_s *pEntity), void (*playTESound)(struct tempent_s *pTemp, float damp)){
-	// TODO
+void ClientDLL_TempEntUpdate(double ft, double ct, double grav, struct tempent_s **ppFreeTE, struct tempent_s **ppActiveTE, int (*addEntity)(struct cl_entity_s *pEntity), void (*playTESound)(struct tempent_s *pTemp, float damp))
+{
+	if(cl_funcs.pfnTempEntUpdate)
+		cl_funcs.pfnTempEntUpdate(ft, ct, grav, ppFreeTE, ppActiveTE, addEntity, playTESound);
 };
 
 struct cl_entity_s *ClientDLL_GetUserEntity(int index)
 {
-	// TODO
+	if(cl_funcs.pfnGetUserEntity)
+		return cl_funcs.pfnGetUserEntity(index);
+	
 	return NULL;
 };
 
-void ClientDLL_VoiceStatus(int entindex, qboolean bTalking){
-	// TODO
-};
-
-void ClientDLL_DirectorMessage(int iSize, void *pbuf){
-	// TODO
-};
-
-void ClientDLL_ChatInputPosition(int *x, int *y){
-	// TODO
-};
-
+void ClientDLL_VoiceStatus(int entindex, qboolean bTalking)
 {
+	if(cl_funcs.pfnVoiceStatus)
+		cl_funcs.pfnVoiceStatus(entindex, bTalking);
 };
 
+void ClientDLL_DirectorMessage(int iSize, void *pbuf)
 {
+	if(cl_funcs.pfnDirectorMessage)
+		cl_funcs.pfnDirectorMessage(iSize, pbuf);
 };
 
+// TODO
+/*
+int ClientDLL_StudioInterface(int version, struct r_studio_interface_s **ppInterface, struct engine_studio_api_s *pStudio)
 {
+	if(cl_funcs.pfnStudioInterface)
+		return cl_funcs.pfnStudioInterface(version, ppInterface, pStudio);
+	
+	return 0;
 };
+*/
+
+void ClientDLL_ChatInputPosition(int *x, int *y)
+{
+	if(cl_funcs.pfnChatInputPosition)
+		cl_funcs.pfnChatInputPosition(x, y);
+};
+
+// TODO
+/*
+int ClientDLL_GetPlayerTeam(int playernum)
+{
+	if(cl_funcs.pfnGetPlayerTeam)
+		return cl_funcs.pfnGetPlayerTeam(playernum);
+	
+	return 0;
+};
+*/
+
+// TODO
+/*
+void *ClientDLL_GetFactory() // TODO: actually returns CreateInterfaceFn
+{
+	if(cl_funcs.pfnClientFactory)
+		return cl_funcs.pfnClientFactory();
+	
+	return NULL;
+};
+*/
