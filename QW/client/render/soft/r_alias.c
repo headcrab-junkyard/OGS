@@ -1,4 +1,21 @@
-
+/*
+ *	This file is part of OGS Engine
+ *	Copyright (C) 1996-1997 Id Software, Inc.
+ *	Copyright (C) 2018 BlackPhrase
+ *
+ *	OGS Engine is free software: you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License as published by
+ *	the Free Software Foundation, either version 3 of the License, or
+ *	(at your option) any later version.
+ *
+ *	OGS Engine is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *	GNU General Public License for more details.
+ *
+ *	You should have received a copy of the GNU General Public License
+ *	along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
+ */
 // r_alias.c: routines for setting up to draw alias models
 
 #include "quakedef.h"
@@ -519,8 +536,7 @@ void R_AliasPrepareUnclippedPoints (void)
 		D_PolysetDrawFinalVerts (fv, r_anumverts);
 
 	r_affinetridesc.pfinalverts = pfinalverts;
-	r_affinetridesc.ptriangles = (mtriangle_t *)
-			((byte *)paliashdr + paliashdr->triangles);
+	r_affinetridesc.ptriangles = (mtriangle_t *)((byte *)paliashdr + paliashdr->triangles);
 	r_affinetridesc.numtriangles = pmdl->numtris;
 
 	D_PolysetDraw ();
@@ -546,16 +562,14 @@ void R_AliasSetupSkin (void)
 		skinnum = 0;
 	}
 
-	pskindesc = ((maliasskindesc_t *)
-			((byte *)paliashdr + paliashdr->skindesc)) + skinnum;
+	pskindesc = ((maliasskindesc_t *)((byte *)paliashdr + paliashdr->skindesc)) + skinnum;
 	a_skinwidth = pmdl->skinwidth;
 
 	if (pskindesc->type == ALIAS_SKIN_GROUP)
 	{
 		paliasskingroup = (maliasskingroup_t *)((byte *)paliashdr +
 				pskindesc->skin);
-		pskinintervals = (float *)
-				((byte *)paliashdr + paliasskingroup->intervals);
+		pskinintervals = (float *)((byte *)paliashdr + paliasskingroup->intervals);
 		numskins = paliasskingroup->numskins;
 		fullskininterval = pskinintervals[numskins-1];
 	
@@ -581,6 +595,8 @@ void R_AliasSetupSkin (void)
 	r_affinetridesc.seamfixupX16 =  (a_skinwidth >> 1) << 16;
 	r_affinetridesc.skinheight = pmdl->skinheight;
 
+	// TODO: qw
+/*
 	if (currententity->scoreboard)
 	{
 		byte	*base;
@@ -595,6 +611,7 @@ void R_AliasSetupSkin (void)
 			r_affinetridesc.skinheight = 200;
 		}
 	}
+*/
 }
 
 /*
@@ -652,13 +669,11 @@ void R_AliasSetupFrame (void)
 
 	if (paliashdr->frames[frame].type == ALIAS_SINGLE)
 	{
-		r_apverts = (trivertx_t *)
-				((byte *)paliashdr + paliashdr->frames[frame].frame);
+		r_apverts = (trivertx_t *)((byte *)paliashdr + paliashdr->frames[frame].frame);
 		return;
 	}
 	
-	paliasgroup = (maliasgroup_t *)
-				((byte *)paliashdr + paliashdr->frames[frame].frame);
+	paliasgroup = (maliasgroup_t *)((byte *)paliashdr + paliashdr->frames[frame].frame);
 	pintervals = (float *)((byte *)paliashdr + paliasgroup->intervals);
 	numframes = paliasgroup->numframes;
 	fullinterval = pintervals[numframes-1];
@@ -677,8 +692,7 @@ void R_AliasSetupFrame (void)
 			break;
 	}
 
-	r_apverts = (trivertx_t *)
-				((byte *)paliashdr + paliasgroup->frames[i].frame);
+	r_apverts = (trivertx_t *)((byte *)paliashdr + paliasgroup->frames[i].frame);
 }
 
 /*
@@ -695,8 +709,7 @@ void R_AliasDrawModel (alight_t *plighting)
 	r_amodels_drawn++;
 
 // cache align
-	pfinalverts = (finalvert_t *)
-			(((long)&finalverts[0] + CACHE_SIZE - 1) & ~(CACHE_SIZE - 1));
+	pfinalverts = (finalvert_t *)(((long)&finalverts[0] + CACHE_SIZE - 1) & ~(CACHE_SIZE - 1));
 	pauxverts = &auxverts[0];
 
 	paliashdr = (aliashdr_t *)Mod_Extradata (currententity->model);

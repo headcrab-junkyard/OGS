@@ -1,22 +1,21 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
+ *	This file is part of OGS Engine
+ *	Copyright (C) 1996-1997 Id Software, Inc.
+ *	Copyright (C) 2018 BlackPhrase
+ *
+ *	OGS Engine is free software: you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License as published by
+ *	the Free Software Foundation, either version 3 of the License, or
+ *	(at your option) any later version.
+ *
+ *	OGS Engine is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *	GNU General Public License for more details.
+ *
+ *	You should have received a copy of the GNU General Public License
+ *	along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
+ */
 // d_edge.c
 
 #include "quakedef.h"
@@ -173,7 +172,7 @@ void D_DrawSurfaces (void)
 	vec3_t			world_transformed_modelorg;
 	vec3_t			local_modelorg;
 
-	currententity = &r_worldentity;
+	currententity = &cl_entities[0]; // TODO: = &r_worldentity; in qw
 	TransformVector (modelorg, transformed_modelorg);
 	VectorCopy (transformed_modelorg, world_transformed_modelorg);
 
@@ -265,7 +264,7 @@ void D_DrawSurfaces (void)
 				// FIXME: we don't want to do this every time!
 				// TODO: speed up
 				//
-					currententity = &r_worldentity;
+					currententity = &cl_entities[0]; // TODO: = &r_worldentity; in qw
 					VectorCopy (world_transformed_modelorg,
 								transformed_modelorg);
 					VectorCopy (base_vpn, vpn);
@@ -312,6 +311,7 @@ void D_DrawSurfaces (void)
 				// FIXME: we don't want to do this every time!
 				// TODO: speed up
 				//
+					currententity = &cl_entities[0]; // TODO: wq
 					VectorCopy (world_transformed_modelorg,
 								transformed_modelorg);
 					VectorCopy (base_vpn, vpn);
@@ -319,10 +319,9 @@ void D_DrawSurfaces (void)
 					VectorCopy (base_vright, vright);
 					VectorCopy (base_modelorg, modelorg);
 					R_TransformFrustum ();
-					currententity = &r_worldentity;
+					//currententity = &r_worldentity; // TODO: qw
 				}
 			}
 		}
 	}
 }
-

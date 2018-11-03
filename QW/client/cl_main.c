@@ -820,9 +820,7 @@ void Host_Init (quakeparms_t *parms)
 	Cbuf_AddText ("echo Type connect <internet address> or use GameSpy to connect to a game.\n");
 	Cbuf_AddText ("cl_warncmd 1\n");
 
-	Con_Printf ("\nClient Version %4.2f (Build %04d)\n\n", VERSION, build_number());
-
-	Con_Printf ("€ QuakeWorld Initialized ‚\n");	
+	Con_Printf ("\nClient Version %4.2f (Build %04d)\n\n", VERSION, build_number());	
 }
 
 void Host_Shutdown()

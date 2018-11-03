@@ -325,7 +325,7 @@ void SV_InitLocal ()
 	Cvar_RegisterVariable (&rcon_password);
 	Cvar_RegisterVariable (&password);
 
-	Cvar_RegisterVariable (&maxplayers);
+	Cvar_RegisterVariable (&maxplayers); // TODO: concmd in gs
 	Cvar_RegisterVariable (&hostname);
 	Cvar_RegisterVariable (&deathmatch);
 	

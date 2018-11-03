@@ -1,4 +1,21 @@
-
+/*
+ *	This file is part of OGS Engine
+ *	Copyright (C) 1996-1997 Id Software, Inc.
+ *	Copyright (C) 2018 BlackPhrase
+ *
+ *	OGS Engine is free software: you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License as published by
+ *	the Free Software Foundation, either version 3 of the License, or
+ *	(at your option) any later version.
+ *
+ *	OGS Engine is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *	GNU General Public License for more details.
+ *
+ *	You should have received a copy of the GNU General Public License
+ *	along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
+ */
 // d_surf.c: rasterization driver surface heap manager
 
 #include "quakedef.h"
@@ -12,7 +29,6 @@ int                                     sc_size;
 surfcache_t                     *sc_rover, *sc_base;
 
 #define GUARDSIZE       4
-
 
 int     D_SurfaceCacheForRes (int width, int height)
 {
@@ -30,7 +46,6 @@ int     D_SurfaceCacheForRes (int width, int height)
 	if (pix > 64000)
 		size += (pix-64000)*3;
 		
-
 	return size;
 }
 
@@ -55,7 +70,6 @@ void D_ClearCacheGuard (void)
 		s[i] = (byte)i;
 }
 
-
 /*
 ================
 D_InitCaches
@@ -77,7 +91,6 @@ void D_InitCaches (void *buffer, int size)
 	
 	D_ClearCacheGuard ();
 }
-
 
 /*
 ==================
@@ -192,7 +205,6 @@ surfcache_t     *D_SCAlloc (int width, int size)
 D_CheckCacheGuard ();   // DEBUG
 	return new;
 }
-
 
 /*
 =================
@@ -316,5 +328,3 @@ surfcache_t *D_CacheSurface (msurface_t *surface, int miplevel)
 
 	return surface->cachespots[miplevel];
 }
-
-

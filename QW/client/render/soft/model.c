@@ -317,7 +317,6 @@ model_t *Mod_ForName (char *name, qboolean crash)
 	return Mod_LoadModel (mod, crash);
 }
 
-
 /*
 ===============================================================================
 
@@ -327,7 +326,6 @@ model_t *Mod_ForName (char *name, qboolean crash)
 */
 
 byte	*mod_base;
-
 
 /*
 =================
@@ -494,7 +492,6 @@ void Mod_LoadLighting (lump_t *l)
 	memcpy (loadmodel->lightdata, mod_base + l->fileofs, l->filelen);
 }
 
-
 /*
 =================
 Mod_LoadVisibility
@@ -511,7 +508,6 @@ void Mod_LoadVisibility (lump_t *l)
 	memcpy (loadmodel->visdata, mod_base + l->fileofs, l->filelen);
 }
 
-
 /*
 =================
 Mod_LoadEntities
@@ -527,7 +523,6 @@ void Mod_LoadEntities (lump_t *l)
 	loadmodel->entities = Hunk_AllocName ( l->filelen, loadname);	
 	memcpy (loadmodel->entities, mod_base + l->fileofs, l->filelen);
 }
-
 
 /*
 =================
@@ -739,7 +734,6 @@ void CalcSurfaceExtents (msurface_t *s)
 	}
 }
 
-
 /*
 =================
 Mod_LoadFaces
@@ -808,7 +802,6 @@ void Mod_LoadFaces (lump_t *l)
 		}
 	}
 }
-
 
 /*
 =================
@@ -1271,7 +1264,6 @@ void * Mod_LoadAliasFrame (void * pin, int *pframeindex, int numv,
 	return (void *)pinframe;
 }
 
-
 /*
 =================
 Mod_LoadAliasGroup
@@ -1336,7 +1328,6 @@ void * Mod_LoadAliasGroup (void * pin, int *pframeindex, int numv,
 	return ptemp;
 }
 
-
 /*
 =================
 Mod_LoadAliasSkin
@@ -1374,7 +1365,6 @@ void * Mod_LoadAliasSkin (void * pin, int *pskinindex, int skinsize,
 
 	return ((void *)pinskin);
 }
-
 
 /*
 =================
@@ -1429,7 +1419,6 @@ void * Mod_LoadAliasSkinGroup (void * pin, int *pskinindex, int skinsize,
 
 	return ptemp;
 }
-
 
 /*
 =================
@@ -1490,8 +1479,7 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
 // allocate space for a working header, plus all the data except the frames,
 // skin and group info
 //
-	size = 	sizeof (aliashdr_t) + (LittleLong (pinmodel->numframes) - 1) *
-			 sizeof (pheader->frames[0]) +
+	size = 	sizeof (aliashdr_t) + (LittleLong (pinmodel->numframes) - 1) * sizeof (pheader->frames[0]) +
 			sizeof (mdl_t) +
 			LittleLong (pinmodel->numverts) * sizeof (stvert_t) +
 			LittleLong (pinmodel->numtris) * sizeof (mtriangle_t);
@@ -1639,7 +1627,6 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
 		frametype = LittleLong (pframetype->type);
 		pheader->frames[i].type = frametype;
 
-
 		if (frametype == ALIAS_SINGLE)
 		{
 			pframetype = (daliasframetype_t *)
@@ -1740,7 +1727,6 @@ void * Mod_LoadSpriteFrame (void * pin, mspriteframe_t **ppframe)
 	return (void *)((byte *)pinframe + sizeof (dspriteframe_t) + size);
 }
 
-
 /*
 =================
 Mod_LoadSpriteGroup
@@ -1791,7 +1777,6 @@ void * Mod_LoadSpriteGroup (void * pin, mspriteframe_t **ppframe)
 
 	return ptemp;
 }
-
 
 /*
 =================
@@ -1887,5 +1872,3 @@ void Mod_Print (void)
 		Con_Printf ("%8p : %s\n",mod->cache.data, mod->name);
 	}
 }
-
-

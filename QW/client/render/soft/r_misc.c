@@ -1,27 +1,8 @@
-/*
-Copyright (C) 1996-1997 Id Software, Inc.
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
 // r_misc.c
 
 #include "quakedef.h"
 #include "r_local.h"
-
 
 /*
 ===============
@@ -40,7 +21,6 @@ void R_CheckVariables (void)
 	}
 #endif
 }
-
 
 /*
 ============
@@ -281,7 +261,6 @@ void R_PrintTimes (void)
 	c_surf = 0;
 }
 
-
 /*
 =============
 R_PrintDSpeeds
@@ -306,7 +285,6 @@ void R_PrintDSpeeds (void)
 				dv_time);
 }
 
-
 /*
 =============
 R_PrintAliasStats
@@ -316,7 +294,6 @@ void R_PrintAliasStats (void)
 {
 	Con_Printf ("%3i polygon model drawn\n", r_amodels_drawn);
 }
-
 
 void WarpPalette (void)
 {
@@ -339,7 +316,6 @@ void WarpPalette (void)
 	
 	VID_ShiftPalette (newpalette);
 }
-
 
 /*
 ===================
@@ -367,7 +343,6 @@ void R_TransformFrustum (void)
 	}
 }
 
-
 #if !id386
 
 /*
@@ -384,7 +359,6 @@ void TransformVector (vec3_t in, vec3_t out)
 
 #endif
 
-
 /*
 ================
 R_TransformPlane
@@ -399,7 +373,6 @@ void R_TransformPlane (mplane_t *p, float *normal, float *dist)
 // TODO: when we have rotating entities, this will need to use the view matrix
 	TransformVector (p->normal, normal);
 }
-
 
 /*
 ===============
@@ -434,7 +407,6 @@ void R_SetUpFrustumIndexes (void)
 	}
 }
 
-
 /*
 ===============
 R_SetupFrame
@@ -446,11 +418,15 @@ void R_SetupFrame (void)
 	vrect_t			vrect;
 	float			w, h;
 
-// don't allow cheats in multiplayer
-r_draworder.value = 0;
-r_fullbright.value = 0;
-r_ambient.value = 0;
-r_drawflat.value = 0;
+	// don't allow cheats in multiplayer
+	r_draworder.value = 0;
+	r_fullbright.value = 0;
+	r_ambient.value = 0;
+	
+	
+	
+	
+	r_drawflat.value = 0;
 
 	if (r_numsurfs.value)
 	{
@@ -593,4 +569,3 @@ r_refdef.viewangles[2]=    0;
 
 	D_SetupFrame ();
 }
-

@@ -59,8 +59,6 @@ CL_ParseTEnts
 */
 void CL_InitTEnts (void)
 {
-	cl_sfx_wizhit = S_PrecacheSound ("wizard/hit.wav");
-	cl_sfx_knighthit = S_PrecacheSound ("hknight/hit.wav");
 	cl_sfx_tink1 = S_PrecacheSound ("weapons/tink1.wav");
 	cl_sfx_ric1 = S_PrecacheSound ("weapons/ric1.wav");
 	cl_sfx_ric2 = S_PrecacheSound ("weapons/ric2.wav");
@@ -173,21 +171,6 @@ void CL_ParseTEnt (void)
 	type = MSG_ReadByte ();
 	switch (type)
 	{
-	case TE_WIZSPIKE:			// spike hitting wall
-		pos[0] = MSG_ReadCoord ();
-		pos[1] = MSG_ReadCoord ();
-		pos[2] = MSG_ReadCoord ();
-		R_RunParticleEffect (pos, vec3_origin, 20, 30);
-		S_StartSound (-1, 0, cl_sfx_wizhit, pos, 1, 1);
-		break;
-		
-	case TE_KNIGHTSPIKE:			// spike hitting wall
-		pos[0] = MSG_ReadCoord ();
-		pos[1] = MSG_ReadCoord ();
-		pos[2] = MSG_ReadCoord ();
-		R_RunParticleEffect (pos, vec3_origin, 226, 20);
-		S_StartSound (-1, 0, cl_sfx_knighthit, pos, 1, 1);
-		break;
 		
 	case TE_SPIKE:			// spike hitting wall
 		pos[0] = MSG_ReadCoord ();

@@ -1,23 +1,5 @@
-/*
-Copyright (C) 1996-1997 Id Software, Inc.
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
-// r_main.c
+/// @file
 
 #include "quakedef.h"
 #include "r_local.h"
@@ -306,7 +288,6 @@ void R_NewMap (void)
 	r_viewchanged = false;
 }
 
-
 /*
 ===============
 R_SetVrect
@@ -365,7 +346,6 @@ void R_SetVrect (vrect_t *pvrectin, vrect_t *pvrect, int lineadj)
 	else
 		pvrect->y = (h - pvrect->height)/2;
 }
-
 
 /*
 ===============
@@ -502,7 +482,6 @@ void R_ViewChanged (vrect_t *pvrect, int lineadj, float aspect)
 	D_ViewChanged ();
 }
 
-
 /*
 ===============
 R_MarkLeaves
@@ -537,7 +516,6 @@ void R_MarkLeaves (void)
 		}
 	}
 }
-
 
 /*
 =============
@@ -684,7 +662,6 @@ void R_DrawViewModel (void)
 	R_AliasDrawModel (&r_viewlighting);
 }
 
-
 /*
 =============
 R_BmodelCheckBBox
@@ -698,8 +675,7 @@ int R_BmodelCheckBBox (model_t *clmodel, float *minmaxs)
 
 	clipflags = 0;
 
-	if (currententity->angles[0] || currententity->angles[1]
-		|| currententity->angles[2])
+	if (currententity->angles[0] || currententity->angles[1] || currententity->angles[2])
 	{
 		for (i=0 ; i<4 ; i++)
 		{
@@ -747,7 +723,6 @@ int R_BmodelCheckBBox (model_t *clmodel, float *minmaxs)
 
 	return clipflags;
 }
-
 
 /*
 =============
@@ -880,7 +855,6 @@ void R_DrawBEntitiesOnList (void)
 	insubmodel = false;
 }
 
-
 /*
 ================
 R_EdgeDrawing
@@ -899,14 +873,12 @@ void R_EdgeDrawing (void)
 	}
 	else
 	{
-		r_edges =  (edge_t *)
-				(((long)&ledges[0] + CACHE_SIZE - 1) & ~(CACHE_SIZE - 1));
+		r_edges =  (edge_t *)(((long)&ledges[0] + CACHE_SIZE - 1) & ~(CACHE_SIZE - 1));
 	}
 
 	if (r_surfsonstack)
 	{
-		surfaces =  (surf_t *)
-				(((long)&lsurfs[0] + CACHE_SIZE - 1) & ~(CACHE_SIZE - 1));
+		surfaces =  (surf_t *)(((long)&lsurfs[0] + CACHE_SIZE - 1) & ~(CACHE_SIZE - 1));
 		surf_max = &surfaces[r_cnumsurfs];
 	// surface 0 doesn't really exist; it's just a dummy because index 0
 	// is used to indicate no edge attached to surface
@@ -954,7 +926,6 @@ void R_EdgeDrawing (void)
 	if (!(r_drawpolys | r_drawculledpolys))
 		R_ScanEdges ();
 }
-
 
 /*
 ================
@@ -1101,4 +1072,3 @@ void R_InitTurb (void)
 		intsintable[i] = AMP2 + sin(i*3.14159*2/CYCLE)*AMP2;	// AMP2, not 20
 	}
 }
-
