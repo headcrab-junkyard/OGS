@@ -408,9 +408,9 @@ void Draw_Init(void)
 			draw_chars[i] = 255; // proper transparent color
 
 	// now turn them into textures
-	char_texture = GL_LoadTexture("charset", 128, 128, draw_chars, false, true);
+	char_texture = GL_LoadTexture("charset", 128, 128, draw_chars, NULL, false, true);
 	//Draw_CrosshairAdjust();
-	//cs_texture = GL_LoadTexture ("crosshair", 8, 8, cs_data, false, true); // TODO: qw
+	//cs_texture = GL_LoadTexture ("crosshair", 8, 8, cs_data, NULL, false, true); // TODO: qw
 
 	start = Hunk_LowMark();
 
@@ -467,7 +467,7 @@ void Draw_Init(void)
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	gl = (glpic_t *)conback->data;
-	gl->texnum = GL_LoadTexture("conback", conback->width, conback->height, ncdata, false, false);
+	gl->texnum = GL_LoadTexture("conback", conback->width, conback->height, ncdata, conback->palette, false, false);
 	gl->sl = 0;
 	gl->sh = 1;
 	gl->tl = 0;
@@ -1335,7 +1335,7 @@ void GL_Upload8(byte *data, int width, int height, qboolean mipmap, qboolean alp
 GL_LoadTexture
 ================
 */
-int GL_LoadTexture(const char *identifier, int width, int height, byte *data, qboolean mipmap, qboolean alpha)
+int GL_LoadTexture(const char *identifier, int width, int height, byte *data, byte *palette, qboolean mipmap, qboolean alpha)
 {
 	int i;
 	gltexture_t *glt;
@@ -1389,7 +1389,7 @@ GL_LoadPicTexture
 */
 int GL_LoadPicTexture(qpic_t *pic)
 {
-	return GL_LoadTexture("", pic->width, pic->height, pic->data, false, true);
+	return GL_LoadTexture("", pic->width, pic->height, pic->data, pic->palette, false, true);
 }
 
 /****************************************/
