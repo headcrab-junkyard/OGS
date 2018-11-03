@@ -16,11 +16,13 @@
  *	You should have received a copy of the GNU General Public License
  *	along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
-// cl_parse.c  -- parse a message received from the server
+
+/// @file
+/// @brief parse a message received from the server
 
 #include "quakedef.h"
 
-char *svc_strings[] = // TODO
+const char *svc_strings[] = // TODO
 {
   "svc_bad",
   "svc_nop",
@@ -104,6 +106,7 @@ void CL_ParseStartSoundPacket()
 	int volume;
 	int field_mask;
 	float attenuation;
+	int pitch;
 	int i;
 
 	field_mask = MSG_ReadByte();
@@ -117,6 +120,11 @@ void CL_ParseStartSoundPacket()
 		attenuation = MSG_ReadByte() / 64.0;
 	else
 		attenuation = DEFAULT_SOUND_PACKET_ATTENUATION;
+	
+	if(field_mask & SND_PITCH)
+		pitch = MSG_ReadByte() / 64.0; // 255?
+	else
+		pitch = DEFAULT_SOUND_PACKET_PITCH;
 
 	channel = MSG_ReadShort();
 	sound_num = MSG_ReadByte();
@@ -130,7 +138,7 @@ void CL_ParseStartSoundPacket()
 	for(i = 0; i < 3; i++)
 		pos[i] = MSG_ReadCoord();
 
-	S_StartSound(ent, channel, cl.sound_precache[sound_num], pos, volume / 255.0, attenuation);
+	S_StartDynamicSound(ent, channel, cl.sound_precache[sound_num], pos, volume / 255.0, attenuation, pitch);
 }
 
 /*
@@ -223,7 +231,17 @@ void CL_ParseServerInfo()
 		Con_Printf("Server returned version %i, not %i", i, PROTOCOL_VERSION);
 		return;
 	}
-
+	
+	// parse server spawn count
+	cl.spawncount = MSG_ReadLong();
+	
+	// parse map crc
+	cl.mapcrc = MSG_ReadLong();
+	
+	// parse client dll hash
+	for(int j = 0; j < 16; j++)
+		cl.clientdllhash[j] = MSG_ReadByte();
+	
 	// parse maxclients
 	cl.maxclients = MSG_ReadByte();
 	if(cl.maxclients < 1 || cl.maxclients > MAX_SCOREBOARD)
@@ -233,16 +251,40 @@ void CL_ParseServerInfo()
 	}
 	cl.scores = Hunk_AllocName(cl.maxclients * sizeof(*cl.scores), "scores");
 
+	// parse player index
+	cl.playerid = MSG_ReadByte();
+	
 	// parse gametype
-	cl.gametype = MSG_ReadByte();
+	cl.gametype = MSG_ReadByte(); // TODO: is deathmatch
 
-	// parse signon message
+	// parse game directory
+	str = MSG_ReadString();
+	if(Q_strcmp(str, com_gamedir))
+	{
+		Con_Printf("Invalid game directory: %s vs %s on server!\n", com_gamedir, str);
+		return;
+	};
+	
+	// parse host name
+	str = MSG_ReadString();
+	strncpy(cl.hostname, str, sizeof(cl.hostname) - 1);
+	Con_DPrintf("Remote host: %s\n", cl.hostname);
+	
+	// parse level name
 	str = MSG_ReadString();
 	strncpy(cl.levelname, str, sizeof(cl.levelname) - 1);
 
+	// parse map cycle
+	str = MSG_ReadString();
+	strncpy(cl.mapcycle, str, sizeof(cl.mapcycle) - 1); // TODO: char mapcycle[8192]
+	
+	MSG_ReadByte();
+	
+	// TODO: the rest should be handled by svc_resourcelist
+	
 	// seperate the printfs so the server message can have a color
-	Con_Printf("\n\n\35\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\37\n\n");
-	Con_Printf("%c%s\n", 2, str);
+	//Con_Printf("\n\n\35\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\37\n\n");
+	//Con_Printf("%c%s\n", 2, str);
 
 	//
 	// first we go through and touch all of the precache data that still
@@ -250,6 +292,7 @@ void CL_ParseServerInfo()
 	// needlessly purge it
 	//
 
+/*
 	// precache models
 	memset(cl.model_precache, 0, sizeof(cl.model_precache));
 	for(nummodels = 1;; nummodels++)
@@ -304,6 +347,7 @@ void CL_ParseServerInfo()
 		//CL_KeepaliveMessage (); // TODO
 	}
 	S_EndPrecaching();
+*/
 
 	// local state
 	cl_entities[0].model = cl.worldmodel = cl.model_precache[1];
@@ -685,7 +729,7 @@ CL_ParseStaticSound
 void CL_ParseStaticSound()
 {
 	vec3_t org;
-	int sound_num, vol, atten;
+	int sound_num, vol, atten, pitch;
 	int i;
 
 	for(i = 0; i < 3; i++)
@@ -693,8 +737,9 @@ void CL_ParseStaticSound()
 	sound_num = MSG_ReadByte();
 	vol = MSG_ReadByte();
 	atten = MSG_ReadByte();
+	pitch = MSG_ReadByte();
 
-	S_StaticSound(cl.sound_precache[sound_num], org, vol, atten);
+	S_StartStaticSound(cl.sound_precache[sound_num], org, vol, atten, pitch);
 }
 
 void CL_Parse_Version()
@@ -702,6 +747,42 @@ void CL_Parse_Version()
 	int i = MSG_ReadLong();
 	if(i != PROTOCOL_VERSION)
 		Host_Error("CL_Parse_Version: Server is protocol %i instead of %i\n", i, PROTOCOL_VERSION);
+};
+
+void CL_ParseResourceList()
+{
+	//begin CL_ParseResourceList()    end   CL_ParseResourceList()   
+	Con_Printf("Verifying and downloading resources...");
+	//GameUI_SetLoadingProgressText("#GameUI_VerifyingResources"); // TODO
+};
+
+void CL_ParseVoiceData()
+{
+	int nPlayerIndex = MSG_ReadByte();
+	
+	int nSize = MSG_ReadShort();
+	
+	// TODO: check nSize?
+	
+	byte *pData = (byte*)Mem_Alloc(nSize);
+	
+	for(int i = 0; i < nSize; i++)
+		pData[i] = MSG_ReadByte();
+};
+
+void CL_ParseFileTxferFailed()
+{
+	Con_Printf("Error: server failed to transmit file '%s'\n", MSG_ReadString());
+};
+
+void CL_Parse_HLTV()
+{
+	int nMode = MSG_ReadByte(); // TODO: see hltv.h
+};
+
+void CL_Parse_DeltaDescription() // TODO: replace with DELTA_ParseDescription
+{
+	// TODO
 };
 
 /*
@@ -723,7 +804,7 @@ void CL_ProcessUserInfo(int slot, player_info_t *player)
 
 	// TODO
 	//if (cls.state == ca_active)
-	//Skin_Find (player);
+		//Skin_Find (player);
 
 	Sbar_Changed();
 	CL_NewTranslation(slot);
@@ -781,7 +862,7 @@ void CL_ParseServerMessage()
 	while(1)
 	{
 		if(msg_badread)
-			Host_Error("CL_ParseServerMessage: Bad server message");
+			Host_Error("CL_ParseServerMessage: Bad server message %3i:%s", cmd, svc_strings[cmd]); // TODO
 
 		cmd = MSG_ReadByte();
 
@@ -805,15 +886,15 @@ void CL_ParseServerMessage()
 		switch(cmd)
 		{
 		default:
-			Host_Error("CL_ParseServerMessage: Illegible server message\n");
+			Host_Error("CL_ParseServerMessage: Illegible server message - %s\n", svc_strings[cmd]); // TODO
 			break;
 		case svc_nop:
-			//			Con_Printf ("svc_nop\n");
+			//Con_Printf ("svc_nop\n");
 			break;
 		case svc_disconnect:
 			Host_EndGame("Server disconnected\n");
 		case svc_event:
-			// TODO
+			CL_ParseEvent();
 			break;
 		case svc_version:
 			CL_Parse_Version();
@@ -853,7 +934,7 @@ void CL_ParseServerMessage()
 			CL_UpdateUserinfo();
 			break;
 		case svc_deltadescription:
-			// TODO
+			CL_Parse_DeltaDescription();
 			break;
 		case svc_clientdata:
 			i = MSG_ReadShort();
@@ -870,7 +951,8 @@ void CL_ParseServerMessage()
 			R_ParseParticleEffect();
 			break;
 		case svc_damage:
-			V_ParseDamage();
+			// Deprecated
+			//V_ParseDamage();
 			break;
 		case svc_spawnstatic:
 			CL_ParseStatic();
@@ -917,10 +999,12 @@ void CL_ParseServerMessage()
 			SCR_CenterPrint(MSG_ReadString());
 			break;
 		case svc_killedmonster:
-			cl.stats[STAT_MONSTERS]++;
+			// Deprecated
+			//cl.stats[STAT_MONSTERS]++;
 			break;
 		case svc_foundsecret:
-			cl.stats[STAT_SECRETS]++;
+			// Deprecated
+			//cl.stats[STAT_SECRETS]++;
 			break;
 		case svc_spawnstaticsound:
 			CL_ParseStaticSound();
@@ -954,19 +1038,20 @@ void CL_ParseServerMessage()
 			SCR_CenterPrint(MSG_ReadString());
 			break;
 		case svc_weaponanim:
-			//CL_WeaponAnim(MSG_ReadByte(), MSG_ReadByte()); // TODO
+			CL_WeaponAnim(MSG_ReadByte(), MSG_ReadByte());
 			break;
 		case svc_decalname:
-			// TODO
+			int nPositionIndex = MSG_ReadByte();
+			const char *sName = MSG_ReadString();
 			break;
 		case svc_roomtype:
-			// TODO
+			Cvar_SetValue("room_type", MSG_ReadShort());
 			break;
 		case svc_addangle:
-			// TODO
+			cl.viewangles[YAW] += (MSG_ReadShort() * (65536 / 360));
 			break;
 		case svc_newusermsg:
-			// TODO
+			RegClUserMsg(MSG_ReadByte(), MSG_ReadByte(), MSG_ReadString()); // TODO
 			break;
 		case svc_packetentities:
 			CL_ParsePacketEntities(false);
@@ -978,52 +1063,107 @@ void CL_ParseServerMessage()
 			// TODO
 			break;
 		case svc_resourcelist:
-			// TODO
+			CL_ParseResourceList();
 			break;
 		case svc_newmovevars:
-			// TODO
+			float fGravity = MSG_ReadFloat();
+			float fStopSpeed = MSG_ReadFloat();
+			float fMaxSpeed = MSG_ReadFloat();
+			float fSpectatorMaxSpeed = MSG_ReadFloat();
+			float fAccelerate = MSG_ReadFloat();
+			float fAirAccelerate = MSG_ReadFloat();
+			float fWaterAccelerate = MSG_ReadFloat();
+			float fFriction = MSG_ReadFloat();
+			float fEdgeFriction = MSG_ReadFloat();
+			float fWaterFriction = MSG_ReadFloat();
+			float fEntGravity = MSG_ReadFloat();
+			float fBounce = MSG_ReadFloat();
+			float fStepSize = MSG_ReadFloat();
+			float fMaxVelocity = MSG_ReadFloat();
+			float fZMax = MSG_ReadFloat();
+			float fWaveHeight = MSG_ReadFloat();
+			
+			int nFootSteps = MSG_ReadByte();
+			
+			float fRollAngle = MSG_ReadFloat();
+			float fRollSpeed = MSG_ReadFloat();
+			
+			float fSkyColorRed = MSG_ReadFloat();
+			float fSkyColorGreen = MSG_ReadFloat();
+			float fSkyColorBlue = MSG_ReadFloat();
+			
+			float fSkyVecX = MSG_ReadFloat();
+			float fSkyVecY = MSG_ReadFloat();
+			float fSkyVecZ = MSG_ReadFloat();
+			
+			const char *sSkyName = MSG_ReadString();
 			break;
 		case svc_resourcerequest:
-			// TODO
+			int nSpawnCount = MSG_ReadLong();
+			int nUnused = MSG_ReadLong();
+			
+			// TODO: send clc_resourcelist to server
 			break;
 		case svc_customization:
+			int nPlayerIndex = MSG_ReadByte();
+			int nType = MSG_ReadByte();
+			const char *sName = MSG_ReadString();
+			int nIndex = MSG_ReadShort();
+			int nDownloadSize = MSG_ReadLong();
+			int nFlags = MSG_ReadByte();
+			
+			char sMD5Hash[16];
+			
 			// TODO
+			/*
+			if(nFlags & RES_CUSTOM)
+				for(int i = 0; i < 16; ++i)
+					sMD5Hash[i] = MSG_ReadByte();
+			*/
 			break;
 		case svc_crosshairangle:
 			// TODO
+			//MSG_ReadChar();
+			//MSG_ReadChar();
 			break;
 		case svc_soundfade:
-			// TODO
+			int nInitialPercent = MSG_ReadByte();
+			int nHoldTime = MSG_ReadByte();
+			int nFadeOutTime = MSG_ReadByte();
+			int nFadeInTime = MSG_ReadByte();
 			break;
 		case svc_filetxferfailed:
-			// TODO
+			CL_ParseFileTxferFailed();
 			break;
 		case svc_hltv:
-			// TODO
+			CL_Parse_HLTV();
 			break;
 		case svc_director:
 			// TODO
 			break;
 		case svc_voiceinit:
-			// TODO
+			const char *sCodecName = MSG_ReadString();
+			int nVoiceQuality = MSG_ReadByte();
 			break;
 		case svc_voicedata:
-			// TODO
+			CL_ParseVoiceData();
 			break;
 		case svc_sendextrainfo:
-			// TODO
+			const char *sFallbackDir = MSG_ReadString();
+			int nCanCheat = MSG_ReadByte();
 			break;
 		case svc_timescale:
-			// TODO
+			int host_timescale = MSG_ReadByte();
 			break;
 		case svc_resourcelocation:
-			// TODO
+			const char *sDownloadURL /*cl.resourcelocation*/ = MSG_ReadString();
 			break;
 		case svc_sendcvarvalue:
-			// TODO
+			const char *sName = MSG_ReadString();
 			break;
 		case svc_sendcvarvalue2:
-			// TODO
+			int nRequestID = MSG_ReadLong();
+			const char *sName = MSG_ReadString();
 			break;
 			/* TODO: Original Quake protocol remnants unused in GS
 		case svc_updatename:
@@ -1057,11 +1197,7 @@ void CL_ParseServerMessage()
 				Sys_Error ("svc_updatestat: %i is invalid", i);
 			cl.stats[i] = MSG_ReadLong ();;
 			break;
-
-		case svc_sellscreen:
-			Cmd_ExecuteString ("help", src_command);
-			break;
 		*/
-		}
-	}
-}
+		};
+	};
+};
