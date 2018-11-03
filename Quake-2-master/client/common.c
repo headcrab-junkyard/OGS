@@ -1444,11 +1444,6 @@ void Qcommon_Init (int argc, char **argv)
 	fixedtime = Cvar_Get ("fixedtime", "0", 0);
 	logfile_active = Cvar_Get ("logfile", "0", 0);
 	showtrace = Cvar_Get ("showtrace", "0", 0);
-#ifdef DEDICATED_ONLY
-	dedicated = Cvar_Get ("dedicated", "1", CVAR_NOSET);
-#else
-	dedicated = Cvar_Get ("dedicated", "0", CVAR_NOSET);
-#endif
 
 	s = va("%4.2f %s %s %s", VERSION, CPUSTRING, __DATE__, BUILDSTRING);
 	Cvar_Get ("version", s, CVAR_SERVERINFO|CVAR_NOSET);

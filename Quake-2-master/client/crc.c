@@ -1,32 +1,4 @@
-/*
-Copyright (C) 1997-2001 Id Software, Inc.
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
-/* crc.c */
-
-#include "qcommon.h"
-
-// this is a 16 bit, non-reflected CRC using the polynomial 0x1021
-// and the initial and final xor values shown below...  in other words, the
-// CCITT standard CRC used by XMODEM
-
-#define CRC_INIT_VALUE	0xffff
-#define CRC_XOR_VALUE	0x0000
 
 static unsigned short crctable[256] =
 {
@@ -63,30 +35,3 @@ static unsigned short crctable[256] =
 	0xef1f,	0xff3e,	0xcf5d,	0xdf7c,	0xaf9b,	0xbfba,	0x8fd9,	0x9ff8,
 	0x6e17,	0x7e36,	0x4e55,	0x5e74,	0x2e93,	0x3eb2,	0x0ed1,	0x1ef0
 };
-
-void CRC_Init(unsigned short *crcvalue)
-{
-	*crcvalue = CRC_INIT_VALUE;
-}
-
-void CRC_ProcessByte(unsigned short *crcvalue, byte data)
-{
-	*crcvalue = (*crcvalue << 8) ^ crctable[(*crcvalue >> 8) ^ data];
-}
-
-unsigned short CRC_Value(unsigned short crcvalue)
-{
-	return crcvalue ^ CRC_XOR_VALUE;
-}
-
-unsigned short CRC_Block (byte *start, int count)
-{
-	unsigned short	crc;
-
-	CRC_Init (&crc);
-	while (count--)
-		crc = (crc << 8) ^ crctable[(crc >> 8) ^ *start++];
-
-	return crc;
-}
-

@@ -427,9 +427,7 @@ void CL_CheckForResend ()
 //		cls.connect_time = -99999;	// CL_CheckForResend() will fire immediately
 	}
 
-	// resend if we haven't gotten a reply yet
-	if (cls.state != ca_connecting)
-		return;
+	
 
 	if (cls.realtime - cls.connect_time < 3000)
 		return;
@@ -440,53 +438,7 @@ void CL_CheckForResend ()
 		cls.state = ca_disconnected;
 		return;
 	}
-	if (adr.port == 0)
-		adr.port = BigShort (PORT_SERVER);
-
-	cls.connect_time = cls.realtime;	// for retransmit requests
-
-	Com_Printf ("Connecting to %s...\n", cls.servername);
-
-	Netchan_OutOfBandPrint (NS_CLIENT, adr, "getchallenge\n");
 }
-
-
-/*
-================
-CL_Connect_f
-
-================
-*/
-void CL_Connect_f ()
-{
-	char	*server;
-
-	if (Cmd_Argc() != 2)
-	{
-		Com_Printf ("usage: connect <server>\n");
-		return;	
-	}
-	
-	if (Com_ServerState ())
-	{	// if running a local server, kill it and reissue
-		SV_Shutdown (va("Server quit\n", msg), false);
-	}
-	else
-	{
-		CL_Disconnect ();
-	}
-
-	server = Cmd_Argv (1);
-
-	NET_Config (true);		// allow remote
-
-	CL_Disconnect ();
-
-	cls.state = ca_connecting;
-	strncpy (cls.servername, server, sizeof(cls.servername)-1);
-	cls.connect_time = -99999;	// CL_CheckForResend() will fire immediately
-}
-
 
 /*
 =====================

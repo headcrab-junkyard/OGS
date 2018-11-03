@@ -181,7 +181,7 @@ of server connections
 */
 
 typedef enum {
-	ca_uninitialized,
+	
 	ca_disconnected, 	// not talking to a server
 	ca_connecting,		// sending request packets to the server
 	ca_connected,		// netchan_t established, waiting for svc_serverdata
