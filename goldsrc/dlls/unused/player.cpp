@@ -272,21 +272,21 @@ void() player_rocket5   =[$rockatt5, player_rocket6  ] {self.weaponframe=5;};
 void() player_rocket6   =[$rockatt6, player_run  ] {self.weaponframe=6;};
 void(float num_bubbles) DeathBubbles;
 
-void CPlayer::PainSound()
+void CBasePlayer::PainSound()
 {
 	float rs;
 
-	if (self.health < 0)
+	if (self->GetHealth() < 0)
 		return;
 
-	if (damage_attacker.classname == "teledeath")
+	if (damage_attacker.GetClassName() == "teledeath")
 	{
-		gpEngine->pfnEmitSound(self, CHAN_VOICE, "player/teledth1.wav", 1, ATTN_NONE);
+		self->EmitSound(CHAN_VOICE, "player/teledth1.wav", 1.0f, ATTN_NONE, 0, PITCH_NORM);
 		return;
 	};
 
 // water pain sounds
-	if (self.watertype == CONTENT_WATER && self.waterlevel == 3)
+	if (self.GetWaterType() == CONTENT_WATER && self.GetWaterLevel() == 3)
 	{
 		DeathBubbles(1);
 		if (random() > 0.5)
@@ -297,7 +297,7 @@ void CPlayer::PainSound()
 	};
 
 // slime pain sounds
-	if (self.watertype == CONTENT_SLIME)
+	if (self.GetWaterType() == CONTENT_SLIME)
 	{
 // FIX ME       put in some steam here
 		if (random() > 0.5)
@@ -307,7 +307,7 @@ void CPlayer::PainSound()
 		return;
 	};
 
-	if (self.watertype == CONTENT_LAVA)
+	if (self.GetWaterType() == CONTENT_LAVA)
 	{
 		if (random() > 0.5)
 			gpEngine->pfnEmitSound(self, CHAN_VOICE, "player/lburn1.wav", 1, ATTN_NORM);
@@ -368,7 +368,7 @@ void()  player_axpain4 =        [       $axpain4,       player_axpain5  ] {};
 void()  player_axpain5 =        [       $axpain5,       player_axpain6  ] {};
 void()  player_axpain6 =        [       $axpain6,       player_run      ] {};
 
-void player_pain()
+void CBasePlayer::Pain()
 {
 	if (self.weaponframe)
 		return;
@@ -430,7 +430,7 @@ void DeathBubbles(float num_bubbles)
 	bubble_spawner.bubble_count = num_bubbles;
 };
 
-void CPlayer::DeathSound()
+void CBasePlayer::DeathSound()
 {
 	float rs;
 
@@ -505,7 +505,7 @@ vector VelocityForDamage(float dm)
 	return v;
 };
 
-void CPlayer::ThrowGib(string gibname, float dm)
+void CBasePlayer::ThrowGib(string gibname, float dm)
 {
 	entity new;
 
@@ -526,7 +526,7 @@ void CPlayer::ThrowGib(string gibname, float dm)
 	new.flags = 0;
 };
 
-void CPlayer::ThrowHead(string gibname, float dm)
+void CBasePlayer::ThrowHead(string gibname, float dm)
 {
 	gpEngine->pfnSetModel (self, gibname);
 	self.frame = 0;
@@ -542,7 +542,7 @@ void CPlayer::ThrowHead(string gibname, float dm)
 	self.avelocity = crandom() * '0 600 0';
 };
 
-void CPlayer::GibPlayer()
+void CBasePlayer::GibPlayer()
 {
 	ThrowHead ("models/h_player.mdl", self.health);
 	ThrowGib ("models/gib1.mdl", self.health);
@@ -569,7 +569,7 @@ void CPlayer::GibPlayer()
 		gpEngine->pfnEmitSound(self, CHAN_VOICE, "player/udeath.wav", 1, ATTN_NONE);
 };
 
-void CPlayer::Die()
+void CBasePlayer::Die()
 {
 	float   i;
 	string	s;
@@ -660,7 +660,7 @@ void CPlayer::Die()
 DropBackpack
 ===============
 */
-void CPlayer::DropBackpack()
+void CBasePlayer::DropBackpack()
 {
 	entvars_t item;
 
@@ -710,7 +710,7 @@ void CPlayer::DropBackpack()
 	item.think = SUB_Remove;
 };
 
-float CPlayer::GetBestWeapon()
+float CBasePlayer::GetBestWeapon()
 {
 	float it = self.items;
 
@@ -736,7 +736,7 @@ float CPlayer::GetBestWeapon()
 	return IT_AXE;
 };
 
-bool CPlayer::CheckNoAmmo()
+bool CBasePlayer::CheckNoAmmo()
 {
 	if(self.currentammo > 0)
 		return true;
