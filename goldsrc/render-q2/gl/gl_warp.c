@@ -17,39 +17,13 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// gl_warp.c -- sky and water polygons
 
 #include "gl_local.h"
 
-extern	model_t	*loadmodel;
 
-char	skyname[MAX_QPATH];
-float	skyrotate;
-vec3_t	skyaxis;
-image_t	*sky_images[6];
-
-msurface_t	*warpface;
 
 #define	SUBDIVIDE_SIZE	64
 //#define	SUBDIVIDE_SIZE	1024
-
-void BoundPoly (int numverts, float *verts, vec3_t mins, vec3_t maxs)
-{
-	int		i, j;
-	float	*v;
-
-	mins[0] = mins[1] = mins[2] = 9999;
-	maxs[0] = maxs[1] = maxs[2] = -9999;
-	v = verts;
-	for (i=0 ; i<numverts ; i++)
-		for (j=0 ; j<3 ; j++, v++)
-		{
-			if (*v < mins[j])
-				mins[j] = *v;
-			if (*v > maxs[j])
-				maxs[j] = *v;
-		}
-}
 
 void SubdividePolygon (int numverts, float *verts)
 {
@@ -152,62 +126,11 @@ void SubdividePolygon (int numverts, float *verts)
 	memcpy (poly->verts[i+1], poly->verts[1], sizeof(poly->verts[0]));
 }
 
-/*
-================
-GL_SubdivideSurface
-
-Breaks a polygon up along axial 64 unit
-boundaries so that turbulent and sky warps
-can be done reasonably.
-================
-*/
-void GL_SubdivideSurface (msurface_t *fa)
-{
-	vec3_t		verts[64];
-	int			numverts;
-	int			i;
-	int			lindex;
-	float		*vec;
-
-	warpface = fa;
-
-	//
-	// convert edges back to a normal polygon
-	//
-	numverts = 0;
-	for (i=0 ; i<fa->numedges ; i++)
-	{
-		lindex = loadmodel->surfedges[fa->firstedge + i];
-
-		if (lindex > 0)
-			vec = loadmodel->vertexes[loadmodel->edges[lindex].v[0]].position;
-		else
-			vec = loadmodel->vertexes[loadmodel->edges[-lindex].v[1]].position;
-		VectorCopy (vec, verts[numverts]);
-		numverts++;
-	}
-
-	SubdividePolygon (numverts, verts[0]);
-}
-
-//=========================================================
-
-
-
-// speed up sin calculations - Ed
 float	r_turbsin[] =
 {
 	#include "warpsin.h"
 };
-#define TURBSCALE (256.0 / (2 * M_PI))
 
-/*
-=============
-EmitWaterPolys
-
-Does a water warp on the pre-fragmented glpoly_t chain
-=============
-*/
 void EmitWaterPolys (msurface_t *fa)
 {
 	glpoly_t	*p, *bp;

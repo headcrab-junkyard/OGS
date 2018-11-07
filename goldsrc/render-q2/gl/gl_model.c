@@ -281,24 +281,6 @@ model_t *Mod_ForName (char *name, qboolean crash)
 
 byte	*mod_base;
 
-
-/*
-=================
-Mod_LoadLighting
-=================
-*/
-void Mod_LoadLighting (lump_t *l)
-{
-	if (!l->filelen)
-	{
-		loadmodel->lightdata = NULL;
-		return;
-	}
-	loadmodel->lightdata = Hunk_Alloc ( l->filelen);	
-	memcpy (loadmodel->lightdata, mod_base + l->fileofs, l->filelen);
-}
-
-
 /*
 =================
 Mod_LoadVisibility

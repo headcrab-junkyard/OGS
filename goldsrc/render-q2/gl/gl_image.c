@@ -44,28 +44,7 @@ int		gl_tex_alpha_format = 4;
 int		gl_filter_min = GL_LINEAR_MIPMAP_NEAREST;
 int		gl_filter_max = GL_LINEAR;
 
-void GL_SetTexturePalette( unsigned palette[256] )
-{
-	int i;
-	unsigned char temptable[768];
 
-	for ( i = 0; i < 256; i++ )
-	{
-		temptable[i*3+0] = ( palette[i] >> 0 ) & 0xff;
-		temptable[i*3+1] = ( palette[i] >> 8 ) & 0xff;
-		temptable[i*3+2] = ( palette[i] >> 16 ) & 0xff;
-	}
-
-	if ( qglColorTableEXT && gl_ext_palettedtexture->value )
-	{
-		qglColorTableEXT( GL_SHARED_TEXTURE_PALETTE_EXT,
-						   GL_RGB,
-						   256,
-						   GL_RGB,
-						   GL_UNSIGNED_BYTE,
-						   temptable );
-	}
-}
 
 void GL_EnableMultitexture( qboolean enable )
 {

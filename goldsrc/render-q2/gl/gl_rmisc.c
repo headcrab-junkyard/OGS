@@ -17,7 +17,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// r_misc.c
 
 #include "gl_local.h"
 
@@ -37,43 +36,6 @@ byte	dottexture[8][8] =
 	{0,0,0,0,0,0,0,0},
 	{0,0,0,0,0,0,0,0},
 };
-
-void R_InitParticleTexture (void)
-{
-	int		x,y;
-	byte	data[8][8][4];
-
-	//
-	// particle texture
-	//
-	for (x=0 ; x<8 ; x++)
-	{
-		for (y=0 ; y<8 ; y++)
-		{
-			data[y][x][0] = 255;
-			data[y][x][1] = 255;
-			data[y][x][2] = 255;
-			data[y][x][3] = dottexture[x][y]*255;
-		}
-	}
-	r_particletexture = GL_LoadPic ("***particle***", (byte *)data, 8, 8, it_sprite, 32);
-
-	//
-	// also use this for bad textures, but without alpha
-	//
-	for (x=0 ; x<8 ; x++)
-	{
-		for (y=0 ; y<8 ; y++)
-		{
-			data[y][x][0] = dottexture[x&3][y&3]*255;
-			data[y][x][1] = 0; // dottexture[x&3][y&3]*255;
-			data[y][x][2] = 0; //dottexture[x&3][y&3]*255;
-			data[y][x][3] = 255;
-		}
-	}
-	r_notexture = GL_LoadPic ("***r_notexture***", (byte *)data, 8, 8, it_wall, 32);
-}
-
 
 /* 
 ============================================================================== 
