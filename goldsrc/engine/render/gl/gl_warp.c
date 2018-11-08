@@ -293,12 +293,13 @@ void EmitBothSkyLayers(msurface_t *fa)
 	qglDisable(GL_BLEND);
 }
 
-#ifndef QUAKE2
+//#ifndef QUAKE2
 /*
 =================
 R_DrawSkyChain
 =================
 */
+/*
 void R_DrawSkyChain(msurface_t *s)
 {
 	msurface_t *fa;
@@ -325,6 +326,7 @@ void R_DrawSkyChain(msurface_t *s)
 }
 
 #endif
+*/
 
 /*
 =================================================================
@@ -333,8 +335,6 @@ void R_DrawSkyChain(msurface_t *s)
 
 =================================================================
 */
-
-#ifdef QUAKE2
 
 #define SKY_TEX 2000
 
@@ -453,8 +453,8 @@ int fgetLittleShort(FileHandle_t f)
 {
 	byte b1, b2;
 
-	b1 = FS_GetC(f);
-	b2 = FS_GetC(f);
+	b1 = fgetc((FILE*)f);
+	b2 = fgetc((FILE*)f);
 
 	return (short)(b1 + b2 * 256);
 }
@@ -482,19 +482,19 @@ void LoadTGA(FileHandle_t fin)
 	byte *pixbuf;
 	int row, column;
 
-	targa_header.id_length = FS_GetC(fin);
-	targa_header.colormap_type = FS_GetC(fin);
-	targa_header.image_type = FS_GetC(fin);
+	targa_header.id_length = fgetc((FILE*)fin);
+	targa_header.colormap_type = fgetc((FILE*)fin);
+	targa_header.image_type = fgetc((FILE*)fin);
 
 	targa_header.colormap_index = fgetLittleShort(fin);
 	targa_header.colormap_length = fgetLittleShort(fin);
-	targa_header.colormap_size = FS_GetC(fin);
+	targa_header.colormap_size = fgetc((FILE*)fin);
 	targa_header.x_origin = fgetLittleShort(fin);
 	targa_header.y_origin = fgetLittleShort(fin);
 	targa_header.width = fgetLittleShort(fin);
 	targa_header.height = fgetLittleShort(fin);
-	targa_header.pixel_size = FS_GetC(fin);
-	targa_header.attributes = FS_GetC(fin);
+	targa_header.pixel_size = fgetc((FILE*)fin);
+	targa_header.attributes = fgetc((FILE*)fin);
 
 	if(targa_header.image_type != 2 && targa_header.image_type != 10)
 		Sys_Error("LoadTGA: Only type 2 and 10 targa RGB images supported\n");
@@ -523,19 +523,19 @@ void LoadTGA(FileHandle_t fin)
 				{
 				case 24:
 
-					blue = FS_GetC(fin);
-					green = FS_GetC(fin);
-					red = FS_GetC(fin);
+					blue = fgetc((FILE*)fin);
+					green = fgetc((FILE*)fin);
+					red = fgetc((FILE*)fin);
 					*pixbuf++ = red;
 					*pixbuf++ = green;
 					*pixbuf++ = blue;
 					*pixbuf++ = 255;
 					break;
 				case 32:
-					blue = FS_GetC(fin);
-					green = FS_GetC(fin);
-					red = FS_GetC(fin);
-					alphabyte = FS_GetC(fin);
+					blue = fgetc((FILE*)fin);
+					green = fgetc((FILE*)fin);
+					red = fgetc((FILE*)fin);
+					alphabyte = fgetc((FILE*)fin);
 					*pixbuf++ = red;
 					*pixbuf++ = green;
 					*pixbuf++ = blue;
@@ -553,23 +553,23 @@ void LoadTGA(FileHandle_t fin)
 			pixbuf = targa_rgba + row * columns * 4;
 			for(column = 0; column < columns;)
 			{
-				packetHeader = FS_GetC(fin);
+				packetHeader = fgetc((FILE*)fin);
 				packetSize = 1 + (packetHeader & 0x7f);
 				if(packetHeader & 0x80)
 				{ // run-length packet
 					switch(targa_header.pixel_size)
 					{
 					case 24:
-						blue = FS_GetC(fin);
-						green = FS_GetC(fin);
-						red = FS_GetC(fin);
+						blue = fgetc((FILE*)fin);
+						green = fgetc((FILE*)fin);
+						red = fgetc((FILE*)fin);
 						alphabyte = 255;
 						break;
 					case 32:
-						blue = FS_GetC(fin);
-						green = FS_GetC(fin);
-						red = FS_GetC(fin);
-						alphabyte = FS_GetC(fin);
+						blue = fgetc((FILE*)fin);
+						green = fgetc((FILE*)fin);
+						red = fgetc((FILE*)fin);
+						alphabyte = fgetc((FILE*)fin);
 						break;
 					}
 
@@ -598,19 +598,19 @@ void LoadTGA(FileHandle_t fin)
 						switch(targa_header.pixel_size)
 						{
 						case 24:
-							blue = FS_GetC(fin);
-							green = FS_GetC(fin);
-							red = FS_GetC(fin);
+							blue = fgetc((FILE*)fin);
+							green = fgetc((FILE*)fin);
+							red = fgetc((FILE*)fin);
 							*pixbuf++ = red;
 							*pixbuf++ = green;
 							*pixbuf++ = blue;
 							*pixbuf++ = 255;
 							break;
 						case 32:
-							blue = FS_GetC(fin);
-							green = FS_GetC(fin);
-							red = FS_GetC(fin);
-							alphabyte = FS_GetC(fin);
+							blue = fgetc((FILE*)fin);
+							green = fgetc((FILE*)fin);
+							red = fgetc((FILE*)fin);
+							alphabyte = fgetc((FILE*)fin);
 							*pixbuf++ = red;
 							*pixbuf++ = green;
 							*pixbuf++ = blue;
@@ -1018,8 +1018,6 @@ qglColor4f (1,1,1,0.5);
 qglEnable (GL_DEPTH_TEST);
 #endif
 }
-
-#endif
 
 //===============================================================
 

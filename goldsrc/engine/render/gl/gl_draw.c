@@ -170,7 +170,7 @@ void Scrap_Upload(void)
 	for(texnum = 0; texnum < MAX_SCRAPS; texnum++)
 	{
 		GL_Bind(scrap_texnum + texnum);
-		GL_Upload8(scrap_texels[texnum], BLOCK_WIDTH, BLOCK_HEIGHT, false, true);
+		GL_Upload8(scrap_texels[texnum], NULL, BLOCK_WIDTH, BLOCK_HEIGHT, false, true);
 	}
 	scrap_dirty = false;
 }
@@ -461,6 +461,9 @@ void Draw_Init(void)
 	conback->width = cb->width;
 	conback->height = cb->height;
 	ncdata = cb->data;
+	conback->palette_colors = 256; // TODO: hardcode
+	conback->palette = (unsigned*)Z_Malloc(sizeof(unsigned) * conback->palette_colors);
+	Q_memcpy(conback->palette, cb->data + cb->width * cb->height + 2, sizeof(color24) * conback->palette_colors);
 #endif
 
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -501,18 +504,18 @@ It can be clipped to the top of the screen to allow the console to be
 smoothly scrolled off.
 ================
 */
-void Draw_Character(int x, int y, int num)
+int Draw_Character(int x, int y, int num/*, int r, int g, int b*/) // TODO
 {
 	int row, col;
 	float frow, fcol, size;
 
 	if(num == 32)
-		return; // space
+		return 0; // space
 
 	num &= 255;
 
 	if(y <= -8)
-		return; // totally off screen
+		return 0; // totally off screen
 
 	row = num >> 4;
 	col = num & 15;
@@ -521,9 +524,13 @@ void Draw_Character(int x, int y, int num)
 	fcol = col * 0.0625;
 	size = 0.0625;
 
+	// color support
+	//qglColor3f(r, g, b); // TODO
+	
 	GL_Bind(char_texture);
 
 	qglBegin(GL_QUADS);
+	
 	qglTexCoord2f(fcol, frow);
 	qglVertex2f(x, y);
 	qglTexCoord2f(fcol + size, frow);
@@ -533,6 +540,11 @@ void Draw_Character(int x, int y, int num)
 	qglTexCoord2f(fcol, frow + size);
 	qglVertex2f(x, y + 8);
 	qglEnd();
+	
+	// reset color
+	//qglColor4f(1.0f, 1.0f, 1.0f, 1.0f); // TODO
+	
+	return 1;
 }
 
 /*
@@ -555,7 +567,7 @@ void Draw_String(int x, int y, const char *str)
 Draw_Alt_String
 ================
 */
-void Draw_Alt_String (int x, int y, char *str)
+void Draw_Alt_String (int x, int y, const char *str)
 {
 	while (*str)
 	{
@@ -564,6 +576,17 @@ void Draw_Alt_String (int x, int y, char *str)
 		x += 8;
 	}
 }
+
+int Draw_ConsoleString(int x, int y, const char *string)
+{
+	// TODO
+	return 0;
+};
+
+void Draw_ConsoleStringLen(const char *string, int *length, int *height)
+{
+	// TODO
+};
 
 void Draw_Crosshair(void)
 {
@@ -1231,7 +1254,7 @@ void GL_Upload8_EXT(byte *data, int width, int height, qboolean mipmap, qboolean
 	samples = 1; // alpha ? gl_alpha_format : gl_solid_format;
 
 	texels += scaled_width * scaled_height;
-
+	
 	if(scaled_width == width && scaled_height == height)
 	{
 		if(!mipmap)
@@ -1284,7 +1307,7 @@ done:;
 GL_Upload8
 ===============
 */
-void GL_Upload8(byte *data, int width, int height, qboolean mipmap, qboolean alpha)
+void GL_Upload8(byte *data, unsigned *palette, int width, int height, qboolean mipmap, qboolean alpha)
 {
 	static unsigned trans[640 * 480]; // FIXME, temporary
 	int i, s;
@@ -1302,7 +1325,10 @@ void GL_Upload8(byte *data, int width, int height, qboolean mipmap, qboolean alp
 			p = data[i];
 			if(p == 255)
 				noalpha = false;
-			trans[i] = d_8to24table[p];
+			if(palette)
+				trans[i] = palette[p];
+			else
+				trans[i] = d_8to24table[p];
 		}
 
 		if(alpha && noalpha)
@@ -1314,10 +1340,20 @@ void GL_Upload8(byte *data, int width, int height, qboolean mipmap, qboolean alp
 			Sys_Error("GL_Upload8: s&3");
 		for(i = 0; i < s; i += 4)
 		{
-			trans[i] = d_8to24table[data[i]];
-			trans[i + 1] = d_8to24table[data[i + 1]];
-			trans[i + 2] = d_8to24table[data[i + 2]];
-			trans[i + 3] = d_8to24table[data[i + 3]];
+			if(palette)
+			{
+				trans[i] = palette[data[i]];
+				trans[i + 1] = palette[data[i + 1]];
+				trans[i + 2] = palette[data[i + 2]];
+				trans[i + 3] = palette[data[i + 3]];
+			}
+			else
+			{
+				trans[i] = d_8to24table[data[i]];
+				trans[i + 1] = d_8to24table[data[i + 1]];
+				trans[i + 2] = d_8to24table[data[i + 2]];
+				trans[i + 3] = d_8to24table[data[i + 3]];
+			};
 		}
 	}
 
@@ -1335,12 +1371,12 @@ void GL_Upload8(byte *data, int width, int height, qboolean mipmap, qboolean alp
 GL_LoadTexture
 ================
 */
-int GL_LoadTexture(const char *identifier, int width, int height, byte *data, byte *palette, qboolean mipmap, qboolean alpha)
+int GL_LoadTexture(const char *identifier, int width, int height, byte *data, unsigned *palette, qboolean mipmap, qboolean alpha)
 {
 	int i;
 	gltexture_t *glt;
 
-	// see if the texture is allready present
+	// see if the texture is already present
 	if(identifier[0])
 	{
 		for(i = 0, glt = gltextures; i < numgltextures; i++, glt++)
@@ -1374,8 +1410,8 @@ int GL_LoadTexture(const char *identifier, int width, int height, byte *data, by
 	glt->mipmap = mipmap;
 
 	GL_Bind(texture_extension_number);
-
-	GL_Upload8(data, width, height, mipmap, alpha);
+	
+	GL_Upload8(data, palette, width, height, mipmap, alpha);
 
 	texture_extension_number++;
 
@@ -1389,7 +1425,10 @@ GL_LoadPicTexture
 */
 int GL_LoadPicTexture(qpic_t *pic)
 {
-	return GL_LoadTexture("", pic->width, pic->height, pic->data, pic->palette, false, true);
+	pic->palette_colors = 256; // TODO: hardcode
+	pic->palette = (unsigned*)Z_Malloc(sizeof(unsigned) * pic->palette_colors);
+	Q_memcpy(pic->palette, pic->data + pic->width * pic->height + 2, sizeof(color24) * pic->palette_colors);
+	return GL_LoadTexture("", pic->width, pic->height, pic->data, pic->palette ? pic->palette : NULL, false, true);
 }
 
 /****************************************/
@@ -1409,3 +1448,8 @@ void GL_SelectTexture(GLenum target)
 	currenttexture = cnttextures[target - TEXTURE0_SGIS];
 	oldtarget = target;
 }
+
+void Draw_SetTextColor(float r, float g, float b)
+{
+	// TODO
+};

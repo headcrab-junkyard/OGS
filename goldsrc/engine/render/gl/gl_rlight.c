@@ -205,11 +205,13 @@ void R_MarkLights(dlight_t *light, int bit, mnode_t *node)
 	dist = DotProduct(light->origin, splitplane->normal) - splitplane->dist;
 
 	if(dist > light->radius)
+	//if (dist > light->intensity-DLIGHT_CUTOFF) // TODO: q2
 	{
 		R_MarkLights(light, bit, node->children[0]);
 		return;
 	}
 	if(dist < -light->radius)
+	//if (dist < -light->intensity+DLIGHT_CUTOFF) // TODO: q2
 	{
 		R_MarkLights(light, bit, node->children[1]);
 		return;
@@ -217,6 +219,7 @@ void R_MarkLights(dlight_t *light, int bit, mnode_t *node)
 
 	// mark the polygons
 	surf = cl.worldmodel->surfaces + node->firstsurface;
+	//surf = r_worldmodel->surfaces + node->firstsurface; // TODO: q2
 	for(i = 0; i < node->numsurfaces; i++, surf++)
 	{
 		if(surf->dlightframe != r_dlightframecount)
@@ -325,8 +328,7 @@ int RecursiveLightPoint(mnode_t *node, vec3_t start, vec3_t end)
 		s = DotProduct(mid, tex->vecs[0]) + tex->vecs[0][3];
 		t = DotProduct(mid, tex->vecs[1]) + tex->vecs[1][3];
 
-		if(s < surf->texturemins[0] ||
-		   t < surf->texturemins[1])
+		if(s < surf->texturemins[0] || t < surf->texturemins[1])
 			continue;
 
 		ds = s - surf->texturemins[0];
@@ -366,22 +368,66 @@ int RecursiveLightPoint(mnode_t *node, vec3_t start, vec3_t end)
 	return RecursiveLightPoint(node->children[!side], mid, end);
 }
 
+/*
+===============
+R_LightPoint
+===============
+*/
 int R_LightPoint(vec3_t p)
+//void R_LightPoint (vec3_t p, vec3_t color) // TODO: q2
 {
 	vec3_t end;
-	int r;
+	int r; // TODO: float in q2
+	// TODO: q2
+	/*
+	int			lnum;
+	dlight_t	*dl;
+	vec3_t		dist;
+	float		add;
+	*/
 
-	if(!cl.worldmodel->lightdata)
+	if(!cl.worldmodel->lightdata) // TODO: r_worldmodel in q2
 		return 255;
+	// TODO: q2
+	/*
+	{
+		color[0] = color[1] = color[2] = 1.0;
+		return;
+	};
+	*/
 
 	end[0] = p[0];
 	end[1] = p[1];
 	end[2] = p[2] - 2048;
 
-	r = RecursiveLightPoint(cl.worldmodel->nodes, p, end);
+	r = RecursiveLightPoint(cl.worldmodel->nodes, p, end); // TODO: r_worldmodel in q2
 
 	if(r == -1)
 		r = 0;
+	// TODO: q2
+	/*
+		VectorCopy (vec3_origin, color);
+	else
+		VectorCopy (pointcolor, color);
+	*/
 
+	// TODO: q2
+	/*
+	//
+	// add dynamic lights
+	//
+	dl = r_newrefdef.dlights;
+	for (lnum=0 ; lnum<r_newrefdef.num_dlights ; lnum++, dl++)
+	{
+		VectorSubtract (currententity->origin, dl->origin, dist);
+		add = dl->intensity - VectorLength(dist);
+		add *= (1.0/256);
+		if (add > 0)
+			VectorMA (color, add, dl->color, color);
+	};
+
+	VectorScale (color, gl_modulate->value, color);
+	*/
+	
 	return r;
-}
+};

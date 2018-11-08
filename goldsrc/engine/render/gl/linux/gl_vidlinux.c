@@ -20,11 +20,11 @@
 /// @file
 
 #include <termios.h>
+
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/vt.h>
-#include <stdarg.h>
-#include <stdio.h>
+
 #include <signal.h>
 
 #include <asm/io.h>
@@ -122,8 +122,10 @@ const char *gl_renderer;
 const char *gl_version;
 const char *gl_extensions;
 
+#ifndef X11
 void (*qgl3DfxSetPaletteEXT)(GLuint *);
 void (*qglColorTableEXT)(int, int, int, int, int, const void *);
+#endif
 
 static float vid_gamma = 1.0;
 
@@ -179,6 +181,21 @@ void keyhandler(int scancode, int state)
 
 void VID_Shutdown()
 {
+#ifdef X11
+	if (!ctx)
+		return;
+
+	XUngrabPointer(dpy,CurrentTime);
+	XUngrabKeyboard(dpy,CurrentTime);
+
+	glXDestroyContext(dpy,ctx);
+
+#ifdef USE_DGA
+	if (usedga)
+		XF86DGADirectVideo(dpy,DefaultScreen(dpy),0);
+#endif
+
+#elif MESA
 	if(!fc)
 		return;
 
@@ -186,6 +203,7 @@ void VID_Shutdown()
 
 	if(UseKeyboard)
 		keyboard_close();
+#endif
 }
 
 void signal_handler(int sig)
@@ -198,7 +216,7 @@ void signal_handler(int sig)
 void InitSig()
 {
 	signal(SIGHUP, signal_handler);
-	signal(SIGINT, signal_handler);
+	signal(SIGINT, signal_handler); // TODO
 	signal(SIGQUIT, signal_handler);
 	signal(SIGILL, signal_handler);
 	signal(SIGTRAP, signal_handler);
@@ -312,39 +330,39 @@ GL_Init
 */
 void GL_Init()
 {
-	gl_vendor = glGetString(GL_VENDOR);
+	gl_vendor = qglGetString(GL_VENDOR);
 	Con_Printf("GL_VENDOR: %s\n", gl_vendor);
-	gl_renderer = glGetString(GL_RENDERER);
+	gl_renderer = qglGetString(GL_RENDERER);
 	Con_Printf("GL_RENDERER: %s\n", gl_renderer);
 
-	gl_version = glGetString(GL_VERSION);
+	gl_version = qglGetString(GL_VERSION);
 	Con_Printf("GL_VERSION: %s\n", gl_version);
-	gl_extensions = glGetString(GL_EXTENSIONS);
+	gl_extensions = qglGetString(GL_EXTENSIONS);
 	Con_Printf("GL_EXTENSIONS: %s\n", gl_extensions);
 
 	//	Con_Printf ("%s %s\n", gl_renderer, gl_version);
 
 	CheckMultiTextureExtensions();
 
-	glClearColor(1, 0, 0, 0);
-	glCullFace(GL_FRONT);
-	glEnable(GL_TEXTURE_2D);
+	qglClearColor(1, 0, 0, 0);
+	qglCullFace(GL_FRONT);
+	qglEnable(GL_TEXTURE_2D);
 
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GREATER, 0.666);
+	qglEnable(GL_ALPHA_TEST);
+	qglAlphaFunc(GL_GREATER, 0.666);
 
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glShadeModel(GL_FLAT);
+	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	qglShadeModel(GL_FLAT);
 
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	//	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	//	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 }
 
 /*
@@ -361,16 +379,21 @@ void GL_BeginRendering(int *x, int *y, int *width, int *height)
 	*width = scr_width;
 	*height = scr_height;
 
-	//    if (!wglMakeCurrent( maindc, baseRC ))
+	//    if (!qwglMakeCurrent( maindc, baseRC ))
 	//		Sys_Error ("wglMakeCurrent failed");
 
-	//	glViewport (*x, *y, *width, *height);
+	//	qglViewport (*x, *y, *width, *height);
 }
 
 void GL_EndRendering()
 {
-	glFlush();
+	qglFlush();
+	
+#ifdef GLX
+	qglXSwapBuffers(dpy, win);
+#elif MESA
 	fxMesaSwapBuffers();
+#endif
 }
 
 void Init_KBD()
@@ -549,8 +572,7 @@ void VID_Init8bitPalette()
 		return;
 	}
 
-	if(strstr(gl_extensions, "3DFX_set_global_palette") &&
-	   (qgl3DfxSetPaletteEXT = dlsym(prjobj, "gl3DfxSetPaletteEXT")) != NULL)
+	if(strstr(gl_extensions, "3DFX_set_global_palette") && (qgl3DfxSetPaletteEXT = dlsym(prjobj, "gl3DfxSetPaletteEXT")) != NULL)
 	{
 		GLubyte table[256][4];
 		char *oldpal;
@@ -695,8 +717,7 @@ void VID_Init(unsigned char *palette)
 	vid.width = vid.conwidth;
 	vid.height = vid.conheight;
 
-	vid.aspect = ((float)vid.height / (float)vid.width) *
-	(320.0 / 240.0);
+	vid.aspect = ((float)vid.height / (float)vid.width) * (320.0 / 240.0);
 	vid.numpages = 2;
 
 	GL_Init();
@@ -713,69 +734,6 @@ void VID_Init(unsigned char *palette)
 	Con_SafePrintf("Video mode %dx%d initialized.\n", width, height);
 
 	vid.recalc_refdef = 1; // force a surface cache flush
-}
-
-void Sys_SendKeyEvents()
-{
-	if(UseKeyboard)
-		while(keyboard_update());
-}
-
-void Force_CenterView_f()
-{
-	cl.viewangles[PITCH] = 0;
-}
-
-void mousehandler(int buttonstate, int dx, int dy)
-{
-	mouse_buttonstate = buttonstate;
-	mx += dx;
-	my += dy;
-}
-
-void IN_Init()
-{
-	int mtype;
-	char *mousedev;
-	int mouserate;
-
-	if(UseMouse)
-	{
-		Cvar_RegisterVariable(&mouse_button_commands[0]);
-		Cvar_RegisterVariable(&mouse_button_commands[1]);
-		Cvar_RegisterVariable(&mouse_button_commands[2]);
-		Cmd_AddCommand("force_centerview", Force_CenterView_f);
-
-		mouse_buttons = 3;
-
-		mtype = vga_getmousetype();
-
-		mousedev = "/dev/mouse";
-		if(getenv("MOUSEDEV"))
-			mousedev = getenv("MOUSEDEV");
-		if(COM_CheckParm("-mdev"))
-			mousedev = com_argv[COM_CheckParm("-mdev") + 1];
-
-		mouserate = 1200;
-		if(getenv("MOUSERATE"))
-			mouserate = atoi(getenv("MOUSERATE"));
-		if(COM_CheckParm("-mrate"))
-			mouserate = atoi(com_argv[COM_CheckParm("-mrate") + 1]);
-
-		if(mouse_init(mousedev, mtype, mouserate))
-		{
-			Con_Printf("No mouse found\n");
-			UseMouse = 0;
-		}
-		else
-			mouse_seteventhandler(mousehandler);
-	}
-}
-
-void IN_Shutdown()
-{
-	if(UseMouse)
-		mouse_close();
 }
 
 /*
@@ -815,66 +773,4 @@ void IN_Commands()
 
 		mouse_oldbuttonstate = mouse_buttonstate;
 	}
-}
-
-/*
-===========
-IN_Move
-===========
-*/
-void IN_MouseMove(usercmd_t *cmd)
-{
-	if(!UseMouse)
-		return;
-
-	// poll mouse values
-	while(mouse_update())
-		;
-
-	if(m_filter.value)
-	{
-		mouse_x = (mx + old_mouse_x) * 0.5;
-		mouse_y = (my + old_mouse_y) * 0.5;
-	}
-	else
-	{
-		mouse_x = mx;
-		mouse_y = my;
-	}
-	old_mouse_x = mx;
-	old_mouse_y = my;
-	mx = my = 0; // clear for next update
-
-	mouse_x *= sensitivity.value;
-	mouse_y *= sensitivity.value;
-
-	// add mouse X/Y movement to cmd
-	if((in_strafe.state & 1) || (lookstrafe.value && (in_mlook.state & 1)))
-		cmd->sidemove += m_side.value * mouse_x;
-	else
-		cl.viewangles[YAW] -= m_yaw.value * mouse_x;
-
-	if(in_mlook.state & 1)
-		V_StopPitchDrift();
-
-	if((in_mlook.state & 1) && !(in_strafe.state & 1))
-	{
-		cl.viewangles[PITCH] += m_pitch.value * mouse_y;
-		if(cl.viewangles[PITCH] > 80)
-			cl.viewangles[PITCH] = 80;
-		if(cl.viewangles[PITCH] < -70)
-			cl.viewangles[PITCH] = -70;
-	}
-	else
-	{
-		if((in_strafe.state & 1) && noclip_anglehack)
-			cmd->upmove -= m_forward.value * mouse_y;
-		else
-			cmd->forwardmove -= m_forward.value * mouse_y;
-	}
-}
-
-void IN_Move(usercmd_t *cmd)
-{
-	IN_MouseMove(cmd);
 }

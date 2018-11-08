@@ -20,16 +20,13 @@
 /// @file
 
 #include <termios.h>
+
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/vt.h>
-#include <stdarg.h>
-#include <stdio.h>
+
 #include <signal.h>
-
 #include <dlfcn.h>
-
-#include "quakedef.h"
 
 #include <GL/glx.h>
 
@@ -38,6 +35,8 @@
 
 #include <X11/extensions/xf86dga.h>
 #include <X11/extensions/xf86vmode.h>
+
+#include "quakedef.h"
 
 #define WARP_WIDTH 320
 #define WARP_HEIGHT 200
@@ -53,24 +52,16 @@ static GLXContext ctx = NULL;
 #define X_MASK (KEY_MASK | MOUSE_MASK | VisibilityChangeMask | StructureNotifyMask)
 
 unsigned short d_8to16table[256];
-unsigned d_8to24table[256];
+unsigned int d_8to24table[256];
 unsigned char d_15to8table[65536];
 
 cvar_t vid_mode = { "vid_mode", "0", false };
 
-static qboolean mouse_avail;
-static qboolean mouse_active;
-static int mx, my;
-static int old_mouse_x, old_mouse_y;
-
-static cvar_t in_mouse = { "in_mouse", "1", false };
-static cvar_t in_dgamouse = { "in_dgamouse", "1", false };
-static cvar_t m_filter = { "m_filter", "0" };
-
-qboolean dgamouse = false;
+#ifdef GLX
 qboolean vidmode_ext = false;
 
 static int win_x, win_y;
+#endif
 
 static int scr_width, scr_height;
 
@@ -117,6 +108,42 @@ void D_EndDirectRect(int x, int y, int width, int height)
 {
 }
 
+#ifdef X11
+/*
+=================
+VID_Gamma_f
+
+Keybinding command
+=================
+*/
+void VID_Gamma_f (void)
+{
+	float	gamma, f, inf;
+	unsigned char	palette[768];
+	int		i;
+
+	if (Cmd_Argc () == 2)
+	{
+		gamma = Q_atof (Cmd_Argv(1));
+
+		for (i=0 ; i<768 ; i++)
+		{
+			f = pow ( (host_basepal[i]+1)/256.0 , gamma );
+			inf = f*255 + 0.5;
+			if (inf < 0)
+				inf = 0;
+			if (inf > 255)
+				inf = 255;
+			palette[i] = inf;
+		}
+
+		VID_SetPalette (palette);
+
+		vid.recalc_refdef = 1;				// force a surface cache flush
+	}
+}
+#endif
+
 static int XLateKey(XKeyEvent *ev)
 {
 	int key;
@@ -125,7 +152,7 @@ static int XLateKey(XKeyEvent *ev)
 
 	key = 0;
 
-	XLookupString(ev, buf, sizeof buf, &keysym, 0);
+	XLookupString(ev, buf, sizeof(buf), &keysym, 0);
 
 	switch(keysym)
 	{
@@ -310,12 +337,14 @@ static int XLateKey(XKeyEvent *ev)
 		key = *(unsigned char *)buf;
 		if(key >= 'A' && key <= 'Z')
 			key = key - 'A' + 'a';
+		//fprintf(stdout, "case 0x0%x: key = ___;break;/* [%c] */\n", keysym);
 		break;
 	}
 
 	return key;
 }
 
+#ifdef GLX
 static Cursor CreateNullCursor(Display *display, Window root)
 {
 	Pixmap cursormask;
@@ -337,7 +366,9 @@ static Cursor CreateNullCursor(Display *display, Window root)
 	XFreeGC(display, gc);
 	return cursor;
 }
+#endif
 
+#ifdef GLX
 static void install_grabs()
 {
 	// inviso cursor
@@ -493,41 +524,18 @@ static void HandleEvents()
 		XWarpPointer(dpy, None, win, 0, 0, 0, 0, vid.width / 2, vid.height / 2);
 	}
 }
-
-static void IN_DeactivateMouse(void)
-{
-	if(!mouse_avail || !dpy || !win)
-		return;
-
-	if(mouse_active)
-	{
-		uninstall_grabs();
-		mouse_active = false;
-	}
-}
-
-static void IN_ActivateMouse(void)
-{
-	if(!mouse_avail || !dpy || !win)
-		return;
-
-	if(!mouse_active)
-	{
-		mx = my = 0; // don't spazz
-		install_grabs();
-		mouse_active = true;
-	}
-}
+#endif // GLX
 
 void VID_Shutdown()
 {
+#ifdef GLX
 	if(!ctx || !dpy)
 		return;
 	IN_DeactivateMouse();
 	if(dpy)
 	{
 		if(ctx)
-			glXDestroyContext(dpy, ctx);
+			qglXDestroyContext(dpy, ctx);
 		if(win)
 			XDestroyWindow(dpy, win);
 		if(vidmode_active)
@@ -538,6 +546,7 @@ void VID_Shutdown()
 	dpy = NULL;
 	win = 0;
 	ctx = NULL;
+#endif
 }
 
 void signal_handler(int sig)
@@ -624,6 +633,7 @@ void VID_SetPalette(unsigned char *palette)
 	}
 }
 
+#ifndef X11
 void CheckMultiTextureExtensions()
 {
 	void *prjobj;
@@ -652,6 +662,7 @@ void CheckMultiTextureExtensions()
 		dlclose(prjobj);
 	}
 }
+#endif
 
 /*
 ===============
@@ -660,39 +671,41 @@ GL_Init
 */
 void GL_Init()
 {
-	gl_vendor = glGetString(GL_VENDOR);
+	gl_vendor = qglGetString(GL_VENDOR);
 	Con_Printf("GL_VENDOR: %s\n", gl_vendor);
-	gl_renderer = glGetString(GL_RENDERER);
+	gl_renderer = qglGetString(GL_RENDERER);
 	Con_Printf("GL_RENDERER: %s\n", gl_renderer);
 
-	gl_version = glGetString(GL_VERSION);
+	gl_version = qglGetString(GL_VERSION);
 	Con_Printf("GL_VERSION: %s\n", gl_version);
-	gl_extensions = glGetString(GL_EXTENSIONS);
+	gl_extensions = qglGetString(GL_EXTENSIONS);
 	Con_Printf("GL_EXTENSIONS: %s\n", gl_extensions);
 
 	//	Con_Printf ("%s %s\n", gl_renderer, gl_version);
 
+#ifndef X11
 	CheckMultiTextureExtensions();
+#endif
 
-	glClearColor(1, 0, 0, 0);
-	glCullFace(GL_FRONT);
-	glEnable(GL_TEXTURE_2D);
+	qglClearColor(1, 0, 0, 0);
+	qglCullFace(GL_FRONT);
+	qglEnable(GL_TEXTURE_2D);
 
-	glEnable(GL_ALPHA_TEST);
-	glAlphaFunc(GL_GREATER, 0.666);
+	qglEnable(GL_ALPHA_TEST);
+	qglAlphaFunc(GL_GREATER, 0.666);
 
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glShadeModel(GL_FLAT);
+	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	qglShadeModel(GL_FLAT);
 
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	//	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	//	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 }
 
 /*
@@ -709,21 +722,10 @@ void GL_BeginRendering(int *x, int *y, int *width, int *height)
 	*width = scr_width;
 	*height = scr_height;
 
-	//    if (!wglMakeCurrent( maindc, baseRC ))
+	//    if (!qwglMakeCurrent( maindc, baseRC ))
 	//		Sys_Error ("wglMakeCurrent failed");
 
-	//	glViewport (*x, *y, *width, *height);
-}
-
-void GL_EndRendering()
-{
-	glFlush();
-	glXSwapBuffers(dpy, win);
-}
-
-qboolean VID_Is8bit()
-{
-	return is8bit;
+	//	qglViewport (*x, *y, *width, *height);
 }
 
 void VID_Init8bitPalette()
@@ -745,7 +747,7 @@ void VID_Init8bitPalette()
 		char *oldpal;
 
 		Con_SafePrintf("8-bit GL extensions enabled.\n");
-		glEnable(GL_SHARED_TEXTURE_PALETTE_EXT);
+		qglEnable(GL_SHARED_TEXTURE_PALETTE_EXT);
 		oldpal = (char *)d_8to24table; //d_8to24table3dfx;
 		for(i = 0; i < 256; i++)
 		{
@@ -765,7 +767,7 @@ void VID_Init8bitPalette()
 		char *oldPalette, *newPalette;
 
 		Con_SafePrintf("8-bit GL extensions enabled.\n");
-		glEnable(GL_SHARED_TEXTURE_PALETTE_EXT);
+		qglEnable(GL_SHARED_TEXTURE_PALETTE_EXT);
 		oldPalette = (char *)d_8to24table; //d_8to24table3dfx;
 		newPalette = thePalette;
 		for(i = 0; i < 256; i++)
@@ -826,18 +828,12 @@ void VID_Init(unsigned char *palette)
 		None
 	};
 	char gldir[MAX_OSPATH];
-	int width = 640, height = 480;
-	XSetWindowAttributes attr;
-	unsigned long mask;
-	Window root;
-	XVisualInfo *visinfo;
-	qboolean fullscreen = true;
-	int MajorVersion, MinorVersion;
-	int actualWidth, actualHeight;
 
 	Cvar_RegisterVariable(&vid_mode);
+	
 	Cvar_RegisterVariable(&in_mouse);
 	Cvar_RegisterVariable(&in_dgamouse);
+	
 	Cvar_RegisterVariable(&m_filter);
 	Cvar_RegisterVariable(&gl_ztrick);
 
@@ -847,16 +843,6 @@ void VID_Init(unsigned char *palette)
 	vid.fullbright = 256 - LittleLong(*((int *)vid.colormap + 2048));
 
 	// interpret command-line params
-
-	// set vid parameters
-	if((i = COM_CheckParm("-window")) != 0)
-		fullscreen = false;
-
-	if((i = COM_CheckParm("-width")) != 0)
-		width = atoi(com_argv[i + 1]);
-
-	if((i = COM_CheckParm("-height")) != 0)
-		height = atoi(com_argv[i + 1]);
 
 	if((i = COM_CheckParm("-conwidth")) != 0)
 		vid.conwidth = Q_atoi(com_argv[i + 1]);
@@ -876,115 +862,9 @@ void VID_Init(unsigned char *palette)
 	if(vid.conheight < 200)
 		vid.conheight = 200;
 
-	if(!(dpy = XOpenDisplay(NULL)))
-	{
-		fprintf(stderr, "Error couldn't open the X display\n");
-		exit(1);
-	}
+	ctx = qglXCreateContext(dpy, visinfo, NULL, True);
 
-	scrnum = DefaultScreen(dpy);
-	root = RootWindow(dpy, scrnum);
-
-	// Get video mode list
-	MajorVersion = MinorVersion = 0;
-	if(!XF86VidModeQueryVersion(dpy, &MajorVersion, &MinorVersion))
-	{
-		vidmode_ext = false;
-	}
-	else
-	{
-		Con_Printf("Using XFree86-VidModeExtension Version %d.%d\n", MajorVersion, MinorVersion);
-		vidmode_ext = true;
-	}
-
-	visinfo = glXChooseVisual(dpy, scrnum, attrib);
-	if(!visinfo)
-	{
-		fprintf(stderr, "qkHack: Error couldn't get an RGB, Double-buffered, Depth visual\n");
-		exit(1);
-	}
-
-	if(vidmode_ext)
-	{
-		int best_fit, best_dist, dist, x, y;
-
-		XF86VidModeGetAllModeLines(dpy, scrnum, &num_vidmodes, &vidmodes);
-
-		// Are we going fullscreen?  If so, let's change video mode
-		if(fullscreen)
-		{
-			best_dist = 9999999;
-			best_fit = -1;
-
-			for(i = 0; i < num_vidmodes; i++)
-			{
-				if(width > vidmodes[i]->hdisplay ||
-				   height > vidmodes[i]->vdisplay)
-					continue;
-
-				x = width - vidmodes[i]->hdisplay;
-				y = height - vidmodes[i]->vdisplay;
-				dist = (x * x) + (y * y);
-				if(dist < best_dist)
-				{
-					best_dist = dist;
-					best_fit = i;
-				}
-			}
-
-			if(best_fit != -1)
-			{
-				actualWidth = vidmodes[best_fit]->hdisplay;
-				actualHeight = vidmodes[best_fit]->vdisplay;
-
-				// change to the mode
-				XF86VidModeSwitchToMode(dpy, scrnum, vidmodes[best_fit]);
-				vidmode_active = true;
-
-				// Move the viewport to top left
-				XF86VidModeSetViewPort(dpy, scrnum, 0, 0);
-			}
-			else
-				fullscreen = 0;
-		}
-	}
-
-	/* window attributes */
-	attr.background_pixel = 0;
-	attr.border_pixel = 0;
-	attr.colormap = XCreateColormap(dpy, root, visinfo->visual, AllocNone);
-	attr.event_mask = X_MASK;
-	if(vidmode_active)
-	{
-		mask = CWBackPixel | CWColormap | CWSaveUnder | CWBackingStore |
-		CWEventMask | CWOverrideRedirect;
-		attr.override_redirect = True;
-		attr.backing_store = NotUseful;
-		attr.save_under = False;
-	}
-	else
-		mask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
-
-	win = XCreateWindow(dpy, root, 0, 0, width, height,
-	                    0, visinfo->depth, InputOutput,
-	                    visinfo->visual, mask, &attr);
-	XMapWindow(dpy, win);
-
-	if(vidmode_active)
-	{
-		XMoveWindow(dpy, win, 0, 0);
-		XRaiseWindow(dpy, win);
-		XWarpPointer(dpy, None, win, 0, 0, 0, 0, 0, 0);
-		XFlush(dpy);
-		// Move the viewport to top left
-		XF86VidModeSetViewPort(dpy, scrnum, 0, 0);
-	}
-
-	XFlush(dpy);
-
-	ctx = glXCreateContext(dpy, visinfo, NULL, True);
-
-	glXMakeCurrent(dpy, win, ctx);
+	qglXMakeCurrent(dpy, win, ctx);
 
 	scr_width = width;
 	scr_height = height;
@@ -1004,7 +884,7 @@ void VID_Init(unsigned char *palette)
 	GL_Init();
 
 	sprintf(gldir, "%s/glquake", com_gamedir);
-	Sys_mkdir(gldir);
+	FS_mkdir(gldir);
 
 	VID_SetPalette(palette);
 
@@ -1014,91 +894,4 @@ void VID_Init(unsigned char *palette)
 	Con_SafePrintf("Video mode %dx%d initialized.\n", width, height);
 
 	vid.recalc_refdef = 1; // force a surface cache flush
-}
-
-void Sys_SendKeyEvents()
-{
-	HandleEvents();
-}
-
-void Force_CenterView_f()
-{
-	cl.viewangles[PITCH] = 0;
-}
-
-void IN_Init()
-{
-}
-
-void IN_Shutdown()
-{
-}
-
-/*
-===========
-IN_Commands
-===========
-*/
-void IN_Commands()
-{
-	if(!dpy || !win)
-		return;
-
-	if(vidmode_active || key_dest == key_game)
-		IN_ActivateMouse();
-	else
-		IN_DeactivateMouse();
-}
-
-/*
-===========
-IN_Move
-===========
-*/
-void IN_MouseMove(usercmd_t *cmd)
-{
-	if(!mouse_avail)
-		return;
-
-	if(m_filter.value)
-	{
-		mx = (mx + old_mouse_x) * 0.5;
-		my = (my + old_mouse_y) * 0.5;
-	}
-	old_mouse_x = mx;
-	old_mouse_y = my;
-
-	mx *= sensitivity.value;
-	my *= sensitivity.value;
-
-	// add mouse X/Y movement to cmd
-	if((in_strafe.state & 1) || (lookstrafe.value && (in_mlook.state & 1)))
-		cmd->sidemove += m_side.value * mx;
-	else
-		cl.viewangles[YAW] -= m_yaw.value * mx;
-
-	if(in_mlook.state & 1)
-		V_StopPitchDrift();
-
-	if((in_mlook.state & 1) && !(in_strafe.state & 1))
-	{
-		cl.viewangles[PITCH] += m_pitch.value * my;
-		if(cl.viewangles[PITCH] > 80)
-			cl.viewangles[PITCH] = 80;
-		if(cl.viewangles[PITCH] < -70)
-			cl.viewangles[PITCH] = -70;
-	}
-	else
-	{
-		if((in_strafe.state & 1) && noclip_anglehack)
-			cmd->upmove -= m_forward.value * my;
-		else
-			cmd->forwardmove -= m_forward.value * my;
-	}
-	mx = my = 0;
-}
-
-void IN_Move(usercmd_t *cmd)
-{
-	IN_MouseMove(cmd);
 }

@@ -1,6 +1,6 @@
 /*
  *	This file is part of OGS Engine
- *	Copyright (C) 1996-1997 Id Software, Inc.
+ *	Copyright (C) 1996-2001 Id Software, Inc.
  *	Copyright (C) 2018 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
@@ -590,6 +590,24 @@ void R_DrawAliasModel(cl_entity_t *e)
 	}
 }
 
+/*
+=============================================================
+
+  STUDIO MODELS
+
+=============================================================
+*/
+
+/*
+=================
+R_DrawStudioModel
+=================
+*/
+void R_DrawStudioModel(cl_entity_t *e)
+{
+	// TODO
+};
+
 //==================================================================================
 
 /*
@@ -597,12 +615,102 @@ void R_DrawAliasModel(cl_entity_t *e)
 R_DrawEntitiesOnList
 =============
 */
-void R_DrawEntitiesOnList(void)
+void R_DrawEntitiesOnList()
 {
 	int i;
 
 	if(!r_drawentities.value)
 		return;
+
+	// TODO: q2
+/*
+	// draw non-transparent first
+	for (i=0 ; i<r_newrefdef.num_entities ; i++)
+	{
+		currententity = &r_newrefdef.entities[i];
+
+		if (currententity->flags & RF_TRANSLUCENT)
+			continue; // solid
+
+		if ( currententity->flags & RF_BEAM )
+			R_DrawBeam( currententity );
+		else
+		{
+			currentmodel = currententity->model;
+
+			if (!currentmodel)
+			{
+				R_DrawNullModel ();
+				continue;
+			};
+			
+			switch (currentmodel->type)
+			{
+			case mod_alias:
+				R_DrawAliasModel (currententity);
+				break;
+			case mod_brush:
+				R_DrawBrushModel (currententity);
+				break;
+			case mod_sprite:
+				R_DrawSpriteModel (currententity);
+				break;
+			case mod_studio:
+				R_DrawStudioModel(currententity);
+				break;
+			default:
+				/*ri.Sys_Error (/*ERR_DROP, "Bad modeltype");
+				break;
+			};
+		};
+	};
+
+	// draw transparent entities
+	// we could sort these if it ever becomes a problem...
+	qglDepthMask (0); // no z writes
+
+	for (i=0 ; i<r_newrefdef.num_entities ; i++)
+	{
+		currententity = &r_newrefdef.entities[i];
+
+		if (!(currententity->flags & RF_TRANSLUCENT))
+			continue;	// solid
+
+		if ( currententity->flags & RF_BEAM )
+			R_DrawBeam( currententity );
+		else
+		{
+			currentmodel = currententity->model;
+
+			if (!currentmodel)
+			{
+				R_DrawNullModel ();
+				continue;
+			};
+			
+			switch (currentmodel->type)
+			{
+			case mod_alias:
+				R_DrawAliasModel (currententity);
+				break;
+			case mod_brush:
+				R_DrawBrushModel (currententity);
+				break;
+			case mod_sprite:
+				R_DrawSpriteModel (currententity);
+				break;
+			case mod_studio:
+				R_DrawStudioModel(currententity);
+				break;
+			default:
+				/*ri.Sys_Error (/*ERR_DROP, "Bad modeltype");
+				break;
+			};
+		};
+	};
+
+	qglDepthMask (1); // back to writing
+*/
 
 	// draw sprites seperately, because of alpha blending
 	for(i = 0; i < cl_numvisedicts; i++)
@@ -619,6 +727,9 @@ void R_DrawEntitiesOnList(void)
 			R_DrawBrushModel(currententity);
 			break;
 
+		case mod_studio:
+			R_DrawStudioModel(currententity);
+
 		default:
 			break;
 		}
@@ -633,13 +744,9 @@ void R_DrawEntitiesOnList(void)
 		case mod_sprite:
 			R_DrawSpriteModel(currententity);
 			break;
-
-		// TODO
-		//default:
-			//break;
-		}
-	}
-}
+		};
+	};
+};
 
 /*
 =============
@@ -1090,8 +1197,8 @@ void R_Mirror(void)
 
 	qglColor4f(1, 1, 1, r_mirroralpha.value);
 	//s = cl.worldmodel->textures[mirrortexturenum]->texturechain; // TODO
-	for(; s; s = s->texturechain)
-		R_RenderBrushPoly(s);
+	//for(; s; s = s->texturechain)
+		//R_RenderBrushPoly(s);
 	//cl.worldmodel->textures[mirrortexturenum]->texturechain = NULL; // TODO
 	qglDisable(GL_BLEND);
 	qglColor4f(1, 1, 1, 1);

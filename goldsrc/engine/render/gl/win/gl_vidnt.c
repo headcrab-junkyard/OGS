@@ -122,9 +122,6 @@ float gldepthmin, gldepthmax;
 
 modestate_t modestate = MS_UNINIT;
 
-void VID_MenuDraw();
-void VID_MenuKey(int key);
-
 LONG WINAPI MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 void AppActivate(BOOL fActive, BOOL minimize);
 const char *VID_GetModeDescription(int mode);
@@ -185,21 +182,6 @@ void D_EndDirectRect(int x, int y, int width, int height)
 {
 }
 
-void CenterWindow(HWND hWndCenter, int width, int height, BOOL lefttopjustify)
-{
-	RECT rect;
-	int CenterX, CenterY;
-
-	CenterX = (GetSystemMetrics(SM_CXSCREEN) - width) / 2;
-	CenterY = (GetSystemMetrics(SM_CYSCREEN) - height) / 2;
-	if(CenterX > CenterY * 2)
-		CenterX >>= 1; // dual screens
-	CenterX = (CenterX < 0) ? 0 : CenterX;
-	CenterY = (CenterY < 0) ? 0 : CenterY;
-	SetWindowPos(hWndCenter, NULL, CenterX, CenterY, 0, 0,
-	             SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW | SWP_DRAWFRAME);
-}
-
 qboolean VID_SetWindowedMode(int modenum)
 {
 	HDC hdc;
@@ -218,7 +200,7 @@ qboolean VID_SetWindowedMode(int modenum)
 	WindowStyle = WS_OVERLAPPED | WS_BORDER | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
 	ExWindowStyle = 0;
 
-	rect = WindowRect;
+	//rect = WindowRect;
 
 	modestate = MS_WINDOWED;
 
@@ -306,7 +288,7 @@ qboolean VID_SetFullDIBMode(int modenum)
 	return true;
 }
 
-int VID_SetMode(int modenum, unsigned char *palette)
+int VID_SetMode(int modenum, unsigned short *palette)
 {
 	int original_mode, temp;
 	qboolean stat;
@@ -624,12 +606,12 @@ void GL_EndRendering()
 		else
 		{
 			windowed_mouse = true;
-			if(key_dest == key_game && !mouseactive && ActiveApp)
+			if(key_dest == key_game /*&& !mouseactive*/ && ActiveApp) // TODO
 			{
 				IN_ActivateMouse();
 				IN_HideMouse();
 			}
-			else if(mouseactive && key_dest != key_game)
+			else if(/*mouseactive &&*/ key_dest != key_game) // TODO
 			{
 				IN_DeactivateMouse();
 				IN_ShowMouse();
@@ -640,7 +622,7 @@ void GL_EndRendering()
 		Sbar_Changed();
 }
 
-void VID_SetPalette(unsigned char *palette)
+void VID_SetPalette(unsigned short *palette)
 {
 	byte *pal;
 	unsigned r, g, b;
@@ -705,7 +687,7 @@ void VID_SetPalette(unsigned char *palette)
 
 BOOL gammaworks;
 
-void VID_ShiftPalette(unsigned char *palette)
+void VID_ShiftPalette(unsigned short *palette)
 {
 	extern byte ramps[3][256];
 
@@ -761,15 +743,14 @@ BOOL bSetupPixelFormat(HDC hDC)
 		| PFD_SUPPORT_OPENGL           // support OpenGL
 		| PFD_DOUBLEBUFFER,            // double buffered
 		PFD_TYPE_RGBA,                 // RGBA type
-		32,                            // 32-bit color depth
-		0,
-		0, 0, 0, 0, 0,  // color bits ignored
+		24,                            // 24-bit color depth
+		0, 0, 0, 0, 0, 0,  // color bits ignored
 		0,              // no alpha buffer
 		0,              // shift bit ignored
 		0,              // no accumulation buffer
 		0, 0, 0, 0,     // accum bits ignored
-		24,             // 24-bit z-buffer (TODO: was 32)
-		8,              // 8-bit stencil buffer (TODO: was 0)
+		32,             // 32-bit z-buffer
+		0,              // no stencil buffer
 		0,              // no auxiliary buffer
 		PFD_MAIN_PLANE, // main layer
 		0,              // reserved
@@ -1429,6 +1410,8 @@ qboolean VID_Is8bit()
 
 #define GL_SHARED_TEXTURE_PALETTE_EXT 0x81FB
 
+// TODO: unused in gs
+/*
 void VID_Init8bitPalette()
 {
 	// Check for 8bit Extensions and initialize them.
@@ -1456,8 +1439,16 @@ void VID_Init8bitPalette()
 	                (void *)thePalette);
 	is8bit = TRUE;
 }
+*/
 
-static void Check_Gamma(unsigned char *pal)
+void VID_CheckPaletteExtensions()
+{
+	// TODO
+	if(strstr(gl_extensions, "GL_EXT_paletted_texture") || strstr(gl_extensions, "GL_EXT_shared_texture_palette") || strstr(gl_extensions, "glColorTableEXT"))
+		Con_SafePrintf("Found paletted texture extension.\n");
+};
+
+static void Check_Gamma(unsigned short *pal)
 {
 	float f, inf;
 	unsigned char palette[768];
@@ -1465,8 +1456,8 @@ static void Check_Gamma(unsigned char *pal)
 
 	if((i = COM_CheckParm("-gamma")) == 0)
 	{
-		if((gl_renderer && Q_strstr(gl_renderer, "Voodoo")) ||
-		   (gl_vendor && Q_strstr(gl_vendor, "3Dfx")))
+		if((gl_renderer && strstr(gl_renderer, "Voodoo")) ||
+		   (gl_vendor && strstr(gl_vendor, "3Dfx")))
 			vid_gamma = 1;
 		else
 			vid_gamma = 0.7; // default to 0.7 on non-3dfx hardware
@@ -1538,7 +1529,7 @@ void GL_CheckErrors( void )
 VID_Init
 ===================
 */
-void VID_Init(unsigned char *palette)
+void VID_Init(unsigned short *palette)
 {
 	int i, existingmode;
 	int basenummodes, width, height, bpp, findbpp, done;
@@ -1787,129 +1778,12 @@ void VID_Init(unsigned char *palette)
 	vid_realmode = vid_modenum;
 
 	// Check for 3DFX Extensions and initialize them.
-	VID_Init8bitPalette();
-
-	vid_menudrawfn = VID_MenuDraw;
-	vid_menukeyfn = VID_MenuKey;
+	//VID_Init8bitPalette();
+	VID_CheckPaletteExtensions();
 
 	strcpy(badmode.modedesc, "Bad mode");
 	vid_canalttab = true;
 
 	if(COM_CheckParm("-fullsbar"))
 		fullsbardraw = true;
-}
-
-//========================================================
-// Video menu stuff
-//========================================================
-
-extern void M_Menu_Options_f();
-extern void M_Print(int cx, int cy, char *str);
-extern void M_PrintWhite(int cx, int cy, char *str);
-extern void M_DrawCharacter(int cx, int line, int num);
-extern void M_DrawTransPic(int x, int y, qpic_t *pic);
-extern void M_DrawPic(int x, int y, qpic_t *pic);
-
-static int vid_line, vid_wmodes;
-
-typedef struct
-{
-	int modenum;
-	const char *desc;
-	int iscur;
-} modedesc_t;
-
-#define MAX_COLUMN_SIZE 9
-#define MODE_AREA_HEIGHT (MAX_COLUMN_SIZE + 2)
-#define MAX_MODEDESCS (MAX_COLUMN_SIZE * 3)
-
-static modedesc_t modedescs[MAX_MODEDESCS];
-
-/*
-================
-VID_MenuDraw
-================
-*/
-void VID_MenuDraw()
-{
-	qpic_t *p;
-	const char *ptr;
-	int lnummodes, i, j, k, column, row, dup, dupmode;
-	char temp[100];
-	vmode_t *pv;
-
-	p = Draw_CachePic("gfx/vidmodes.lmp");
-	M_DrawPic((320 - p->width) / 2, 4, p);
-
-	vid_wmodes = 0;
-	lnummodes = VID_NumModes();
-
-	for(i = 1; (i < lnummodes) && (vid_wmodes < MAX_MODEDESCS); i++)
-	{
-		ptr = VID_GetModeDescription(i);
-		pv = VID_GetModePtr(i);
-
-		k = vid_wmodes;
-
-		modedescs[k].modenum = i;
-		modedescs[k].desc = ptr;
-		modedescs[k].iscur = 0;
-
-		if(i == vid_modenum)
-			modedescs[k].iscur = 1;
-
-		vid_wmodes++;
-	}
-
-	if(vid_wmodes > 0)
-	{
-		M_Print(2 * 8, 36 + 0 * 8, "Fullscreen Modes (WIDTHxHEIGHTxBPP)");
-
-		column = 8;
-		row = 36 + 2 * 8;
-
-		for(i = 0; i < vid_wmodes; i++)
-		{
-			if(modedescs[i].iscur)
-				M_PrintWhite(column, row, modedescs[i].desc);
-			else
-				M_Print(column, row, modedescs[i].desc);
-
-			column += 13 * 8;
-
-			if((i % VID_ROW_SIZE) == (VID_ROW_SIZE - 1))
-			{
-				column = 8;
-				row += 8;
-			}
-		}
-	}
-
-	M_Print(3 * 8, 36 + MODE_AREA_HEIGHT * 8 + 8 * 2,
-	        "Video modes must be set from the");
-	M_Print(3 * 8, 36 + MODE_AREA_HEIGHT * 8 + 8 * 3,
-	        "command line with -width <width>");
-	M_Print(3 * 8, 36 + MODE_AREA_HEIGHT * 8 + 8 * 4,
-	        "and -bpp <bits-per-pixel>");
-	M_Print(3 * 8, 36 + MODE_AREA_HEIGHT * 8 + 8 * 6,
-	        "Select windowed mode with -window");
-}
-
-/*
-================
-VID_MenuKey
-================
-*/
-void VID_MenuKey(int key)
-{
-	switch(key)
-	{
-	case K_ESCAPE:
-		S_LocalSound("misc/menu1.wav");
-		M_Menu_Options_f();
-		break;
-
-	default:
-		break;
-	}
 }

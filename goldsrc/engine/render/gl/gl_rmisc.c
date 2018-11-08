@@ -381,7 +381,7 @@ void R_TranslatePlayerSkin(int playernum)
 
 
 	// don't mipmap these, because it takes too long
-	GL_Upload8 (translated, paliashdr->skinwidth, paliashdr->skinheight, false, false, true);
+	GL_Upload8 (translated, NULL, paliashdr->skinwidth, paliashdr->skinheight, false, false, true);
 #else // TODO: #endif in qw
 	scaled_width = gl_max_size.value < 512 ? gl_max_size.value : 512;
 	scaled_height = gl_max_size.value < 256 ? gl_max_size.value : 256;
@@ -486,10 +486,9 @@ void R_NewMap(void)
 		if(!Q_strncmp(cl.worldmodel->textures[i]->name, "window02_1", 10))
 			mirrortexturenum = i;
 		//cl.worldmodel->textures[i]->texturechain = NULL; // TODO
-	}
-#ifdef QUAKE2
+	};
+	
 	R_LoadSkys();
-#endif
 }
 
 /*

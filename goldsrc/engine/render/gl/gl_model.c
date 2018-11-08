@@ -350,7 +350,7 @@ void Mod_LoadTextures(lump_t *l)
 	{
 		loadmodel->textures = NULL;
 		return;
-	}
+	};
 	m = (dmiptexlump_t *)(mod_base + l->fileofs);
 
 	m->nummiptex = LittleLong(m->nummiptex);
@@ -364,24 +364,67 @@ void Mod_LoadTextures(lump_t *l)
 		if(m->dataofs[i] == -1)
 			continue;
 		mt = (miptex_t *)((byte *)m + m->dataofs[i]);
+		
+		/*
+		TRACE(("dbg: Mod_LoadTextures: texture %s\n", mt->name));
+		
+		if(!*mt->name) // I HATE MAPPERS!
+		{
+			Q_snprintfz(mt->name, sizeof(mt->name), "unnamed%i", i);
+			Con_DPrintf("Warning: unnamed texture in %s, renaming to %s\n", loadmodel->name, mt->name);
+		};
+		*/
+		
 		mt->width = LittleLong(mt->width);
 		mt->height = LittleLong(mt->height);
+		
 		for(j = 0; j < MIPLEVELS; j++)
 			mt->offsets[j] = LittleLong(mt->offsets[j]);
 
 		if((mt->width & 15) || (mt->height & 15))
 			Sys_Error("Texture %s is not 16 aligned", mt->name);
+
 		pixels = mt->width * mt->height / 64 * 85;
-		tx = Hunk_AllocName(sizeof(texture_t) + pixels, loadname);
+		tx = Hunk_AllocName(sizeof(texture_t) + pixels, loadname); //= ZG_Malloc(&loadmodel->memgroup, sizeof(texture_t));
 		loadmodel->textures[i] = tx;
 
-		memcpy(tx->name, mt->name, sizeof(tx->name));
+		Q_memcpy(tx->name, mt->name, sizeof(tx->name));
+
 		tx->width = mt->width;
 		tx->height = mt->height;
+		
+		if(!mt->offsets[0])
+			continue; // this is an external texture, load it a bit later (from a wad)
+		
+//#ifndef SWDS
+///////////////////////////////////////
+		//Mod_LoadMiptex(loadmodel, tx, mt);
+///////////////////////////////////////
+		uint size = 
+		(mt->width>>0)*(mt->height>>0) +
+		(mt->width>>1)*(mt->height>>1) +
+		(mt->width>>2)*(mt->height>>2) +
+		(mt->width>>3)*(mt->height>>3);
+
+		byte *palette;
+		
+		if(*(short*)((byte *)mt + mt->offsets[3] + (mt->width>>3)*(mt->height>>3)) == 256)
+		{
+			// specific palette hidden at the end
+			tx->offsets[0] = Z_Malloc(size + 768); // TODO: why additional 768 bytes?
+			/*tx->palette*/ palette = tx->offsets[0] + size;
+			Q_memcpy(/*tx->*/palette, (byte *)mt + mt->offsets[3] + (mt->width>>3)*(mt->height>>3) + 2, 768);
+		}
+		else
+		{
+			// TODO: something went wrong in this case
+		};
+		
 		for(j = 0; j < MIPLEVELS; j++)
 			tx->offsets[j] = mt->offsets[j] + sizeof(texture_t) - sizeof(miptex_t);
+		
 		// the pixels immediately follow the structures
-		//memcpy(tx + 1, mt + 1, pixels); // TODO
+		Q_memcpy(tx + 1, mt + 1, pixels); // TODO
 
 #ifndef SWDS
 		if(!isDedicated)
@@ -391,12 +434,13 @@ void Mod_LoadTextures(lump_t *l)
 			else
 			{
 				texture_mode = GL_LINEAR_MIPMAP_NEAREST; //_LINEAR;
-				//tx->gl_texturenum = GL_LoadTexture(mt->name, tx->width, tx->height, (byte *)(tx + 1), true, false); // TODO
+				tx->gl_texturenum = GL_LoadTexture(mt->name, tx->width, tx->height, (byte *)(tx + 1), palette, true, false);
 				texture_mode = GL_LINEAR;
 			};
 		};
+///////////////////////////////////////
 #endif
-	}
+	};
 
 	//
 	// sequence the animations
@@ -407,7 +451,7 @@ void Mod_LoadTextures(lump_t *l)
 		if(!tx || tx->name[0] != '+')
 			continue;
 		if(tx->anim_next)
-			continue; // allready sequenced
+			continue; // already sequenced
 
 		// find the number of frames in the animation
 		memset(anims, 0, sizeof(anims));
@@ -461,7 +505,7 @@ void Mod_LoadTextures(lump_t *l)
 			}
 			else
 				Sys_Error("Bad animating texture %s", tx->name);
-		}
+		};
 
 #define ANIM_CYCLE 2
 		// link them all together
@@ -469,28 +513,39 @@ void Mod_LoadTextures(lump_t *l)
 		{
 			tx2 = anims[j];
 			if(!tx2)
+			{
 				Sys_Error("Missing frame %i of %s", j, tx->name);
+				//Con_Printf (CON_ERROR "Missing frame %i of %s\n",j, tx->name);
+				//return false;
+			};
 			tx2->anim_total = max * ANIM_CYCLE;
 			tx2->anim_min = j * ANIM_CYCLE;
 			tx2->anim_max = (j + 1) * ANIM_CYCLE;
 			tx2->anim_next = anims[(j + 1) % max];
 			if(altmax)
 				tx2->alternate_anims = altanims[0];
-		}
+		};
+
 		for(j = 0; j < altmax; j++)
 		{
 			tx2 = altanims[j];
 			if(!tx2)
+			{
 				Sys_Error("Missing frame %i of %s", j, tx->name);
+				//Con_Printf (CON_ERROR "Missing frame %i of %s\n",j, tx->name);
+				//return false;
+			};
 			tx2->anim_total = altmax * ANIM_CYCLE;
 			tx2->anim_min = j * ANIM_CYCLE;
 			tx2->anim_max = (j + 1) * ANIM_CYCLE;
 			tx2->anim_next = altanims[(j + 1) % altmax];
 			if(max)
 				tx2->alternate_anims = anims[0];
-		}
-	}
-}
+		};
+	};
+	
+	//return true;
+};
 
 /*
 =================
@@ -503,8 +558,9 @@ void Mod_LoadLighting(lump_t *l)
 	{
 		loadmodel->lightdata = NULL;
 		return;
-	}
-	loadmodel->lightdata = Hunk_AllocName(l->filelen, loadname);
+	};
+	
+	loadmodel->lightdata = Hunk_AllocName(l->filelen, loadname); // TODO: Hunk_Alloc in q2
 	memcpy(loadmodel->lightdata, mod_base + l->fileofs, l->filelen);
 }
 
@@ -526,6 +582,76 @@ void Mod_LoadVisibility(lump_t *l)
 
 /*
 =================
+Mod_ParseWadsFromEntityLump
+For Half-life maps
+=================
+*/
+static void Mod_ParseWadsFromEntityLump(char *data)
+{
+	char *s, key[1024], value[1024];
+	int i, j, k;
+
+	if (!data || !(data = COM_Parse(data)))
+		return;
+
+	if (com_token[0] != '{')
+		return; // error
+
+	while (1)
+	{
+		if (!(data = COM_Parse(data)))
+			return; // error
+
+		if (com_token[0] == '}')
+			break; // end of worldspawn
+
+		Q_strncpy(key, (com_token[0] == '_') ? com_token + 1 : com_token, sizeof(key));
+
+		for (s = key + strlen(key) - 1; s >= key && *s == ' '; s--)		// remove trailing spaces
+			*s = 0;
+
+		if (!(data = COM_Parse(data)))
+			return; // error
+
+		Q_strncpy(value, com_token, sizeof(value));
+
+		if (!strcmp("MaxRange", key))
+            Cvar_Set("r_maxrange", value);
+
+		if (!strcmp("wad", key))
+		{
+			j = 0;
+			for (i = 0; i < strlen(value); i++)
+			{
+				if (value[i] != ';' && value[i] != '\\' && value[i] != '/' && value[i] != ':')
+					break;
+			}
+			if (!value[i])
+				continue;
+			for ( ; i < sizeof(value); i++)
+			{
+				// ignore path - the \\ check is for HalfLife... stupid windoze 'programmers'...
+				if (value[i] == '\\' || value[i] == '/' || value[i] == ':')
+				{
+					j = i + 1;
+				}
+                else if (value[i] == ';' || value[i] == 0)
+				{
+					k = value[i];
+					value[i] = 0;
+					if (value[j])
+						WAD3_LoadTextureWadFile (value + j);
+					j = i + 1;
+					if (!k)
+						break;
+				}
+			}
+		}
+    }
+}
+
+/*
+=================
 Mod_LoadEntities
 =================
 */
@@ -538,6 +664,8 @@ void Mod_LoadEntities(lump_t *l)
 	}
 	loadmodel->entities = Hunk_AllocName(l->filelen, loadname);
 	memcpy(loadmodel->entities, mod_base + l->fileofs, l->filelen);
+	
+	Mod_ParseWadsFromEntityLump(loadmodel->entities);
 }
 
 /*
@@ -1157,6 +1285,7 @@ float RadiusFromBounds(vec3_t mins, vec3_t maxs)
 Mod_LoadBrushModel
 =================
 */
+#define BSPVERSION_HLA 29 // TODO: temp support of HL:Alpha maps
 void Mod_LoadBrushModel(model_t *mod, void *buffer)
 {
 	int i, j;
@@ -1168,8 +1297,8 @@ void Mod_LoadBrushModel(model_t *mod, void *buffer)
 	header = (dheader_t *)buffer;
 
 	i = LittleLong(header->version);
-	if(i != BSPVERSION)
-		Sys_Error("Mod_LoadBrushModel: %s has wrong version number (%i should be %i)", mod->name, i, BSPVERSION);
+	if(i != BSPVERSION && i != BSPVERSION_HLA)
+		Sys_Error("Mod_LoadBrushModel: %s has wrong version number (%i should be %i or %i)", mod->name, i, BSPVERSION, BSPVERSION_HLA);
 
 	// swap all the lumps
 	mod_base = (byte *)header;
@@ -1496,7 +1625,7 @@ void *Mod_LoadAllSkins(int numskins, daliasskintype_t *pskintype)
 			pheader->gl_texturenum[i][2] =
 			pheader->gl_texturenum[i][3] =
 			GL_LoadTexture(name, pheader->skinwidth,
-			               pheader->skinheight, (byte *)(pskintype + 1), true, false);
+			               pheader->skinheight, (byte *)(pskintype + 1), NULL, true, false);
 			pskintype = (daliasskintype_t *)((byte *)(pskintype + 1) + s);
 		}
 		else
@@ -1526,7 +1655,7 @@ void *Mod_LoadAllSkins(int numskins, daliasskintype_t *pskintype)
 				sprintf(name, "%s_%i_%i", loadmodel->name, i, j);
 				pheader->gl_texturenum[i][j & 3] =
 				GL_LoadTexture(name, pheader->skinwidth,
-				               pheader->skinheight, (byte *)(pskintype), true, false);
+				               pheader->skinheight, (byte *)(pskintype), NULL, true, false);
 				pskintype = (daliasskintype_t *)((byte *)(pskintype) + s);
 			}
 			k = j;
@@ -1766,7 +1895,7 @@ void *Mod_LoadSpriteFrame(void *pin, mspriteframe_t **ppframe, int framenum)
 	pspriteframe->right = width + origin[0];
 
 	sprintf(name, "%s_%i", loadmodel->name, framenum);
-	pspriteframe->gl_texturenum = GL_LoadTexture(name, width, height, (byte *)(pinframe + 1), true, true);
+	pspriteframe->gl_texturenum = GL_LoadTexture(name, width, height, (byte *)(pinframe + 1), NULL, true, true);
 
 	return (void *)((byte *)pinframe + sizeof(dspriteframe_t) + size);
 }
@@ -1914,31 +2043,179 @@ Mod_LoadStudioModel
 void Mod_LoadStudioModel(model_t *mod, void *buffer)
 {
 	// TODO
-	Sys_Error("Studip models are not supported yet!");
-/*
+	//Sys_Error("Studio models are not supported yet!");
+
 	int version;
-	dstudiomodel_t *pin;
+	studiohdr_t *header; // TODO: was pin
+	studiohdr_t *texheader;
 	mstudiomodel_t *pstudiomdl;
+	//mstudiobone_t *bones;
+	//mstudiobonecontroller_t *bonectls;
 	int size;
 	
-	pin = (dstudiomodel_t*)buffer;
+	header = (studiohdr_t*)buffer;
 	
-	version = LittleLong(pin->version);
+#if defined(HLSERVER) && (defined(__powerpc__) || defined(__ppc__))
+// this is to let anyone who tries porting it know that there is a serious issue. And I'm lazy.
+#ifdef warningmsg
+#pragma warningmsg("-----------------------------------------")
+#pragma warningmsg("FIXME: No byteswapping on studio models")	// hah, yeah, good luck with that, you'll need it.
+#pragma warningmsg("-----------------------------------------")
+#endif
+#endif
+
+	//version = /*LittleLong(*header->version; //); // TODO: No byteswapping on studio models?
 	
-	if(version != STUDIO_VERSION)
+	if(version != STUDIO_VERSION) // 10
+	{
 		Sys_Error("%s has wrong version number (%d should be %d)", mod->name, version, STUDIO_VERSION);
+		//Con_Printf("Error: Cannot load model %s - unknown version %i\n", mod->name, header->version);
+		//return false;
+	};
 	
 	size = sizeof(mstudiomodel_t); // TODO
 	
 	pstudiomdl = Hunk_AllocName(size, loadname);
 	
+	if (header->numcontrollers > MAXSTUDIOCONTROLLERS)
+	{
+		Con_Printf("Error: Cannot load model %s - too many controllers %i\n", mod->name, header->numcontrollers);
+		return; //false;
+	};
+	
+	if (header->numbones > MAXSTUDIOBONES)
+	{
+		Con_Printf("Error: Cannot load model %s - too many bones %i\n", mod->name, header->numbones);
+		return; //false;
+	};
+	
+	// POST LOAD
+	
+	texheader = NULL; // TODO: = header;
+	
+	// preload textures
+	if (!header->numtextures) // TODO: header->numtextures == 0
+	{
+		size_t fz;
+		char texmodelname[MAX_QPATH]; // TODO: 256
+		
+		COM_StripExtension(mod->name, texmodelname/*, sizeof(texmodelname)*/);
+		Q_strcat(texmodelname, "T.mdl"/*, sizeof(texmodelname)*/);
+		
+		// no textures? eesh. They must be stored externally.
+		texheader /*= texmem*/ = (studiohdr_t*)COM_LoadFile(texmodelname, 0, &fz); // TODO: = LoadModel(texmodelname)
+		if (texheader)
+		{
+			if (texheader->version != STUDIO_VERSION) // 10
+				texheader = NULL;
+		}
+		else
+		{
+			// TODO: FreeModel(texheader); // free the model
+			// TODO: return false;? // don't have to anything to do here (TODO: check if we're able to quit this way)
+		};
+		
+		//m_owntexmodel = true; // TODO: mark that we use an additional T model for textures
+	}
+	else
+	{
+		texheader = header;
+		//m_owntexmodel = false; // TODO: mark that we don't use an additional T model for textures
+	};
+	
+	if (!texheader)
+		texheader = header;
+	else
+		header->numtextures = texheader->numtextures;
+
+	// preload animations
+	/*
+	if (m_pstudiohdr->numseqgroups > 1)
+	{
+		for (int i = 1; i < m_pstudiohdr->numseqgroups; i++)
+		{
+			char seqgroupname[256];
+
+			strcpy( seqgroupname, modelname );
+			sprintf( &seqgroupname[strlen(seqgroupname) - 4], "%02d.mdl", i );
+
+			m_panimhdr[i] = LoadModel( seqgroupname );
+			if (!m_panimhdr[i])
+			{
+				FreeModel ();
+				return false;
+			};
+		};
+	};
+	*/
+	
+	//bones = (mstudiobone_t *) ((byte *) header + header->boneindex);
+	//bonectls = (mstudiobonecontroller_t *) ((byte *) header + header->controllerindex);
+
+	//model->header = header;
+	//model->bones = bones;
+	//model->bonectls = bonectls;
+	
+#ifndef SWDS
+	//tex = (mstudiotexture_t *) ((byte *) texheader + texheader->textures);
+
+	//shaders = ZG_Malloc(&mod->memgroup, texheader->numtextures * sizeof(shader_t));
+	//model->shaders = shaders;
+	for(int i = 0; i < texheader->numtextures; i++)
+	{
+		//Q_snprintfz(shaders[i].name, sizeof(shaders[i].name), "%s/%s", mod->name, COM_SkipPath(tex[i].name));
+		//Q_memset(&shaders[i].defaulttex, 0, sizeof(shaders[i].defaulttex));
+		//shaders[i].defaulttex.base = Image_GetTexture(shaders[i].name, "", IF_NOALPHA, (byte *) texheader + tex[i].offset, (byte *) texheader + tex[i].w * tex[i].h + tex[i].offset, tex[i].w, tex[i].h, TF_8PAL24);
+		//shaders[i].w = tex[i].w;
+		//shaders[i].h = tex[i].h;
+	};
+
+	//model->numskinrefs = texheader->skinrefs;
+	//model->numskingroups = texheader->skingroups;
+	//model->skinref = ZG_Malloc(&mod->memgroup, model->numskinrefs*model->numskingroups * sizeof(*model->skinref));
+	
+	//Q_memcpy(model->skinref, (short *) ((byte *) texheader + texheader->skins), model->numskinrefs*model->numskingroups * sizeof(*model->skinref));
+#endif
+
+	//if (texmem)
+		//Z_Free(texmem);
+	
 	mod->cache.data = pstudiomdl;
 	
-	pstudiomdl->type = LittleLong(pin->type);
-	mod->synctype = LittleLong(pin->synctype);
+	//pstudiomdl->type = pin->type; //LittleLong(pin->type); // TODO
+	//mod->synctype = pin->synctype; //LittleLong(pin->synctype); // TODO
+	
+	// TODO
+	//mod->funcs.NativeContents = HLMDL_Contents;
+	//mod->funcs.NativeTrace = HLMDL_Trace;
 	
 	mod->type = mod_studio;
-*/
+	
+	//mod->numframes = model->header->numseq;
+	//mod->meshinfo = model;
+
+#ifndef SWDS
+	//model->numgeomsets = model->header->numbodyparts;
+	//model->geomset = ZG_Malloc(&mod->memgroup, sizeof(*model->geomset) * model->numgeomsets);
+	
+	//for (body = 0; body < model->numgeomsets; body++)
+	{
+		//mstudiobodyparts_t *bodypart = (mstudiobodyparts_t *) ((byte *) model->header + model->header->bodypartindex) + body;
+		int bodyindex;
+		//model->geomset[body].numalternatives = bodypart->nummodels;
+		//model->geomset[body].alternatives = ZG_Malloc(&mod->memgroup, sizeof(*model->geomset[body].alternatives) * bodypart->nummodels);
+		//for (bodyindex = 0; bodyindex < bodypart->nummodels; bodyindex++)
+		{
+			//mstudiomodel_t *amodel = (mstudiomodel_t *) ((byte *) model->header + bodypart->modelindex) + bodyindex;
+			//model->geomset[body].alternatives[bodyindex].numsubmeshes = amodel->nummesh;
+			//model->geomset[body].alternatives[bodyindex].submesh = ZG_Malloc(&mod->memgroup, sizeof(*model->geomset[body].alternatives[bodyindex].submesh) * amodel->nummesh);
+			//HLMDL_PrepareVerticies(model, amodel, &model->geomset[body].alternatives[bodyindex]);
+		};
+	};
+	// FIXME: No VBOs used.
+#endif
+
+	//return true;
 };
 
 //=============================================================================

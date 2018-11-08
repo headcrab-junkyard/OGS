@@ -1,28 +1,30 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
+ *	This file is part of OGS Engine
+ *	Copyright (C) 1996-1997 Id Software, Inc.
+ *	Copyright (C) 2018 BlackPhrase
+ *
+ *	OGS Engine is free software: you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License as published by
+ *	the Free Software Foundation, either version 3 of the License, or
+ *	(at your option) any later version.
+ *
+ *	OGS Engine is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *	GNU General Public License for more details.
+ *
+ *	You should have received a copy of the GNU General Public License
+ *	along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
+ */
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+/// @file
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
 #include <termios.h>
+
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/vt.h>
-#include <stdarg.h>
-#include <stdio.h>
+
 #include <signal.h>
 
 #include <asm/io.h>
@@ -97,39 +99,6 @@ cvar_t	m_filter = {"m_filter","0"};
 
 int scr_width, scr_height;
 
-/*-----------------------------------------------------------------------*/
-
-//int		texture_mode = GL_NEAREST;
-//int		texture_mode = GL_NEAREST_MIPMAP_NEAREST;
-//int		texture_mode = GL_NEAREST_MIPMAP_LINEAR;
-int		texture_mode = GL_LINEAR;
-//int		texture_mode = GL_LINEAR_MIPMAP_NEAREST;
-//int		texture_mode = GL_LINEAR_MIPMAP_LINEAR;
-
-int		texture_extension_number = 1;
-
-float		gldepthmin, gldepthmax;
-
-cvar_t	gl_ztrick = {"gl_ztrick","1"};
-
-const char *gl_vendor;
-const char *gl_renderer;
-const char *gl_version;
-const char *gl_extensions;
-
-qboolean is8bit = false;
-qboolean isPermedia = false;
-qboolean gl_mtexable = false;
-
-/*-----------------------------------------------------------------------*/
-void D_BeginDirectRect (int x, int y, byte *pbitmap, int width, int height)
-{
-}
-
-void D_EndDirectRect (int x, int y, int width, int height)
-{
-}
-
 /*
 =================
 VID_Gamma_f
@@ -137,7 +106,7 @@ VID_Gamma_f
 Keybinding command
 =================
 */
-void VID_Gamma_f (void)
+void VID_Gamma_f ()
 {
 	float	gamma, f, inf;
 	unsigned char	palette[768];
@@ -203,17 +172,6 @@ void keyhandler(int scancode, int state)
 
 }
 
-void VID_Shutdown(void)
-{
-	if (!fc)
-		return;
-
-	fxMesaDestroyContext(fc);
-
-	if (UseKeyboard)
-		keyboard_close();
-}
-
 void signal_handler(int sig)
 {
 	printf("Received signal %d, exiting...\n", sig);
@@ -221,7 +179,7 @@ void signal_handler(int sig)
 	exit(0);
 }
 
-void InitSig(void)
+void InitSig()
 {
 	signal(SIGHUP, signal_handler);
 	signal(SIGQUIT, signal_handler);
@@ -234,12 +192,12 @@ void InitSig(void)
 	signal(SIGTERM, signal_handler);
 }
 
-void VID_ShiftPalette(unsigned char *p)
+void VID_ShiftPalette(unsigned short *p)
 {
 	VID_SetPalette(p);
 }
 
-void	VID_SetPalette (unsigned char *palette)
+void	VID_SetPalette (unsigned short *palette)
 {
 	byte	*pal;
 	unsigned short r,g,b;
@@ -321,7 +279,7 @@ void	VID_SetPalette (unsigned char *palette)
 GL_Init
 ===============
 */
-void GL_Init (void)
+void GL_Init ()
 {
 	gl_vendor = glGetString (GL_VENDOR);
 	Con_Printf ("GL_VENDOR: %s\n", gl_vendor);
@@ -376,14 +334,7 @@ void GL_BeginRendering (int *x, int *y, int *width, int *height)
 //	glViewport (*x, *y, *width, *height);
 }
 
-
-void GL_EndRendering (void)
-{
-	glFlush();
-	fxMesaSwapBuffers();
-}
-
-void Init_KBD(void)
+void Init_KBD()
 {
 	int i;
 
@@ -508,14 +459,6 @@ void Init_KBD(void)
 	}
 }
 
-#define NUM_RESOLUTIONS 3
-
-static resolutions[NUM_RESOLUTIONS][3]={ 
-  { 512, 384, GR_RESOLUTION_512x384 },
-  { 640, 400, GR_RESOLUTION_640x400 },
-  { 640, 480, GR_RESOLUTION_640x480 }
-};
-
 int findres(int *width, int *height)
 {
 	int i;
@@ -530,11 +473,6 @@ int findres(int *width, int *height)
 	*width = 640;
 	*height = 480;
 	return GR_RESOLUTION_640x480;
-}
-
-qboolean VID_Is8bit(void)
-{
-	return is8bit;
 }
 
 #ifdef GL_EXT_SHARED
@@ -565,7 +503,7 @@ void VID_Init8bitPalette()
 #else
 extern void gl3DfxSetPaletteEXT(GLuint *pal);
 
-void VID_Init8bitPalette(void) 
+void VID_Init8bitPalette() 
 {
 	// Check for 8bit Extensions and initialize them.
 	int i;
@@ -590,12 +528,11 @@ void VID_Init8bitPalette(void)
 }
 #endif
 
-void VID_Init(unsigned char *palette)
+void VID_Init(unsigned short *palette)
 {
 	int i;
 	GLint attribs[32];
 	char	gldir[MAX_OSPATH];
-	int width = 640, height = 480;
 
 	S_Init();
 
@@ -670,7 +607,7 @@ void VID_Init(unsigned char *palette)
 	GL_Init();
 
 	sprintf (gldir, "%s/glquake", com_gamedir);
-	Sys_mkdir (gldir);
+	FS_mkdir (gldir);
 
 	VID_SetPalette(palette);
 
@@ -682,174 +619,5 @@ void VID_Init(unsigned char *palette)
 	vid.recalc_refdef = 1;				// force a surface cache flush
 }
 
-void Sys_SendKeyEvents(void)
-{
-	if (UseKeyboard)
-		while (keyboard_update());
-}
-
-void Force_CenterView_f (void)
-{
-	cl.viewangles[PITCH] = 0;
-}
-
-
-void mousehandler(int buttonstate, int dx, int dy)
-{
-	mouse_buttonstate = buttonstate;
-	mx += dx;
-	my += dy;
-}
-
-void IN_Init(void)
-{
-
-	int mtype;
-	char *mousedev;
-	int mouserate;
-
-	if (UseMouse)
-	{
-
-		Cvar_RegisterVariable (&mouse_button_commands[0]);
-		Cvar_RegisterVariable (&mouse_button_commands[1]);
-		Cvar_RegisterVariable (&mouse_button_commands[2]);
-		Cmd_AddCommand ("force_centerview", Force_CenterView_f);
-
-		mouse_buttons = 3;
-
-		mtype = vga_getmousetype();
-
-		mousedev = "/dev/mouse";
-		if (getenv("MOUSEDEV")) mousedev = getenv("MOUSEDEV");
-		if (COM_CheckParm("-mdev"))
-			mousedev = com_argv[COM_CheckParm("-mdev")+1];
-
-		mouserate = 1200;
-		if (getenv("MOUSERATE")) mouserate = atoi(getenv("MOUSERATE"));
-		if (COM_CheckParm("-mrate"))
-			mouserate = atoi(com_argv[COM_CheckParm("-mrate")+1]);
-
-		if (mouse_init(mousedev, mtype, mouserate))
-		{
-			Con_Printf("No mouse found\n");
-			UseMouse = 0;
-		}
-		else
-			mouse_seteventhandler(mousehandler);
-
-	}
-
-}
-
-void IN_Shutdown(void)
-{
-	if (UseMouse)
-		mouse_close();
-}
-
-/*
-===========
-IN_Commands
-===========
-*/
-void IN_Commands (void)
-{
-	if (UseMouse)
-	{
-		// poll mouse values
-		while (mouse_update())
-			;
-
-		// perform button actions
-		if ((mouse_buttonstate & MOUSE_LEFTBUTTON) &&
-			!(mouse_oldbuttonstate & MOUSE_LEFTBUTTON))
-			Key_Event (K_MOUSE1, true);
-		else if (!(mouse_buttonstate & MOUSE_LEFTBUTTON) &&
-			(mouse_oldbuttonstate & MOUSE_LEFTBUTTON))
-			Key_Event (K_MOUSE1, false);
-
-		if ((mouse_buttonstate & MOUSE_RIGHTBUTTON) &&
-			!(mouse_oldbuttonstate & MOUSE_RIGHTBUTTON))
-			Key_Event (K_MOUSE2, true);
-		else if (!(mouse_buttonstate & MOUSE_RIGHTBUTTON) &&
-			(mouse_oldbuttonstate & MOUSE_RIGHTBUTTON))
-			Key_Event (K_MOUSE2, false);
-
-		if ((mouse_buttonstate & MOUSE_MIDDLEBUTTON) &&
-			!(mouse_oldbuttonstate & MOUSE_MIDDLEBUTTON))
-			Key_Event (K_MOUSE3, true);
-		else if (!(mouse_buttonstate & MOUSE_MIDDLEBUTTON) &&
-			(mouse_oldbuttonstate & MOUSE_MIDDLEBUTTON))
-			Key_Event (K_MOUSE3, false);
-
-		mouse_oldbuttonstate = mouse_buttonstate;
-	}
-}
-
-/*
-===========
-IN_Move
-===========
-*/
-void IN_MouseMove (usercmd_t *cmd)
-{
-	if (!UseMouse)
-		return;
-
-	// poll mouse values
-	while (mouse_update())
-		;
-
-	if (m_filter.value)
-	{
-		mouse_x = (mx + old_mouse_x) * 0.5;
-		mouse_y = (my + old_mouse_y) * 0.5;
-	}
-	else
-	{
-		mouse_x = mx;
-		mouse_y = my;
-	}
-	old_mouse_x = mx;
-	old_mouse_y = my;
-	mx = my = 0; // clear for next update
-
-	mouse_x *= sensitivity.value;
-	mouse_y *= sensitivity.value;
-
-// add mouse X/Y movement to cmd
-	if ( (in_strafe.state & 1) || (lookstrafe.value && (in_mlook.state & 1) ))
-		cmd->sidemove += m_side.value * mouse_x;
-	else
-		cl.viewangles[YAW] -= m_yaw.value * mouse_x;
-	
-	if (in_mlook.state & 1)
-		V_StopPitchDrift ();
-		
-	if ( (in_mlook.state & 1) && !(in_strafe.state & 1))
-	{
-		cl.viewangles[PITCH] += m_pitch.value * mouse_y;
-		if (cl.viewangles[PITCH] > 80)
-			cl.viewangles[PITCH] = 80;
-		if (cl.viewangles[PITCH] < -70)
-			cl.viewangles[PITCH] = -70;
-	}
-	else
-	{
-		if ((in_strafe.state & 1) && noclip_anglehack)
-			cmd->upmove -= m_forward.value * mouse_y;
-		else
-			cmd->forwardmove -= m_forward.value * mouse_y;
-	}
-}
-
-void IN_Move (usercmd_t *cmd)
-{
-	IN_MouseMove(cmd);
-}
-
-
-void	VID_LockBuffer (void) {}
-void	VID_UnlockBuffer (void) {}
-
+void	VID_LockBuffer () {}
+void	VID_UnlockBuffer () {}
