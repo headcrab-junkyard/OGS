@@ -21,7 +21,7 @@
 #include "quakedef.h"
 #include "EngineSurface.h"
 
-EXPOSE_SINGLE_INTERFACE(CEngineSurface, IEngineSurface, ENGINESURFACE_INTERFACE_VERSION);
+EXPOSE_SINGLE_INTERFACE(CEngineSurface, IEngineSurface, ENGINE_SURFACE_VERSION);
 
 CEngineSurface::CEngineSurface() = default;
 CEngineSurface::~CEngineSurface() = default;
