@@ -763,3 +763,35 @@ int NUM_FOR_EDICT(edict_t *e)
 		Sys_Error("NUM_FOR_EDICT: bad pointer");
 	return b;
 };
+
+void SuckOutClassname(char *data, edict_t *ent)
+{
+	// go through all the dictionary pairs
+	while(1)
+	{
+		// parse key
+		data = COM_Parse(data);
+		if(com_token[0] == '}')
+			break;
+		if(!data)
+			Sys_Error("ED_ParseEntity: EOF without closing brace");
+
+		// anglehack is to allow QuakeEd to write single scalar angles
+		// and allow them to be turned into vectors. (FIXME...)
+		if(!Q_strcmp(com_token, "classname"))
+		{
+			// parse value
+			data = COM_Parse(data);
+			if(!data)
+				Sys_Error("ED_ParseEntity: EOF without closing brace");
+
+			if(com_token[0] == '}')
+				Sys_Error("ED_ParseEntity: closing brace without data");
+			
+			break;
+		};
+	};
+	
+	ent->v.classname = PR_SetString(ED_NewString(com_token));
+};
+};
