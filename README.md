@@ -57,8 +57,8 @@ showcasing its features using some recreated HL Alpha maps)
 
 ## Screenshots
 
-![Console Test](docs/ogs-console-test.png)
-![Menu Test](docs/ogs-menu-test.png)
+![Menu Test](docs/ogs-menu-test2.png)
+![Map Test](docs/ogs-map-test.png)
 
 ## License
 
