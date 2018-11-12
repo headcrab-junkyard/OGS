@@ -857,7 +857,6 @@ void CL_ParseServerMessage()
 	                     //
 	                     // parse the message
 	                     //
-	MSG_BeginReading();
 
 	while(1)
 	{
