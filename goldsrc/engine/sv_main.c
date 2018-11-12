@@ -729,7 +729,7 @@ void SV_ReadPackets()
 		// check for packets from connected clients
 		for(i = 0, cl = svs.clients; i < MAX_CLIENTS; i++, cl++)
 		{
-			if(!cl->active)
+			if(!cl->connected) // TODO: cl->state == cs_free in qw
 				continue;
 			if(!NET_CompareBaseAdr(net_from, cl->netchan.remote_address))
 				continue;
