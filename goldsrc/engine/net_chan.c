@@ -162,6 +162,7 @@ void Netchan_Setup(netsrc_t sock, netchan_t *chan, netadr_t adr, int qport)
 {
 	memset(chan, 0, sizeof(*chan));
 
+	chan->sock = sock;
 	chan->remote_address = adr;
 	chan->last_received = realtime;
 
