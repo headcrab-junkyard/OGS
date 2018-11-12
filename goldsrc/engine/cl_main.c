@@ -962,7 +962,8 @@ CL_ReadFromServer
 Read all incoming data from the server
 ===============
 */
-void CL_ReadPackets()
+/*
+void CL_ReadFromServer()
 {
 	int ret;
 
@@ -991,6 +992,61 @@ void CL_ReadPackets()
 	// bring the links up to date
 	//
 }
+*/
+
+/*
+=================
+CL_ReadPackets
+=================
+*/
+void CL_ReadPackets ()
+{
+//	while (NET_GetPacket ())
+	while (CL_GetMessage())
+	{
+		//
+		// remote command packet
+		//
+		if (*(int *)net_message.data == -1)
+		{
+			CL_ConnectionlessPacket ();
+			continue;
+		};
+
+		if (net_message.cursize < 8)
+		{
+			Con_Printf ("%s: Runt packet\n",NET_AdrToString(net_from));
+			continue;
+		};
+
+		//
+		// packet from server
+		//
+		if (!cls.demoplayback && !NET_CompareAdr (net_from, cls.netchan.remote_address))
+		{
+			Con_DPrintf ("%s:sequenced packet without connection\n", NET_AdrToString(net_from));
+			continue;
+		};
+		
+		if (!Netchan_Process(&cls.netchan))
+			continue; // wasn't accepted for some reason
+		
+		CL_ParseServerMessage ();
+
+//		if (cls.demoplayback && cls.state >= ca_active && !CL_DemoBehind())
+//			return;
+	};
+
+	//
+	// check timeout
+	//
+	if (cls.state >= ca_connected && realtime - cls.netchan.last_received > cl_timeout.value)
+	{
+		Con_Printf ("\nServer connection timed out.\n");
+		CL_Disconnect ();
+		return;
+	};	
+};
 
 /*
 =================
