@@ -20,6 +20,7 @@
 
 #include "quakedef.h"
 #include "vgui2/IVGUI.h"
+#include "baseuiwrap.h"
 
 void *gpVGui2Lib{nullptr};
 vgui2::IVGui *gpVGui{nullptr};
@@ -60,11 +61,18 @@ void VGuiWrap2_Startup()
 	if(!LoadVGui2Module())
 		return;
 	
-	gpVGui->Init(nullptr, 0); // TODO
+	CreateInterfaceFn factories[1];
+	factories[0] = Sys_GetFactoryThis();
+	
+	gpVGui->Init(factories, 1); // TODO
+	
+	BaseUI_Initialize(factories, 1); // TODO
 };
 
 void VGuiWrap2_Shutdown()
 {
+	BaseUI_Shutdown();
+	
 	if(gpVGui)
 		gpVGui->Shutdown();
 	
