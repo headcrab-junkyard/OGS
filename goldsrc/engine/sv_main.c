@@ -2357,7 +2357,7 @@ void SV_SendClientMessages()
 	// build individual updates
 	for(i = 0, c = svs.clients; i < svs.maxclients; i++, c++)
 	{
-		if(!c->active)
+		if(!c->connected)
 			continue;
 
 		if(c->drop)
