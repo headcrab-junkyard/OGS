@@ -27,6 +27,11 @@
 
 /// @file
 
+#include "exports.hpp"
+#include "edict.h"
+
+enginefuncs_t *gpEngine = &gEngFuncs;
+
 void InitBodyQue();
 
 /*
@@ -45,7 +50,7 @@ void main()
 };
 */
 
-entity lastspawn;
+//entity lastspawn;
 
 //=======================
 /*QUAKED worldspawn (0 0 0) ?
@@ -61,18 +66,18 @@ World Types:
 //=======================
 C_EXPORT void worldspawn(entvars_t *self)
 {
-	lastspawn = world;
-	InitBodyQue ();
+	//lastspawn = world; // TODO
+	//InitBodyQue (); // TODO
 
 // custom map attributes
 
-	gpEngine->pfnCvar_Set("sv_gravity", "800");
+	gpEngine->pfnCVarSetString("sv_gravity", "800");
 
 
 // the area based ambient sounds MUST be the first precache_sounds
 
 // player precaches     
-	W_Precache ();                  // get weapon precaches
+	//W_Precache ();                  // get weapon precaches // TODO
 
 // sounds used from C physics code
 	gpEngine->pfnPrecacheSound ("demon/dland2.wav");            // landing thud
@@ -150,6 +155,7 @@ C_EXPORT void worldspawn(entvars_t *self)
 	gpEngine->pfnPrecacheSound ("items/protect2.wav");
 	gpEngine->pfnPrecacheSound ("items/protect3.wav");
 
+	/*
 	gpEngine->pfnPrecacheModel ("models/player.mdl");
 	gpEngine->pfnPrecacheModel ("models/eyes.mdl");
 	gpEngine->pfnPrecacheModel ("models/h_player.mdl");
@@ -179,6 +185,7 @@ C_EXPORT void worldspawn(entvars_t *self)
 	gpEngine->pfnPrecacheModel ("models/zom_gib.mdl");
 
 	gpEngine->pfnPrecacheModel ("models/v_light.mdl");
+	*/
 	
 
 //
@@ -227,6 +234,7 @@ C_EXPORT void worldspawn(entvars_t *self)
 	gpEngine->pfnLightStyle(63, "a");
 };
 
+/*
 void StartFrame()
 {
 	timelimit = cvar("timelimit") * 60;
@@ -236,6 +244,7 @@ void StartFrame()
 	
 	framecount++;
 };
+*/
 
 /*
 ==============================================================================
@@ -255,6 +264,8 @@ void bodyque()
 
 void InitBodyQue()
 {
+	// TODO
+/*
 	bodyque_head = gpEngine->pfnSpawn();
 	bodyque_head->v.classname = "bodyque";
 	bodyque_head->v.owner = gpEngine->pfnSpawn();
@@ -264,12 +275,15 @@ void InitBodyQue()
 	bodyque_head->v.owner->v.owner->v.owner = gpEngine->pfnSpawn();
 	bodyque_head->v.owner->v.owner->v.owner->v.classname = "bodyque";
 	bodyque_head->v.owner->v.owner->v.owner->v.owner = bodyque_head;
+*/
 };
 
 // make a body que entry for the given ent so the ent can be
 // respawned elsewhere
 void CopyToBodyQue(edict_t *ent)
 {
+	// TODO
+/*
 	bodyque_head.angles = ent.angles;
 	bodyque_head.model = ent.model;
 	bodyque_head.modelindex = ent.modelindex;
@@ -283,4 +297,5 @@ void CopyToBodyQue(edict_t *ent)
 	gpEngine->pfnSetSize(bodyque_head, ent.mins, ent.maxs);
 	
 	bodyque_head = bodyque_head.owner;
+*/
 };
