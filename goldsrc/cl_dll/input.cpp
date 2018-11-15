@@ -1,24 +1,54 @@
+/*
+ * This file is part of OGS Engine
+ * Copyright (C) 1996-1997 Id Software, Inc.
+ * Copyright (C) 2018 BlackPhrase
+ *
+ * OGS Engine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * OGS Engine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 /// @file
 
-cvar_t lookspring = { "lookspring", "0", FCVAR_ARCHIVE };
-cvar_t lookstrafe = { "lookstrafe", "0", FCVAR_ARCHIVE };
+#include <cstdlib>
+#include <cstring>
 
-cvar_t cl_upspeed = { "cl_upspeed", "200" }; // TODO: FCVAR_ARCHIVE?
-cvar_t cl_forwardspeed = { "cl_forwardspeed", "200", FCVAR_ARCHIVE };
-cvar_t cl_backspeed = { "cl_backspeed", "200", FCVAR_ARCHIVE };
-cvar_t cl_sidespeed = { "cl_sidespeed", "350" }; // TODO: FCVAR_ARCHIVE?
+#include "input.h"
+#include "view.h"
+#include "usercmd.h"
+#include "cvardef.h"
+#include "engine.h"
 
-cvar_t cl_movespeedkey = { "cl_movespeedkey", "2.0" };
+cvar_t *lookspring;
+cvar_t *lookstrafe;
 
-cvar_t cl_yawspeed = { "cl_yawspeed", "140" };
-cvar_t cl_pitchspeed = { "cl_pitchspeed", "150" };
+cvar_t *cl_upspeed;
+cvar_t *cl_forwardspeed;
+cvar_t *cl_backspeed;
+cvar_t *cl_sidespeed;
 
-cvar_t cl_anglespeedkey = { "cl_anglespeedkey", "1.5" };
+cvar_t *cl_movespeedkey;
 
-cvar_t m_pitch = { "m_pitch", "0.022", FCVAR_ARCHIVE };
-cvar_t m_yaw = { "m_yaw", "0.022", FCVAR_ARCHIVE };
-cvar_t m_forward = { "m_forward", "1", FCVAR_ARCHIVE };
-cvar_t m_side = { "m_side", "0.8", FCVAR_ARCHIVE };
+cvar_t *cl_yawspeed;
+cvar_t *cl_pitchspeed;
+
+cvar_t *cl_anglespeedkey;
+
+cvar_t *m_pitch;
+cvar_t *m_yaw;
+cvar_t *m_forward;
+cvar_t *m_side;
+
+vec3_t cl_viewangles{};
 
 /*
 ===============================================================================
@@ -73,7 +103,7 @@ void KeyDown(kbutton_t *b)
 	int k;
 	const char *c;
 
-	c = Cmd_Argv(1);
+	c = gpEngine->Cmd_Argv(1);
 	if(c[0])
 		k = atoi(c);
 	else
@@ -88,7 +118,7 @@ void KeyDown(kbutton_t *b)
 		b->down[1] = k;
 	else
 	{
-		Con_Printf("Three keys down for a button!\n");
+		gpEngine->Con_Printf("Three keys down for a button!\n");
 		return;
 	}
 
@@ -102,7 +132,7 @@ void KeyUp(kbutton_t *b)
 	int k;
 	const char *c;
 
-	c = Cmd_Argv(1);
+	c = gpEngine->Cmd_Argv(1);
 	if(c[0])
 		k = atoi(c);
 	else
@@ -142,7 +172,7 @@ void IN_MLookDown()
 void IN_MLookUp()
 {
 	KeyUp(&in_mlook);
-	if(!(in_mlook.state & 1) && lookspring.value)
+	if(!(in_mlook.state & 1) && lookspring->value)
 		V_StartPitchDrift();
 }
 void IN_UpDown()
@@ -280,7 +310,7 @@ void IN_JumpUp()
 
 void IN_Impulse()
 {
-	in_impulse = Q_atoi(Cmd_Argv(1));
+	in_impulse = atoi(gpEngine->Cmd_Argv(1));
 }
 
 /*
@@ -342,41 +372,45 @@ void CL_AdjustAngles(float frametime)
 	float up, down;
 
 	if(in_speed.state & 1)
-		speed = frametime * cl_anglespeedkey.value;
+		speed = frametime * cl_anglespeedkey->value;
 	else
 		speed = frametime;
 
+	gpEngine->GetViewAngles((float*)cl_viewangles);
+
 	if(!(in_strafe.state & 1))
 	{
-		cl.viewangles[YAW] -= speed * cl_yawspeed.value * CL_KeyState(&in_right);
-		cl.viewangles[YAW] += speed * cl_yawspeed.value * CL_KeyState(&in_left);
-		cl.viewangles[YAW] = anglemod(cl.viewangles[YAW]);
+		cl_viewangles[YAW] -= speed * cl_yawspeed->value * CL_KeyState(&in_right);
+		cl_viewangles[YAW] += speed * cl_yawspeed->value * CL_KeyState(&in_left);
+		cl_viewangles[YAW] = anglemod(cl_viewangles[YAW]);
 	}
 	if(in_klook.state & 1)
 	{
 		V_StopPitchDrift();
-		cl.viewangles[PITCH] -= speed * cl_pitchspeed.value * CL_KeyState(&in_forward);
-		cl.viewangles[PITCH] += speed * cl_pitchspeed.value * CL_KeyState(&in_back);
+		cl_viewangles[PITCH] -= speed * cl_pitchspeed->value * CL_KeyState(&in_forward);
+		cl_viewangles[PITCH] += speed * cl_pitchspeed->value * CL_KeyState(&in_back);
 	}
 
 	up = CL_KeyState(&in_lookup);
 	down = CL_KeyState(&in_lookdown);
 
-	cl.viewangles[PITCH] -= speed * cl_pitchspeed.value * up;
-	cl.viewangles[PITCH] += speed * cl_pitchspeed.value * down;
+	cl_viewangles[PITCH] -= speed * cl_pitchspeed->value * up;
+	cl_viewangles[PITCH] += speed * cl_pitchspeed->value * down;
 
 	if(up || down)
 		V_StopPitchDrift();
 
-	if(cl.viewangles[PITCH] > 80)
-		cl.viewangles[PITCH] = 80;
-	if(cl.viewangles[PITCH] < -70)
-		cl.viewangles[PITCH] = -70;
+	if(cl_viewangles[PITCH] > 80)
+		cl_viewangles[PITCH] = 80;
+	if(cl_viewangles[PITCH] < -70)
+		cl_viewangles[PITCH] = -70;
 
-	if(cl.viewangles[ROLL] > 50)
-		cl.viewangles[ROLL] = 50;
-	if(cl.viewangles[ROLL] < -50)
-		cl.viewangles[ROLL] = -50;
+	if(cl_viewangles[ROLL] > 50)
+		cl_viewangles[ROLL] = 50;
+	if(cl_viewangles[ROLL] < -50)
+		cl_viewangles[ROLL] = -50;
+	
+	gpEngine->SetViewAngles((float*)cl_viewangles);
 }
 
 /*
@@ -388,6 +422,8 @@ Send the intended movement message to the server
 */
 void CL_CreateMove(float frametime, usercmd_t *cmd, int active)
 {
+	int bits;
+	
 	if(active)
 	{
 		CL_AdjustAngles(frametime);
@@ -396,20 +432,20 @@ void CL_CreateMove(float frametime, usercmd_t *cmd, int active)
 
 		if(in_strafe.state & 1)
 		{
-			cmd->sidemove += cl_sidespeed.value * CL_KeyState(&in_right);
-			cmd->sidemove -= cl_sidespeed.value * CL_KeyState(&in_left);
+			cmd->sidemove += cl_sidespeed->value * CL_KeyState(&in_right);
+			cmd->sidemove -= cl_sidespeed->value * CL_KeyState(&in_left);
 		}
 
-		cmd->sidemove += cl_sidespeed.value * CL_KeyState(&in_moveright);
-		cmd->sidemove -= cl_sidespeed.value * CL_KeyState(&in_moveleft);
+		cmd->sidemove += cl_sidespeed->value * CL_KeyState(&in_moveright);
+		cmd->sidemove -= cl_sidespeed->value * CL_KeyState(&in_moveleft);
 
-		cmd->upmove += cl_upspeed.value * CL_KeyState(&in_up);
-		cmd->upmove -= cl_upspeed.value * CL_KeyState(&in_down);
+		cmd->upmove += cl_upspeed->value * CL_KeyState(&in_up);
+		cmd->upmove -= cl_upspeed->value * CL_KeyState(&in_down);
 
 		if(!(in_klook.state & 1))
 		{
-			cmd->forwardmove += cl_forwardspeed.value * CL_KeyState(&in_forward);
-			cmd->forwardmove -= cl_backspeed.value * CL_KeyState(&in_back);
+			cmd->forwardmove += cl_forwardspeed->value * CL_KeyState(&in_forward);
+			cmd->forwardmove -= cl_backspeed->value * CL_KeyState(&in_back);
 		};
 
 		//
@@ -417,9 +453,9 @@ void CL_CreateMove(float frametime, usercmd_t *cmd, int active)
 		//
 		if(in_speed.state & 1)
 		{
-			cmd->forwardmove *= cl_movespeedkey.value;
-			cmd->sidemove *= cl_movespeedkey.value;
-			cmd->upmove *= cl_movespeedkey.value;
+			cmd->forwardmove *= cl_movespeedkey->value;
+			cmd->sidemove *= cl_movespeedkey->value;
+			cmd->upmove *= cl_movespeedkey->value;
 		}
 
 		// allow mice or other external controllers to add to the move
@@ -454,57 +490,67 @@ CL_InitInput
 */
 void InitInput()
 {
-	Cmd_AddCommand("+moveup", IN_UpDown);
-	Cmd_AddCommand("-moveup", IN_UpUp);
-	Cmd_AddCommand("+movedown", IN_DownDown);
-	Cmd_AddCommand("-movedown", IN_DownUp);
-	Cmd_AddCommand("+left", IN_LeftDown);
-	Cmd_AddCommand("-left", IN_LeftUp);
-	Cmd_AddCommand("+right", IN_RightDown);
-	Cmd_AddCommand("-right", IN_RightUp);
-	Cmd_AddCommand("+forward", IN_ForwardDown);
-	Cmd_AddCommand("-forward", IN_ForwardUp);
-	Cmd_AddCommand("+back", IN_BackDown);
-	Cmd_AddCommand("-back", IN_BackUp);
-	Cmd_AddCommand("+lookup", IN_LookupDown);
-	Cmd_AddCommand("-lookup", IN_LookupUp);
-	Cmd_AddCommand("+lookdown", IN_LookdownDown);
-	Cmd_AddCommand("-lookdown", IN_LookdownUp);
-	Cmd_AddCommand("+strafe", IN_StrafeDown);
-	Cmd_AddCommand("-strafe", IN_StrafeUp);
-	Cmd_AddCommand("+moveleft", IN_MoveleftDown);
-	Cmd_AddCommand("-moveleft", IN_MoveleftUp);
-	Cmd_AddCommand("+moveright", IN_MoverightDown);
-	Cmd_AddCommand("-moveright", IN_MoverightUp);
-	Cmd_AddCommand("+speed", IN_SpeedDown);
-	Cmd_AddCommand("-speed", IN_SpeedUp);
-	Cmd_AddCommand("+attack", IN_AttackDown);
-	Cmd_AddCommand("-attack", IN_AttackUp);
-	Cmd_AddCommand("+use", IN_UseDown);
-	Cmd_AddCommand("-use", IN_UseUp);
-	Cmd_AddCommand("+jump", IN_JumpDown);
-	Cmd_AddCommand("-jump", IN_JumpUp);
-	Cmd_AddCommand("impulse", IN_Impulse);
-	Cmd_AddCommand("+klook", IN_KLookDown);
-	Cmd_AddCommand("-klook", IN_KLookUp);
-	Cmd_AddCommand("+mlook", IN_MLookDown);
-	Cmd_AddCommand("-mlook", IN_MLookUp);
+	gpEngine->pfnAddCommand("+moveup", IN_UpDown);
+	gpEngine->pfnAddCommand("-moveup", IN_UpUp);
+	gpEngine->pfnAddCommand("+movedown", IN_DownDown);
+	gpEngine->pfnAddCommand("-movedown", IN_DownUp);
+	gpEngine->pfnAddCommand("+left", IN_LeftDown);
+	gpEngine->pfnAddCommand("-left", IN_LeftUp);
+	gpEngine->pfnAddCommand("+right", IN_RightDown);
+	gpEngine->pfnAddCommand("-right", IN_RightUp);
+	gpEngine->pfnAddCommand("+forward", IN_ForwardDown);
+	gpEngine->pfnAddCommand("-forward", IN_ForwardUp);
+	gpEngine->pfnAddCommand("+back", IN_BackDown);
+	gpEngine->pfnAddCommand("-back", IN_BackUp);
+	gpEngine->pfnAddCommand("+lookup", IN_LookupDown);
+	gpEngine->pfnAddCommand("-lookup", IN_LookupUp);
+	gpEngine->pfnAddCommand("+lookdown", IN_LookdownDown);
+	gpEngine->pfnAddCommand("-lookdown", IN_LookdownUp);
+	gpEngine->pfnAddCommand("+strafe", IN_StrafeDown);
+	gpEngine->pfnAddCommand("-strafe", IN_StrafeUp);
+	gpEngine->pfnAddCommand("+moveleft", IN_MoveleftDown);
+	gpEngine->pfnAddCommand("-moveleft", IN_MoveleftUp);
+	gpEngine->pfnAddCommand("+moveright", IN_MoverightDown);
+	gpEngine->pfnAddCommand("-moveright", IN_MoverightUp);
+	gpEngine->pfnAddCommand("+speed", IN_SpeedDown);
+	gpEngine->pfnAddCommand("-speed", IN_SpeedUp);
+	gpEngine->pfnAddCommand("+attack", IN_AttackDown);
+	gpEngine->pfnAddCommand("-attack", IN_AttackUp);
+	gpEngine->pfnAddCommand("+attack2", IN_Attack2Down);
+	gpEngine->pfnAddCommand("-attack2", IN_Attack2Up);
+	gpEngine->pfnAddCommand("+use", IN_UseDown);
+	gpEngine->pfnAddCommand("-use", IN_UseUp);
+	gpEngine->pfnAddCommand("+jump", IN_JumpDown);
+	gpEngine->pfnAddCommand("-jump", IN_JumpUp);
+	gpEngine->pfnAddCommand("impulse", IN_Impulse);
+	gpEngine->pfnAddCommand("+klook", IN_KLookDown);
+	gpEngine->pfnAddCommand("-klook", IN_KLookUp);
+	gpEngine->pfnAddCommand("+mlook", IN_MLookDown);
+	gpEngine->pfnAddCommand("-mlook", IN_MLookUp);
 	
-	Cvar_RegisterVariable(&lookspring);
-	Cvar_RegisterVariable(&lookstrafe);
+	lookspring = gpEngine->pfnRegisterVariable("lookspring", "0", FCVAR_ARCHIVE);
+	lookstrafe = gpEngine->pfnRegisterVariable("lookstrafe", "0", FCVAR_ARCHIVE);
 	
-	Cvar_RegisterVariable(&cl_upspeed);
-	Cvar_RegisterVariable(&cl_forwardspeed);
-	Cvar_RegisterVariable(&cl_backspeed);
-	Cvar_RegisterVariable(&cl_sidespeed);
+	cl_upspeed = gpEngine->pfnRegisterVariable("cl_upspeed", "200", 0); // TODO: FCVAR_ARCHIVE?
+	cl_forwardspeed = gpEngine->pfnRegisterVariable("cl_forwardspeed", "200", FCVAR_ARCHIVE);
+	cl_backspeed = gpEngine->pfnRegisterVariable("cl_backspeed", "200", FCVAR_ARCHIVE);
+	cl_sidespeed = gpEngine->pfnRegisterVariable("cl_sidespeed", "350", 0); // TODO: FCVAR_ARCHIVE?
 	
-	Cvar_RegisterVariable(&cl_movespeedkey);
-	Cvar_RegisterVariable(&cl_yawspeed);
-	Cvar_RegisterVariable(&cl_pitchspeed);
-	Cvar_RegisterVariable(&cl_anglespeedkey);
+	cl_movespeedkey = gpEngine->pfnRegisterVariable("cl_movespeedkey", "2.0", 0);
+	cl_yawspeed = gpEngine->pfnRegisterVariable("cl_yawspeed", "140", 0);
+	cl_pitchspeed = gpEngine->pfnRegisterVariable("cl_pitchspeed", "150", 0);
+	cl_anglespeedkey = gpEngine->pfnRegisterVariable("cl_anglespeedkey", "1.5", 0);
 	
-	Cvar_RegisterVariable(&m_pitch);
-	Cvar_RegisterVariable(&m_yaw);
-	Cvar_RegisterVariable(&m_forward);
-	Cvar_RegisterVariable(&m_side);
+	m_pitch = gpEngine->pfnRegisterVariable("m_pitch", "0.022", FCVAR_ARCHIVE);
+	m_yaw = gpEngine->pfnRegisterVariable("m_yaw", "0.022", FCVAR_ARCHIVE);
+	m_forward = gpEngine->pfnRegisterVariable("m_forward", "1", FCVAR_ARCHIVE);
+	m_side = gpEngine->pfnRegisterVariable("m_side", "0.8", FCVAR_ARCHIVE);
+	
+	IN_Init();
+	V_Init();
+};
+
+void ShutdownInput()
+{
+	IN_Shutdown();
 };
