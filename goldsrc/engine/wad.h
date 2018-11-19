@@ -38,10 +38,15 @@
 #define TYP_SOUND 67
 #define TYP_MIPTEX 68
 
-typedef struct
+typedef struct qpic_s
 {
 	int width, height;
-	byte data[4]; // variably sized
+	byte data[4]; // variably sized // TODO: = height * width
+	
+	// own palette support
+	// TODO: these fields probably should be here (because they're present in a pic file)
+	short palette_colors; // Number of colors in a palette (can't be more than 256)
+	unsigned *palette; // TODO: color24 /*lbm*/palette[palette_colors][3]; // 8-bit RGB palette data // filestart + width*height*4 + 2?
 } qpic_t;
 
 typedef struct
