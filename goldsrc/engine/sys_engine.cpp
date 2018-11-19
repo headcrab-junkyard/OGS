@@ -18,8 +18,9 @@
 
 /// @file
 
-//#include "quakedef.h" // TODO
+#include "quakedef.h"
 #include "sys_engine.h"
+#include "igame.h"
 
 // TODO: temp
 const int PAUSE_SLEEP = 50;     ///< sleep time on pause or minimization
@@ -47,33 +48,27 @@ void CEngine::Unload()
 	Host_Shutdown();
 };
 
-// TODO
-#ifdef _WIN32
-void SleepUntilInput(int time)
-{
-	//MsgWaitForMultipleObjects(1, &tevent, FALSE, time, QS_ALLINPUT); // TODO
-};
-#endif
-
 void CEngine::Frame()
 {
 	if(!isDedicated)
 	{
 #ifdef _WIN32
 		// yield the CPU for a little while when paused, minimized, or not the focus
-		//if ((cl.paused && (!ActiveApp && !DDActive)) || Minimized || block_drawing) // TODO
+		if (/*(cl.paused && (!ActiveApp && !DDActive)) ||*/ Minimized || block_drawing) // TODO
 		{
-			SleepUntilInput(PAUSE_SLEEP);
+			gpGame->SleepUntilInput(PAUSE_SLEEP);
 			scr_skipupdate = 1; // no point in bothering to draw
 		}
-		//else if (!ActiveApp && !DDActive) // TODO
-			SleepUntilInput(NOT_FOCUS_SLEEP);
+		else if (!ActiveApp /*&& !DDActive*/) // TODO
+			gpGame->SleepUntilInput(NOT_FOCUS_SLEEP);
 #endif // _WIN32
 	};
 
 	newtime = Sys_FloatTime();
 	frametime = newtime - oldtime;
 
+	// TODO: this works wrong!
+	/*
 	if(isDedicated)
 	{
 		while(frametime < sys_ticrate.value)
@@ -83,7 +78,8 @@ void CEngine::Frame()
 			frametime = newtime - oldtime;
 		};
 	};
+	*/
 
-	Host_Frame(frametime);
+	Host_Frame(frametime, 0, nullptr); // TODO
 	oldtime = newtime;
 };
