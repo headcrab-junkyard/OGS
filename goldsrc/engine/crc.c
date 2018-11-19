@@ -70,17 +70,28 @@ void CRC32_Init(CRC32_t *crcvalue)
 	*crcvalue = CRC_INIT_VALUE;
 };
 
+CRC32_t CRC32_Final(CRC32_t crcvalue)
+{
+	// TODO
+	return 0;
+};
+
+void CRC32_ProcessBuffer(CRC32_t *crcvalue, void *data, int len)
+{
+	// TODO
+};
+
 void CRC32_ProcessByte(CRC32_t *crcvalue, byte data)
 {
 	*crcvalue = (*crcvalue << 8) ^ crctable[(*crcvalue >> 8) ^ data];
 };
 
-unsigned short CRC32_Value(CRC32_t crcvalue)
+CRC32_t CRC32_Value(CRC32_t crcvalue)
 {
 	return crcvalue ^ CRC_XOR_VALUE;
 };
 
-unsigned short CRC32_Block(byte *start, int count)
+CRC32_t CRC32_Block(byte *start, int count)
 {
 	CRC32_t crc;
 
