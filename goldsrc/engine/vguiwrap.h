@@ -20,4 +20,8 @@
 
 #pragma once
 
-//void *VGuiWrap_GetPanel(); // TODO: same as VGui_GetPanel??
+void VGuiWrap_Startup();
+void VGuiWrap_Shutdown();
+
+/// Get the root panel from the vgui1 library
+void *VGuiWrap_GetPanel();
