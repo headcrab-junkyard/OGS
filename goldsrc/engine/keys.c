@@ -618,6 +618,14 @@ void Key_Event(int key, qboolean down)
 	if(key == K_SHIFT)
 		shift_down = down;
 
+	// console key is hardcoded, so the user can never unbind it
+	if(key == '`' || key == '~')
+	{
+		if (!down)
+			return;
+		Con_ToggleConsole_f();
+		return;
+	};
 	//
 	// handle escape specialy, so the user can never unbind it
 	//
