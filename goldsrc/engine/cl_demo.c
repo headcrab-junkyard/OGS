@@ -86,7 +86,7 @@ CL_GetMessage
 Handles recording and playback of demos, on top of NET_ code
 ====================
 */
-int CL_GetMessage()
+qboolean CL_GetMessage()
 {
 	int r, i;
 	float f;
@@ -107,10 +107,8 @@ int CL_GetMessage()
 					cls.td_starttime = realtime;
 			}
 			else if(/* cl.time > 0 && */ cl.time <= cl.mtime[0])
-			{
 				return 0; // don't need another message yet
-			}
-		}
+		};
 
 		// get the next message
 		fread(&net_message.cursize, 4, 1, cls.demofile);
@@ -119,7 +117,7 @@ int CL_GetMessage()
 		{
 			r = fread(&f, 4, 1, cls.demofile);
 			cl.mviewangles[0][i] = LittleFloat(f);
-		}
+		};
 
 		net_message.cursize = LittleLong(net_message.cursize);
 		if(net_message.cursize > MAX_MSGLEN)
@@ -128,31 +126,33 @@ int CL_GetMessage()
 		if(r != 1)
 		{
 			CL_StopPlayback();
-			return 0;
-		}
+			return false;
+		};
 
-		return 1;
-	}
+		return true;
+	};
 
-	while(1)
+	// TODO: BYE NETQUAKE!
+	//while(1) // TODO
 	{
-		r = NET_GetPacket(NS_CLIENT, &net_from, &net_message); // TODO: was NET_GetMessage
+		/*r =*/ if(!NET_GetPacket(NS_CLIENT, &net_from, &net_message)) // TODO: was NET_GetMessage
+			return false;
 
-		if(r != 1 && r != 2)
-			return r;
+		//if(r != 1 && r != 2)
+			//return r;
 
 		// discard nop keepalive message
 		if(net_message.cursize == 1 && net_message.data[0] == svc_nop)
 			Con_Printf("<-- server to client keepalive\n");
-		else
-			break;
-	}
+		//else
+			//break;
+	};
 
 	if(cls.demorecording)
 		CL_WriteDemoMessage();
 
-	return r;
-}
+	return true;
+};
 
 /*
 ====================
