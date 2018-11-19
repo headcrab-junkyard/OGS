@@ -25,7 +25,8 @@
 char *pr_strings;
 globalvars_t gGlobalVariables;
 
-DLL_FUNCTIONS gEntityInterface; // TODO
+DLL_FUNCTIONS gEntityInterface; // TODO: wrong place?
+NEW_DLL_FUNCTIONS gNewDLLFunctions; // TODO: wrong place?
 
 /*
 =================
@@ -55,6 +56,9 @@ edict_t *ED_Alloc()
 {
 	int i;
 	edict_t *e;
+	
+	if(!sv.edicts)
+		Sys_Error("ED_Alloc: No edicts yet");
 
 	for(i = svs.maxclients + 1; i < sv.num_edicts; i++)
 	{
@@ -108,26 +112,21 @@ void ED_Free(edict_t *ed)
 //===========================================================================
 
 // TODO: unused?
+typedef void (*dfunction_t)(entvars_t *pev);
+extern void *gamedll;
 /*
 ============
 ED_FindFunction
 ============
 */
-/*
-dfunction_t *ED_FindFunction (char *name)
+dfunction_t ED_FindFunction (const char *name)
 {
-	dfunction_t		*func;
-	int				i;
-	
-	for (i=0 ; i<progs->numfunctions ; i++)
-	{
-		func = &pr_functions[i];
-		if (!strcmp(PR_GetString(func->s_name),name) )
-			return func;
-	}
+	dfunction_t func = (dfunction_t)Sys_GetExport_Wrapper(gamedll, name);
+	if (func)
+		return func;
+
 	return NULL;
-}
-*/
+};
 
 // TODO: unused?
 /*
@@ -530,7 +529,7 @@ char *ED_NewString(char *string)
 	int i, l;
 
 	l = strlen(string) + 1;
-	new = Hunk_Alloc(l);
+	new = (char*)Hunk_Alloc(l);
 	new_p = new;
 
 	for(i = 0; i < l; i++)
@@ -573,6 +572,8 @@ char *ED_ParseEdict(char *data, edict_t *ent)
 	if(ent != sv.edicts) // hack
 		memset(&ent->v, 0, sizeof(ent->v));
 
+	SuckOutClassname(data, ent);
+	
 	// go through all the dictionary pairs
 	while(1)
 	{
@@ -599,7 +600,7 @@ char *ED_ParseEdict(char *data, edict_t *ent)
 
 		strcpy(keyname, com_token);
 
-		// another hack to fix heynames with trailing spaces
+		// another hack to fix keynames with trailing spaces
 		n = strlen(keyname);
 		while(n && keyname[n - 1] == ' ')
 		{
@@ -621,6 +622,9 @@ char *ED_ParseEdict(char *data, edict_t *ent)
 		// and are immediately discarded by quake
 		if(keyname[0] == '_')
 			continue;
+		
+		//if(!Q_strcmp(keyname, "classname"))
+			//PR_SetString(ent->v.classname, com_token);
 
 		//if (!key)
 		{
@@ -636,7 +640,7 @@ char *ED_ParseEdict(char *data, edict_t *ent)
 		}
 
 		//if (!ED_ParseEpair ((void *)&ent->v, key, com_token))
-		//Host_Error ("ED_ParseEdict: parse error");
+			//Host_Error ("ED_ParseEdict: parse error");
 	}
 
 	if(!init)
@@ -664,7 +668,7 @@ void ED_LoadFromFile(char *data)
 {
 	edict_t *ent;
 	int inhibit;
-	//dfunction_t	*func;
+	dfunction_t func;
 
 	ent = NULL;
 	inhibit = 0;
@@ -708,26 +712,31 @@ void ED_LoadFromFile(char *data)
 		//
 		if(!ent->v.classname)
 		{
-			Con_Printf("No classname for:\n");
+			Con_Printf("No classname for: %s\n", ent->v.netname); // TODO: use its id at least...
+			// TODO: original below
+			//Con_Printf("No classname for:\n");
 			//ED_Print(ent); // TODO
 			ED_Free(ent);
 			continue;
 		}
 
 		// look for the spawn function
-		//func = ED_FindFunction ( PR_GetString(ent->v.classname) ); // TODO
+		func = ED_FindFunction ( PR_GetString(ent->v.classname) ); // TODO
 
-		//if (!func)
+		if (!func)
 		{
-			Con_Printf("No spawn function for:\n");
+			Con_Printf("No spawn function for: %s\n", ent->v.classname);
+			// TODO: original below
+			//Con_Printf("No spawn function for:\n");
 			//ED_Print(ent); // TODO
 			ED_Free(ent);
 			continue;
-		}
+		};
 
-		//gGlobalVariables.self = EDICT_TO_PROG(ent);
-		//PR_ExecuteProgram (func - pr_functions); // TODO
-	}
+		func(&ent->v); // NOTE: this will only bind the entity's variables to a C++ class, we need to explicitly call a spawn function for the entity (see below)
+		
+		gEntityInterface.pfnSpawn(ent); // TODO: bad place?
+	};
 
 	Con_DPrintf("%i entities inhibited\n", inhibit);
 }
@@ -794,4 +803,8 @@ void SuckOutClassname(char *data, edict_t *ent)
 	
 	ent->v.classname = PR_SetString(ED_NewString(com_token));
 };
+
+int IndexOfEdict(edict_t *ed)
+{
+	return 0; // TODO
 };
