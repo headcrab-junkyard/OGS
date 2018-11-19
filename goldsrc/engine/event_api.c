@@ -70,7 +70,7 @@ int EV_IndexFromTrace(struct pmtrace_s *pTrace)
 struct physent_s *EV_GetPhysEnt(int nIndex)
 {
 	// TODO
-	return nullptr;
+	return NULL;
 };
 
 void EV_SetupPlayerPrediction(int nDoPred, int nIncludeLocalClient)
@@ -100,21 +100,30 @@ void EV_SetTraceHull(int nHullType)
 
 void EV_PlayerTrace(float *vStart, float *vEnd, int nTraceFlags, int nIgnorePE, struct pmtrace_s *pTraceResult)
 {
-	// TODO
+	// TODO: PM_PlayerTrace(vStart, vEnd, nTraceFlags, nIgnorePE, pTraceResult);
 };
 
 void EV_WeaponAnimation(int nSequence, int nBody)
 {
-	// TODO
+	CL_WeaponAnim(nSequence, nBody);
 };
 
-unsigned short EV_PrecacheEvent(int nType, const char *sName)
+unsigned short EV_Precache(int nType, const char *sName)
 {
+	if(nType != 1)
+		Sys_Error("EV_Precache: only file type 1 supported currently");
+	
+	if(!sName)
+		Sys_Error("EV_Precache: NULL pointer");
+	
+	if(!*sName)
+		Sys_Error("EV_Precache: Bad string '%s'");
+	
 	// TODO
 	return 0;
 };
 
-void EV_PlaybackEvent(int nFlags, const struct edict_s *pInvoker, unsigned short nEventIndex, float fDelay,
+void EV_Playback(int nFlags, const struct edict_s *pInvoker, unsigned short nEventIndex, float fDelay,
 					float *vOrigin, float *vAngles, float fParam1, float fParam2, int nParam1, int nParam2,
 					int bParam1, int bParam2)
 {
@@ -169,8 +178,8 @@ event_api_t eventapi =
 	
 	EV_WeaponAnimation,
 	
-	EV_PrecacheEvent,
-	EV_PlaybackEvent,
+	EV_Precache,
+	EV_Playback,
 	
 	EV_TraceTexture,
 	
