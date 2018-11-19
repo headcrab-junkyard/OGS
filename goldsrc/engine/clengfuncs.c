@@ -7,6 +7,11 @@
 #include "textmessage.h"
 #include "draw.h"
 #include "view.h"
+#include "vgui_int.h"
+#include "event_api.h"
+#include "demo_api.h"
+#include "net_api.h"
+#include "voicetweak.h"
 
 void FillRGBA(int x, int y, int width, int height, int r, int g, int b, int a)
 {
@@ -29,7 +34,7 @@ void SetCrosshair(SpriteHandle_t ahSprite, wrect_t aRect, int r, int g, int b)
 
 struct cvar_s *RegisterVariable(const char *szName, const char *szValue, int flags)
 {
-	return Cvar_Register/*Client*/Variable(szName, szValue, flags | FCVAR_CLIENT);
+	return Cvar_RegisterClientVariable(szName, szValue, flags);
 };
 
 float GetCvarFloat(const char *szName)
@@ -44,7 +49,7 @@ char *GetCvarString(const char *szName)
 
 int AddCommand(const char *cmd_name, void (*function)())
 {
-	return Cmd_Add/*Client*/Command(cmd_name, function);
+	return Cmd_AddClientCommand(cmd_name, function);
 };
 
 int ServerCmd(const char *szCmdString)
@@ -83,7 +88,7 @@ void AngleVectors(const float *avAngles, float *avForward, float *avRight, float
 
 void ConsolePrint(const char *asMsg)
 {
-	// TODO
+	Con_Print(asMsg);
 };
 
 void CenterPrint(const char *asMsg)
@@ -216,17 +221,21 @@ void PlaybackEvent(int anFlags, const struct edict_s *apInvoker, unsigned short 
 	// TODO
 };
 
-float RandomFloat(float afLow, float afHigh)
+extern float RandomFloat(float afLow, float afHigh); // TODO: already defined in server-side exports
+/*
 {
 	// TODO
 	return 0.0f;
 };
+*/
 
-int32_t RandomLong(int32_t anLow, int32_t anHigh)
+extern int32_t RandomLong(int32_t anLow, int32_t anHigh); // TODO: already defined in server-side exports
+/*
 {
 	// TODO
 	return 0;
 };
+*/
 
 void CL_HookEvent(const char *name, void (*pfnEvent)(struct event_args_s *apArgs))
 {
@@ -297,17 +306,23 @@ const char *PlayerInfo_ValueForKey(int anPlayer, const char *asKey)
 
 void PlayerInfo_SetValueForKey(const char *asKey, const char *asValue)
 {
-	Info_SetValueForKey(cls.userinfo, asKey, asValue);
+	Info_SetValueForKey(cls.userinfo, asKey, asValue, MAX_INFO_STRING);
 };
 
 qboolean GetPlayerUniqueID(int anPlayer, char asPlayerID[16])
 {
+	if(anPlayer < 0 || anPlayer > cl.maxclients)
+		return false;
+	
 	// TODO
 	return false;
 };
 
 int GetTrackerIDForPlayer(int anPlayerSlot)
 {
+	if(anPlayer < 0 || anPlayer > cl.maxclients)
+		return 0;
+	
 	// TODO
 	return 0;
 };
@@ -344,8 +359,7 @@ void SetMouseEnable(qboolean abEnable)
 
 struct cvar_s *GetFirstCvarPtr()
 {
-	// TODO
-	return NULL;
+	return &cvar_vars[0];
 };
 
 uint GetFirstCmdFunctionHandle()
@@ -399,22 +413,26 @@ void pfnSetFilterBrightness(float brightness)
 	// TODO
 };
 
-sequenceEntry_s *pfnSequenceGet(const char *fileName, const char *entryName)
+extern sequenceEntry_s *pfnSequenceGet(const char *fileName, const char *entryName); // TODO: already defined in server-side exports
+/*
 {
 	// TODO
 	return NULL;
 };
+*/
 
 void pfnSPR_DrawGeneric(int frame, int x, int y, const struct rect_s *pRect, int src, int dest, int width, int height)
 {
 	// TODO
 };
 
-sentenceEntry_s *pfnSequencePickSentence(const char *sentenceName, int pickMethod, int *picked)
+extern sentenceEntry_s *pfnSequencePickSentence(const char *sentenceName, int pickMethod, int *picked); // TODO: already defined in server-side exports
+/*
 {
 	// TODO
 	return NULL;
 };
+*/
 
 int pfnDrawString(int x, int y, const char *str, int r, int g, int b)
 {
@@ -458,11 +476,13 @@ void *pfnGetCareerUI()
 	return NULL;
 };
 
-int pfnIsCareerMatch()
+extern int pfnIsCareerMatch(); // TODO: already defined in server-side exports
+/*
 {
 	// TODO
 	return 0;
 };
+*/
 
 void pfnPlaySoundVoiceByName(const char *szSound, float volume, int pitch)
 {
@@ -654,10 +674,10 @@ cl_enginefunc_t gClEngFuncs =
 
 	NULL, //&triapi, // TODO
 	NULL, //&efxapi, // TODO
-	&event_api,
+	&eventapi,
 	&demoapi,
 	&netapi,
-	&gpVoiceTweak,
+	&gVoiceTweak,
 
 	IsSpectateOnly,
 	LoadMapSprite,
@@ -677,7 +697,7 @@ cl_enginefunc_t gClEngFuncs =
 	
 	GetMousePos,
 	SetMousePos,
-	SetMouseEnable
+	SetMouseEnable,
 	
 	GetFirstCvarPtr,
 
