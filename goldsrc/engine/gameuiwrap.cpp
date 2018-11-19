@@ -23,50 +23,16 @@
 #include "GameUI/IGameConsole.h"
 //#include "GameUI/ICareerUI.h" // TODO
 
-void *gpGameUILib{ nullptr };
-
 IGameUI *gpGameUI{ nullptr };
 
 extern IGameConsole *gpGameConsole;
 
 //ICareerUI *gpCareerUI{ nullptr };
 
-void UnloadGameUIModule()
-{
-	if(gpGameUILib)
-	{
-		Sys_UnloadModule(gpGameUILib);
-		gpGameUILib = nullptr;
-	};
-};
-
-void LoadGameUIModule()
-{
-	UnloadGameUIModule();
-
-	gpGameUILib = Sys_LoadModule("gameui");
-
-	if(!gpGameUILib)
-		return;
-
-	auto fnGameUIFactory{ Sys_GetFactory(gpGameUILib) };
-
-	if(!fnGameUIFactory)
-		return;
-
-	gpGameUI = (IGameUI*)fnGameUIFactory(GAMEUI_INTERFACE_VERSION, nullptr);
-	gpGameConsole = (IGameConsole*)fnGameUIFactory(GAMECONSOLE_INTERFACE_VERSION, nullptr);
-	//gpCareerUI = (ICareerUI*)fnGameUIFactory(CAREERUI_INTERFACE_VERSION, nullptr); // TODO
-
-	if(!gpGameUI || !gpGameConsole) //|| !gpCareerUI)
-		return;
-};
-
-//void GameUI_Initialize(CreateInterfaceFn *factories, int count);
 //void GameUI_Start(struct cl_enginefuncs_s *engineFuncs, int interfaceVersion, void *system);
-//void GameUI_Shutdown();
 
-int GameUI_ActivateGameUI()
+// TODO
+extern "C" int GameUI_ActivateGameUI()
 {
 	if(gpGameUI)
 		return gpGameUI->ActivateGameUI();
@@ -104,13 +70,15 @@ void GameUI_DisconnectFromServer()
 		gpGameUI->DisconnectFromServer();
 };
 
-void GameUI_HideGameUI()
+// TODO
+extern "C" void GameUI_HideGameUI()
 {
 	if(gpGameUI)
 		gpGameUI->HideGameUI();
 };
 
-bool GameUI_IsGameUIActive()
+// TODO
+extern "C" qboolean GameUI_IsGameUIActive()
 {
 	if(gpGameUI)
 		return gpGameUI->IsGameUIActive();
@@ -144,7 +112,7 @@ int GameUI_ContinueProgressBar(int progressPoint, float progressFraction)
 	return 0;
 };
 
-void GameUI_StopProgressBar(bool bError, const char *failureReason, const char *extendedReason)
+void GameUI_StopProgressBar(qboolean bError, const char *failureReason, const char *extendedReason)
 {
 	if(gpGameUI)
 		gpGameUI->StopProgressBar(bError, failureReason, extendedReason);
@@ -171,7 +139,7 @@ void GameUI_SetSecondaryProgressBarText(const char *statusText)
 };
 
 // Obsolete, does nothing
-//void GameUI_ValidateCDKey(bool force, bool inConnect);
+//void GameUI_ValidateCDKey(qboolean force, qboolean inConnect);
 
 void GameUI_OnDisconnectFromServer(int eSteamLoginFailure, const char *username)
 {
