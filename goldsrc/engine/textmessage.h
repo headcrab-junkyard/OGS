@@ -16,6 +16,10 @@
  *	along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @pragma once
+/// @file
 
 #pragma once
+
+typedef struct client_textmessage_s client_textmessage_t;
+
+client_textmessage_t *TextMessageGet(const char *asName);
