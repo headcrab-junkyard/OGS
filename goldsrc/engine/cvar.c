@@ -263,3 +263,16 @@ void Cvar_WriteVariables(FILE *f)
 		if(var->flags & FCVAR_ARCHIVE)
 			fprintf(f, "%s \"%s\"\n", var->name, var->string);
 }
+
+/*
+============
+Cvar_Init
+
+Reads in all archived cvars
+============
+*/
+void Cvar_Init()
+{
+	//Cmd_AddCommand("set", Cvar_Set_f);
+	Cmd_AddCommand("cvarlist", Cvar_List_f);
+}
