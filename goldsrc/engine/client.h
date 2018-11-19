@@ -105,7 +105,7 @@ typedef struct
 // client_state_t should hold all pieces of the client state
 //
 
-#define SIGNONS 4 // signon messages to receive before connected
+#define SIGNONS 2 // signon messages to receive before connected
 
 #define MAX_DLIGHTS 32
 #include "dlight.h"
