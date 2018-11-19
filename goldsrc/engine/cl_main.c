@@ -29,9 +29,7 @@
 // we need to declare some mouse variables here, because the menu system
 // references them even when on a unix system.
 
-// these two are not intended to be set directly
-cvar_t cl_name = { "_cl_name", "player", FCVAR_ARCHIVE };
-cvar_t cl_color = { "_cl_color", "0", FCVAR_ARCHIVE };
+cvar_t cl_name = { "_cl_name", "player", FCVAR_ARCHIVE }; // TODO: this should be removed
 
 cvar_t cl_timeout = { "cl_timeout", "60" };
 
@@ -44,14 +42,7 @@ cvar_t	cl_hudswap	= {"cl_hudswap", "0", true};
 cvar_t	cl_maxfps	= {"fps_max", "0", true};
 */
 
-cvar_t lookspring = { "lookspring", "0", FCVAR_ARCHIVE };
-cvar_t lookstrafe = { "lookstrafe", "0", FCVAR_ARCHIVE };
 cvar_t sensitivity = { "sensitivity", "3", FCVAR_ARCHIVE };
-
-cvar_t m_pitch = { "m_pitch", "0.022", FCVAR_ARCHIVE };
-cvar_t m_yaw = { "m_yaw", "0.022", FCVAR_ARCHIVE };
-cvar_t m_forward = { "m_forward", "1", FCVAR_ARCHIVE };
-cvar_t m_side = { "m_side", "0.8", FCVAR_ARCHIVE };
 
 cvar_t entlatency = { "entlatency", "20" };
 cvar_t cl_predict_players = { "cl_predict_players", "1" };
@@ -69,7 +60,7 @@ int fps_count; // TODO: used by gl_screen
 cvar_t password = { "password", "", FCVAR_USERINFO };
 cvar_t spectator = { "spectator", "", FCVAR_USERINFO };
 cvar_t model = { "model", "", FCVAR_ARCHIVE | FCVAR_USERINFO };
-cvar_t name = { "name", "unnamed", FCVAR_ARCHIVE | FCVAR_USERINFO };
+cvar_t name = { "name", "unnamed", FCVAR_ARCHIVE | FCVAR_USERINFO }; // TODO: cl_name?
 cvar_t team = { "team", "", FCVAR_ARCHIVE | FCVAR_USERINFO };
 cvar_t skin = { "skin", "", FCVAR_ARCHIVE | FCVAR_USERINFO };
 cvar_t topcolor = { "topcolor", "0", FCVAR_ARCHIVE | FCVAR_USERINFO };
@@ -100,15 +91,21 @@ cl_entity_t *cl_visedicts[MAX_VISEDICTS];
 // TODO: cls.connect_time?
 double connect_time = -1; // for connection retransmits
 
+playermove_t clpmove;
+
 /*
 ================
-CL_Connect_f
+CL_Connect_f (CL_EstablishConnection)
 
 User command to connect to server
+Address argument should be either "local(host)" or a net address to be passed on
 ================
 */
 void CL_Connect_f()
 {
+	if (cls.state == ca_dedicated)
+		return;
+	
 	//char	server[MAX_QPATH];
 	const char *server;
 
@@ -118,6 +115,9 @@ void CL_Connect_f()
 		return;
 	};
 
+	if (cls.demoplayback)
+		return;
+	
 	/*
 	cls.demonum = -1;		// stop demo loop in case this fails
 	
@@ -128,12 +128,38 @@ void CL_Connect_f()
 	};
 	*/
 
+	// Q2
+	/*
+	if (Com_ServerState ())
+	{
+		// if running a local server, kill it and reissue
+		SV_Shutdown (va("Server quit\n", msg), false);
+	}
+	else
+		CL_Disconnect ();
+	*/
+	
 	//strcpy (server, Cmd_Argv(1));
 	server = Cmd_Argv(1);
-
+	
+	NET_Config(true); // allow remote
+	
 	CL_Disconnect();
-
-	strncpy(cls.servername, server, sizeof(cls.servername) - 1);
+	
+	cls.demonum = -1; // not in the demo loop now
+	cls.state = ca_connecting;
+	cls.signon = 0; // need all the signon messages before playing
+	
+	// TODO: dirty hack to replace "local" with "localhost"
+	if(!Q_strcmp(server, "local"))
+		strncpy(cls.servername, "localhost", sizeof(cls.servername) - 1);
+	else
+		strncpy(cls.servername, server, sizeof(cls.servername) - 1);
+	
+	/*cls.*/connect_time = -99999; // CL_CheckForResend() will fire immediately
+	
+	//Con_DPrintf ("CL_EstablishConnection: connecting to %s\n", cls.servername);
+	
 	CL_BeginServerConnect();
 };
 
@@ -153,8 +179,8 @@ void CL_SendConnectPacket()
 	//       Now, adds lookup time to the connect time.
 	//		 Should I add it to realtime instead?!?!
 
-	if(cls.state != ca_disconnected)
-		return;
+	//if(cls.state != ca_disconnected)
+		//return;
 
 	t1 = Sys_FloatTime();
 
@@ -163,7 +189,7 @@ void CL_SendConnectPacket()
 		Con_Printf("Bad server address\n");
 		connect_time = -1; // cls.connect_time
 		return;
-	}
+	};
 
 	if(adr.port == 0)
 		adr.port = BigShort(PORT_SERVER);
@@ -180,7 +206,7 @@ void CL_SendConnectPacket()
 	sprintf(data, "%c%c%c%cconnect %i %i %i \"%s\"\n",
 	        255, 255, 255, 255, PROTOCOL_VERSION, cls.qport, cls.challenge, cls.userinfo);
 	NET_SendPacket(NS_CLIENT, strlen(data), data, adr);
-}
+};
 
 /*
 =================
@@ -198,36 +224,51 @@ void CL_CheckForResend()
 	if(connect_time == -1)
 		return;
 
-	if(cls.state != ca_disconnected)
+	// resend if we haven't gotten a reply yet
+	if (cls.state != ca_connecting)
 		return;
+	
+	//if(cls.state != ca_disconnected)
+		//return;
 
 	if(connect_time && realtime - connect_time < 5.0)
 		return;
 
 	t1 = Sys_FloatTime();
+
 	if(!NET_StringToAdr(cls.servername, &adr))
 	{
 		Con_Printf("Bad server address\n");
+		cls.state = ca_disconnected;
 		connect_time = -1;
 		return;
-	}
+	};
 
 	if(adr.port == 0)
-		adr.port = BigShort(27500);
+		adr.port = BigShort(PORT_SERVER);
+
+	// TODO: q2
+	///*cls.*/connect_time = /*cls.*/realtime; // for retransmit requests
+	
 	t2 = Sys_FloatTime();
 
 	connect_time = realtime + t2 - t1; // for retransmit requests
 
 	Con_Printf("Connecting to %s...\n", cls.servername);
+	
+	// TODO: q2
+	//Netchan_OutOfBandPrint (NS_CLIENT, adr, "getchallenge\n");
+	//
 	sprintf(data, "%c%c%c%cgetchallenge\n", 255, 255, 255, 255);
-	NET_SendPacket(NS_CLIENT, strlen(data), data, adr);
-}
+	NET_SendPacket(NS_CLIENT, Q_strlen(data), data, adr);
+	//
+};
 
 void CL_BeginServerConnect()
 {
 	connect_time = 0;
 	CL_CheckForResend();
-}
+};
 
 /*
 =====================
@@ -268,7 +309,7 @@ void CL_ClearState()
 	for(i = 0; i < MAX_EFRAGS - 1; i++)
 		cl.free_efrags[i].entnext = &cl.free_efrags[i + 1];
 	cl.free_efrags[i].entnext = NULL;
-}
+};
 
 /*
 =====================
@@ -289,6 +330,8 @@ void CL_Disconnect()
 
 	// bring the console down and fade the colors back to normal
 	//	SCR_BringDownConsole ();
+	
+	//GameUI_DisconnectFromServer(); // TODO
 
 	// if running a local server, shut it down
 	if(cls.demoplayback)
@@ -320,42 +363,14 @@ void CL_Disconnect()
 
 	cls.demoplayback = cls.timedemo = false;
 	cls.signon = 0;
-}
+};
 
 void CL_Disconnect_f()
 {
 	CL_Disconnect();
 	if(sv.active)
 		Host_ShutdownServer(false);
-}
-
-/*
-=====================
-CL_EstablishConnection
-
-Host should be either "local" or a net address to be passed on
-=====================
-*/
-/*
-void CL_EstablishConnection (char *host)
-{
-	if (cls.state == ca_dedicated)
-		return;
-
-	if (cls.demoplayback)
-		return;
-
-	CL_Disconnect ();
-
-	if (!cls.netchan)
-		Host_Error ("CL_Connect: connect failed\n");
-	Con_DPrintf ("CL_EstablishConnection: connected to %s\n", host);
-	
-	cls.demonum = -1;			// not in the demo loop now
-	cls.state = ca_connected;
-	cls.signon = 0;				// need all the signon messages before playing
-}
-*/
+};
 
 /*
 =====================
@@ -374,32 +389,17 @@ void CL_SignonReply()
 	{
 	case 1:
 		MSG_WriteByte(&cls.netchan.message, clc_stringcmd);
-		MSG_WriteString(&cls.netchan.message, "prespawn");
-		break;
-
-	case 2:
-		MSG_WriteByte(&cls.netchan.message, clc_stringcmd);
-		MSG_WriteString(&cls.netchan.message, va("name \"%s\"\n", cl_name.string));
-
-		MSG_WriteByte(&cls.netchan.message, clc_stringcmd);
-		MSG_WriteString(&cls.netchan.message, va("color %i %i\n", ((int)cl_color.value) >> 4, ((int)cl_color.value) & 15));
-
-		MSG_WriteByte(&cls.netchan.message, clc_stringcmd);
 		sprintf(str, "spawn %s", cls.spawnparms);
 		MSG_WriteString(&cls.netchan.message, str);
-		break;
-
-	case 3:
-		MSG_WriteByte(&cls.netchan.message, clc_stringcmd);
-		MSG_WriteString(&cls.netchan.message, "begin");
+		
 		Cache_Report(); // print remaining memory
 		break;
 
-	case 4:
+	case 2:
 		SCR_EndLoadingPlaque(); // allow normal screen updates
 		break;
-	}
-}
+	};
+};
 
 /*
 =====================
@@ -425,13 +425,13 @@ void CL_NextDemo()
 			Con_Printf("No demos listed with startdemos\n");
 			cls.demonum = -1;
 			return;
-		}
-	}
+		};
+	};
 
 	sprintf(str, "playdemo %s\n", cls.demos[cls.demonum]);
 	Cbuf_InsertText(str);
 	cls.demonum++;
-}
+};
 
 /*
 ==============
@@ -450,10 +450,10 @@ void CL_PrintEntities_f()
 		{
 			Con_Printf("EMPTY\n");
 			continue;
-		}
+		};
 		Con_Printf("%s:%2i  (%5.1f,%5.1f,%5.1f) [%5.1f %5.1f %5.1f]\n", ent->model->name, ent->frame, ent->origin[0], ent->origin[1], ent->origin[2], ent->angles[0], ent->angles[1], ent->angles[2]);
-	}
-}
+	};
+};
 
 /*
 ===============
@@ -482,7 +482,7 @@ void SetPal(int i)
 			pal[c] = 0;
 			pal[c+1] = 255;
 			pal[c+2] = 0;
-		}
+		};
 		VID_SetPalette (pal);
 	}
 	else
@@ -492,11 +492,11 @@ void SetPal(int i)
 			pal[c] = 0;
 			pal[c+1] = 0;
 			pal[c+2] = 255;
-		}
+		};
 		VID_SetPalette (pal);
-	}
+	};
 #endif
-}
+};
 
 /*
 ===============
@@ -520,9 +520,9 @@ dlight_t *CL_AllocDlight(int key)
 				memset(dl, 0, sizeof(*dl));
 				dl->key = key;
 				return dl;
-			}
-		}
-	}
+			};
+		};
+	};
 
 	// then look for anything else
 	dl = cl_dlights;
@@ -533,14 +533,14 @@ dlight_t *CL_AllocDlight(int key)
 			memset(dl, 0, sizeof(*dl));
 			dl->key = key;
 			return dl;
-		}
-	}
+		};
+	};
 
 	dl = &cl_dlights[0];
 	memset(dl, 0, sizeof(*dl));
 	dl->key = key;
 	return dl;
-}
+};
 
 /*
 ===============
@@ -565,8 +565,13 @@ void CL_DecayLights()
 		dl->radius -= time * dl->decay;
 		if(dl->radius < 0)
 			dl->radius = 0;
-	}
-}
+	};
+};
+
+void CL_WeaponAnim(int anAnim, int anBody)
+{
+	// TODO
+};
 
 /*
 ===============
@@ -586,13 +591,13 @@ float CL_LerpPoint()
 	{
 		cl.time = cl.mtime[0];
 		return 1;
-	}
+	};
 
 	if(f > 0.1)
 	{ // dropped packet, or start of demo
 		cl.mtime[1] = cl.mtime[0] - 0.1;
 		f = 0.1;
-	}
+	};
 	frac = (cl.time - cl.mtime[1]) / f;
 	//Con_Printf ("frac: %f\n",frac);
 	if(frac < 0)
@@ -602,7 +607,7 @@ float CL_LerpPoint()
 			SetPal(1);
 			cl.time = cl.mtime[1];
 			//				Con_Printf ("low frac\n");
-		}
+		};
 		frac = 0;
 	}
 	else if(frac > 1)
@@ -612,14 +617,14 @@ float CL_LerpPoint()
 			SetPal(2);
 			cl.time = cl.mtime[0];
 			//				Con_Printf ("high frac\n");
-		}
+		};
 		frac = 1;
 	}
 	else
 		SetPal(0);
 
 	return frac;
-}
+};
 
 /*
 ===============
@@ -659,8 +664,8 @@ void CL_RelinkEntities()
 			else if(d < -180)
 				d += 360;
 			cl.viewangles[j] = cl.mviewangles[1][j] + frac * d;
-		}
-	}
+		};
+	};
 
 	bobjrotate = anglemod(100 * cl.time);
 
@@ -672,14 +677,14 @@ void CL_RelinkEntities()
 			if(ent->forcelink)
 				R_RemoveEfrags(ent); // just became empty
 			continue;
-		}
+		};
 
 		// if the object wasn't included in the last packet, remove it
 		if(ent->msgtime != cl.mtime[0])
 		{
 			ent->model = NULL;
 			continue;
-		}
+		};
 
 		VectorCopy(ent->origin, oldorg);
 
@@ -697,7 +702,7 @@ void CL_RelinkEntities()
 				delta[j] = ent->ph[0].origin[j] - ent->ph[1].origin[j];
 				if(delta[j] > 100 || delta[j] < -100)
 					f = 1; // assume a teleportation, not a motion
-			}
+			};
 
 			// interpolate the origin and angles
 			for(j = 0; j < 3; j++)
@@ -710,8 +715,8 @@ void CL_RelinkEntities()
 				else if(d < -180)
 					d += 360;
 				ent->angles[j] = ent->ph[1].angles[j] + f * d;
-			}
-		}
+			};
+		};
 
 		// rotate binary objects locally
 		if(ent->model->flags & EF_ROTATE)
@@ -736,7 +741,8 @@ void CL_RelinkEntities()
 			dl->radius = 200 + (rand() & 31);
 			dl->minlight = 32;
 			dl->die = cl.time + 0.1;
-		}
+		};
+
 		if(ent->effects & EF_BRIGHTLIGHT)
 		{
 			dl = CL_AllocDlight(i);
@@ -744,14 +750,16 @@ void CL_RelinkEntities()
 			dl->origin[2] += 16;
 			dl->radius = 400 + (rand() & 31);
 			dl->die = cl.time + 0.001;
-		}
+		};
+
 		if(ent->effects & EF_DIMLIGHT)
 		{
 			dl = CL_AllocDlight(i);
 			VectorCopy(ent->origin, dl->origin);
 			dl->radius = 200 + (rand() & 31);
 			dl->die = cl.time + 0.001;
-		}
+		};
+
 #ifdef QUAKE2
 		if(ent->effects & EF_DARKLIGHT)
 		{
@@ -760,14 +768,15 @@ void CL_RelinkEntities()
 			dl->radius = 200.0 + (rand() & 31);
 			dl->die = cl.time + 0.001;
 			dl->dark = true;
-		}
+		};
+
 		if(ent->effects & EF_LIGHT)
 		{
 			dl = CL_AllocDlight(i);
 			VectorCopy(ent->origin, dl->origin);
 			dl->radius = 200;
 			dl->die = cl.time + 0.001;
-		}
+		};
 #endif
 
 		if(ent->model->flags & EF_GIB)
@@ -800,13 +809,14 @@ void CL_RelinkEntities()
 		if(ent->effects & EF_NODRAW)
 			continue;
 #endif
+
 		if(cl_numvisedicts < MAX_VISEDICTS)
 		{
 			cl_visedicts[cl_numvisedicts] = ent;
 			cl_numvisedicts++;
-		}
-	}
-}
+		};
+	};
+};
 
 /*
 =================
@@ -833,20 +843,26 @@ void CL_ConnectionlessPacket()
 	if(c == S2C_CONNECTION)
 	{
 		Con_Printf("connection\n");
+
 		if(cls.state >= ca_connected)
 		{
 			if(!cls.demoplayback)
 				Con_Printf("Dup connect received.  Ignored.\n");
 			return;
-		}
+		};
+
 		Netchan_Setup(NS_CLIENT, &cls.netchan, net_from, cls.qport);
-		MSG_WriteChar(&cls.netchan.message, clc_stringcmd);
+		
+		MSG_WriteByte(&cls.netchan.message, clc_stringcmd);
 		MSG_WriteString(&cls.netchan.message, "new");
+		
 		cls.state = ca_connected;
 		Con_Printf("Connected.\n");
+		
 		allowremotecmd = false; // localid required now for remote cmds
 		return;
-	}
+	};
+
 	// remote command from gui front end
 	if(c == A2C_CLIENT_COMMAND)
 	{
@@ -858,11 +874,13 @@ void CL_ConnectionlessPacket()
 		{
 			Con_Printf("Command packet from remote host.  Ignored.\n");
 			return;
-		}
+		};
+
 #ifdef _WIN32
 		ShowWindow(mainwindow, SW_RESTORE);
 		SetForegroundWindow(mainwindow);
 #endif
+
 		s = MSG_ReadString();
 
 		strncpy(cmdtext, s, sizeof(cmdtext) - 1);
@@ -885,7 +903,8 @@ void CL_ConnectionlessPacket()
 				           "browser.\n");
 				Con_Printf("===========================\n");
 				return;
-			}
+			};
+
 			Con_Printf("===========================\n");
 			Con_Printf("Invalid localid on command packet received from local host. "
 			           "\n|%s| != |%s|\n"
@@ -894,12 +913,13 @@ void CL_ConnectionlessPacket()
 			Con_Printf("===========================\n");
 			Cvar_Set("localid", "");
 			return;
-		}
+		};
 
 		Cbuf_AddText(cmdtext);
 		allowremotecmd = false;
 		return;
-	}
+	};
+
 	// print command from somewhere
 	if(c == A2C_PRINT)
 	{
@@ -908,7 +928,7 @@ void CL_ConnectionlessPacket()
 		s = MSG_ReadString();
 		Con_Print(s);
 		return;
-	}
+	};
 
 	// ping from somewhere
 	if(c == A2A_PING)
@@ -926,7 +946,7 @@ void CL_ConnectionlessPacket()
 
 		NET_SendPacket(NS_CLIENT, 6, &data, net_from);
 		return;
-	}
+	};
 
 	if(c == S2C_CHALLENGE)
 	{
@@ -936,15 +956,16 @@ void CL_ConnectionlessPacket()
 		cls.challenge = atoi(s);
 		CL_SendConnectPacket();
 		return;
-	}
+	};
 
 #if 0
-	if (c == svc_disconnect) {
+	if (c == svc_disconnect)
+	{
 		Con_Printf ("disconnect\n");
 
 		Host_EndGame ("Server disconnected");
 		return;
-	}
+	};
 #endif
 
 	//char *response_buffer;
@@ -953,7 +974,7 @@ void CL_ConnectionlessPacket()
 		return;
 
 	Con_Printf("unknown:  %c\n", c);
-}
+};
 
 /*
 ===============
@@ -1060,13 +1081,7 @@ void CL_SendCmd()
 	int seq_hash;
 
 	//if (cls.state != ca_connected) // NetQuake
-	//return;
-
-	if(cls.demoplayback)
-	{
-		//SZ_Clear (&cls.netchan.message); // NetQuake
-		return; // sendcmds come from the demo
-	}
+		//return;
 
 	// save this command off for prediction
 	i = cls.netchan.outgoing_sequence & UPDATE_MASK;
@@ -1077,33 +1092,43 @@ void CL_SendCmd()
 	//	seq_hash = (cls.netchan.outgoing_sequence & 0xffff) ; // ^ QW_CHECK_HASH;
 	seq_hash = cls.netchan.outgoing_sequence;
 
-	//if (cls.signon == SIGNONS) // TODO: NetQuake
+	if (cls.signon == SIGNONS)
 	{
 		// get basic movement from keyboard
-		CL_BaseMove(cmd);
-
-		// allow mice or other external controllers to add to the move
-		IN_Move(cmd);
+		ClientDLL_CreateMove(host_frametime, cmd, true); // TODO: passing true here for now; should actually check for "active" (cl.active?)		
 
 		// send the unreliable message
 		CL_SendMove(cmd);
+	};
+
+	// TODO: these lines below are from NetQuake (upgraded to look like QW) should probably be in CL_SendMove
+	
+	if(cls.demoplayback)
+	{
+		//SZ_Clear (&cls.netchan.message); // NetQuake
+		return; // sendcmds come from the demo
+	};
+	
+	// send the reliable message
+	if (!cls.netchan.message.cursize)
+		return; // no message at all
+
+	if (!Netchan_CanPacket (&cls.netchan)) // TODO: was NET_CanSendMessage; Netchan_CanReliable?
+	{
+		//Con_DPrintf ("CL_WriteToServer: can't send\n");
+		return;
 	}
 
-	// send the reliable message
-	//if (!cls.netchan.message.cursize)
-	//return;		// no message at all
-
-	//if (!Netchan_CanPacket (&cls.netchan)) // TODO: was NET_CanSendMessage; Netchan_CanReliable?
-	//{
-	//Con_DPrintf ("CL_WriteToServer: can't send\n");
-	//return;
-	//}
-
 	//if (NET_SendMessage (cls.netchan, &cls.netchan.message) == -1)
-	//Host_Error ("CL_WriteToServer: lost server connection");
+		//Host_Error ("CL_WriteToServer: lost server connection");
 
 	//SZ_Clear (&cls.netchan.message);
-}
+	
+	//
+	// deliver the message
+	//
+	Netchan_Transmit(&cls.netchan, cls.netchan.message.cursize, cls.netchan.message.data);
+};
 
 /*
 =================
@@ -1126,25 +1151,16 @@ void CL_Init()
 	//sprintf (st, "%4.2f-%04d", VERSION, build_number());
 	//Info_SetValueForStarKey (cls.userinfo, "*ver", st, MAX_INFO_STRING);
 
-	CL_InitInput();
+	//CL_InitInput(); // TODO: moved to client dll
 	CL_InitTEnts();
 	CL_InitPrediction();
 	CL_InitCam();
-	Pmove_Init();
+	Pmove_Init(&clpmove);
 
 	//
 	// register our commands
 	//
 	Cvar_RegisterVariable(&cl_name);
-	Cvar_RegisterVariable(&cl_color);
-	Cvar_RegisterVariable(&cl_upspeed);
-	Cvar_RegisterVariable(&cl_forwardspeed);
-	Cvar_RegisterVariable(&cl_backspeed);
-	Cvar_RegisterVariable(&cl_sidespeed);
-	Cvar_RegisterVariable(&cl_movespeedkey);
-	Cvar_RegisterVariable(&cl_yawspeed);
-	Cvar_RegisterVariable(&cl_pitchspeed);
-	Cvar_RegisterVariable(&cl_anglespeedkey);
 
 	//Cvar_RegisterVariable (&cl_warncmd);
 
@@ -1159,14 +1175,8 @@ void CL_Init()
 	//Cvar_RegisterVariable (&rcon_address);
 
 	Cvar_RegisterVariable(&cl_nolerp);
-	Cvar_RegisterVariable(&lookspring);
-	Cvar_RegisterVariable(&lookstrafe);
+	
 	Cvar_RegisterVariable(&sensitivity);
-
-	Cvar_RegisterVariable(&m_pitch);
-	Cvar_RegisterVariable(&m_yaw);
-	Cvar_RegisterVariable(&m_forward);
-	Cvar_RegisterVariable(&m_side);
 
 	Cvar_RegisterVariable(&entlatency);
 	Cvar_RegisterVariable(&cl_predict_players2);
