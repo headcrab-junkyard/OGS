@@ -24,12 +24,14 @@
 
 particle_t *R_AllocParticle(pfnParticleCallback afnCallback)
 {
-	return nullptr;
+	return NULL;
 };
 
+/*
 void R_BlobExplosion(float *org)
 {
 };
+*/
 
 void R_Blood(float *org, float *dir, int pcolor, int speed)
 {
@@ -59,9 +61,11 @@ void R_BulletImpactParticles(float *pos)
 {
 };
 
+/*
 void R_EntityParticles(struct cl_entity_s *ent)
 {
 };
+*/
 
 void R_Explosion(float *pos, int model, float scale, float framerate, int flags)
 {
@@ -111,6 +115,7 @@ void R_ParticleBurst(float *pos, int size, int color, float life)
 {
 };
 
+/*
 void R_ParticleExplosion(float *org)
 {
 };
@@ -118,6 +123,7 @@ void R_ParticleExplosion(float *org)
 void R_ParticleExplosion2(float *org, int colorstart, int colorlength)
 {
 };
+*/
 
 void R_ParticleLine(float *start, float *end, byte r, byte g, byte b, float life)
 {
@@ -143,6 +149,7 @@ void R_RocketFlare(float *pos)
 {
 };
 
+/*
 void R_RocketTrail(float *start, float *end, int type)
 {
 };
@@ -150,6 +157,7 @@ void R_RocketTrail(float *start, float *end, int type)
 void R_RunParticleEffect(float *org, float *dir, int color, int count)
 {
 };
+*/
 
 void R_ShowLine(float *start, float *end)
 {
@@ -205,12 +213,14 @@ void R_UserTracerParticle(float *org, float *vel, float life, int colorindex, fl
 
 particle_t *R_TracerParticles(float *org, float *vel, float life)
 {
-	return nullptr;
+	return NULL;
 };
 
+/*
 void R_TeleportSplash(float *org)
 {
 };
+*/
 
 void R_TempSphereModel(float *pos, float speed, float life, int count, int modelindex)
 {
@@ -218,17 +228,17 @@ void R_TempSphereModel(float *pos, float speed, float life, int count, int model
 
 TEMPENTITY *R_TempModel(float *pos, float *dir, float *angles, float life, int modelindex, int soundtype)
 {
-	return nullptr;
+	return NULL;
 };
 
 TEMPENTITY *R_DefaultSprite(float *pos, int spriteindex, float framerate)
 {
-	return nullptr;
+	return NULL;
 };
 
 TEMPENTITY *R_TempSprite(float *pos, float *dir, float scale, int modelindex, int rendermode, int renderfx, float a, float life, int flags)
 {
-	return nullptr;
+	return NULL;
 };
 
 int Draw_DecalIndex(int id)
@@ -255,22 +265,22 @@ void R_KillAttachedTents(int client)
 
 BEAM *R_BeamCirclePoints(int type, float *start, float *end, int modelindex, float life, float width, float amplitude, float brightness, float speed, int startframe, float framerate, float r, float g, float b)
 {
-	return nullptr;
+	return NULL;
 };
 
 BEAM *R_BeamEntPoint(int startEnt, float *end, int modelindex, float life, float width, float amplitude, float brightness, float speed, int startframe, float framerate, float r, float g, float b)
 {
-	return nullptr;
+	return NULL;
 };
 
 BEAM *R_BeamEnts(int startEnt, int endEnt, int modelindex, float life, float width, float amplitude, float brightness, float speed, int startframe, float framerate, float r, float g, float b)
 {
-	return nullptr;
+	return NULL;
 };
 
 BEAM *R_BeamFollow(int startEnt, int modelindex, float life, float width, float r, float g, float b, float brightness)
 {
-	return nullptr;
+	return NULL;
 };
 
 void R_BeamKill(int deadEntity)
@@ -279,42 +289,42 @@ void R_BeamKill(int deadEntity)
 
 BEAM *R_BeamLightning(float *start, float *end, int modelindex, float life, float width, float amplitude, float brightness, float speed)
 {
-	return nullptr;
+	return NULL;
 };
 
 BEAM *R_BeamPoints(float *start, float *end, int modelindex, float life, float width, float amplitude, float brightness, float speed, int startframe, float framerate, float r, float g, float b)
 {
-	return nullptr;
+	return NULL;
 };
 
 BEAM *R_BeamRing(int startEnt, int endEnt, int modelindex, float life, float width, float amplitude, float brightness, float speed, int startframe, float framerate, float r, float g, float b)
 {
-	return nullptr;
+	return NULL;
 };
 
 dlight_t *CL_AllocElight(int key)
 {
-	return nullptr;
+	return NULL;
 };
 
 TEMPENTITY *CL_TempEntAlloc(float *origin, struct model_s *pmodel)
 {
-	return nullptr;
+	return NULL;
 };
 
 TEMPENTITY *CL_TempEntAllocNoModel(float *origin)
 {
-	return nullptr;
+	return NULL;
 };
 
 TEMPENTITY *CL_TempEntAllocHigh(float *origin, struct model_s *pmodel)
 {
-	return nullptr;
+	return NULL;
 };
 
 TEMPENTITY *CL_TempEntAllocCustom(float *origin, struct model_s *pmodel, int high, void (*callback)(struct tempent_s *ent, float frametime, float currenttime))
 {
-	return nullptr;
+	return NULL;
 };
 
 void R_GetPackedColor(short *packed, short color)
