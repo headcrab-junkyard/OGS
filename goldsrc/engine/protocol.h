@@ -91,6 +91,7 @@
 #define SND_VOLUME (1 << 0)      // a byte
 #define SND_ATTENUATION (1 << 1) // a byte
 #define SND_LOOPING (1 << 2)     // a long
+#define SND_PITCH (1 << 3)       // a byte // TODO
 
 // defaults for clientinfo messages
 #define DEFAULT_VIEWHEIGHT 22
@@ -192,6 +193,7 @@ enum
 
 #define DEFAULT_SOUND_PACKET_VOLUME 255
 #define DEFAULT_SOUND_PACKET_ATTENUATION 1.0
+#define DEFAULT_SOUND_PACKET_PITCH PITCH_NORM
 
 // TODO: QW
 
