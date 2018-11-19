@@ -549,6 +549,13 @@ void Cmd_AddCommand(/*const*/ char *cmd_name, xcommand_t function)
 	cmd_functions = cmd;
 }
 
+int Cmd_AddClientCommand(const char *cmd_name, xcommand_t function)
+{
+	Cmd_AddCommand(cmd_name, function);
+	// TODO: mark the command as client-side
+	return 0; // TODO: return its id
+};
+
 /*
 ============
 Cmd_Exists
