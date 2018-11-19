@@ -22,15 +22,6 @@
 
 void Cmd_ForwardToServer();
 
-#define MAX_ALIAS_NAME 32
-
-typedef struct cmdalias_s
-{
-	struct cmdalias_s *next;
-	char name[MAX_ALIAS_NAME];
-	char *value;
-} cmdalias_t;
-
 cmdalias_t *cmd_alias;
 
 qboolean cmd_wait;
