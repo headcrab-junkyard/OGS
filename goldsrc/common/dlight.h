@@ -1,5 +1,6 @@
 /*
  * This file is part of OGS Engine
+ * Copyright (C) 1996-1997 Id Software, Inc.
  * Copyright (C) 2018 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
@@ -16,61 +17,22 @@
  * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
 */
 
-/// @file
-
 #pragma once
 
-#include "mathlib.h"
+#include "const.h"
 
-typedef struct ref_params_s
+typedef struct dlight_s
 {
-	vec3_t vieworg;
-	vec3_t viewangles;
+	vec3_t	origin;
+	float	radius;
 	
-	vec3_t forward;
-	vec3_t right;
-	vec3_t up;
+	color24 color;
 	
-	float frametime; // = host_frametime
-	float time; // = cl.time
+	float	die;				///< stop lighting after this time
+	float	decay;				///< drop this each second
 	
-	int intermission;
-	int paused;
-	int spectator;
-	int onground;
-	int waterlevel;
+	float	minlight;			///< don't add when contributing less
+	int		key;				///< so entities can reuse same entry
 	
-	vec3_t simvel;
-	vec3_t simorg;
-	
-	vec3_t viewheight;
-	
-	int idealpitch;
-	
-	vec3_t cl_viewangles;
-	
-	int health;
-	
-	vec3_t crosshairangle;
-	
-	float viewsize;
-	
-	vec3_t punchangle;
-	
-	int maxclients;
-	int viewentity;
-	int playernum;
-	int max_entities;
-	int demoplayback;
-	int hardware;
-	int smoothing;
-	
-	struct usercmd_s *cmd;
-	struct movevars_s *movevars;
-	
-	int viewport[4];
-	
-	int nextView;
-	
-	int onlyClientDraw;
-} ref_params_t;
+	qboolean	dark;			///< subtracts light instead of adding
+} dlight_t;

@@ -20,57 +20,21 @@
 
 #pragma once
 
-#include "mathlib.h"
+#include "const.h"
 
-typedef struct ref_params_s
+typedef struct demo_api_s
 {
-	vec3_t vieworg;
-	vec3_t viewangles;
+	/// @return true if currently recording a demo
+	int (*IsRecording)();
 	
-	vec3_t forward;
-	vec3_t right;
-	vec3_t up;
+	/// @return true if currently playing back a demo
+	int (*IsPlayingback)();
 	
-	float frametime; // = host_frametime
-	float time; // = cl.time
+	/// @return true if currently playing demo is a timedemo
+	int (*IsTimeDemo)();
 	
-	int intermission;
-	int paused;
-	int spectator;
-	int onground;
-	int waterlevel;
-	
-	vec3_t simvel;
-	vec3_t simorg;
-	
-	vec3_t viewheight;
-	
-	int idealpitch;
-	
-	vec3_t cl_viewangles;
-	
-	int health;
-	
-	vec3_t crosshairangle;
-	
-	float viewsize;
-	
-	vec3_t punchangle;
-	
-	int maxclients;
-	int viewentity;
-	int playernum;
-	int max_entities;
-	int demoplayback;
-	int hardware;
-	int smoothing;
-	
-	struct usercmd_s *cmd;
-	struct movevars_s *movevars;
-	
-	int viewport[4];
-	
-	int nextView;
-	
-	int onlyClientDraw;
-} ref_params_t;
+	///
+	void (*WriteBuffer)(int size, byte *buffer); // TODO: WriteDemoBuffer?
+} demo_api_t;
+
+extern demo_api_t demoapi;

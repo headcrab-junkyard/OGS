@@ -1,5 +1,6 @@
 /*
  * This file is part of OGS Engine
+ * Copyright (C) 1996-1997 Id Software, Inc.
  * Copyright (C) 2018 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
@@ -22,55 +23,20 @@
 
 #include "mathlib.h"
 
-typedef struct ref_params_s
+/// entity_state_t is the information conveyed from the server
+/// in an update message
+typedef struct entity_state_s
 {
-	vec3_t vieworg;
-	vec3_t viewangles;
+	int		number;			///< edict index
 	
-	vec3_t forward;
-	vec3_t right;
-	vec3_t up;
+	vec3_t	origin;
+	vec3_t	angles;
 	
-	float frametime; // = host_frametime
-	float time; // = cl.time
+	int		modelindex;
+	int		frame;
+	int		colormap;
+	int		skin;
+	int		effects;
 	
-	int intermission;
-	int paused;
-	int spectator;
-	int onground;
-	int waterlevel;
-	
-	vec3_t simvel;
-	vec3_t simorg;
-	
-	vec3_t viewheight;
-	
-	int idealpitch;
-	
-	vec3_t cl_viewangles;
-	
-	int health;
-	
-	vec3_t crosshairangle;
-	
-	float viewsize;
-	
-	vec3_t punchangle;
-	
-	int maxclients;
-	int viewentity;
-	int playernum;
-	int max_entities;
-	int demoplayback;
-	int hardware;
-	int smoothing;
-	
-	struct usercmd_s *cmd;
-	struct movevars_s *movevars;
-	
-	int viewport[4];
-	
-	int nextView;
-	
-	int onlyClientDraw;
-} ref_params_t;
+	int		eflags;			///< nolerp, etc
+} entity_state_t;

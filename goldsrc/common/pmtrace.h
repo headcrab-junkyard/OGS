@@ -1,5 +1,6 @@
 /*
  * This file is part of OGS Engine
+ * Copyright (C) 1996-1997 Id Software, Inc.
  * Copyright (C) 2018 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
@@ -20,57 +21,21 @@
 
 #pragma once
 
-#include "mathlib.h"
+#include "const.h"
 
-typedef struct ref_params_s
+typedef struct
 {
-	vec3_t vieworg;
-	vec3_t viewangles;
-	
-	vec3_t forward;
-	vec3_t right;
-	vec3_t up;
-	
-	float frametime; // = host_frametime
-	float time; // = cl.time
-	
-	int intermission;
-	int paused;
-	int spectator;
-	int onground;
-	int waterlevel;
-	
-	vec3_t simvel;
-	vec3_t simorg;
-	
-	vec3_t viewheight;
-	
-	int idealpitch;
-	
-	vec3_t cl_viewangles;
-	
-	int health;
-	
-	vec3_t crosshairangle;
-	
-	float viewsize;
-	
-	vec3_t punchangle;
-	
-	int maxclients;
-	int viewentity;
-	int playernum;
-	int max_entities;
-	int demoplayback;
-	int hardware;
-	int smoothing;
-	
-	struct usercmd_s *cmd;
-	struct movevars_s *movevars;
-	
-	int viewport[4];
-	
-	int nextView;
-	
-	int onlyClientDraw;
-} ref_params_t;
+	vec3_t	normal;
+	float	dist;
+} pmplane_t;
+
+typedef struct
+{
+	qboolean	allsolid;	// if true, plane is not valid
+	qboolean	startsolid;	// if true, the initial point was in a solid area
+	qboolean	inopen, inwater;
+	float		fraction;		// time completed, 1.0 = didn't hit anything
+	vec3_t		endpos;			// final position
+	pmplane_t		plane;			// surface normal at impact
+	int			ent;			// entity the surface is on
+} pmtrace_t;
