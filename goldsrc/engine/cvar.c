@@ -220,6 +220,13 @@ void Cvar_RegisterVariable(cvar_t *variable)
 	cvar_vars = variable;
 }
 
+cvar_t *Cvar_RegisterClientVariable(const char *name, const char *value, int flags)
+{
+	//flags |= FCVAR_CLIENT;
+	// TODO
+	return NULL;
+};
+
 /*
 ============
 Cvar_Command
