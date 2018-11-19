@@ -26,7 +26,7 @@
 sequenceEntry_s *SequenceGet(const char *sFileName, const char *sEntryName)
 {
 	// TODO
-	return nullptr;
+	return NULL;
 };
 
 void Sequence_ParseFile(const char *sFileName, qboolean bIsGlobal){
@@ -40,5 +40,5 @@ void Sequence_OnLevelLoad(const char *sMapName){
 sentenceEntry_s *SequencePickSentence(const char *sGroupName, int nPickMethod, int *pPicked)
 {
 	// TODO
-	return nullptr;
+	return NULL;
 };
