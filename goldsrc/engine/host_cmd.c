@@ -29,17 +29,16 @@ void Mod_Print();
 
 typedef void (*pfnGiveFnptrsToDll)(enginefuncs_t *apEngFuncs, globalvars_t *apGlobals);
 
-typedef int (*pfnGetEntityAPI)(DLL_FUNCTIONS *apFuncs, int anVersion);
-typedef int (*pfnGetEntityAPI2)(DLL_FUNCTIONS *apFuncs, int *apVersion);
-
 extern enginefuncs_t gEngineFuncs; // TODO
+
+void *gamedll = NULL;
 
 void LoadThisDll(const char *name)
 {
-	static void *gamedll = NULL;
 	pfnGiveFnptrsToDll fnGiveFnptrsToDll = NULL;
-	pfnGetEntityAPI fnGetEntityAPI = NULL;
-	pfnGetEntityAPI2 fnGetEntityAPI2 = NULL;
+	NEW_DLL_FUNCTIONS_FN fnGetNewDLLFunctions = NULL;
+	APIFUNCTION fnGetEntityAPI = NULL;
+	APIFUNCTION2 fnGetEntityAPI2 = NULL;
 
 	gamedll = FS_LoadLibrary(va("%s/%s", com_gamedir, name)); // TODO: was Sys_LoadModule
 
@@ -55,20 +54,30 @@ void LoadThisDll(const char *name)
 
 	fnGiveFnptrsToDll(&gEngineFuncs, &gGlobalVariables); // TODO
 
-	fnGetEntityAPI = (pfnGetEntityAPI)Sys_GetExport_Wrapper(gamedll, "GetEntityAPI");
-	fnGetEntityAPI2 = (pfnGetEntityAPI2)Sys_GetExport_Wrapper(gamedll, "GetEntityAPI2");
+	fnGetNewDLLFunctions = (NEW_DLL_FUNCTIONS_FN)Sys_GetExport_Wrapper(gamedll, "GetNewDLLFunctions");
+	
+	int nDLLVersion = NEW_DLL_FUNCTIONS_VERSION;
+	
+	if(fnGetNewDLLFunctions)
+	{
+		fnGetNewDLLFunctions(&gNewDLLFunctions, &nDLLVersion);
+		
+		if(nDLLVersion != NEW_DLL_FUNCTIONS_VERSION)
+			Sys_Error("Extended API set has a wrong version (got %d, should be %d)", nDLLVersion, NEW_DLL_FUNCTIONS_VERSION);
+	};
+	
+	fnGetEntityAPI = (APIFUNCTION)Sys_GetExport_Wrapper(gamedll, "GetEntityAPI");
+	fnGetEntityAPI2 = (APIFUNCTION2)Sys_GetExport_Wrapper(gamedll, "GetEntityAPI2");
 
+	nDLLVersion = INTERFACE_VERSION;
+	
 	if(fnGetEntityAPI2)
 	{
-		int nDLLVersion = INTERFACE_VERSION;
-
 		if(!fnGetEntityAPI2(&gEntityInterface, &nDLLVersion))
 			return;
 
 		if(nDLLVersion != INTERFACE_VERSION)
 			Sys_Error("game dll has wrong version number (%i should be %i)", nDLLVersion, INTERFACE_VERSION);
-
-		return;
 	};
 
 	if(fnGetEntityAPI)
@@ -116,7 +125,7 @@ void Host_Quit_f()
 {
 	if(key_dest != key_console && cls.state != ca_dedicated)
 	{
-		M_Menu_Quit_f();
+		Cbuf_AddText("menu_quit"); //M_Menu_Quit_f(); // TODO
 		return;
 	}
 	CL_Disconnect();
@@ -340,14 +349,7 @@ void Host_Map(qboolean loadGame, const char *mapName, const char *mapstring, qbo
 	if(loadGame) // TODO
 		SCR_BeginLoadingPlaque();
 
-	cls.mapstring[0] = 0;
-	for(i = 0; i < Cmd_Argc(); i++)
-	{
-		strcat(cls.mapstring, Cmd_Argv(i));
-		strcat(cls.mapstring, " ");
-	};
-	
-	strcat(cls.mapstring, "\n");
+	Q_strcpy(cls.mapstring, mapstring);
 
 	svs.serverflags = 0; // haven't completed an episode yet
 	strcpy(name, mapName);
@@ -392,12 +394,22 @@ command from the console.  Active clients are kicked off.
 */
 void Host_Map_f()
 {
+	int i;
+	char mapstring[MAX_MAPSTRING]; // TODO: high enough? or too much?
+	
 	if(cmd_source != src_command)
 		return;
 	
-	// TODO: move mapstring parsing here
+	mapstring[0] = 0;
+	for(i = 0; i < Cmd_Argc(); i++)
+	{
+		strcat(mapstring, Cmd_Argv(i));
+		strcat(mapstring, " ");
+	};
 	
-	Host_Map(false, Cmd_Argv(1), "", false);
+	strcat(mapstring, "\n");
+	
+	Host_Map(false, Cmd_Argv(1), mapstring, false);
 }
 
 /*
@@ -1016,7 +1028,7 @@ void Host_Version_f() // TODO: CL_Version_f?
 	Con_Printf("Exe: " __TIME__ " " __DATE__ "\n");
 }
 
-#ifdef IDGODS
+#ifdef HEADCRABGODS
 void Host_Please_f()
 {
 	client_t *cl;
@@ -1298,49 +1310,6 @@ void Host_Pause_f()
 		MSG_WriteByte(&sv.reliable_datagram, svc_setpause);
 		MSG_WriteByte(&sv.reliable_datagram, sv.paused);
 	}
-}
-
-//===========================================================================
-
-/*
-==================
-Host_PreSpawn_f
-==================
-*/
-void Host_PreSpawn_f()
-{
-	if(cmd_source == src_command)
-	{
-		Con_Printf("prespawn is not valid from the console\n");
-		return;
-	}
-
-	if(host_client->spawned)
-	{
-		Con_Printf("prespawn not valid -- allready spawned\n");
-		return;
-	}
-
-	SZ_Write(&host_client->netchan.message, sv.signon.data, sv.signon.cursize);
-	MSG_WriteByte(&host_client->netchan.message, svc_signonnum);
-	MSG_WriteByte(&host_client->netchan.message, 2);
-	//host_client->sendsignon = true;
-}
-
-/*
-==================
-Host_Begin_f
-==================
-*/
-void Host_Begin_f()
-{
-	if(cmd_source == src_command)
-	{
-		Con_Printf("begin is not valid from the console\n");
-		return;
-	}
-
-	host_client->spawned = true;
 }
 
 //===========================================================================
@@ -1754,7 +1723,7 @@ void Host_InitCommands()
 	/*
 	if (COM_CheckParm ("-cheats"))
 	{
-		allow_cheats = true;
+		sv_cheats.value = 1;
 		Info_SetValueForStarKey (svs.info, "*cheats", "ON", MAX_SERVERINFO_STRING);
 	}
 	*/
@@ -1770,7 +1739,6 @@ void Host_InitCommands()
 	Cmd_AddCommand("changelevel", Host_Changelevel_f);
 	Cmd_AddCommand("changelevel2", Host_Changelevel2_f);
 	Cmd_AddCommand("reconnect", Host_Reconnect_f);
-	//Cmd_AddCommand("name", Host_Name_f); // TODO
 	Cmd_AddCommand("noclip", Host_Noclip_f);
 	Cmd_AddCommand("version", Host_Version_f);
 #ifdef HEADCRABGODS
@@ -1779,11 +1747,8 @@ void Host_InitCommands()
 	Cmd_AddCommand("say", Host_Say_f);
 	Cmd_AddCommand("say_team", Host_Say_Team_f);
 	Cmd_AddCommand("tell", Host_Tell_f);
-	//Cmd_AddCommand("color", Host_Color_f); // TODO
 	Cmd_AddCommand("kill", Host_Kill_f);
 	Cmd_AddCommand("pause", Host_Pause_f);
-	Cmd_AddCommand("begin", Host_Begin_f);
-	Cmd_AddCommand("prespawn", Host_PreSpawn_f);
 	Cmd_AddCommand("kick", Host_Kick_f);
 	Cmd_AddCommand("ping", Host_Ping_f);
 	Cmd_AddCommand("load", Host_Loadgame_f);
@@ -1803,4 +1768,4 @@ void Host_InitCommands()
 	
 	Cmd_AddCommand ("setmaster", SV_SetMaster_f);
 	Cmd_AddCommand ("heartbeat", SV_Heartbeat_f);
-}
+};
