@@ -1002,7 +1002,9 @@ void *PvAllocEntPrivateData(edict_t *pEnt, int32_t cb)
 	if(!pEnt)
 		return NULL;
 	
-	return Mem_Alloc((size_t)cb); // TODO
+	void *pData = Mem_Alloc((size_t)cb); // TODO
+	Q_memset(pData, 0, cb);
+	return pData;
 };
 
 void *PvEntPrivateData(edict_t *pEnt)
@@ -1070,8 +1072,10 @@ int IndexOfEdict(const edict_t *pEnt)
 
 edict_t *PEntityOfEntIndex(int nIndex)
 {
-	// TODO
-	return NULL;
+	if(nIndex < 0 || nIndex > sv.maxedicts)
+		return NULL;
+	
+	return sv.edicts[nIndex];
 };
 
 edict_t *FindEntityByVars(struct entvars_s *pVars)
@@ -1116,9 +1120,7 @@ const char *NameForFunction(uint32_t nFunction)
 
 void ClientPrintf(edict_t *pEnt, PRINT_TYPE aType, const char *sMsg)
 {
-	int entnum;
-	
-	entnum = EDICT_NUM(pEnt);
+	int entnum = NUM_FOR_EDICT(pEnt);
 
 	if(entnum < 1 || entnum > svs.maxclients)
 	{
@@ -1126,7 +1128,7 @@ void ClientPrintf(edict_t *pEnt, PRINT_TYPE aType, const char *sMsg)
 		return;
 	};
 
-	pEnt = &svs.clients[entnum - 1];
+	client_t *pClient = &svs.clients[entnum - 1];
 	
 	switch(aType)
 	{
@@ -1134,14 +1136,14 @@ void ClientPrintf(edict_t *pEnt, PRINT_TYPE aType, const char *sMsg)
 		// TODO
 		break;
 	case print_center: // single print to a specific client
-		MSG_WriteChar(&pEnt->netchan.message, svc_centerprint);
+		MSG_WriteChar(&pClient->netchan.message, svc_centerprint);
 		break;
 	case print_chat:
-		MSG_WriteChar(&pEnt->netchan.message, svc_print);
+		MSG_WriteChar(&pClient->netchan.message, svc_print);
 		break;
 	};
 	
-	MSG_WriteString(&pEnt->netchan.message, sMsg);
+	MSG_WriteString(&pClient->netchan.message, sMsg);
 };
 
 void ServerPrint(const char *sMsg)
@@ -1419,6 +1421,18 @@ const char *pfnGetPlayerAuthId(edict_t *player)
 {
 	// TODO
 	return "";
+};
+
+sequenceEntry_s *pfnSequenceGet(const char *sFileName, const char *sEntryName)
+{
+	// TODO
+	return SequenceGet(sFileName, sEntryName);
+};
+
+sentenceEntry_s *pfnSequencePickSentence(const char *sGroupName, int nPickMethod, int *pPicked)
+{
+	// TODO
+	return SequencePickSentence(sGroupName, nPickMethod, pPicked);
 };
 
 int pfnGetFileSize(char *filename)
