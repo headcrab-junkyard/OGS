@@ -751,3 +751,9 @@ void Key_ClearStates()
 		key_repeats[i] = 0;
 	}
 }
+
+const char *Key_LookupBinding(const char *asBinding)
+{
+	// TODO
+	return "";
+};
