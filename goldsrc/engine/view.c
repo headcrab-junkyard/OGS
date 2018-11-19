@@ -656,3 +656,13 @@ float V_CalcRoll(vec3_t angles, vec3_t velocity)
 {
 	return 0.0f;
 };
+
+void V_CalcShake()
+{
+	// TODO
+};
+
+void V_ApplyShake(float *avOrigin, float *avAngles, float afFactor)
+{
+	// TODO
+};
