@@ -51,11 +51,11 @@ net_api_t netapi =
   NET_CancelRequest,
   NET_CancelAllRequests,
 
-  nullptr, //NET_AdrToString, // TODO
-  nullptr, //NET_CompareAdr, // TODO
+  NULL, //NET_AdrToString, // TODO
+  NULL, //NET_CompareAdr, // TODO
   NET_StringToAdr,
 
-  nullptr, //Info_ValueForKey, // TODO
+  NULL, //Info_ValueForKey, // TODO
   Info_RemoveKey,
   Info_SetValueForKey
 };
