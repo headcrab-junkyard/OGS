@@ -104,14 +104,14 @@ int Tri_WorldToScreen(float *vWorldCoord, float *vScreenCoord)
 void Tri_Fog(float fColor[3], float fStart, float fEnd, int nEnable)
 {
 #ifdef GLQUAKE
-	float vFullColor[4];
+	GLfloat vFullColor[4];
 	
 	vFullColor[0] = fColor[0];
 	vFullColor[1] = fColor[1];
 	vFullColor[2] = fColor[2];
 	vFullColor[3] = 1.0f;
 	
-	qglFogf(GL_FOG_COLOR, vFullColor);
+	qglFogf(GL_FOG_COLOR, vFullColor[0]);
 	qglFogf(GL_FOG_START, fStart);
 	qglFogf(GL_FOG_END, fEnd);
 	
