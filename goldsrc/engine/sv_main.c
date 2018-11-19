@@ -44,11 +44,25 @@ cvar_t sv_filterban = { "sv_filterban", "1" };
 
 cvar_t sv_timeout = { "sv_timeout", "60" }; // seconds without any message
 
+//cvar_t pausable	= {"pausable", "1"}; // TODO: already defined in host
+
 //============================================================================
 
 void SV_WriteSpawn(client_t *client)
 {
+	// don't begin again
+	if(client->spawned)
+		return;
+	
 	client->spawned = true;
+	
+	// TODO: client connection code? ClientPutInServer?
+	
+	// clear the net statistics, because connecting gives a bogus picture
+	client->netchan.frame_latency = 0;
+	client->netchan.frame_rate = 0;
+	client->netchan.drop_count = 0;
+	client->netchan.good_count = 0;
 };
 
 /*
@@ -70,10 +84,13 @@ void SV_Spawn_f() // TODO: was Host_Spawn_f
 
 	if(host_client->spawned)
 	{
-		Con_Printf("Spawn not valid -- allready spawned\n");
+		Con_Printf("Spawn not valid -- already spawned\n");
 		return;
 	}
-
+	
+	// NOTE: prespawn
+	SZ_Write(&host_client->netchan.message, sv.signon.data, sv.signon.cursize);
+	
 	// handle the case of a level changing while a client was connecting
 	if ( atoi(Cmd_Argv(1)) != svs.spawncount )
 	{
@@ -82,12 +99,12 @@ void SV_Spawn_f() // TODO: was Host_Spawn_f
 		return;
 	}
 	
-	// TODO
-	//SV_WriteSpawn(host_client);
+	SV_WriteSpawn(host_client);
 	
 	// run the entrance script
 	if(sv.loadgame)
-	{ // loaded games are fully inited allready
+	{
+		// loaded games are fully inited already
 		// if this is the last client to be connected, unpause
 		sv.paused = false;
 	}
@@ -128,7 +145,7 @@ void SV_Spawn_f() // TODO: was Host_Spawn_f
 		// call the spawn function
 
 		gGlobalVariables.time = sv.time;
-		if(!gEntityInterface.pfnClientConnect(sv_player, host_client->userinfo))
+		if(!gEntityInterface.pfnClientConnect(sv_player, host_client->name, "TODO", NULL)) // TODO
 			return; // TODO
 
 		//if ((Sys_FloatTime() - host_client->netchan.connecttime) <= sv.time) // TODO
@@ -170,13 +187,15 @@ void SV_Spawn_f() // TODO: was Host_Spawn_f
 		MSG_WriteByte(&host_client->netchan.message, svc_lightstyle);
 		MSG_WriteByte(&host_client->netchan.message, (char)i);
 		MSG_WriteString(&host_client->netchan.message, sv.lightstyles[i]);
-	}
+	};
 
 	//
-	// send some stats
+	// send some stats (force stats to be updated)
 	//
 	// TODO
 	/*
+	Q_memset (host_client->stats, 0, sizeof(host_client->stats));
+	
 	MSG_WriteByte(&host_client->netchan.message, svc_updatestat);
 	MSG_WriteByte(&host_client->netchan.message, STAT_TOTALSECRETS);
 	MSG_WriteLong(&host_client->netchan.message, gGlobalVariables.total_secrets);
@@ -207,10 +226,12 @@ void SV_Spawn_f() // TODO: was Host_Spawn_f
 	MSG_WriteAngle(&host_client->netchan.message, 0);
 
 	SV_WriteClientdataToMessage(sv_player, &host_client->netchan.message);
-
+	
 	MSG_WriteByte(&host_client->netchan.message, svc_signonnum);
-	MSG_WriteByte(&host_client->netchan.message, 3);
+	MSG_WriteByte(&host_client->netchan.message, 2); // TODO: looks like this should be 1
 	//host_client->sendsignon = true;
+	
+	// TODO: svc_voiceinit
 };
 
 /*
@@ -223,9 +244,6 @@ This will be sent on the initial connection and upon each server load.
 */
 void SV_New_f ()
 {
-	char		*gamedir;
-	int			playernum;
-
 	if (host_client->spawned)
 		return;
 
@@ -235,10 +253,6 @@ void SV_New_f ()
 	// send the info about the new client to all connected clients
 //	SV_FullClientUpdate (host_client, &sv.reliable_datagram);
 //	host_client->sendinfo = true;
-
-	gamedir = Info_ValueForKey (svs.info, "*gamedir");
-	if (!gamedir[0])
-		gamedir = "qw";
 
 //NOTE:  This doesn't go through ClientReliableWrite since it's before the user
 //spawns.  These functions are written to not overflow
@@ -252,41 +266,19 @@ void SV_New_f ()
 	*/
 
 	// send the serverdata
-	//MSG_WriteByte (&host_client->netchan.message, svc_serverdata); // TODO
-	MSG_WriteLong (&host_client->netchan.message, PROTOCOL_VERSION);
-	MSG_WriteLong (&host_client->netchan.message, svs.spawncount);
-	MSG_WriteString (&host_client->netchan.message, gamedir);
-
-	playernum = NUM_FOR_EDICT(host_client->edict)-1;
-	//if (host_client->spectator) // TODO
-		//playernum |= 128;
-	MSG_WriteByte (&host_client->netchan.message, playernum);
-
-	// send full levelname
-	MSG_WriteString (&host_client->netchan.message, PR_GetString(sv.edicts->v.message));
-
-	// send the movevars
-	MSG_WriteFloat(&host_client->netchan.message, movevars.gravity);
-	MSG_WriteFloat(&host_client->netchan.message, movevars.stopspeed);
-	MSG_WriteFloat(&host_client->netchan.message, movevars.maxspeed);
-	MSG_WriteFloat(&host_client->netchan.message, movevars.spectatormaxspeed);
-	MSG_WriteFloat(&host_client->netchan.message, movevars.accelerate);
-	MSG_WriteFloat(&host_client->netchan.message, movevars.airaccelerate);
-	MSG_WriteFloat(&host_client->netchan.message, movevars.wateraccelerate);
-	MSG_WriteFloat(&host_client->netchan.message, movevars.friction);
-	MSG_WriteFloat(&host_client->netchan.message, movevars.waterfriction);
-	MSG_WriteFloat(&host_client->netchan.message, movevars.entgravity);
-
-	// send music
-	MSG_WriteByte (&host_client->netchan.message, svc_cdtrack);
-	MSG_WriteByte (&host_client->netchan.message, sv.edicts->v.sounds);
+	SV_SendServerinfo(host_client);
 
 	// send server info string
 	MSG_WriteByte (&host_client->netchan.message, svc_stufftext);
 	MSG_WriteString (&host_client->netchan.message, va("fullserverinfo \"%s\"\n", svs.info) );
+	
+	// TODO: svc_updateuserinfo
+	
+	// TODO: svc_resourcerequest
+	// TODO: svc_resourcelist
 };
 
-// TODO
+// TODO: TODO what?
 void SV_SendServerInfoChange(const char *key, const char *value)
 {
 	if (!sv.state)
@@ -340,6 +332,11 @@ void SV_Serverinfo_f ()
 	};
 
 	SV_SendServerInfoChange(Cmd_Argv(1), Cmd_Argv(2));
+};
+
+void SV_FullServerInfo_f()
+{
+	// TODO
 };
 
 /*
@@ -582,13 +579,17 @@ void SV_Init()
 	int i;
 	extern cvar_t sv_maxvelocity;
 	extern cvar_t sv_gravity;
-	extern cvar_t sv_nostep;
+	extern cvar_t sv_nostep; // TODO: remove
 	extern cvar_t sv_friction;
-	extern cvar_t sv_edgefriction;
+	extern cvar_t sv_edgefriction; // TODO: remove
+	extern	cvar_t	sv_waterfriction;
 	extern cvar_t sv_stopspeed;
 	extern cvar_t sv_maxspeed;
+	extern	cvar_t	sv_spectatormaxspeed;
 	extern cvar_t sv_accelerate;
-	extern cvar_t sv_idealpitchscale;
+	extern	cvar_t	sv_airaccelerate;
+	extern	cvar_t	sv_wateraccelerate;
+	extern cvar_t sv_idealpitchscale; // TODO: remove
 	extern cvar_t sv_aim;
 	
 	// TODO: SV_InitOperatorCommands()?
@@ -611,17 +612,55 @@ void SV_Init()
 	Cvar_RegisterVariable(&sv_maxvelocity);
 	Cvar_RegisterVariable(&sv_gravity);
 	Cvar_RegisterVariable(&sv_friction);
-	Cvar_RegisterVariable(&sv_edgefriction);
+	Cvar_RegisterVariable(&sv_edgefriction); // TODO: not present in GS
+	Cvar_RegisterVariable(&sv_waterfriction);
 	Cvar_RegisterVariable(&sv_stopspeed);
 	Cvar_RegisterVariable(&sv_maxspeed);
+	Cvar_RegisterVariable(&sv_spectatormaxspeed);
 	Cvar_RegisterVariable(&sv_accelerate);
-	Cvar_RegisterVariable(&sv_idealpitchscale);
+	Cvar_RegisterVariable(&sv_airaccelerate);
+	Cvar_RegisterVariable(&sv_wateraccelerate);
+	
+	Cvar_RegisterVariable(&sv_idealpitchscale); // TODO: not present in GS
+	
 	Cvar_RegisterVariable(&sv_aim);
-	Cvar_RegisterVariable(&sv_nostep);
+	
+	Cvar_RegisterVariable(&sv_filterban);
+	
+	Cvar_RegisterVariable(&sv_nostep); // TODO: not present in GS
+	
+	//Cvar_RegisterVariable(&pausable); // TODO: already defined in host
 
 	for(i = 0; i < MAX_MODELS; i++)
 		sprintf(localmodels[i], "*%i", i);
-}
+};
+
+/*
+================
+SV_Shutdown
+
+Quake calls this before calling Sys_Quit or Sys_Error
+================
+*/
+void SV_Shutdown ()
+{
+	// TODO
+/*
+	Master_Shutdown ();
+	
+	if (sv_logfile)
+	{
+		fclose (sv_logfile);
+		sv_logfile = NULL;
+	};
+	
+	if (sv_fraglogfile)
+	{
+		fclose (sv_fraglogfile);
+		sv_logfile = NULL;
+	};
+*/
+};
 
 /*
 =================
@@ -727,7 +766,7 @@ void SV_ReadPackets()
 		qport = MSG_ReadShort() & 0xffff;
 
 		// check for packets from connected clients
-		for(i = 0, cl = svs.clients; i < MAX_CLIENTS; i++, cl++)
+		for(i = 0, cl = svs.clients; i < svs.maxclients; i++, cl++)
 		{
 			if(!cl->connected) // TODO: cl->state == cs_free in qw
 				continue;
@@ -750,7 +789,7 @@ void SV_ReadPackets()
 			break;
 		}
 
-		if(i != MAX_CLIENTS)
+		if(i != svs.maxclients)
 			continue;
 
 		// packet is not from a known client
@@ -780,7 +819,7 @@ void SV_CheckTimeouts()
 	droptime = realtime - sv_timeout.value;
 	nclients = 0;
 
-	for(i = 0, cl = svs.clients; i < MAX_CLIENTS; i++, cl++)
+	for(i = 0, cl = svs.clients; i < svs.maxclients; i++, cl++)
 	{
 		if(cl->connected || cl->spawned)
 		{
@@ -795,7 +834,7 @@ void SV_CheckTimeouts()
 		};
 
 		//if (cl->active == true && realtime - cl->connection_started > zombietime.value)
-		//cl->active = false;	// can now be reused
+			//cl->active = false;	// can now be reused
 	};
 
 	// TODO: non-GS behavior
@@ -882,9 +921,6 @@ void SV_Frame()
 	// get packets
 	SV_ReadPackets();
 
-	// check for commands typed to the host
-	//SV_GetConsoleCommands (); // TODO: handled by Host_GetConsoleCommands
-
 	// process console commands
 	//Cbuf_Execute (); // TODO: qw
 
@@ -943,7 +979,7 @@ void SVC_Status()
 	Cmd_TokenizeString("status");
 	SV_BeginRedirect(RD_PACKET);
 	Con_Printf("%s\n", svs.info);
-	for(i = 0; i < MAX_CLIENTS; i++)
+	for(i = 0; i < svs.maxclients; i++)
 	{
 		cl = &svs.clients[i];
 		if((cl->connected || cl->spawned) /*&& !cl->spectator*/) // TODO
@@ -1093,229 +1129,6 @@ void SVC_GetChallenge()
 // TODO
 void SV_ExtractFromUserinfo (client_t *cl);
 
-/*
-==================
-SVC_DirectConnect
-
-A connection request that did not come from the master
-==================
-*/
-void SVC_DirectConnect()
-{
-	char userinfo[1024];
-	static int userid;
-	netadr_t adr;
-	int i;
-	client_t *cl, *newcl;
-	client_t temp;
-	edict_t *ent;
-	int edictnum;
-	char *s;
-	int clients, spectators;
-	qboolean spectator;
-	int qport;
-	int version;
-	int challenge;
-
-	version = atoi(Cmd_Argv(1));
-	if(version != PROTOCOL_VERSION)
-	{
-		Netchan_OutOfBandPrint(NS_SERVER, net_from, "%c\nServer is version %4.2f.\n", A2C_PRINT, VERSION);
-		Con_Printf("* rejected connect from version %i\n", version);
-		return;
-	}
-
-	qport = atoi(Cmd_Argv(2));
-
-	challenge = atoi(Cmd_Argv(3));
-
-	// note an extra byte is needed to replace spectator key
-	strncpy(userinfo, Cmd_Argv(4), sizeof(userinfo) - 2);
-	userinfo[sizeof(userinfo) - 2] = 0;
-
-	// see if the challenge is valid
-	for(i = 0; i < MAX_CHALLENGES; i++)
-	{
-		if(NET_CompareBaseAdr(net_from, svs.challenges[i].adr))
-		{
-			if(challenge == svs.challenges[i].challenge)
-				break; // good
-			Netchan_OutOfBandPrint(NS_SERVER, net_from, "%c\nBad challenge.\n", A2C_PRINT);
-			return;
-		}
-	}
-	if(i == MAX_CHALLENGES)
-	{
-		Netchan_OutOfBandPrint(NS_SERVER, net_from, "%c\nNo challenge for address.\n", A2C_PRINT);
-		return;
-	}
-
-	// check for password
-	s = Info_ValueForKey(userinfo, "spectator");
-	if(s[0] && strcmp(s, "0"))
-	{
-		// TODO
-		/*
-		if (spectator_password.string[0] && 
-			stricmp(spectator_password.string, "none") &&
-			strcmp(spectator_password.string, s) )
-		{	// failed
-			Con_Printf ("%s:spectator password failed\n", NET_AdrToString (net_from));
-			Netchan_OutOfBandPrint (NS_SERVER, net_from, "%c\nrequires a spectator password\n\n", A2C_PRINT);
-			return;
-		}
-		*/
-		Info_RemoveKey(userinfo, "spectator"); // remove passwd
-		Info_SetValueForStarKey(userinfo, "*spectator", "1", MAX_INFO_STRING);
-		spectator = true;
-	}
-	else
-	{
-		s = Info_ValueForKey(userinfo, "password");
-		// TODO
-		/*
-		if(password.string[0] &&
-		   stricmp(password.string, "none") &&
-		   strcmp(password.string, s))
-		{
-			Con_Printf("%s:password failed\n", NET_AdrToString(net_from));
-			Netchan_OutOfBandPrint(NS_SERVER, net_from, "%c\nserver requires a password\n\n", A2C_PRINT);
-			return;
-		}
-		*/
-		spectator = false;
-		Info_RemoveKey(userinfo, "password"); // remove passwd
-	}
-
-	adr = net_from;
-	userid++; // so every client gets a unique id
-
-	newcl = &temp;
-	memset(newcl, 0, sizeof(client_t));
-
-	newcl->userid = userid;
-
-	// works properly
-	//if(!sv_highchars.value) // TODO
-	{
-		byte *p, *q;
-
-		for(p = (byte *)newcl->userinfo, q = (byte *)userinfo;
-		    *q && p < (byte *)newcl->userinfo + sizeof(newcl->userinfo) - 1; q++)
-			if(*q > 31 && *q <= 127)
-				*p++ = *q;
-	}
-	//else// TODO
-		//strncpy(newcl->userinfo, userinfo, sizeof(newcl->userinfo) - 1);
-
-	// if there is allready a slot for this ip, drop it
-	for(i = 0, cl = svs.clients; i < MAX_CLIENTS; i++, cl++)
-	{
-		if(!cl->active)
-			continue;
-		if(NET_CompareBaseAdr(adr, cl->netchan.remote_address) && (cl->netchan.qport == qport || adr.port == cl->netchan.remote_address.port))
-		{
-			if(cl->connected)
-			{
-				Con_Printf("%s:dup connect\n", NET_AdrToString(adr));
-				userid--;
-				return;
-			}
-
-			Con_Printf("%s:reconnect\n", NET_AdrToString(adr));
-			SV_DropClient(cl, false, "reconnect");
-			break;
-		}
-	}
-
-	// count up the clients and spectators
-	clients = 0;
-	spectators = 0;
-	for(i = 0, cl = svs.clients; i < MAX_CLIENTS; i++, cl++)
-	{
-		if(!cl->active)
-			continue;
-		//if(cl->spectator) // TODO
-			//spectators++;
-		//else
-			clients++;
-	}
-
-	// if at server limits, refuse connection
-	//if(maxplayers.value > MAX_CLIENTS) // TODO
-		//Cvar_SetValue("maxplayers", MAX_CLIENTS);
-
-	if(/*(spectator && spectators >= (int)maxspectators.value) ||*/ (!spectator && clients >= 4/*(int)maxplayers.value*/)) // TODO
-	{
-		Con_Printf("%s:full connect\n", NET_AdrToString(adr));
-		Netchan_OutOfBandPrint(NS_SERVER, adr, "%c\nserver is full\n\n", A2C_PRINT);
-		return;
-	}
-
-	// find a client slot
-	newcl = NULL;
-	for(i = 0, cl = svs.clients; i < MAX_CLIENTS; i++, cl++)
-	{
-		if(!cl->active)
-		{
-			newcl = cl;
-			break;
-		}
-	}
-
-	if(!newcl)
-	{
-		Con_Printf("WARNING: miscounted available clients\n");
-		return;
-	}
-
-	// build a new connection
-	// accept the new client
-	// this is the only place a client_t is ever initialized
-	*newcl = temp;
-
-	Netchan_OutOfBandPrint(NS_SERVER, adr, "%c", S2C_CONNECTION);
-
-	edictnum = (newcl - svs.clients) + 1;
-
-	Netchan_Setup(NS_SERVER, &newcl->netchan, adr, qport);
-
-	newcl->connected = true;
-
-	newcl->datagram.allowoverflow = true;
-	newcl->datagram.data = newcl->datagram_buf;
-	newcl->datagram.maxsize = sizeof(newcl->datagram_buf);
-
-	// spectator mode can ONLY be set at join time
-	//newcl->spectator = spectator; // TODO
-
-	ent = EDICT_NUM(edictnum);
-	newcl->edict = ent;
-
-	// parse some info from the info strings
-	SV_ExtractFromUserinfo(newcl);
-
-	// TODO
-	// JACK: Init the floodprot stuff.
-	//for (i=0; i<10; i++)
-	//	newcl->whensaid[i] = 0.0;
-	//newcl->whensaidhead = 0;
-	//newcl->lockedtill = 0;
-
-	// call the progs to get default spawn parms for the new client
-	gEntityInterface.pfnParmsNewLevel();
-	for(i = 0; i < NUM_SPAWN_PARMS; i++)
-		newcl->spawn_parms[i] = (&gGlobalVariables.parm1)[i];
-
-	// TODO
-	//if(newcl->spectator)
-		//Con_Printf("Spectator %s connected\n", newcl->name);
-	//else
-		Con_DPrintf("Client %s connected\n", newcl->name);
-
-	newcl->sendinfo = true;
-}
-
 int Rcon_Validate()
 {
 	// TODO
@@ -1390,7 +1203,7 @@ void SV_ConnectionlessPacket()
 	MSG_BeginReading();
 	MSG_ReadLong(); // skip the -1 marker
 
-	//s = MSG_ReadStringLine(); // TODO
+	s = MSG_ReadStringLine();
 
 	Cmd_TokenizeString(s);
 
@@ -1418,7 +1231,7 @@ void SV_ConnectionlessPacket()
 	}
 	else if(!strcmp(c, "connect"))
 	{
-		SVC_DirectConnect();
+		SV_ConnectClient();
 		return;
 	}
 	else if(!strcmp(c, "getchallenge"))
@@ -1429,7 +1242,8 @@ void SV_ConnectionlessPacket()
 	else if(!strcmp(c, "rcon"))
 		SVC_RemoteCommand();
 	else
-		Con_Printf("bad connectionless packet from %s:\n%s\n", NET_AdrToString(net_from), s);
+		if(!gEntityInterface.pfnConnectionlessPacket(&net_from, c, NULL, NULL)) // TODO
+			Con_Printf("bad connectionless packet from %s:\n%s\n", NET_AdrToString(net_from), s);
 }
 
 /*
@@ -1551,7 +1365,7 @@ Larger attenuations will drop off.  (max 4 attenuation)
 
 ==================
 */
-void SV_StartSound(edict_t *entity, int channel, const char *sample, int volume, float attenuation)
+void SV_StartSound(edict_t *entity, int channel, const char *sample, int volume, float attenuation, int pitch)
 {
 	int sound_num;
 	int field_mask;
@@ -1566,7 +1380,12 @@ void SV_StartSound(edict_t *entity, int channel, const char *sample, int volume,
 
 	if(channel < 0 || channel > 7)
 		Sys_Error("SV_StartSound: channel = %i", channel);
+	
+	if(pitch < 0 || pitch > 255) // TODO
+		Sys_Error("SV_StartSound: pitch = %i", pitch);
 
+	// TODO: invalid sentence number: %s
+	
 	if(sv.datagram.cursize > MAX_DATAGRAM - 16)
 		return;
 
@@ -1577,7 +1396,7 @@ void SV_StartSound(edict_t *entity, int channel, const char *sample, int volume,
 
 	if(sound_num == MAX_SOUNDS || !sv.sound_precache[sound_num])
 	{
-		Con_Printf("SV_StartSound: %s not precacheed\n", sample);
+		Con_Printf("SV_StartSound: %s not precached (%d)\n", sample, sound_num);
 		return;
 	}
 
@@ -1622,33 +1441,97 @@ This will be sent on the initial connection and upon each server load.
 */
 void SV_SendServerinfo(client_t *client)
 {
+	char		*gamedir;
+	int			playernum;
+	
 	char **s;
 	char message[2048];
 
+	gamedir = Info_ValueForKey (svs.info, "*gamedir");
+	if (!gamedir[0])
+		gamedir = com_gamedir;
+	
 	MSG_WriteByte(&client->netchan.message, svc_print);
-	sprintf(message, "%c\\BUILD %4.2f SERVER (%i CRC)", 2, VERSION, 0 /*pr_crc*/);
+	sprintf(message, "%c\\BUILD %d SERVER (%i CRC)", 2, build_number(), 0 /*pr_crc*/);
 	MSG_WriteString(&client->netchan.message, message);
-
+	
 	MSG_WriteByte(&client->netchan.message, svc_serverinfo);
 	MSG_WriteLong(&client->netchan.message, PROTOCOL_VERSION);
+	MSG_WriteLong (&client->netchan.message, svs.spawncount);
+	MSG_WriteLong (&client->netchan.message, 0); // TODO: map crc
+	
+	for(int i = 0; i < 16; i++)
+		MSG_WriteByte (&client->netchan.message, 0); // TODO: client dll hash
+	
 	MSG_WriteByte(&client->netchan.message, svs.maxclients);
 
+	playernum = NUM_FOR_EDICT(client->edict)-1;
+	//if (client->spectator) // TODO
+		//playernum |= 128;
+	MSG_WriteByte (&client->netchan.message, playernum);
+	
+	// TODO
+	//MSG_WriteByte (&client->netchan.message, deathmatch.value);
 	if(!coop.value && deathmatch.value)
 		MSG_WriteByte(&client->netchan.message, GAME_DEATHMATCH);
 	else
 		MSG_WriteByte(&client->netchan.message, GAME_COOP);
 
-	sprintf(message, pr_strings + sv.edicts->v.message);
+	MSG_WriteString (&client->netchan.message, gamedir);
+	
+	MSG_WriteString (&client->netchan.message, hostname.string);
+	
+	// send full levelname
+	MSG_WriteString (&client->netchan.message, sv.name);
+	//MSG_WriteString (&client->netchan.message, PR_GetString(sv.edicts->v.message));
+	
+	//sprintf(message, pr_strings + sv.edicts->v.message);
+	//MSG_WriteString(&client->netchan.message, message);
 
-	MSG_WriteString(&client->netchan.message, message);
-
-	for(s = sv.model_precache + 1; *s; s++)
-		MSG_WriteString(&client->netchan.message, *s);
+	MSG_WriteString (&client->netchan.message, ""); // TODO: mapcycle
+	
 	MSG_WriteByte(&client->netchan.message, 0);
+	
+	SV_SendExtraServerinfo(client);
+	
+	//SV_SendDeltaDescription(client); // TODO
+	
+	// send the movevars
+	MSG_WriteByte(&client->netchan.message, svc_newmovevars);
+	MSG_WriteFloat(&client->netchan.message, movevars.gravity);
+	MSG_WriteFloat(&client->netchan.message, movevars.stopspeed);
+	MSG_WriteFloat(&client->netchan.message, movevars.maxspeed);
+	MSG_WriteFloat(&client->netchan.message, movevars.spectatormaxspeed);
+	MSG_WriteFloat(&client->netchan.message, movevars.accelerate);
+	MSG_WriteFloat(&client->netchan.message, movevars.airaccelerate);
+	MSG_WriteFloat(&client->netchan.message, movevars.wateraccelerate);
+	MSG_WriteFloat(&client->netchan.message, movevars.friction);
+	MSG_WriteFloat(&client->netchan.message, movevars.edgefriction);
+	MSG_WriteFloat(&client->netchan.message, movevars.waterfriction);
+	MSG_WriteFloat(&client->netchan.message, movevars.entgravity);
+	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.bounce*/);
+	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.stepsize*/);
+	MSG_WriteFloat(&client->netchan.message, 0.0f /* movevars.maxvelocity*/);
+	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.zmax*/);
+	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.waveheight*/);
+	MSG_WriteByte(&client->netchan.message, 1 /*movevars.footsteps*/);
+	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.rollangle*/);
+	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.rollspeed*/);
+	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.skycolorred*/);
+	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.skycolorgreen*/);
+	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.skycolorblue*/);
+	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.skyvecx*/);
+	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.skyvecy*/);
+	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.skyvecz*/);
+	MSG_WriteString(&client->netchan.message, "" /*movevars.skyname*/);
 
-	for(s = sv.sound_precache + 1; *s; s++)
-		MSG_WriteString(&client->netchan.message, *s);
-	MSG_WriteByte(&client->netchan.message, 0);
+	//for(s = sv.model_precache + 1; *s; s++)
+		//MSG_WriteString(&client->netchan.message, *s);
+	//MSG_WriteByte(&client->netchan.message, 0);
+
+	//for(s = sv.sound_precache + 1; *s; s++)
+		//MSG_WriteString(&client->netchan.message, *s);
+	//MSG_WriteByte(&client->netchan.message, 0);
 
 	// send music
 	MSG_WriteByte(&client->netchan.message, svc_cdtrack);
@@ -1659,7 +1542,10 @@ void SV_SendServerinfo(client_t *client)
 	MSG_WriteByte(&client->netchan.message, svc_setview);
 	MSG_WriteShort(&client->netchan.message, NUM_FOR_EDICT(client->edict));
 
-	MSG_WriteByte(&client->netchan.message, svc_signonnum);
+	// send user messages
+	//SV_SendUserMessages(client); // TODO
+	
+	MSG_WriteByte(&client->netchan.message, svc_signonnum); // TODO: wrong place
 	MSG_WriteByte(&client->netchan.message, 1);
 
 	client->connected = true;
@@ -1668,59 +1554,273 @@ void SV_SendServerinfo(client_t *client)
 
 /*
 ================
-SV_ConnectClient
+SV_SendExtraServerinfo
 
-Initializes a client_t for a new net connection.  This will only be called
-once for a player each game, not once for each level change.
+Sends some extra information regarding the server.
+
+Note: This message is sent at player's connection right after SVC_SERVERINFO.
+Note: The sv_cheats cvar will be set on the client with the value provided.
+Note: It appears FallbackDir is always null.
 ================
 */
-/*
-void SV_ConnectClient (int clientnum)
+void SV_SendExtraServerinfo(client_t *client)
 {
+	MSG_WriteByte(&client->netchan.message, svc_sendextrainfo);
+	
+	MSG_WriteString(&client->netchan.message, ""); // fallback dir
+	MSG_WriteByte(&client->netchan.message, 0 /*sv_cheats.value*/); // cheats state // TODO
+};
+
+/*
+================
+SV_ConnectClient
+
+Initializes a client_t for a new net connection (A connection request that did not come from the master).
+This will only be called once for a player each game, not once for each level change.
+================
+*/
+void SV_ConnectClient()
+{
+	static int userid;
+	char userinfo[1024];
+	netadr_t adr;
+	char *s;
 	edict_t			*ent;
-	client_t		*client;
+	client_t		*client, *cl, *newcl;
+	client_t temp;
 	int				edictnum;
-	struct netchan_s *netconnection;
 	int				i;
 	float			spawn_parms[NUM_SPAWN_PARMS];
-
-	client = svs.clients + clientnum;
-
-	Con_DPrintf ("Client %s connected\n", client->netchan.remote_address);
-
-	edictnum = clientnum+1;
-
-	ent = EDICT_NUM(edictnum);
+	int clients, spectators;
+	qboolean spectator;
+	int qport;
+	int version;
+	int challenge;
 	
-// set up the client_t
-	netconnection = &client->netchan;
+	version = atoi(Cmd_Argv(1));
+	if(version != PROTOCOL_VERSION)
+	{
+		Netchan_OutOfBandPrint(NS_SERVER, net_from, "%c\nServer is version %4.2f.\n", A2C_PRINT, VERSION);
+		Con_Printf("* rejected connect from version %i\n", version);
+		return;
+	};
+
+	qport = atoi(Cmd_Argv(2));
+
+	challenge = atoi(Cmd_Argv(3));
 	
-	if (sv.loadgame)
-		memcpy (spawn_parms, client->spawn_parms, sizeof(spawn_parms));
-	memset (client, 0, sizeof(*client));
-	client->netchan = netconnection;
+	// note an extra byte is needed to replace spectator key
+	strncpy(userinfo, Cmd_Argv(4), sizeof(userinfo) - 2);
+	userinfo[sizeof(userinfo) - 2] = 0;
 
-	strcpy (client->name, "unconnected");
-	client->active = true;
-	client->spawned = false;
-	client->edict = ent;
-	client->netchan.message.data = client->msgbuf;
-	client->netchan.message.maxsize = sizeof(client->msgbuf);
-	client->netchan.message.allowoverflow = true;		// we can catch it
-
-	if (sv.loadgame)
-		memcpy (client->spawn_parms, spawn_parms, sizeof(spawn_parms));
+	// see if the challenge is valid
+	for(i = 0; i < MAX_CHALLENGES; i++)
+	{
+		if(NET_CompareBaseAdr(net_from, svs.challenges[i].adr))
+		{
+			if(challenge == svs.challenges[i].challenge)
+				break; // good
+			Netchan_OutOfBandPrint(NS_SERVER, net_from, "%c\nBad challenge.\n", A2C_PRINT);
+			return;
+		};
+	};
+	
+	if(i == MAX_CHALLENGES)
+	{
+		Netchan_OutOfBandPrint(NS_SERVER, net_from, "%c\nNo challenge for address.\n", A2C_PRINT);
+		return;
+	};
+	
+	// check for password
+	s = Info_ValueForKey(userinfo, "spectator");
+	if(s[0] && strcmp(s, "0"))
+	{
+		// TODO
+		/*
+		if (spectator_password.string[0] && 
+			stricmp(spectator_password.string, "none") &&
+			strcmp(spectator_password.string, s) )
+		{	// failed
+			Con_Printf ("%s:spectator password failed\n", NET_AdrToString (net_from));
+			Netchan_OutOfBandPrint (NS_SERVER, net_from, "%c\nrequires a spectator password\n\n", A2C_PRINT);
+			return;
+		}
+		*/
+		Info_RemoveKey(userinfo, "spectator"); // remove passwd
+		Info_SetValueForStarKey(userinfo, "*spectator", "1", MAX_INFO_STRING);
+		spectator = true;
+	}
 	else
 	{
-	// call the progs to get default spawn parms for the new client
-		gEntityInterface.pfnSetNewParms();
-		for (i=0 ; i<NUM_SPAWN_PARMS ; i++)
-			client->spawn_parms[i] = (&gGlobalVariables.parm1)[i];
+		s = Info_ValueForKey(userinfo, "password");
+		// TODO
+		/*
+		if(password.string[0] &&
+		   stricmp(password.string, "none") &&
+		   strcmp(password.string, s))
+		{
+			Con_Printf("%s:password failed\n", NET_AdrToString(net_from));
+			Netchan_OutOfBandPrint(NS_SERVER, net_from, "%c\nserver requires a password\n\n", A2C_PRINT);
+			return;
+		}
+		*/
+		spectator = false;
+		Info_RemoveKey(userinfo, "password"); // remove passwd
+	};
+	
+	adr = net_from;
+	userid++; // so every client gets a unique id
+
+	if (sv.loadgame)
+		Q_memcpy (spawn_parms, newcl->spawn_parms, sizeof(spawn_parms));
+	
+	newcl = &temp;
+	memset(newcl, 0, sizeof(client_t));
+
+	newcl->userid = userid;
+
+	// works properly
+	if(false) //if(!sv_highchars.value) // TODO
+	{
+		byte *p, *q;
+
+		for(p = (byte *)newcl->userinfo, q = (byte *)userinfo;
+		    *q && p < (byte *)newcl->userinfo + sizeof(newcl->userinfo) - 1; q++)
+			if(*q > 31 && *q <= 127)
+				*p++ = *q;
+	}
+	else
+		strncpy(newcl->userinfo, userinfo, sizeof(newcl->userinfo) - 1);
+
+	SV_UserinfoChanged(newcl);
+	
+	// if there is already a slot for this ip, drop it
+	for(i = 0, cl = svs.clients; i < svs.maxclients; i++, cl++)
+	{
+		if(!cl->active)
+			continue;
+		if(NET_CompareBaseAdr(adr, cl->netchan.remote_address) && (cl->netchan.qport == qport || adr.port == cl->netchan.remote_address.port))
+		{
+			if(cl->connected)
+			{
+				Con_Printf("%s:dup connect\n", NET_AdrToString(adr));
+				userid--;
+				return;
+			}
+
+			Con_Printf("%s:reconnect\n", NET_AdrToString(adr));
+			SV_DropClient(cl, false, "reconnect");
+			break;
+		}
 	}
 
-	SV_SendServerinfo (client);
+	// count up the clients and spectators
+	clients = 0;
+	spectators = 0;
+	for(i = 0, cl = svs.clients; i < svs.maxclients; i++, cl++)
+	{
+		if(!cl->active)
+			continue;
+		//if(cl->spectator) // TODO
+			//spectators++;
+		//else
+			clients++;
+	}
+
+	// if at server limits, refuse connection
+	//if(maxplayers.value > MAX_CLIENTS) // TODO
+		//Cvar_SetValue("maxplayers", MAX_CLIENTS);
+
+	if(/*(spectator && spectators >= (int)maxspectators.value) ||*/ (!spectator && clients >= 4/*(int)maxplayers.value*/)) // TODO
+	{
+		Con_Printf("%s:full connect\n", NET_AdrToString(adr));
+		Netchan_OutOfBandPrint(NS_SERVER, adr, "%c\nserver is full\n\n", A2C_PRINT);
+		return;
+	}
+
+	// find a client slot
+	newcl = NULL;
+	for(i = 0, cl = svs.clients; i < svs.maxclients; i++, cl++)
+	{
+		if(!cl->active)
+		{
+			newcl = cl;
+			break;
+		};
+	};
+
+	if(!newcl)
+	{
+		Con_Printf("WARNING: miscounted available clients\n");
+		return;
+	};
+	
+	// build a new connection
+	// accept the new client
+	// this is the only place a client_t is ever initialized
+	*newcl = temp;
+
+	client = newcl;
+
+	//Con_DPrintf ("Client %s connected\n", client->netchan.remote_address);
+
+	Netchan_OutOfBandPrint(NS_SERVER, adr, "%c", S2C_CONNECTION);
+
+	edictnum = (newcl - svs.clients) + 1;
+	ent = EDICT_NUM(edictnum);
+	
+	// set up the client_t
+	
+	//memset (client, 0, sizeof(*client));
+	
+	Netchan_Setup(NS_SERVER, &client->netchan, adr, qport);
+
+	Q_strcpy (client->name, "unconnected");
+	
+	client->connected = true;
+	client->active = false; // TODO: should be marked as true during the spawn
+	client->spawned = false;
+	client->edict = ent;
+	
+	// spectator mode can ONLY be set at join time
+	//client->spectator = spectator; // TODO
+	
+	client->datagram.allowoverflow = true;
+	client->datagram.data = client->datagram_buf;
+	client->datagram.maxsize = sizeof(client->datagram_buf);
+	
+	//client->netchan.message.data = client->msgbuf;
+	//client->netchan.message.maxsize = sizeof(client->msgbuf);
+	client->netchan.message.allowoverflow = true;		// we can catch it
+	
+	// parse some info from the info strings
+	SV_ExtractFromUserinfo(client);
+
+	// TODO
+	// JACK: Init the floodprot stuff.
+	//for (i=0; i<10; i++)
+	//	client->whensaid[i] = 0.0;
+	//client->whensaidhead = 0;
+	//client->lockedtill = 0;
+	
+	if (sv.loadgame)
+		Q_memcpy (client->spawn_parms, spawn_parms, sizeof(spawn_parms));
+	else
+	{
+		// call the progs to get default spawn parms for the new client
+		gEntityInterface.pfnParmsNewLevel();
+		for (i=0 ; i<NUM_SPAWN_PARMS ; i++)
+			client->spawn_parms[i] = (&gGlobalVariables.parm1)[i];
+	};
+	
+	// TODO
+	//if(client->spectator)
+		//Con_Printf("Spectator %s connected\n", client->name);
+	//else
+		Con_DPrintf("Client %s connected\n", client->name);
+
+	client->sendinfo = true; //SV_SendServerinfo (client);
 }
-*/
 
 /*
 ===============================================================================
@@ -2164,14 +2264,14 @@ void SV_ExtractFromUserinfo(client_t *cl)
 	// check to see if another user by the same name exists
 	while(1)
 	{
-		for(i = 0, client = svs.clients; i < MAX_CLIENTS; i++, client++)
+		for(i = 0, client = svs.clients; i < svs.maxclients; i++, client++)
 		{
 			if(!client->spawned || client == cl)
 				continue;
 			if(!stricmp(client->name, val))
 				break;
 		}
-		if(i != MAX_CLIENTS)
+		if(i != svs.maxclients)
 		{ // dup name
 			if(strlen(val) > sizeof(cl->name) - 1)
 				val[sizeof(cl->name) - 4] = 0;
@@ -2237,6 +2337,54 @@ void SV_ExtractFromUserinfo(client_t *cl)
 		//cl->messagelevel = atoi(val); // TODO
 	}
 }
+
+/*
+=================
+SV_UserinfoChanged
+
+Pull specific info from a newly changed userinfo string
+into a more C freindly form.
+=================
+*/
+void SV_UserinfoChanged (client_t *cl)
+{
+	char	*val;
+	int		i;
+
+	// call prog code to allow overrides
+	gEntityInterface.pfnClientUserinfoChanged (cl->edict, cl->userinfo);
+	
+	// name for C code
+	strncpy (cl->name, Info_ValueForKey (cl->userinfo, "name"), sizeof(cl->name)-1);
+	// mask off high bit
+	for (i=0 ; i<sizeof(cl->name) ; i++)
+		cl->name[i] &= 127;
+
+	// rate command
+	// TODO
+	/*
+	val = Info_ValueForKey (cl->userinfo, "rate");
+	if (Q_strlen(val))
+	{
+		i = atoi(val);
+		cl->rate = i;
+		if (cl->rate < 100)
+			cl->rate = 100;
+		if (cl->rate > 15000)
+			cl->rate = 15000;
+	}
+	else
+		cl->rate = 5000;
+	*/
+
+	// msg command
+	// TODO
+	/*
+	val = Info_ValueForKey (cl->userinfo, "msg");
+	if (Q_strlen(val))
+		cl->messagelevel = atoi(val);
+	*/
+};
 
 /*
 =======================
@@ -2431,13 +2579,13 @@ void SV_SendClientMessages()
 		if(!c->send_message)
 			continue;
 
-		c->send_message = false; // try putting this after choke?
-
 		if(!sv.paused && !Netchan_CanPacket(&c->netchan))
 		{
 			c->chokecount++;
 			continue; // bandwidth choke
-		}
+		};
+		
+		c->send_message = false;
 
 		/*
 		if (c->netchan.message.cursize)
@@ -2495,15 +2643,44 @@ int SV_ModelIndex(const char *name)
 	for(i = 0; i < MAX_MODELS && sv.model_precache[i]; i++)
 		if(!strcmp(sv.model_precache[i], name))
 			return i;
+	
 	if(i == MAX_MODELS || !sv.model_precache[i])
 		Sys_Error("SV_ModelIndex: model %s not precached", name);
+	
 	return i;
 }
 
 /*
 ================
+SV_FlushSignon
+
+Moves to the next signon buffer if needed
+================
+*/
+// TODO: qw
+/*
+void SV_FlushSignon()
+{
+	if (sv.signon.cursize < sv.signon.maxsize - 512)
+		return;
+
+	if (sv.num_signon_buffers == MAX_SIGNON_BUFFERS-1)
+		SV_Error ("sv.num_signon_buffers == MAX_SIGNON_BUFFERS-1");
+
+	sv.signon_buffer_size[sv.num_signon_buffers-1] = sv.signon.cursize;
+	sv.signon.data = sv.signon_buffers[sv.num_signon_buffers];
+	sv.num_signon_buffers++;
+	sv.signon.cursize = 0;
+}
+*/
+
+/*
+================
 SV_CreateBaseline
 
+Entity baselines are used to compress the update messages
+to the clients - only the fields that differ from the
+baseline will be transmitted
 ================
 */
 void SV_CreateBaseline()
@@ -2518,6 +2695,8 @@ void SV_CreateBaseline()
 		svent = EDICT_NUM(entnum);
 		if(svent->free)
 			continue;
+		// create baselines for all player slots,
+		// and any other edict that has a visible model
 		if(entnum > svs.maxclients && !svent->v.modelindex)
 			continue;
 
@@ -2527,18 +2706,23 @@ void SV_CreateBaseline()
 		VectorCopy(svent->v.origin, svent->baseline.origin);
 		VectorCopy(svent->v.angles, svent->baseline.angles);
 		svent->baseline.frame = svent->v.frame;
-		svent->baseline.skin = svent->v.skin;
+		svent->baseline.skin = svent->v.skin; // TODO: baseline.skinnum in qw
 		if(entnum > 0 && entnum <= svs.maxclients)
 		{
 			svent->baseline.colormap = entnum;
-			svent->baseline.modelindex = SV_ModelIndex("models/player.mdl");
+			svent->baseline.modelindex = 0; // SV_ModelIndex("models/player.mdl"); // TODO
 		}
 		else
 		{
 			svent->baseline.colormap = 0;
-			svent->baseline.modelindex =
-			SV_ModelIndex(pr_strings + svent->v.model);
+			svent->baseline.modelindex = SV_ModelIndex(pr_strings + svent->v.model); // TODO: PR_GetString
 		}
+		
+		//
+		// flush the signon message out to a seperate buffer if
+		// nearly full
+		//
+		//SV_FlushSignon(); // TODO: qw
 
 		//
 		// add to the message
@@ -2549,12 +2733,15 @@ void SV_CreateBaseline()
 		MSG_WriteByte(&sv.signon, svent->baseline.modelindex);
 		MSG_WriteByte(&sv.signon, svent->baseline.frame);
 		MSG_WriteByte(&sv.signon, svent->baseline.colormap);
-		MSG_WriteByte(&sv.signon, svent->baseline.skin);
+		MSG_WriteByte(&sv.signon, svent->baseline.skin); // TODO: skinnum in qw
 		for(i = 0; i < 3; i++)
 		{
 			MSG_WriteCoord(&sv.signon, svent->baseline.origin[i]);
 			MSG_WriteAngle(&sv.signon, svent->baseline.angles[i]);
 		}
+		
+		// TODO: int player, int entindex, struct entity_state_s *baseline, edict_t *entity, int playermodelindex, vec3_t player_mins, vec3_t player_maxs
+		gEntityInterface.pfnCreateBaseline(0, 0, &svent->baseline, NULL, 0, vec3_origin, vec3_origin);
 	}
 }
 
@@ -2613,7 +2800,8 @@ void SV_SendReconnect()
 ================
 SV_SaveSpawnparms
 
-Grabs the current state of each client for saving across the
+Grabs the current state of (QW: the progs serverinfo flags and) 
+each client for saving across the
 transition to another level
 ================
 */
@@ -2621,13 +2809,22 @@ void SV_SaveSpawnparms()
 {
 	int i, j;
 
+	// no progs loaded yet
+	//if(!sv.state)
+		//return;
+	
+	// serverflags is the only game related thing maintained
 	svs.serverflags = gGlobalVariables.serverflags;
 
 	for(i = 0, host_client = svs.clients; i < svs.maxclients; i++, host_client++)
 	{
-		if(!host_client->active)
+		if(!host_client->active) // TODO: !->spawned in qw
 			continue;
 
+		// TODO: qw
+		// needs to reconnect
+		//host_client->connected = true;
+		
 		// call the progs to get default spawn parms for the new client
 		//gGlobalVariables.self = EDICT_TO_PROG(host_client->edict); // TODO
 		gEntityInterface.pfnParmsChangeLevel();
@@ -2638,9 +2835,124 @@ void SV_SaveSpawnparms()
 
 /*
 ================
+SV_CalcPHS
+
+Expands the PVS and calculates the PHS
+(Potentially Hearable Set)
+================
+*/
+/*
+void SV_CalcPHS (void)
+{
+	int		rowbytes, rowwords;
+	int		i, j, k, l, index, num;
+	int		bitbyte;
+	unsigned	*dest, *src;
+	byte	*scan;
+	int		count, vcount;
+
+	Con_Printf ("Building PHS...\n");
+
+	num = sv.worldmodel->numleafs;
+	rowwords = (num+31)>>5;
+	rowbytes = rowwords*4;
+
+	sv.pvs = Hunk_Alloc (rowbytes*num);
+	scan = sv.pvs;
+	vcount = 0;
+	for (i=0 ; i<num ; i++, scan+=rowbytes)
+	{
+		memcpy (scan, Mod_LeafPVS(sv.worldmodel->leafs+i, sv.worldmodel),
+			rowbytes);
+		if (i == 0)
+			continue;
+		for (j=0 ; j<num ; j++)
+		{
+			if ( scan[j>>3] & (1<<(j&7)) )
+			{
+				vcount++;
+			}
+		}
+	}
+
+
+	sv.phs = Hunk_Alloc (rowbytes*num);
+	count = 0;
+	scan = sv.pvs;
+	dest = (unsigned *)sv.phs;
+	for (i=0 ; i<num ; i++, dest += rowwords, scan += rowbytes)
+	{
+		memcpy (dest, scan, rowbytes);
+		for (j=0 ; j<rowbytes ; j++)
+		{
+			bitbyte = scan[j];
+			if (!bitbyte)
+				continue;
+			for (k=0 ; k<8 ; k++)
+			{
+				if (! (bitbyte & (1<<k)) )
+					continue;
+				// or this pvs row into the phs
+				// +1 because pvs is 1 based
+				index = ((j<<3)+k+1);
+				if (index >= num)
+					continue;
+				src = (unsigned *)sv.pvs + index*rowwords;
+				for (l=0 ; l<rowwords ; l++)
+					dest[l] |= src[l];
+			}
+		}
+
+		if (i == 0)
+			continue;
+		for (j=0 ; j<num ; j++)
+			if ( ((byte *)dest)[j>>3] & (1<<(j&7)) )
+				count++;
+	}
+
+	Con_Printf ("Average leafs visible / hearable / total: %i / %i / %i\n"
+		, vcount/num, count/num, num);
+}
+*/
+
+// TODO: qw
+/*
+unsigned SV_CheckModel(char *mdl)
+{
+	byte	stackbuf[1024];		// avoid dirtying the cache heap
+	byte *buf;
+	unsigned short crc;
+//	int len;
+
+	buf = (byte *)COM_LoadStackFile (mdl, stackbuf, sizeof(stackbuf));
+	crc = CRC_Block(buf, com_filesize);
+//	for (len = com_filesize; len; len--, buf++)
+//		CRC_ProcessByte(&crc, *buf);
+
+	return crc;
+}
+*/
+
+void SV_ActivateServer()
+{
+	sv.active = true; // TODO: non-qw
+
+	// all setup/spawning is completed, any further precache statements 
+	// (QW: or prog writes to the signon message) are errors
+	sv.state = ss_active;
+	
+	gEntityInterface.pfnServerActivate(sv.edicts, sv.max_edicts, svs.maxclients);
+};
+
+/*
+================
 SV_SpawnServer
 
+Change the server to a new map, taking all connected
+clients along with it.
+
 This is called at the start of each level
+(QW: This is only called from the Host_Map_f() function.)
 ================
 */
 extern float scr_centertime_off;
@@ -2650,14 +2962,28 @@ void SV_SpawnServer(const char *server, const char *startspot)
 	edict_t *ent;
 	int i;
 
+	// TODO: non-qw
 	// let's not have any servers with no name
 	if(hostname.string[0] == 0)
 		Cvar_Set("hostname", "UNNAMED");
 	scr_centertime_off = 0;
+	//
 
-	Con_DPrintf("SpawnServer: %s\n", server);
-	svs.changelevel_issued = false; // now safe to issue another
+	// load progs to get entity field count
+	// which determines how big each edict is
+	Host_InitializeGameDLL();
+	
+	gEntityInterface.pfnGameInit(); // TODO
+	
+	Con_DPrintf("Spawn Server %s\n", server);
+	svs.changelevel_issued = false; // now safe to issue another // TODO: non-qw
 
+	//SV_SaveSpawnparms (); // TODO: qw
+	
+	// TODO: qw
+	//svs.spawncount++; // any partially connected client will be restarted
+
+// TODO: non-qw
 	//
 	// tell all connected clients that we are going to a new level
 	//
@@ -2678,22 +3004,49 @@ void SV_SpawnServer(const char *server, const char *startspot)
 		current_skill = 3;
 
 	Cvar_SetValue("skill", (float)current_skill);
-
+//
+	
+	//sv.state = ss_dead; // TODO: qw
+	
 	//
 	// set up the new server
 	//
 	Host_ClearMemory();
-
+	//
+	// TODO: qw
+	//Mod_ClearAll ();
+	//Hunk_FreeToLowMark (host_hunklevel);
+	//
+	
+	// wipe the entire per-level structure
 	memset(&sv, 0, sizeof(sv));
 
+	// TODO: qw
+	/*
+	sv.datagram.maxsize = sizeof(sv.datagram_buf);
+	sv.datagram.data = sv.datagram_buf;
+	sv.datagram.allowoverflow = true;
+
+	sv.reliable_datagram.maxsize = sizeof(sv.reliable_datagram_buf);
+	sv.reliable_datagram.data = sv.reliable_datagram_buf;
+	
+	sv.multicast.maxsize = sizeof(sv.multicast_buf);
+	sv.multicast.data = sv.multicast_buf;
+	
+	sv.master.maxsize = sizeof(sv.master_buf);
+	sv.master.data = sv.master_buf;
+	
+	sv.signon.maxsize = sizeof(sv.signon_buffers[0]);
+	sv.signon.data = sv.signon_buffers[0];
+	sv.num_signon_buffers = 1;
+	*/
+	
 	strcpy(sv.name, server);
 
 	if(startspot)
 		strcpy(sv.startspot, startspot);
 
-	// load progs to get entity field count
-	PR_LoadProgs();
-
+// TODO: non-qw
 	// allocate server memory
 	sv.max_edicts = MAX_EDICTS;
 
@@ -2711,6 +3064,7 @@ void SV_SpawnServer(const char *server, const char *startspot)
 	sv.signon.maxsize = sizeof(sv.signon_buf);
 	sv.signon.cursize = 0;
 	sv.signon.data = sv.signon_buf;
+//
 
 	// leave slots at start for clients only
 	sv.num_edicts = svs.maxclients + 1;
@@ -2718,23 +3072,29 @@ void SV_SpawnServer(const char *server, const char *startspot)
 	{
 		ent = EDICT_NUM(i + 1);
 		svs.clients[i].edict = ent;
+		//ZOID - make sure we update frags right
+		//svs.clients[i].old_frags = 0; // TODO: qw
 	}
 
-	sv.state = ss_loading;
-	sv.paused = false;
+	sv.state = ss_loading; // TODO: non-qw
+	sv.paused = false; // TODO: non-qw
 
 	sv.time = 1.0;
 
 	strcpy(sv.name, server);
 	sprintf(sv.modelname, "maps/%s.bsp", server);
-	sv.worldmodel = Mod_ForName(sv.modelname, false);
+	sv.worldmodel = Mod_ForName(sv.modelname, false); // TODO: true in qw
+	//SV_CalcPHS (); // TODO: qw
+	
+	// TODO: non-qw
 	if(!sv.worldmodel)
 	{
 		Con_Printf("Couldn't spawn server %s\n", sv.modelname);
 		sv.active = false;
 		return;
-	}
+	};
 	sv.models[1] = sv.worldmodel;
+	//
 
 	//
 	// clear world interaction links
@@ -2745,45 +3105,63 @@ void SV_SpawnServer(const char *server, const char *startspot)
 
 	sv.model_precache[0] = pr_strings;
 	sv.model_precache[1] = sv.modelname;
+	//sv.models[1] = sv.worldmodel; // TODO: qw
 	for(i = 1; i < sv.worldmodel->numsubmodels; i++)
 	{
 		sv.model_precache[1 + i] = localmodels[i];
 		sv.models[i + 1] = Mod_ForName(localmodels[i], false);
 	}
+	
+	// TODO: qw
+	// check player/eyes models for hacks
+	//sv.model_player_checksum = SV_CheckModel("progs/player.mdl");
+	//sv.eyes_player_checksum = SV_CheckModel("progs/eyes.mdl");
 
 	//
-	// load the rest of the entities
+	// load/spawn the rest of the entities on the map
 	//
+	
+	// precache and static commands can be issued during map initialization
+	//sv.state = ss_loading; // TODO: qw
+	
 	ent = EDICT_NUM(0);
-	memset(&ent->v, 0, sizeof(entvars_t));
+	memset(&ent->v, 0, sizeof(entvars_t)); // TODO: non-qw
 	ent->free = false;
-	ent->v.model = sv.worldmodel->name - pr_strings;
+	ent->v.model = sv.worldmodel->name - pr_strings; // TODO: PR_SetString
+	// TODO: non-qw
 	ent->v.modelindex = 1; // world model
 	ent->v.solid = SOLID_BSP;
 	ent->v.movetype = MOVETYPE_PUSH;
+	//
 
+	// TODO: non-qw
 	if(coop.value)
 		gGlobalVariables.coop = coop.value;
 	else
 		gGlobalVariables.deathmatch = deathmatch.value;
+	//
 
-	gGlobalVariables.mapname = sv.name - pr_strings;
-	gGlobalVariables.startspot = sv.startspot - pr_strings;
+	gGlobalVariables.mapname = sv.name - pr_strings; // TODO: PR_SetString
+	gGlobalVariables.startspot = sv.startspot - pr_strings; // TODO: PR_SetString
 
+	// TODO: non-qw
 	// serverflags are for cross level information (sigils)
 	gGlobalVariables.serverflags = svs.serverflags;
 
+	//// look up some model indexes for specialized message compression
+	//SV_FindModelNumbers (); // TODO: qw
+	
+	// TODO: non-qw?
 	// run the frame start qc function to let progs check cvars
 	//SV_ProgStartFrame ();
 
 	// load and spawn all other entities
 	ED_LoadFromFile(sv.worldmodel->entities);
 
-	sv.active = true;
+	SV_ActivateServer();
 
-	// all setup is completed, any further precache statements are errors
-	sv.state = ss_active;
-
+	// TODO: below: non-qw?
+	
 	// run two frames to allow everything to settle
 	host_frametime = 0.1;
 	SV_Physics();
@@ -2793,7 +3171,7 @@ void SV_SpawnServer(const char *server, const char *startspot)
 	//SV_SetMoveVars();
 
 	// create a baseline for more efficient communications
-	SV_CreateBaseline();
+	//SV_CreateBaseline(); // TODO
 	//sv.signon_buffer_size[sv.num_signon_buffers-1] = sv.signon.cursize;
 
 	// TODO: not present in qw
@@ -2802,7 +3180,7 @@ void SV_SpawnServer(const char *server, const char *startspot)
 		if(host_client->active)
 			SV_SendServerinfo(host_client);
 	//
-
+	
 	//Info_SetValueForKey (svs.info, "map", sv.name, MAX_SERVERINFO_STRING);
 	Con_DPrintf("Server spawned.\n");
 }
