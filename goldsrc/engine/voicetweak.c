@@ -20,11 +20,11 @@
 /// @brief voicetweak interface implementation
 
 #include "quakedef.h"
-#include "ivoicetweak.h"
+#include "voicetweak.h"
 
-qboolean gbInVoiceTweakMode{ false };
+qboolean gbInVoiceTweakMode = false;
 
-float gVoiceTweakControlMap[3]{ 0.0f }; // TODO
+float gVoiceTweakControlMap[3] = { 0.0f }; // TODO
 
 static int Voice_StartVoiceTweakMode()
 {
