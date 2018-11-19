@@ -37,7 +37,7 @@ extern "C" qboolean LoadClientDLLClientGame()
 	if(!pClientGame)
 		return false;
 	
-	Q_memcpy(&cl_funcs, 0, sizeof(cl_funcs));
+	Q_memset(&cl_funcs, 0, sizeof(cl_funcs));
 	
 	if(!pClientGame->Init(Sys_GetFactoryThis(), &cl_funcs))
 		return false;
