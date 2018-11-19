@@ -121,8 +121,10 @@ typedef struct
 #define MAX_DEMONAME 16
 
 typedef enum {
-	ca_dedicated,    // a dedicated server with no ability to start a client
+	//ca_uninitialized = -1,
+	ca_dedicated = 0,    // a dedicated server with no ability to start a client
 	ca_disconnected, // full screen console with no connection
+	ca_connecting,   // sending request packets to the server
 	ca_connected,    // valid netcon, talking to a server
 	ca_active
 } cactive_t;
@@ -302,38 +304,24 @@ typedef struct
 	// architectually ugly but it works
 	int light_level;
 #endif
+
+	// TODO: temp(?) entries to support protocol 48
+	
+	int mapcrc;
+	char clientdllhash[16];
+	char hostname[32];
+	char mapcycle[8192];
 } client_state_t;
 
 //
 // cvars
 //
 extern cvar_t cl_name;
-extern cvar_t cl_color;
-
-extern cvar_t cl_upspeed;
-extern cvar_t cl_forwardspeed;
-extern cvar_t cl_backspeed;
-extern cvar_t cl_sidespeed;
-
-extern cvar_t cl_movespeedkey;
-
-extern cvar_t cl_yawspeed;
-extern cvar_t cl_pitchspeed;
-
-extern cvar_t cl_anglespeedkey;
 
 extern cvar_t cl_shownet;
 extern cvar_t cl_nolerp;
 
-extern cvar_t cl_pitchdriftspeed;
-extern cvar_t lookspring;
-extern cvar_t lookstrafe;
 extern cvar_t sensitivity;
-
-extern cvar_t m_pitch;
-extern cvar_t m_yaw;
-extern cvar_t m_forward;
-extern cvar_t m_side;
 
 #define MAX_TEMP_ENTITIES 64    // lightning bolts, etc
 #define MAX_STATIC_ENTITIES 128 // torches, etc
@@ -341,7 +329,7 @@ extern cvar_t m_side;
 extern client_state_t cl;
 
 typedef struct playermove_s playermove_t; // TODO
-extern playermove_t g_clmove;
+extern playermove_t clpmove;
 
 // FIXME, allocate dynamically
 extern efrag_t cl_efrags[MAX_EFRAGS];
@@ -380,11 +368,6 @@ extern cl_entity_t *cl_visedicts[MAX_VISEDICTS];
 //
 #include "kbutton.h"
 
-extern kbutton_t in_mlook, in_klook;
-extern kbutton_t in_strafe;
-extern kbutton_t in_speed;
-
-void CL_InitInput();
 void CL_SendCmd();
 void CL_SendMove(usercmd_t *cmd);
 
@@ -395,7 +378,6 @@ void CL_ClearState();
 
 void CL_ReadPackets();
 
-void CL_WriteToServer(usercmd_t *cmd);
 void CL_BaseMove(usercmd_t *cmd);
 
 float CL_KeyState(kbutton_t *key);
@@ -404,7 +386,7 @@ float CL_KeyState(kbutton_t *key);
 // cl_demo.c
 //
 void CL_StopPlayback();
-int CL_GetMessage();
+qboolean CL_GetMessage();
 
 void CL_Stop_f();
 void CL_Record_f();
@@ -471,4 +453,6 @@ void CL_ParsePlayerinfo();
 void CL_InitPrediction();
 void CL_PredictMove();
 void CL_PredictUsercmd(local_state_t *from, local_state_t *to, usercmd_t *u, qboolean spectator); // TODO
-                                                                                                  //void CL_CheckPredictionError ();
+//void CL_CheckPredictionError ();
+
+void CL_WeaponAnim(int anim, int body);
