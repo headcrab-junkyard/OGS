@@ -60,5 +60,5 @@ void SPR_DisableScissor()
 client_sprite_t *SPR_GetList(char *psz, int *apnCount)
 {
 	// TODO
-	return nullptr;
+	return NULL;
 };
