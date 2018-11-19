@@ -23,93 +23,94 @@
 #include "engine_launcher_api.h"
 #include "engine_hlds_api.h"
 #include "igameuifuncs.h"
+#include "idedicatedexports.h"
 #include "iengine.h"
-#include "interface.h"
+#include "igame.h"
 
 qboolean gbDedicatedServer{ false };
 
 char *gsPostRestartCmdLineArgs{ nullptr };
 
+IDedicatedExports *gpDedicatedExports{nullptr};
+
+/*extern "C"*/ void DedicatedExports_Print(const char *text)
+{
+	if(gpDedicatedExports)
+		gpDedicatedExports->Sys_Printf(text);
+};
+
 void Sys_InitGame(const char *lpOrgCmdLine, const char *pBaseDir /*TODO: szBaseDir?*/, void *pwnd, int bIsDedicated)
 {
-	static quakeparms_t parms{}; // TODO: (non-)static?
-
-	memset(&parms, 0, sizeof(parms));
+	// TODO: pwnd should be handled
+	// TODO: &mainwindow = pwnd;?
+	
+	memset(&host_parms, 0, sizeof(host_parms));
 
 #ifdef __linux__
-	//signal(SIGFPE, floating_point_exception_handler);
+	//signal(SIGFPE, floating_point_exception_handler); // TODO
 	signal(SIGFPE, SIG_IGN);
 #endif
 
-#if defined(GLQUAKE) or defined(sun) or defined(SWDS)
-	parms.memsize = 16*1024*1024; // TODO: 16Mb
+#ifdef OGS_EVOL
+	host_parms.memsize = 512*1024*1024; // TODO: 512Mb // TODO: 256?
 #else
-	parms.memsize = 8*1024*1024; // TODO: 8Mb; 5861376 in QW
+	host_parms.memsize = 128*1024*1024; // TODO: 128Mb; should the dedicated server use the same amount?
 #endif
 
-	/*
-	if ((t = COM_CheckParm ("-heapsize")) != 0 && t + 1 < com_argc)
-		parms.memsize = Q_atoi (com_argv[t + 1]) * 1024;
+	int t;
+	
+	if((t = COM_CheckParm ("-heapsize")) != 0 && t + 1 < com_argc)
+		host_parms.memsize = Q_atoi (com_argv[t + 1]) * 1024;
 
+	/*
 	if ((t = COM_CheckParm ("-mem")) != 0 && t + 1 < com_argc)
-		parms.memsize = Q_atoi (com_argv[t + 1]) * 1024 * 1024;
+		host_parms.memsize = Q_atoi (com_argv[t + 1]) * 1024 * 1024;
 	*/
 
-	parms.membase = malloc(parms.memsize);
+	host_parms.membase = malloc(host_parms.memsize);
 	
-	//if (!parms.membase)
-		//Sys_Error("Insufficient memory.\n");
+	if(!host_parms.membase)
+		Sys_Error("Insufficient memory.\n");
 	
-	parms.basedir = (char*)pBaseDir; // TODO: "."
+	host_parms.basedir = (char*)pBaseDir;
 	
 	/*
 	static char cwd[1024];
 	_getcwd(cwd, sizeof(cwd));
 	if(cwd[Q_strlen(cwd) - 1] == '\\')
 		cwd[Q_strlen(cwd) - 1] = 0;
-	parms.basedir = cwd;
+	host_parms.basedir = cwd;
 	*/
 	
-	parms.cachedir = NULL; // TODO
+	host_parms.cachedir = NULL; // TODO
 	
-	// TODO: cmdline string parsing/tokenization
-	//COM_InitArgv(argc, argv); // TODO: parms.argc, parms.argv
-
-	/*
-	// dedicated server ONLY!
-	if(!COM_CheckParm("-dedicated"))
-	{
-		memcpy(newargv, argv, argc * 4);
-		newargv[argc] = "-dedicated";
-		argc++;
-		argv = newargv;
-		COM_InitArgv(argc, argv);
-	}
-	*/
+	Sys_InitArgv((char*)lpOrgCmdLine);
 	
-	//parms.argc = com_argc; // argc
-	//parms.argv = com_argv; // argv
+	//host_parms.argc = com_argc; // TODO: already done in Sys_InitArgv
+	//host_parms.argv = com_argv; // TODO: already done in Sys_InitArgv
 	
-	isDedicated = bIsDedicated; // TODO: was (COM_CheckParm ("-dedicated") != 0);
+	isDedicated = bIsDedicated;
 	
 	if(isDedicated)
 		cls.state = ca_dedicated;
 	
 	//printf("Host_Init\n");
-	Host_Init(&parms);
+	Host_Init(&host_parms);
 	
 	//oldtime = Sys_FloatTime();
 	
-	Host_InitializeGameDLL();
+	//if(isDedicated) // TODO: only for dedicated mode!
+		Host_InitializeGameDLL();
+		NET_Config(true);
 };
 
 int RunListenServer(void *instance, const char *basedir, const char *cmdline, char *postRestartCmdLineArgs, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory)
 {
-	// TODO: Whole bunch of Sys_Init* calls
+	// TODO: Whole bunch of Sys_Init* calls?
 
 	FileSystem_Init(basedir, (void*)filesystemFactory);
 	
-	// TODO: CWindowManager::CreateGameWindow(); // IGame::CreateGameWindow
+	gpGame->CreateGameWindow();
 
 	if(!gpEngine->Load(false, basedir, cmdline))
 		return EXIT_FAILURE;
@@ -119,11 +120,11 @@ int RunListenServer(void *instance, const char *basedir, const char *cmdline, ch
 
 	gpEngine->Unload();
 
-	// TODO: CWindowManager::DestroyGameWindow(); // IGame::DestroyGameWindow
+	// TODO: IGame::DestroyGameWindow()?
 
 	FileSystem_Shutdown();
 	
-	// TODO: Whole bunch of Sys_Shutdown* calls
+	// TODO: Whole bunch of Sys_Shutdown* calls?
 
 	return EXIT_SUCCESS;
 };
@@ -246,12 +247,15 @@ CDedicatedServerAPI::~CDedicatedServerAPI() = default;
 
 bool CDedicatedServerAPI::Init(const char *basedir, const char *cmdline, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory)
 {
+	gpDedicatedExports = (IDedicatedExports*)launcherFactory(VENGINE_DEDICATEDEXPORTS_API_VERSION, nullptr);
+	
+	if(!gpDedicatedExports)
+		return false;
+	
 	FileSystem_Init(basedir, (void*)filesystemFactory);
 	
 	if(!gpEngine->Load(true, basedir, cmdline))
 		return false;
-	
-	FileSystem_Shutdown();
 
 	return true;
 };
@@ -259,6 +263,8 @@ bool CDedicatedServerAPI::Init(const char *basedir, const char *cmdline, CreateI
 int CDedicatedServerAPI::Shutdown()
 {
 	gpEngine->Unload();
+	
+	FileSystem_Shutdown();
 
 	return 0;
 };
