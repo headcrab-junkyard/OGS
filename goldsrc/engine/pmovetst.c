@@ -16,6 +16,9 @@
  *	You should have received a copy of the GNU General Public License
  *	along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
+
+/// @file
+
 #include "quakedef.h"
 
 static hull_t box_hull;
@@ -119,7 +122,7 @@ PM_PointContents
 
 ==================
 */
-int PM_PointContents(vec3_t p)
+int PM_PointContents(vec3_t p, int *truecontents)
 {
 	float d;
 	dclipnode_t *node;
@@ -148,6 +151,9 @@ int PM_PointContents(vec3_t p)
 		else
 			num = node->children[0];
 	}
+	
+	///if(truecontents)
+		// TODO
 
 	return num;
 }
@@ -339,7 +345,7 @@ qboolean PM_TestPlayerPosition(vec3_t pos)
 PM_PlayerMove
 ================
 */
-pmtrace_t PM_PlayerMove(vec3_t start, vec3_t end)
+pmtrace_t PM_PlayerTrace(vec3_t start, vec3_t end)
 {
 	pmtrace_t trace, total;
 	vec3_t offset;
@@ -401,3 +407,15 @@ pmtrace_t PM_PlayerMove(vec3_t start, vec3_t end)
 
 	return total;
 }
+
+int PM_WaterEntity(float *p)
+{
+	// TODO
+	return 0;
+};
+
+struct pmtrace_s *PM_TraceLine(float *start, float *end, int flags, int usehull, int ignore_pe)
+{
+	// TODO
+	return NULL;
+};

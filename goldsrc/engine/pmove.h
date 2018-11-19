@@ -26,16 +26,15 @@
 
 extern playermove_t *pmove;
 
-extern int onground;
-extern int waterlevel;
-extern int watertype;
-
 void PlayerMove();
 
 void PM_Init(playermove_t *ppmove);
 
 int PM_HullPointContents(hull_t *hull, int num, vec3_t p);
 
-int PM_PointContents(vec3_t point);
+int PM_PointContents(vec3_t point, int *truecontents);
 qboolean PM_TestPlayerPosition(vec3_t point);
-pmtrace_t PM_PlayerMove(vec3_t start, vec3_t stop);
+pmtrace_t PM_PlayerTrace(vec3_t start, vec3_t stop);
+
+int PM_WaterEntity(float *p);
+struct pmtrace_s *PM_TraceLine(float *start, float *end, int flags, int usehull, int ignore_pe);
