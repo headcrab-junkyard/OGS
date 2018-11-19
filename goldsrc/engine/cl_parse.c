@@ -233,7 +233,7 @@ void CL_ParseServerInfo()
 	}
 	
 	// parse server spawn count
-	cl.spawncount = MSG_ReadLong();
+	cl.servercount = MSG_ReadLong();
 	
 	// parse map crc
 	cl.mapcrc = MSG_ReadLong();
@@ -252,7 +252,7 @@ void CL_ParseServerInfo()
 	cl.scores = Hunk_AllocName(cl.maxclients * sizeof(*cl.scores), "scores");
 
 	// parse player index
-	cl.playerid = MSG_ReadByte();
+	cl.playernum = MSG_ReadByte();
 	
 	// parse gametype
 	cl.gametype = MSG_ReadByte(); // TODO: is deathmatch
@@ -276,7 +276,7 @@ void CL_ParseServerInfo()
 
 	// parse map cycle
 	str = MSG_ReadString();
-	strncpy(cl.mapcycle, str, sizeof(cl.mapcycle) - 1); // TODO: char mapcycle[8192]
+	strncpy(cl.mapcycle, str, sizeof(cl.mapcycle) - 1);
 	
 	MSG_ReadByte();
 	
@@ -291,6 +291,13 @@ void CL_ParseServerInfo()
 	// happens to be in the cache, so precaching something else doesn't
 	// needlessly purge it
 	//
+
+	// precache world model (temp)
+	memset(cl.model_precache, 0, sizeof(cl.model_precache));
+	
+	strcpy(model_precache[1], va("maps/%s.bsp", cl.levelname));
+	Mod_TouchModel(va("maps/%s.bsp", cl.levelname));
+	cl.model_precache[1] = Mod_ForName(model_precache[1], false);
 
 /*
 	// precache models
@@ -968,7 +975,6 @@ void CL_ParseServerMessage()
 			CL_ParseTEnt();
 			break;
 		case svc_setpause:
-		{
 			cl.paused = MSG_ReadByte();
 
 			if(cl.paused)
@@ -984,13 +990,12 @@ void CL_ParseServerMessage()
 #ifdef _WIN32
 				VID_HandlePause(false);
 #endif
-			}
-		}
-		break;
+			};
+			break;
 		case svc_signonnum:
 			i = MSG_ReadByte();
-			if(i <= cls.signon)
-				Host_Error("Received signon %i when at %i", i, cls.signon);
+			//if(i <= cls.signon) // TODO: skipping this for now...
+				//Host_Error("Received signon %i when at %i", i, cls.signon);
 			cls.signon = i;
 			CL_SignonReply();
 			break;
@@ -1040,9 +1045,11 @@ void CL_ParseServerMessage()
 			CL_WeaponAnim(MSG_ReadByte(), MSG_ReadByte());
 			break;
 		case svc_decalname:
+		{
 			int nPositionIndex = MSG_ReadByte();
-			const char *sName = MSG_ReadString();
+			const char *sDecalName = MSG_ReadString();
 			break;
+		}
 		case svc_roomtype:
 			Cvar_SetValue("room_type", MSG_ReadShort());
 			break;
@@ -1065,6 +1072,7 @@ void CL_ParseServerMessage()
 			CL_ParseResourceList();
 			break;
 		case svc_newmovevars:
+		{
 			float fGravity = MSG_ReadFloat();
 			float fStopSpeed = MSG_ReadFloat();
 			float fMaxSpeed = MSG_ReadFloat();
@@ -1097,16 +1105,20 @@ void CL_ParseServerMessage()
 			
 			const char *sSkyName = MSG_ReadString();
 			break;
+		}
 		case svc_resourcerequest:
+		{
 			int nSpawnCount = MSG_ReadLong();
 			int nUnused = MSG_ReadLong();
 			
 			// TODO: send clc_resourcelist to server
 			break;
+		}
 		case svc_customization:
+		{
 			int nPlayerIndex = MSG_ReadByte();
 			int nType = MSG_ReadByte();
-			const char *sName = MSG_ReadString();
+			const char *sFileName = MSG_ReadString();
 			int nIndex = MSG_ReadShort();
 			int nDownloadSize = MSG_ReadLong();
 			int nFlags = MSG_ReadByte();
@@ -1120,17 +1132,20 @@ void CL_ParseServerMessage()
 					sMD5Hash[i] = MSG_ReadByte();
 			*/
 			break;
+		}
 		case svc_crosshairangle:
 			// TODO
 			//MSG_ReadChar();
 			//MSG_ReadChar();
 			break;
 		case svc_soundfade:
+		{
 			int nInitialPercent = MSG_ReadByte();
 			int nHoldTime = MSG_ReadByte();
 			int nFadeOutTime = MSG_ReadByte();
 			int nFadeInTime = MSG_ReadByte();
 			break;
+		}
 		case svc_filetxferfailed:
 			CL_ParseFileTxferFailed();
 			break;
@@ -1141,29 +1156,41 @@ void CL_ParseServerMessage()
 			// TODO
 			break;
 		case svc_voiceinit:
+		{
 			const char *sCodecName = MSG_ReadString();
 			int nVoiceQuality = MSG_ReadByte();
 			break;
+		}
 		case svc_voicedata:
 			CL_ParseVoiceData();
 			break;
 		case svc_sendextrainfo:
+		{
 			const char *sFallbackDir = MSG_ReadString();
 			int nCanCheat = MSG_ReadByte();
 			break;
+		}
 		case svc_timescale:
+		{
 			int host_timescale = MSG_ReadByte();
 			break;
+		}
 		case svc_resourcelocation:
+		{
 			const char *sDownloadURL /*cl.resourcelocation*/ = MSG_ReadString();
 			break;
+		}
 		case svc_sendcvarvalue:
+		{
 			const char *sName = MSG_ReadString();
 			break;
+		}
 		case svc_sendcvarvalue2:
+		{
 			int nRequestID = MSG_ReadLong();
 			const char *sName = MSG_ReadString();
 			break;
+		}
 			/* TODO: Original Quake protocol remnants unused in GS
 		case svc_updatename:
 			Sbar_Changed ();
