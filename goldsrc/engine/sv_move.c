@@ -226,14 +226,14 @@ facing it.
 
 ======================
 */
-void PF_changeyaw();
+void PF_changeyaw_I();
 qboolean SV_StepDirection(edict_t *ent, float yaw, float dist)
 {
 	vec3_t move, oldorigin;
 	float delta;
 
 	ent->v.ideal_yaw = yaw;
-	PF_changeyaw();
+	PF_changeyaw_I();
 
 	yaw = yaw * M_PI * 2 / 360;
 	move[0] = cos(yaw) * dist;
@@ -395,7 +395,7 @@ void SV_MoveToGoal(edict_t *ent, float dist)
 	{
 		//G_FLOAT(OFS_RETURN) = 0; // TODO
 		return;
-	}
+	};
 
 // if the next step hits the enemy, return immediately
 #ifdef QUAKE2
@@ -407,9 +407,6 @@ void SV_MoveToGoal(edict_t *ent, float dist)
 		return;
 
 	// bump around...
-	if((rand() & 3) == 1 ||
-	   !SV_StepDirection(ent, ent->v.ideal_yaw, dist))
-	{
+	if((rand() & 3) == 1 || !SV_StepDirection(ent, ent->v.ideal_yaw, dist))
 		SV_NewChaseDir(ent, goal, dist);
-	}
 }
