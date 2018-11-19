@@ -35,79 +35,21 @@ HRESULT(WINAPI *pDirectInputCreate)(HINSTANCE hinst, DWORD dwVersion, LPDIRECTIN
 // mouse variables
 cvar_t m_filter = { "m_filter", "0" };
 
-int mouse_buttons;
-int mouse_oldbuttonstate;
-POINT current_pos;
-int mouse_x, mouse_y, old_mouse_x, old_mouse_y, mx_accum, my_accum;
-
-static qboolean restore_spi;
-static int originalmouseparms[3], newmouseparms[3] = { 0, 0, 1 };
-
 unsigned int uiWheelMessage;
-qboolean mouseactive;
-qboolean mouseinitialized;
-static qboolean mouseparmsvalid, mouseactivatetoggle;
-static qboolean mouseshowtoggle = 1;
+
+static qboolean mouseactivatetoggle;
+
 static qboolean dinput_acquired;
 
 static unsigned int mstate_di;
 
-// joystick defines and variables
-// where should defines be moved?
-#define JOY_ABSOLUTE_AXIS 0x00000000 // control like a joystick
-#define JOY_RELATIVE_AXIS 0x00000010 // control like a mouse, spinner, trackball
-#define JOY_MAX_AXES 6               // X, Y, Z, R, U, V
-#define JOY_AXIS_X 0
-#define JOY_AXIS_Y 1
-#define JOY_AXIS_Z 2
-#define JOY_AXIS_R 3
-#define JOY_AXIS_U 4
-#define JOY_AXIS_V 5
-
-enum _ControlList
-{
-	AxisNada = 0,
-	AxisForward,
-	AxisLook,
-	AxisSide,
-	AxisTurn
-};
-
+/*
 DWORD dwAxisFlags[JOY_MAX_AXES] =
 {
   JOY_RETURNX, JOY_RETURNY, JOY_RETURNZ, JOY_RETURNR, JOY_RETURNU, JOY_RETURNV
 };
+*/
 
-DWORD dwAxisMap[JOY_MAX_AXES];
-DWORD dwControlMap[JOY_MAX_AXES];
-PDWORD pdwRawValue[JOY_MAX_AXES];
-
-// none of these cvars are saved over a session
-// this means that advanced controller configuration needs to be executed
-// each time.  this avoids any problems with getting back to a default usage
-// or when changing from one controller to another.  this way at least something
-// works.
-cvar_t in_joystick = { "joystick", "0", true };
-cvar_t joy_name = { "joyname", "joystick" };
-cvar_t joy_advanced = { "joyadvanced", "0" };
-cvar_t joy_advaxisx = { "joyadvaxisx", "0" };
-cvar_t joy_advaxisy = { "joyadvaxisy", "0" };
-cvar_t joy_advaxisz = { "joyadvaxisz", "0" };
-cvar_t joy_advaxisr = { "joyadvaxisr", "0" };
-cvar_t joy_advaxisu = { "joyadvaxisu", "0" };
-cvar_t joy_advaxisv = { "joyadvaxisv", "0" };
-cvar_t joy_forwardthreshold = { "joyforwardthreshold", "0.15" };
-cvar_t joy_sidethreshold = { "joysidethreshold", "0.15" };
-cvar_t joy_pitchthreshold = { "joypitchthreshold", "0.15" };
-cvar_t joy_yawthreshold = { "joyyawthreshold", "0.15" };
-cvar_t joy_forwardsensitivity = { "joyforwardsensitivity", "-1.0" };
-cvar_t joy_sidesensitivity = { "joysidesensitivity", "-1.0" };
-cvar_t joy_pitchsensitivity = { "joypitchsensitivity", "1.0" };
-cvar_t joy_yawsensitivity = { "joyyawsensitivity", "-1.0" };
-cvar_t joy_wwhack1 = { "joywwhack1", "0.0" };
-cvar_t joy_wwhack2 = { "joywwhack2", "0.0" };
-
-qboolean joy_avail, joy_advancedinit, joy_haspov;
 DWORD joy_oldbuttonstate, joy_oldpovstate;
 
 int joy_id;
@@ -135,27 +77,13 @@ typedef struct MYDATA
 } MYDATA;
 
 static DIOBJECTDATAFORMAT rgodf[] = {
-	{
-	&GUID_XAxis, FIELD_OFFSET(MYDATA, lX), DIDFT_AXIS | DIDFT_ANYINSTANCE, 0,
-	},
-	{
-	&GUID_YAxis, FIELD_OFFSET(MYDATA, lY), DIDFT_AXIS | DIDFT_ANYINSTANCE, 0,
-	},
-	{
-	&GUID_ZAxis, FIELD_OFFSET(MYDATA, lZ), 0x80000000 | DIDFT_AXIS | DIDFT_ANYINSTANCE, 0,
-	},
-	{
-	0, FIELD_OFFSET(MYDATA, bButtonA), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0,
-	},
-	{
-	0, FIELD_OFFSET(MYDATA, bButtonB), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0,
-	},
-	{
-	0, FIELD_OFFSET(MYDATA, bButtonC), 0x80000000 | DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0,
-	},
-	{
-	0, FIELD_OFFSET(MYDATA, bButtonD), 0x80000000 | DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0,
-	},
+	{&GUID_XAxis, FIELD_OFFSET(MYDATA, lX), DIDFT_AXIS | DIDFT_ANYINSTANCE, 0,},
+	{&GUID_YAxis, FIELD_OFFSET(MYDATA, lY), DIDFT_AXIS | DIDFT_ANYINSTANCE, 0,},
+	{&GUID_ZAxis, FIELD_OFFSET(MYDATA, lZ), 0x80000000 | DIDFT_AXIS | DIDFT_ANYINSTANCE, 0,},
+	{0, FIELD_OFFSET(MYDATA, bButtonA), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0,},
+	{0, FIELD_OFFSET(MYDATA, bButtonB), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0,},
+	{0, FIELD_OFFSET(MYDATA, bButtonC), 0x80000000 | DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0,},
+	{0, FIELD_OFFSET(MYDATA, bButtonD), 0x80000000 | DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0,},
 };
 
 #define NUM_OBJECTS (sizeof(rgodf) / sizeof(rgodf[0]))
@@ -174,15 +102,7 @@ void IN_StartupJoystick();
 void Joy_AdvancedUpdate_f();
 void IN_JoyMove(usercmd_t *cmd);
 
-/*
-===========
-Force_CenterView_f
-===========
-*/
-void Force_CenterView_f()
-{
-	cl.viewangles[PITCH] = 0;
-}
+
 
 /*
 ===========
@@ -191,7 +111,7 @@ IN_UpdateClipCursor
 */
 void IN_UpdateClipCursor()
 {
-	if(mouseinitialized && mouseactive && !dinput)
+	//if(mouseinitialized && mouseactive && !dinput)
 	{
 		ClipCursor(&window_rect);
 	}
@@ -204,10 +124,10 @@ IN_ShowMouse
 */
 void IN_ShowMouse()
 {
-	if(!mouseshowtoggle)
+	//if(!mouseshowtoggle)
 	{
 		ShowCursor(TRUE);
-		mouseshowtoggle = 1;
+		//mouseshowtoggle = 1;
 	}
 }
 
@@ -218,10 +138,10 @@ IN_HideMouse
 */
 void IN_HideMouse()
 {
-	if(mouseshowtoggle)
+	//if(mouseshowtoggle)
 	{
 		ShowCursor(FALSE);
-		mouseshowtoggle = 0;
+		//mouseshowtoggle = 0;
 	}
 }
 
@@ -234,7 +154,7 @@ void IN_ActivateMouse()
 {
 	mouseactivatetoggle = true;
 
-	if(mouseinitialized)
+	//if(mouseinitialized)
 	{
 		if(dinput)
 		{
@@ -244,26 +164,23 @@ void IN_ActivateMouse()
 				{
 					IDirectInputDevice_Acquire(g_pMouse);
 					dinput_acquired = true;
-				}
+				};
 			}
 			else
-			{
 				return;
-			}
 		}
 		else
 		{
-			if(mouseparmsvalid)
-				restore_spi = SystemParametersInfo(SPI_SETMOUSE, 0, newmouseparms, 0);
-
 			SetCursorPos(window_center_x, window_center_y);
 			SetCapture(mainwindow);
 			ClipCursor(&window_rect);
-		}
-
-		mouseactive = true;
-	}
-}
+			
+			//ClientDLL_ActivateMouse(); // TODO: here or below???
+		};
+	};
+	
+	ClientDLL_ActivateMouse();
+};
 
 /*
 ===========
@@ -285,7 +202,7 @@ void IN_DeactivateMouse()
 {
 	mouseactivatetoggle = false;
 
-	if(mouseinitialized)
+	//if(mouseinitialized)
 	{
 		if(dinput)
 		{
@@ -295,21 +212,20 @@ void IN_DeactivateMouse()
 				{
 					IDirectInputDevice_Unacquire(g_pMouse);
 					dinput_acquired = false;
-				}
-			}
+				};
+			};
 		}
 		else
 		{
-			if(restore_spi)
-				SystemParametersInfo(SPI_SETMOUSE, 0, originalmouseparms, 0);
-
 			ClipCursor(NULL);
 			ReleaseCapture();
-		}
-
-		mouseactive = false;
-	}
-}
+			
+			//ClientDLL_DeactivateMouse(); // TODO: here or below???
+		};
+	};
+	
+	ClientDLL_DeactivateMouse();
+};
 
 /*
 ===========
@@ -426,57 +342,29 @@ IN_StartupMouse
 */
 void IN_StartupMouse()
 {
+/*
 	HDC hdc;
-
-	if(COM_CheckParm("-nomouse"))
-		return;
-
-	mouseinitialized = true;
 
 	if(COM_CheckParm("-dinput"))
 	{
 		dinput = IN_InitDInput();
 
 		if(dinput)
-		{
 			Con_SafePrintf("DirectInput initialized\n");
-		}
 		else
-		{
 			Con_SafePrintf("DirectInput not initialized\n");
-		}
-	}
+	};
 
 	if(!dinput)
 	{
-		mouseparmsvalid = SystemParametersInfo(SPI_GETMOUSE, 0, originalmouseparms, 0);
-
-		if(mouseparmsvalid)
-		{
-			if(COM_CheckParm("-noforcemspd"))
-				newmouseparms[2] = originalmouseparms[2];
-
-			if(COM_CheckParm("-noforcemaccel"))
-			{
-				newmouseparms[0] = originalmouseparms[0];
-				newmouseparms[1] = originalmouseparms[1];
-			}
-
-			if(COM_CheckParm("-noforcemparms"))
-			{
-				newmouseparms[0] = originalmouseparms[0];
-				newmouseparms[1] = originalmouseparms[1];
-				newmouseparms[2] = originalmouseparms[2];
-			}
-		}
+		// TODO: moved to client dll
 	}
-
-	mouse_buttons = 3;
 
 	// if a fullscreen video mode was set before the mouse was initialized,
 	// set the mouse state appropriately
 	if(mouseactivatetoggle)
 		IN_ActivateMouse();
+*/
 }
 
 /*
@@ -486,6 +374,7 @@ IN_Init
 */
 void IN_Init()
 {
+/*
 	// mouse variables
 	Cvar_RegisterVariable(&m_filter);
 
@@ -517,6 +406,7 @@ void IN_Init()
 
 	IN_StartupMouse();
 	IN_StartupJoystick();
+*/
 }
 
 /*
@@ -526,7 +416,6 @@ IN_Shutdown
 */
 void IN_Shutdown()
 {
-	IN_DeactivateMouse();
 	IN_ShowMouse();
 
 	if(g_pMouse)
@@ -549,29 +438,13 @@ IN_MouseEvent
 */
 void IN_MouseEvent(int mstate)
 {
-	int i;
-
-	if(mouseactive && !dinput)
+	//if(mouseactive && !dinput)
 	{
-		// perform button actions
-		for(i = 0; i < mouse_buttons; i++)
-		{
-			if((mstate & (1 << i)) &&
-			   !(mouse_oldbuttonstate & (1 << i)))
-			{
-				Key_Event(K_MOUSE1 + i, true);
-			}
-
-			if(!(mstate & (1 << i)) &&
-			   (mouse_oldbuttonstate & (1 << i)))
-			{
-				Key_Event(K_MOUSE1 + i, false);
-			}
-		}
-
-		mouse_oldbuttonstate = mstate;
-	}
-}
+		//ClientDLL_MouseEvent(mstate); // TODO: here or below???
+	};
+	
+	ClientDLL_MouseEvent(mstate);
+};
 
 /*
 ===========
@@ -580,7 +453,9 @@ IN_MouseMove
 */
 void IN_MouseMove(usercmd_t *cmd)
 {
-	int mx, my;
+	// TODO: move to client dll
+/*
+	
 	HDC hdc;
 	int i;
 	DIDEVICEOBJECTDATA od;
@@ -609,13 +484,13 @@ void IN_MouseMove(usercmd_t *cmd)
 				break;
 			}
 
-			/* Unable to read data or no data available */
+			// Unable to read data or no data available
 			if(FAILED(hr) || dwElements == 0)
 			{
 				break;
 			}
 
-			/* Look at the element to see what happened */
+			// Look at the element to see what happened
 
 			switch(od.dwOfs)
 			{
@@ -703,9 +578,6 @@ void IN_MouseMove(usercmd_t *cmd)
 	else
 		cl.viewangles[YAW] -= m_yaw.value * mouse_x;
 
-	//if(in_mlook.state & 1)
-		//V_StopPitchDrift(); // TODO
-
 	if((in_mlook.state & 1) && !(in_strafe.state & 1))
 	{
 		cl.viewangles[PITCH] += m_pitch.value * mouse_y;
@@ -727,6 +599,7 @@ void IN_MouseMove(usercmd_t *cmd)
 	{
 		SetCursorPos(window_center_x, window_center_y);
 	}
+*/
 }
 
 /*
@@ -750,22 +623,16 @@ IN_Accumulate
 */
 void IN_Accumulate()
 {
-	int mx, my;
-	HDC hdc;
-
-	if(mouseactive)
+	//if(mouseactive)
 	{
-		if(!dinput)
+		if(!dinput) // TODO: not present in qw
 		{
-			GetCursorPos(&current_pos);
-
-			mx_accum += current_pos.x - window_center_x;
-			my_accum += current_pos.y - window_center_y;
-
 			// force the mouse to the center, so there's room to move
 			SetCursorPos(window_center_x, window_center_y);
 		}
-	}
+	};
+	
+	ClientDLL_IN_Accumulate();
 }
 
 /*
@@ -775,13 +642,8 @@ IN_ClearStates
 */
 void IN_ClearStates()
 {
-	if(mouseactive)
-	{
-		mx_accum = 0;
-		my_accum = 0;
-		mouse_oldbuttonstate = 0;
-	}
-}
+	ClientDLL_ClearStates();
+};
 
 /* 
 =============== 
@@ -790,6 +652,7 @@ IN_StartupJoystick
 */
 void IN_StartupJoystick()
 {
+/*
 	int i, numdevs;
 	JOYCAPS jc;
 	MMRESULT mmr;
@@ -849,30 +712,7 @@ void IN_StartupJoystick()
 	joy_advancedinit = false;
 
 	Con_Printf("\njoystick detected\n\n");
-}
-
-/*
-===========
-RawValuePointer
-===========
 */
-PDWORD RawValuePointer(int axis)
-{
-	switch(axis)
-	{
-	case JOY_AXIS_X:
-		return &ji.dwXpos;
-	case JOY_AXIS_Y:
-		return &ji.dwYpos;
-	case JOY_AXIS_Z:
-		return &ji.dwZpos;
-	case JOY_AXIS_R:
-		return &ji.dwRpos;
-	case JOY_AXIS_U:
-		return &ji.dwUpos;
-	case JOY_AXIS_V:
-		return &ji.dwVpos;
-	}
 }
 
 /*
@@ -882,6 +722,7 @@ Joy_AdvancedUpdate_f
 */
 void Joy_AdvancedUpdate_f()
 {
+/*
 	// called once by IN_ReadJoystick and by user whenever an update is needed
 	// cvars are now available
 	int i;
@@ -943,6 +784,7 @@ void Joy_AdvancedUpdate_f()
 			joy_flags |= dwAxisFlags[i];
 		}
 	}
+*/
 }
 
 /*
@@ -952,6 +794,7 @@ IN_Commands
 */
 void IN_Commands()
 {
+/*
 	int i, key_index;
 	DWORD buttonstate, povstate;
 
@@ -1011,6 +854,7 @@ void IN_Commands()
 		}
 		joy_oldpovstate = povstate;
 	}
+*/
 }
 
 /* 
@@ -1020,6 +864,7 @@ IN_ReadJoystick
 */
 qboolean IN_ReadJoystick()
 {
+/*
 	memset(&ji, 0, sizeof(ji));
 	ji.dwSize = sizeof(ji);
 	ji.dwFlags = joy_flags;
@@ -1044,6 +889,7 @@ qboolean IN_ReadJoystick()
 		// joy_avail = false;
 		return false;
 	}
+*/
 }
 
 /*
@@ -1053,6 +899,8 @@ IN_JoyMove
 */
 void IN_JoyMove(usercmd_t *cmd)
 {
+	// TODO: move to client dll
+/*
 	float speed, aspeed;
 	float fAxisValue, fTemp;
 	int i;
@@ -1221,4 +1069,5 @@ void IN_JoyMove(usercmd_t *cmd)
 		cl.viewangles[PITCH] = 80.0;
 	if(cl.viewangles[PITCH] < -70.0)
 		cl.viewangles[PITCH] = -70.0;
+*/
 }
