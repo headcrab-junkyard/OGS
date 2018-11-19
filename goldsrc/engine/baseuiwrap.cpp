@@ -19,7 +19,7 @@
 /// @file
 
 #include "quakedef.h"
-#include "IBaseUI.h"
+#include "BaseUI/IBaseUI.h"
 
 extern IBaseUI *gpBaseUI;
 
