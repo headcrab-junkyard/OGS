@@ -24,8 +24,9 @@ CWinApplication::CWinApplication(const char *cmdline)
 {
 	msCmdLine[0] = '\0';
 	
-	for(int i = 0; i < strlen(cmdline); ++i)
-		strcat(msCmdLine, cmdline);
+	if(cmdline && *cmdline)
+		//for(int i = 0; i < strlen(cmdline); ++i) // TODO
+			strcat(msCmdLine, cmdline);
 };
 
 CWinApplication::~CWinApplication() = default;
