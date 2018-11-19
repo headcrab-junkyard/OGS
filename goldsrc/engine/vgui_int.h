@@ -21,9 +21,9 @@
 
 #pragma once
 
-//#ifdef __cplusplus
+#ifdef __cplusplus
 extern "C" {
-//#endif
+#endif
 
 void VGui_Startup();
 void VGui_Shutdown();
@@ -35,6 +35,6 @@ void VGui_ConsolePrint(const char *text);
 
 void *VGui_GetPanel();
 
-//#ifdef __cplusplus
+#ifdef __cplusplus
 };
-//#endif
+#endif

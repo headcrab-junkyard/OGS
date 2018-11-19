@@ -22,21 +22,32 @@
 #include "vgui_int.h"
 #include "vguiwrap.h"
 #include "vguiwrap2.h"
+//#include "imguiwrap.h"
 
 void VGui_Startup()
 {
+	VGuiWrap_Startup();
 	VGuiWrap2_Startup();
+	
+	//if(!ImGui_Init())
+		//return;
 };
 
 void VGui_Shutdown()
 {
+	VGuiWrap_Shutdown();
 	VGuiWrap2_Shutdown();
+	
+	//ImGui_Shutdown();
 };
 
 /*
 void VGui_Frame()
 {
-	// TODO: VGuiWrap2_Frame();
+	//VGuiWrap_Frame();
+	VGuiWrap2_Frame();
+	
+	//ImGui_Frame();
 };
 */
 
@@ -59,5 +70,5 @@ void VGui_ConsolePrint(const char *text)
 
 void *VGui_GetPanel()
 {
-	return nullptr; // TODO: VGuiWrap_GetPanel();
+	return VGuiWrap_GetPanel();
 };
