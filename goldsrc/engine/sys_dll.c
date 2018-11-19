@@ -1,25 +1,29 @@
 /*
- *	This file is part of OGS Engine
- *	Copyright (C) 1996-1997 Id Software, Inc.
- *	Copyright (C) 2018 BlackPhrase
+ * This file is part of OGS Engine
+ * Copyright (C) 1996-1997 Id Software, Inc.
+ * Copyright (C) 2018 BlackPhrase
  *
- *	OGS Engine is free software: you can redistribute it and/or modify
- *	it under the terms of the GNU General Public License as published by
- *	the Free Software Foundation, either version 3 of the License, or
- *	(at your option) any later version.
+ * OGS Engine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *	OGS Engine is distributed in the hope that it will be useful,
- *	but WITHOUT ANY WARRANTY; without even the implied warranty of
- *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *	GNU General Public License for more details.
+ * OGS Engine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *	You should have received a copy of the GNU General Public License
- *	along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
 
 /// @file
 
 #include "quakedef.h"
+
+#ifdef _WIN32
+#include <io.h>
+#endif
 
 #ifdef _WIN32
 qboolean WinNT;
@@ -183,16 +187,18 @@ void Sys_Init()
 	if(!GetVersionEx(&vinfo))
 		Sys_Error("Couldn't get OS info");
 
-	if((vinfo.dwMajorVersion < 4) ||
-	   (vinfo.dwPlatformId == VER_PLATFORM_WIN32s))
-	{
+	if((vinfo.dwMajorVersion < 4) || (vinfo.dwPlatformId == VER_PLATFORM_WIN32s))
 		Sys_Error("WinQuake requires at least Win95 or NT 4.0");
-	}
 
 	if(vinfo.dwPlatformId == VER_PLATFORM_WIN32_NT)
 		WinNT = true;
 	else
 		WinNT = false;
+	
+#ifdef SWDS
+	//Cvar_RegisterVariable (&sys_nostdout);
+#endif
+
 #else // if linux or sun or something else
 #if id386
 	Sys_SetFPCW();
@@ -204,20 +210,76 @@ void Sys_Shutdown(){
 	// TODO
 };
 
-void Sys_InitArgv(){
-	// TODO
+/*
+==================
+ParseCommandLine
+
+==================
+*/
+const char *argv[MAX_NUM_ARGVS];
+static const char *empty_string = "";
+
+void Sys_InitArgv(char *lpCmdLine)
+{
+	if(!lpCmdLine)
+		return;
+	
+	host_parms.argc = 1;
+	argv[0] = empty_string;
+
+	while(*lpCmdLine && (host_parms.argc < MAX_NUM_ARGVS))
+	{
+		while(*lpCmdLine && ((*lpCmdLine <= 32) || (*lpCmdLine > 126)))
+			lpCmdLine++;
+
+		if(*lpCmdLine)
+		{
+			argv[host_parms.argc] = lpCmdLine;
+			host_parms.argc++;
+
+			while(*lpCmdLine && ((*lpCmdLine > 32) && (*lpCmdLine <= 126)))
+				lpCmdLine++;
+
+			if(*lpCmdLine)
+			{
+				*lpCmdLine = 0;
+				lpCmdLine++;
+			};
+		};
+	};
+	
+	host_parms.argv = argv;
+	
+	COM_InitArgv(host_parms.argc, host_parms.argv);
+	
+	host_parms.argc = com_argc;
+	host_parms.argv = com_argv;
 };
 
 void Sys_ShutdownArgv(){
-	// TODO
+	// TODO: nothing?
 };
 
+/*
+================
+Sys_Printf
+================
+*/
 void Sys_Printf(const char *fmt, ...)
 {
-#ifdef _WIN32
 	va_list argptr;
+
+#ifdef _WIN32
+
+#ifdef SWDS
+	//if (sys_nostdout.value)
+		//return;
+	
+	va_start(argptr, fmt);
+	vprintf(fmt, argptr);
+	va_end(argptr);
+#else
 	char text[1024];
-	DWORD dummy;
 
 //
 	if(isDedicated)
@@ -226,17 +288,23 @@ void Sys_Printf(const char *fmt, ...)
 		vsprintf(text, fmt, argptr);
 		va_end(argptr);
 
-		//WriteFile(houtput, text, strlen (text), &dummy, NULL); // TODO: IDedicatedExports->Printf
+		// TODO
+		DedicatedExports_Print(text);
+		//printf("%s", text);
 	};
+	
+	//DebugOutputString(text); // TODO
+	
 // QW
 	//va_start(argptr, fmt);
 	//vprintf(fmt, argptr);
 	//va_end(argptr);
 //
+#endif // SWDS
+
 #elif __linux__
-	va_list argptr;
 	char text[1024];
-	unsigned char *p;
+	byte *p;
 
 	va_start(argptr, fmt);
 	vsprintf(text, fmt, argptr);
@@ -248,7 +316,7 @@ void Sys_Printf(const char *fmt, ...)
 	if(nostdout)
 		return;
 
-	for(p = (unsigned char *)text; *p; p++)
+	for(p = (byte *)text; *p; p++)
 	{
 		*p &= 0x7f;
 		if((*p > 128 || *p < 32) && *p != 10 && *p != 13 && *p != 9)
@@ -257,8 +325,6 @@ void Sys_Printf(const char *fmt, ...)
 			putc(*p, stdout);
 	};
 #elif sun
-	va_list argptr;
-
 	va_start(argptr, fmt);
 	vprintf(fmt, argptr);
 	va_end(argptr);
@@ -279,7 +345,7 @@ void Sys_MakeCodeWriteable(unsigned long startaddr, unsigned long length)
 
 	// TODO: copy on write or just read-write?
 	if(!VirtualProtect((LPVOID)startaddr, length, PAGE_READWRITE, &flOldProtect))
-		Sys_Error("Protection change failed\n");
+		Sys_Error("Protection change failed.\n");
 #endif
 
 #else
@@ -323,7 +389,17 @@ void Sys_Error(const char *error, ...)
 {
 #ifdef _WIN32
 	va_list argptr;
-	char text[1024], text2[1024];
+	char text[1024];
+	
+	va_start(argptr, error);
+	vsprintf(text, error, argptr);
+	va_end(argptr);
+	
+#ifdef SWDS
+	//MessageBox(NULL, text, "Error", 0 /* MB_OK */ );
+	printf("ERROR: %s\n", text);
+#else
+	char text2[1024];
 	const char *text3 = "Press Enter to exit\n";
 	const char *text4 = "***********************************\n";
 	const char *text5 = "\n";
@@ -340,10 +416,8 @@ void Sys_Error(const char *error, ...)
 		//VID_ForceUnlockedAndReturnState(); // TODO
 	};
 
-	va_start(argptr, error);
-	vsprintf(text, error, argptr);
-	va_end(argptr);
-
+	gEntityInterface.pfnSys_Error(text);
+	
 	if(isDedicated)
 	{
 		va_start(argptr, error);
@@ -390,6 +464,7 @@ void Sys_Error(const char *error, ...)
 		in_sys_error2 = 1;
 		//DeinitConProc(); // TODO
 	};
+#endif // SWDS
 
 	exit(1);
 #elif __linux__
@@ -404,6 +479,8 @@ void Sys_Error(const char *error, ...)
 	va_end(argptr);
 	fprintf(stderr, "Error: %s\n", string);
 
+	gEntityInterface.pfnSys_Error(string);
+	
 	Host_Shutdown();
 	exit(1);
 #elif sun
@@ -414,6 +491,7 @@ void Sys_Error(const char *error, ...)
 	vprintf(error, argptr);
 	va_end(argptr);
 	printf("\n");
+	gEntityInterface.pfnSys_Error(error);
 	Host_Shutdown();
 	exit(1);
 #endif
@@ -440,17 +518,16 @@ void Sys_Quit()
 		//CloseHandle(qwclsemaphore); // TODO
 #endif
 
-	exit(0);
 #elif __linux__
 	Host_Shutdown();
 	fcntl(0, F_SETFL, fcntl(0, F_GETFL, 0) & ~FNDELAY);
 
 	fflush(stdout);
-	exit(0);
 #elif sun
 	Host_Shutdown();
-	exit(0);
 #endif
+
+	exit(0);
 };
 
 /*
@@ -461,6 +538,20 @@ Sys_FloatTime
 double Sys_FloatTime()
 {
 #ifdef _WIN32
+
+#ifdef SWDS
+	struct _timeb tstruct;
+	static int starttime;
+
+	_ftime(&tstruct);
+
+	if(!starttime)
+		starttime = tstruct.time;
+
+	double t = (tstruct.time - starttime) + tstruct.millitm * 0.001;
+
+	return t;
+#else
 	static int sametimecount;
 	static unsigned int oldtime;
 	static int first = 1;
@@ -540,7 +631,9 @@ double Sys_FloatTime()
 
 	return (now - starttime) / 1000.0;
 	*/
-#else
+#endif // SWDS
+
+#else // if not Windows
 	struct timeval tp;
 	struct timezone tzp;
 	static int secbase;
@@ -551,10 +644,10 @@ double Sys_FloatTime()
 	{
 		secbase = tp.tv_sec;
 		return tp.tv_usec / 1000000.0;
-	}
+	};
 
 	return (tp.tv_sec - secbase) + tp.tv_usec / 1000000.0;
-#endif
+#endif // _WIN32
 };
 
 void Sys_Sleep()
@@ -575,7 +668,8 @@ void Sys_Sleep()
 #ifdef _WIN32
 void Sys_SendKeyEvents()
 {
-	MSG msg;
+#ifndef SWDS
+	static MSG msg;
 
 	while(PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
 	{
@@ -588,5 +682,186 @@ void Sys_SendKeyEvents()
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	};
+#endif
 };
 #endif // _WIN32
+
+//============================================
+
+#ifdef _WIN32
+char findbase[MAX_OSPATH];
+char findpath[MAX_OSPATH];
+int findhandle;
+#else
+static char findbase[MAX_OSPATH];
+static char findpath[MAX_OSPATH];
+static char findpattern[MAX_OSPATH];
+static DIR *fdir;
+#endif
+
+// directory searching
+#define SFF_ARCH    0x01
+#define SFF_HIDDEN  0x02
+#define SFF_RDONLY  0x04
+#define SFF_SUBDIR  0x08
+#define SFF_SYSTEM  0x10
+
+#ifdef _WIN32
+static qboolean CompareAttributes( unsigned int found, unsigned int musthave, unsigned int canthave )
+{
+	if ( ( found & _A_RDONLY ) && ( canthave & SFF_RDONLY ) )
+		return false;
+	if ( ( found & _A_HIDDEN ) && ( canthave & SFF_HIDDEN ) )
+		return false;
+	if ( ( found & _A_SYSTEM ) && ( canthave & SFF_SYSTEM ) )
+		return false;
+	if ( ( found & _A_SUBDIR ) && ( canthave & SFF_SUBDIR ) )
+		return false;
+	if ( ( found & _A_ARCH ) && ( canthave & SFF_ARCH ) )
+		return false;
+
+	if ( ( musthave & SFF_RDONLY ) && !( found & _A_RDONLY ) )
+		return false;
+	if ( ( musthave & SFF_HIDDEN ) && !( found & _A_HIDDEN ) )
+		return false;
+	if ( ( musthave & SFF_SYSTEM ) && !( found & _A_SYSTEM ) )
+		return false;
+	if ( ( musthave & SFF_SUBDIR ) && !( found & _A_SUBDIR ) )
+		return false;
+	if ( ( musthave & SFF_ARCH ) && !( found & _A_ARCH ) )
+		return false;
+
+	return true;
+};
+#else
+static qboolean CompareAttributes(char *path, char *name, unsigned musthave, unsigned canthave )
+{
+	struct stat st;
+	char fn[MAX_OSPATH];
+
+	// . and .. never match
+	if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0)
+		return false;
+
+	sprintf(fn, "%s/%s", path, name);
+	if (stat(fn, &st) == -1)
+		return false; // shouldn't happen
+
+	if ( ( st.st_mode & S_IFDIR ) && ( canthave & SFF_SUBDIR ) )
+		return false;
+
+	if ( ( musthave & SFF_SUBDIR ) && !( st.st_mode & S_IFDIR ) )
+		return false;
+
+	return true;
+};
+#endif // _WIN32
+
+char *Sys_FindFirst (const char *path, unsigned int musthave, unsigned int canthave )
+{
+#ifdef _WIN32
+	struct _finddata_t findinfo;
+
+	if (findhandle)
+		Sys_Error ("Sys_FindFirst without close");
+	findhandle = 0;
+
+	//COM_FilePath (path, findbase); // TODO
+	findhandle = _findfirst (path, &findinfo);
+	if (findhandle == -1)
+		return NULL;
+	if ( !CompareAttributes( findinfo.attrib, musthave, canthave ) )
+		return NULL;
+	sprintf (findpath, sizeof(findpath), "%s/%s", findbase, findinfo.name);
+	return findpath;
+#else
+	struct dirent *d;
+	char *p;
+
+	if (fdir)
+		Sys_Error ("Sys_FindFirst without close");
+
+//	COM_FilePath (path, findbase);
+	strcpy(findbase, path);
+
+	if ((p = strrchr(findbase, '/')) != NULL)
+	{
+		*p = 0;
+		strcpy(findpattern, p + 1);
+	}
+	else
+		strcpy(findpattern, "*");
+
+	if (strcmp(findpattern, "*.*") == 0)
+		strcpy(findpattern, "*");
+	
+	if ((fdir = opendir(findbase)) == NULL)
+		return NULL;
+	
+	while ((d = readdir(fdir)) != NULL)
+	{
+		if (!*findpattern || glob_match(findpattern, d->d_name))
+		{
+//			if (*findpattern)
+//				printf("%s matched %s\n", findpattern, d->d_name);
+			if (CompareAttributes(findbase, d->d_name, musthave, canhave))
+			{
+				sprintf (findpath, "%s/%s", findbase, d->d_name);
+				return findpath;
+			}
+		}
+	}
+	return NULL;
+#endif
+};
+
+char *Sys_FindNext ( unsigned int musthave, unsigned int canthave )
+{
+#ifdef _WIN32
+	struct _finddata_t findinfo;
+
+	if (findhandle == -1)
+		return NULL;
+	if (_findnext (findhandle, &findinfo) == -1)
+		return NULL;
+	if ( !CompareAttributes( findinfo.attrib, musthave, canthave ) )
+		return NULL;
+
+	sprintf (findpath, sizeof(findpath), "%s/%s", findbase, findinfo.name);
+	return findpath;
+#else
+	struct dirent *d;
+
+	if (fdir == NULL)
+		return NULL;
+	while ((d = readdir(fdir)) != NULL)
+	{
+		if (!*findpattern || glob_match(findpattern, d->d_name))
+		{
+//			if (*findpattern)
+//				printf("%s matched %s\n", findpattern, d->d_name);
+			if (CompareAttributes(findbase, d->d_name, musthave, canhave))
+			{
+				sprintf (findpath, "%s/%s", findbase, d->d_name);
+				return findpath;
+			}
+		}
+	}
+	return NULL;
+#endif
+};
+
+void Sys_FindClose ()
+{
+#ifdef _WIN32
+	if (findhandle != -1)
+		_findclose (findhandle);
+	findhandle = 0;
+#else
+	if (fdir != NULL)
+		closedir(fdir);
+	fdir = NULL;
+#endif
+};
+
+//============================================
