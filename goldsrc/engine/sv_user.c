@@ -16,7 +16,9 @@
  *	You should have received a copy of the GNU General Public License
  *	along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
-// sv_user.c -- server code for moving users
+
+/// @file
+/// @brief server code for moving users
 
 #include "quakedef.h"
 
@@ -25,6 +27,8 @@ edict_t *sv_player;
 extern cvar_t sv_friction;
 cvar_t sv_edgefriction = { "edgefriction", "2" };
 extern cvar_t sv_stopspeed;
+
+extern playermove_t svpmove;
 
 extern vec3_t player_mins;
 
@@ -45,6 +49,24 @@ usercmd_t cmd;
 cvar_t sv_idealpitchscale = { "sv_idealpitchscale", "0.8" };
 
 vec3_t pmove_mins, pmove_maxs;
+
+const char *clc_strings[] =
+{
+	"clc_bad",
+	"clc_nop",
+	"clc_move",
+	"clc_stringcmd",
+	"clc_delta",
+	"clc_resourcelist",
+	"clc_tmove",
+	"clc_fileconsistency",
+	"clc_voicedata",
+	"clc_hltv",
+	"clc_cvarvalue",
+	"clc_cvarvalue2",
+	
+	"End of List"
+};
 
 /*
 ====================
@@ -114,8 +136,9 @@ void AddLinksToPmove ( areanode_t *node )
 /*
 ===========
 SV_PreRunCmd
-===========
+
 Done before running a player command.  Clears the touch array
+===========
 */
 byte playertouch[(MAX_EDICTS + 7) / 8];
 
@@ -219,20 +242,20 @@ void SV_RunCmd(usercmd_t *ucmd)
 	int before, after;
 
 before = PM_TestPlayerPosition (pmove->origin);
-	PlayerMove ();
+	gEntityInterface.pfnPM_Move (pmove, true);
 after = PM_TestPlayerPosition (pmove->origin);
 
 if (sv_player->v.health > 0 && before && !after )
 	Con_Printf ("player %s got stuck in playermove!!!!\n", host_client->name);
 }
 #else
-	PlayerMove();
+	gEntityInterface.pfnPM_Move(pmove, true);
 #endif
 
 	//host_client->oldbuttons = pmove->oldbuttons; // TODO
 	sv_player->v.teleport_time = pmove->waterjumptime;
-	sv_player->v.waterlevel = waterlevel;
-	sv_player->v.watertype = watertype;
+	sv_player->v.waterlevel = pmove->waterlevel;
+	sv_player->v.watertype = pmove->watertype;
 	if(onground != -1)
 	{
 		sv_player->v.flags = (int)sv_player->v.flags | FL_ONGROUND;
@@ -274,8 +297,9 @@ if (sv_player->v.health > 0 && before && !after )
 /*
 ===========
 SV_PostRunCmd
-===========
+
 Done after running a player command.
+===========
 */
 void SV_PostRunCmd()
 {
@@ -873,6 +897,66 @@ void SV_RunClients ()
 }
 */
 
+void SV_ParseConsistencyResponse()
+{
+	// TODO
+};
+
+void SV_ParseVoiceData()
+{
+	// TODO
+};
+
+void SV_ParseStringCommand(client_t *cl)
+{
+	char *s = MSG_ReadString();
+	
+	Cmd_TokenizeString(s);
+	
+	host_client = cl; // TODO: hack to let SV_New_f work properly
+	sv_player = cl->edict;
+	
+	if(Cmd_Exists(Cmd_Argv(0)))
+		Cmd_ExecuteString(s, src_client); // TODO: this allows players to call any cmd on the server??????????????
+	else
+		gEntityInterface.pfnClientCommand(sv_player);
+};
+
+/*
+==================
+SV_ExecuteUserCommand
+==================
+*/
+void SV_ExecuteUserCommand(const char *s)
+{
+	//ucmd_t	*u;
+	
+	Cmd_TokenizeString (s /*, true*/); // TODO: q2
+	sv_player = host_client->edict; // TODO: = sv_client->edict in q2
+
+	SV_BeginRedirect (RD_CLIENT); // TODO: commented out in q2
+
+	// TODO: Cmd_ExecuteString here instead of this
+	/*
+	for (u=ucmds ; u->name ; u++)
+		if (!strcmp (Cmd_Argv(0), u->name) )
+		{
+			u->func ();
+			break;
+		};
+	*/
+	
+	
+	//if(!u->name /*&& sv.state == ss_game*/) // TODO
+		gEntityInterface.pfnClientCommand(sv_player);
+	
+	// TODO: qw
+	//if(!u->name)
+		//Con_Printf("Bad user command: %s\n", Cmd_Argv(0));
+
+	SV_EndRedirect(); // TODO: commented out in q2
+}
+
 /*
 ===================
 SV_ExecuteClientMessage
@@ -909,6 +993,7 @@ void SV_ExecuteClientMessage(client_t *cl)
 
 	host_client = cl;
 	sv_player = host_client->edict;
+	pmove = &svpmove;
 
 	//	seq_hash = (cl->netchan.incoming_sequence & 0xffff) ; // ^ QW_CHECK_HASH;
 	seq_hash = cl->netchan.incoming_sequence;
@@ -933,15 +1018,11 @@ void SV_ExecuteClientMessage(client_t *cl)
 		switch(c)
 		{
 		default:
-			Con_Printf("SV_ReadClientMessage: unknown command char\n");
-			SV_DropClient(cl, false, "unknown command char");
+			Con_Printf("SV_ReadClientMessage: unknown command char (%d)\n", c);
+			//SV_DropClient(cl, false, "unknown command char"); // TODO: just ignore the message for now
 			return;
 
 		case clc_nop:
-			break;
-
-		case clc_delta:
-			cl->delta_sequence = MSG_ReadByte();
 			break;
 
 		case clc_move:
@@ -1002,9 +1083,17 @@ void SV_ExecuteClientMessage(client_t *cl)
 			break;
 
 		case clc_stringcmd:
-			// TODO: SV_ParseStringCommand
-			s = MSG_ReadString();
-			//SV_ExecuteUserCommand(s); // TODO
+			SV_ParseStringCommand(cl);
+			//s = MSG_ReadString();
+			//SV_ExecuteUserCommand(s);
+			break;
+		
+		case clc_delta:
+			cl->delta_sequence = MSG_ReadByte();
+			break;
+		
+		case clc_resourcelist:
+			// TODO
 			break;
 
 		case clc_tmove:
@@ -1021,7 +1110,28 @@ void SV_ExecuteClientMessage(client_t *cl)
 			}
 		*/
 			break;
-		// TODO
+		
+		case clc_fileconsistency:
+			SV_ParseConsistencyResponse();
+			break;
+		
+		case clc_voicedata:
+			SV_ParseVoiceData();
+			break;
+		
+		case clc_hltv:
+			// TODO
+			break;
+		
+		case clc_cvarvalue:
+			// TODO
+			break;
+		
+		case clc_cvarvalue2:
+			// TODO
+			break;
+		
+		// TODO: unused
 		/*
 		case clc_upload:
 			SV_NextUpload();
