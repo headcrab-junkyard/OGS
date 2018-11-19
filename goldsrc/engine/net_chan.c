@@ -17,13 +17,15 @@
  *	along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/// @file
+
 #include "quakedef.h"
 
 #ifdef _WIN32
 #include "winquake.h"
 #endif
 
-#define PACKET_HEADER 8
+const int PACKET_HEADER = 8;
 
 /*
 
@@ -125,10 +127,10 @@ void Netchan_OutOfBand(int net_socket, netadr_t adr, int length, byte *data)
 	SZ_Write(&send, data, length);
 
 	// send the datagram
-	//#ifndef SERVERONLY
-	//zoid, no input in demo playback mode
+//#ifndef SERVERONLY
+	// zoid, no input in demo playback mode
 	//if (!cls.demoplayback)
-	//#endif
+//#endif
 	NET_SendPacket(net_socket, send.cursize, send.data, adr);
 }
 
@@ -139,7 +141,7 @@ Netchan_OutOfBandPrint
 Sends a text message in an out-of-band datagram
 ================
 */
-void Netchan_OutOfBandPrint(int net_socket, netadr_t adr, char *format, ...)
+void Netchan_OutOfBandPrint(int net_socket, netadr_t adr, const char *format, ...)
 {
 	va_list argptr;
 	static char string[8192]; // ??? why static?
@@ -148,7 +150,7 @@ void Netchan_OutOfBandPrint(int net_socket, netadr_t adr, char *format, ...)
 	vsprintf(string, format, argptr);
 	va_end(argptr);
 
-	Netchan_OutOfBand(net_socket, adr, strlen(string), (byte *)string);
+	Netchan_OutOfBand(net_socket, adr, Q_strlen(string), (byte *)string);
 }
 
 /*
@@ -160,19 +162,23 @@ called to open a channel to a remote system
 */
 void Netchan_Setup(netsrc_t sock, netchan_t *chan, netadr_t adr, int qport)
 {
-	memset(chan, 0, sizeof(*chan));
+	Q_memset(chan, 0, sizeof(*chan));
 
 	chan->sock = sock;
 	chan->remote_address = adr;
-	chan->last_received = realtime;
-
-	chan->message.data = chan->message_buf;
-	chan->message.allowoverflow = true;
-	chan->message.maxsize = sizeof(chan->message_buf);
-
 	chan->qport = qport;
+	
+	chan->last_received = realtime; // TODO: curtime in q2
+	
+	chan->incoming_sequence = 0;
+	chan->outgoing_sequence = 1;
 
-	chan->rate = 1.0 / 2500;
+	//SZ_Init(&chan->message, chan->message_buf, sizeof(chan->message_buf));
+	chan->message.data = chan->message_buf;
+	chan->message.maxsize = sizeof(chan->message_buf);
+	chan->message.allowoverflow = true;
+
+	chan->rate = 1.0 / 2500; // TODO: hardcode + magic
 }
 
 /*
@@ -194,14 +200,14 @@ qboolean Netchan_CanPacket(netchan_t *chan)
 ===============
 Netchan_CanReliable
 
-Returns true if the bandwidth choke isn't 
+Returns true if the bandwidth choke isn't (and if the last reliable message has acked)
 ================
 */
 qboolean Netchan_CanReliable(netchan_t *chan)
 {
 	if(chan->reliable_length)
 		return false; // waiting for ack
-	return Netchan_CanPacket(chan);
+	return Netchan_CanPacket(chan); // TODO: return true in q2
 }
 
 #ifdef SERVERONLY
@@ -243,7 +249,7 @@ void Netchan_Transmit(netchan_t *chan, int length, byte *data)
 	// if the reliable transmit buffer is empty, copy the current message out
 	if(!chan->reliable_length && chan->message.cursize)
 	{
-		memcpy(chan->reliable_buf, chan->message_buf, chan->message.cursize);
+		Q_memcpy(chan->reliable_buf, chan->message_buf, chan->message.cursize);
 		chan->reliable_length = chan->message.cursize;
 		chan->message.cursize = 0;
 		chan->reliable_sequence ^= 1;
@@ -321,7 +327,7 @@ qboolean Netchan_Process(netchan_t *chan)
 	int i;
 
 	if(
-#ifndef SERVERONLY
+#ifndef SWDS
 	!cls.demoplayback &&
 #endif
 	!NET_CompareAdr(net_from, chan->remote_address))
