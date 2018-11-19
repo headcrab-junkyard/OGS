@@ -149,3 +149,114 @@ void SwapPic(qpic_t *pic)
 	pic->width = LittleLong(pic->width);
 	pic->height = LittleLong(pic->height);
 }
+
+
+// TODO: WAD3 external textures support
+
+#define TEXWAD_MAXIMAGES 16384
+
+typedef struct
+{
+	char name[16];
+	FileHandle_t file;
+	int position;
+	int size;
+} texwadlump_t;
+
+texwadlump_t texwadlump[TEXWAD_MAXIMAGES];
+int numwadtextures;
+
+void WAD3_LoadTextureWadFile (char *filename)
+{
+	lumpinfo_t *lumps, *lump_p;
+	wadinfo_t header;
+	int i, j, infotableofs, numlumps, lowmark;
+	FileHandle_t file;
+
+	/*
+	if (FS_FOpenFile (va("textures/wad3/%s", filename), &file) != -1)
+		goto loaded;
+	if (FS_FOpenFile (va("textures/halflife/%s", filename), &file) != -1)
+		goto loaded;
+	if (FS_FOpenFile (va("textures/%s", filename), &file) != -1)
+		goto loaded;
+	*/
+	file = FS_Open (filename, "rb");
+	if (!file)
+		Host_Error ("Couldn't load halflife wad \"%s\"\n", filename);
+
+	if (FS_Read(&header, sizeof(wadinfo_t), file) != sizeof(wadinfo_t))
+	{
+		Con_Printf ("WAD3_LoadTextureWadFile: unable to read wad header");
+        FS_Close(file);
+		return;
+	}
+
+	if (memcmp(header.identification, "WAD3", 4))
+	{
+		Con_Printf ("WAD3_LoadTextureWadFile: Wad file %s doesn't have WAD3 id\n",filename);
+        FS_Close(file);
+		return;
+	}
+
+	numlumps = LittleLong(header.numlumps);
+
+	if (numlumps < 1 || numlumps > TEXWAD_MAXIMAGES)
+	{
+		Con_Printf ("WAD3_LoadTextureWadFile: invalid number of lumps (%i)\n", numlumps);
+        FS_Close(file);
+		return;
+	}
+
+	infotableofs = LittleLong(header.infotableofs);
+
+	FS_Seek(file, infotableofs, FILESYSTEM_SEEK_HEAD);
+	//if (FS_Seek(file, infotableofs, FILESYSTEM_SEEK_HEAD))
+	{
+		//Con_Printf ("WAD3_LoadTextureWadFile: unable to seek to lump table");
+        //FS_Close(file);
+		//return;
+	}
+
+	lowmark = Hunk_LowMark();
+
+	if (!(lumps = (lumpinfo_t*)Hunk_Alloc(sizeof(lumpinfo_t) * numlumps)))
+	{
+		Con_Printf ("WAD3_LoadTextureWadFile: unable to allocate temporary memory for lump table");
+        FS_Close(file);
+		return;
+	}
+
+	if (FS_Read(lumps, sizeof(lumpinfo_t) * numlumps, file) != sizeof(lumpinfo_t) * numlumps)
+	{
+		Con_Printf ("WAD3_LoadTextureWadFile: unable to read lump table");
+        FS_Close(file);
+		Hunk_FreeToLowMark(lowmark);
+		return;
+	}
+
+	//UnloadFileList.push_back(file); //Crow_bar. UnloadWads code
+
+	for (i = 0, lump_p = lumps; i < numlumps; i++,lump_p++)
+	{
+        W_CleanupName (lump_p->name, lump_p->name);
+		for (j = 0;j < numwadtextures;j++)
+		{
+			if (!Q_strcmp(lump_p->name, texwadlump[j].name)) // name match, replace old one
+				break;
+		}
+		if (j >= TEXWAD_MAXIMAGES)
+			break; // abort loading
+		if (j == numwadtextures)
+		{
+			W_CleanupName (lump_p->name, texwadlump[j].name);
+			texwadlump[j].file = file;
+			texwadlump[j].position = LittleLong(lump_p->filepos);
+			texwadlump[j].size = LittleLong(lump_p->disksize);
+			numwadtextures++;
+		}
+	}
+
+	Hunk_FreeToLowMark(lowmark);
+	//leaves the file open
+}
