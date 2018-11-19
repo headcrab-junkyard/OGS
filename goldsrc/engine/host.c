@@ -1,6 +1,6 @@
 /*
  *	This file is part of OGS Engine
- *	Copyright (C) 1996-1997 Id Software, Inc.
+ *	Copyright (C) 1996-2001 Id Software, Inc.
  *	Copyright (C) 2018 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
@@ -78,6 +78,8 @@ cvar_t deathmatch = { "deathmatch", "0" }; // 0, 1, or 2
 cvar_t coop = { "coop", "0" };             // 0 or 1
 
 cvar_t pausable = { "pausable", "1" };
+
+playermove_t svpmove;
 
 /*
 ================
@@ -163,35 +165,28 @@ void Host_FindMaxClients()
 	int i;
 
 	svs.maxclients = 1;
-
-	i = COM_CheckParm("-dedicated");
-	if(i)
+	
+	if(isDedicated)
 	{
 		cls.state = ca_dedicated;
-		if(i != (com_argc - 1))
+		
+		i = COM_CheckParm("-maxplayers");
+	
+		if(i)
 		{
-			svs.maxclients = Q_atoi(com_argv[i + 1]);
-		}
-		else
-			svs.maxclients = 8;
+			if(i != (com_argc - 1))
+				svs.maxclients = Q_atoi(com_argv[i + 1]);
+			else
+				svs.maxclients = 8;
+		};
 	}
 	else
 		cls.state = ca_disconnected;
-
-	i = COM_CheckParm("-listen");
-	if(i)
-	{
-		if(cls.state == ca_dedicated)
-			Sys_Error("Only one of -dedicated or -listen can be specified");
-		if(i != (com_argc - 1))
-			svs.maxclients = Q_atoi(com_argv[i + 1]);
-		else
-			svs.maxclients = 8;
-	}
+	
 	if(svs.maxclients < 1)
 		svs.maxclients = 8;
-	else if(svs.maxclients > MAX_SCOREBOARD)
-		svs.maxclients = MAX_SCOREBOARD;
+	else if(svs.maxclients > MAX_SCOREBOARD) // TODO: MAX_PLAYERS
+		svs.maxclients = MAX_SCOREBOARD; // TODO: MAX_PLAYERS
 
 	svs.maxclientslimit = svs.maxclients;
 	if(svs.maxclientslimit < 4)
@@ -256,10 +251,23 @@ void Host_WriteConfiguration()
 			Con_Printf("Couldn't write config.cfg.\n");
 			return;
 		}
+		
+		fprintf(f, "// This file is overwritten whenever you change your user settings in the game.\n");
+		fprintf(f, "// Add custom configurations to the file \"userconfig.cfg\".\n\n");
+		
+		fprintf(f, "unbindall\n");
 
 		Key_WriteBindings(f);
 		Cvar_WriteVariables(f);
+		
+		// TODO: in_mlook
+		// TODO: in_jlook
+		
+		fprintf(f, "+mlook\n");
+		//fprintf(f, "+jlook\n"); // TODO
 
+		fprintf(f, "exec userconfig.cfg\n");
+		
 		fclose(f);
 	}
 }
@@ -516,11 +524,13 @@ void Host_UpdateScreen()
 	// TODO: something else?
 
 	SCR_UpdateScreen();
+	ClientDLL_HudRedraw(cl.intermission);
 
 	// TODO: something else?
 };
 
-void Host_UpdateStatus(float *fps, int *nActive, /*int *nSpectators, */ int *nMaxPlayers, const char *pszMap)
+// TODO: void Host_GetHostInfo( float *fps, int *nActive, int *nSpectators, int *nMaxPlayers, char *pszMap );
+void Host_UpdateStatus(float *fps, int *nActive, /*int *nSpectators, */ int *nMaxPlayers, char *pszMap)
 {
 	// TODO
 	
@@ -535,6 +545,11 @@ void Host_UpdateStatus(float *fps, int *nActive, /*int *nSpectators, */ int *nMa
 	
 	if(pszMap)
 		*pszMap = "none";
+};
+
+void Host_EndSection(const char *sName)
+{
+	// TODO
 };
 
 /*
@@ -597,7 +612,17 @@ void _Host_Frame(float time)
 	// client operations
 	//
 	//-------------------
-
+	
+	// if in the debugger last frame, don't timeout
+	if (time > 5.0f)
+		cls.netchan.last_received = Sys_FloatTime ();
+	
+	// fetch results from server
+	//if(cls.state == ca_connected)
+	{
+		CL_ReadPackets();
+	};
+	
 	// if running the server remotely, send intentions now after
 	// the incoming messages have been read
 	if(!sv.active)
@@ -609,13 +634,7 @@ void _Host_Frame(float time)
 	};
 
 	host_time += host_frametime;
-
-	// fetch results from server
-	if(cls.state == ca_connected)
-	{
-		CL_ReadPackets();
-	}
-
+	
 	// TODO: should be somewhere around here
 	//CL_FireEvents();
 	
@@ -630,6 +649,8 @@ void _Host_Frame(float time)
 
 	// build a refresh entity list
 	CL_EmitEntities();
+	
+	ClientDLL_Frame(host_frametime);
 
 	// update video
 	if(host_speeds.value)
@@ -664,7 +685,7 @@ void _Host_Frame(float time)
 	host_framecount++;
 }
 
-void Host_Frame(float time)
+int Host_Frame(float time, int iState, int *stateInfo)
 {
 	double time1, time2;
 	static double timetotal;
@@ -674,7 +695,7 @@ void Host_Frame(float time)
 	if(!host_profile.value)
 	{
 		_Host_Frame(time);
-		return;
+		return 1;
 	}
 
 	time1 = Sys_FloatTime();
@@ -685,7 +706,7 @@ void Host_Frame(float time)
 	timecount++;
 
 	if(timecount < 1000)
-		return;
+		return 0;
 
 	m = timetotal * 1000 / timecount;
 	timecount = 0;
@@ -698,6 +719,7 @@ void Host_Frame(float time)
 	}
 
 	Con_Printf("host_profile: %2i clients %2i msec\n", c, m);
+	return 1;
 }
 
 //============================================================================
@@ -786,9 +808,12 @@ void Host_Init(quakeparms_t *parms)
 	com_argc = parms->argc;
 	com_argv = parms->argv;
 
+	// TODO: check for -console/-toconsole/-dev startup args
+	
 	Memory_Init(parms->membase, parms->memsize);
 	Cbuf_Init();
 	Cmd_Init();
+	Cvar_Init();
 
 	V_Init();
 	Chase_Init();
@@ -798,21 +823,20 @@ void Host_Init(quakeparms_t *parms)
 	//Sys_Init ();
 
 	W_LoadWadFile("gfx.wad");
-	W_LoadWadFile("fonts.wad");
+	//W_LoadWadFile("fonts.wad"); // TODO
 
 	Key_Init();
 	Con_Init();
-	M_Init();
 	PR_Init();
 	Mod_Init();
 	NET_Init();
 	Netchan_Init();
 	SV_Init();
-	//Pmove_Init ();
+	Pmove_Init(&svpmove);
 
 	Con_Printf("Protocol version %d\n", PROTOCOL_VERSION);
-	//Con_Printf ("Exe version %s/%s (%s)\n", TODO); // Exe version 1.1.2.2/Stdio (tfc)
-	//Con_Printf ("Exe build: " __TIME__ " " __DATE__ "(%d)\n", buildnum()); // TODO
+	Con_Printf("Exe version %s/%s (%s)\n", "TODO", "TODO", com_gamedir); // Exe version 1.1.2.2/Stdio (tfc)
+	Con_Printf("Exe build: " __TIME__ " " __DATE__ " (%04d)\n", build_number()); // TODO
 	Con_Printf("%4.1f Mb heap\n", parms->memsize / (1024 * 1024.0));
 
 	R_InitTextures(); // needed even for dedicated servers
@@ -821,10 +845,13 @@ void Host_Init(quakeparms_t *parms)
 	{
 		host_basepal = (byte *)COM_LoadHunkFile("gfx/palette.lmp");
 		if(!host_basepal)
-			Sys_Error("Couldn't load gfx/palette.lmp");
+			Sys_Error("Host_Init: Couldn't load gfx/palette.lmp");
+		
+		// TODO: unused?
 		host_colormap = (byte *)COM_LoadHunkFile("gfx/colormap.lmp");
 		if(!host_colormap)
 			Sys_Error("Couldn't load gfx/colormap.lmp");
+		//
 
 #ifndef _WIN32 // on non win32, mouse comes before video for security reasons
 		IN_Init();
@@ -855,15 +882,23 @@ void Host_Init(quakeparms_t *parms)
 #endif
 
 		// GUI should be initialized before the client dll
-		//GUI_Init();
+		VGui_Startup();
 
 		// Initialize the client dll now
 		ClientDLL_Init();
 		
-		//Voice_RegisterCvars(); // TODO
+		Voice_RegisterCvars();
 	}
 
+	//Voice_LoadCodec("voice_speex");
 	Cbuf_InsertText("exec valve.rc\n");
+	
+	// TODO
+	//Cbuf_InsertText("exec language.cfg\n");
+	//Cbuf_InsertText("exec autoexec.cfg\n");
+	//Cbuf_InsertText("exec skill.cfg\n");
+	//Cbuf_InsertText("exec config.cfg\n");
+	//Cbuf_InsertText("exec userconfig.cfg\n");
 
 	Hunk_AllocName(0, "-HOST_HUNKLEVEL-");
 	host_hunklevel = Hunk_LowMark();
@@ -873,7 +908,8 @@ void Host_Init(quakeparms_t *parms)
 	host_initialized = true;
 
 	//Con_Printf ("\nServer Version %4.2f (Build %04d)\n\n", VERSION, build_number());
-	Sys_Printf("======== OGS Initialized =========\n"); // TODO: Con_Printf?
+	
+	//return true;
 }
 
 /*
@@ -901,9 +937,12 @@ void Host_Shutdown()
 	Host_WriteConfiguration();
 
 	ClientDLL_Shutdown();
-	//GUI_Shutdown();
+	
+	VGui_Shutdown();
 
 	CDAudio_Shutdown();
+	
+	SV_Shutdown();
 	NET_Shutdown();
 	S_Shutdown();
 	IN_Shutdown();

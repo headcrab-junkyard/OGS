@@ -61,10 +61,13 @@ void Host_Shutdown();
 void Host_Error(const char *error, ...);
 void Host_EndGame(const char *message, ...);
 //qboolean Host_SimulationTime(float time); // TODO: qw
-void Host_Frame(float time); // TODO: state, stateinfo
+int Host_Frame(float time, int iState, int *stateInfo);
 //void Host_ServerFrame(); // TODO: qw
 void Host_Quit_f();
 void Host_ClientCommands(const char *fmt, ...);
 void Host_ShutdownServer(qboolean crash);
 //void Host_WriteConfiguration ();
 void Host_UpdateStatus(float *fps, int *nActive, /*int *nSpectators*/ int *nMaxPlayers, /*const*/ char *pszMap);
+void Host_EndSection(const char *sName);
+
+void Host_InitializeGameDLL();
