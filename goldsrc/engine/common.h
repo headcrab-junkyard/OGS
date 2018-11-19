@@ -187,6 +187,7 @@ void COM_Init(const char *path); // TODO: nothing in qw
 void COM_InitArgv(int argc, char **argv);
 
 const char *COM_SkipPath(const char *pathname);
+int COM_ExpandFilename(const char *asFileName, char *asNameOutBuffer, int anOutBufferSize);
 void COM_StripExtension(const char *in, char *out);
 void COM_FileBase(const char *in, char *out);
 void COM_DefaultExtension(char *path, const char *extension);
@@ -196,14 +197,18 @@ char *va(const char *format, ...);
 
 //============================================================================
 
-extern int com_filesize;
+//extern int com_filesize;
 struct cache_user_s;
 
 extern char com_gamedir[MAX_OSPATH];
 
+byte *COM_LoadFile(const char *path, int usehunk, int *pLength); // TODO: was non const-corrent
+char *COM_ParseFile(char *data, char *token); // TODO
+void COM_FreeFile(void *buffer); // TODO
+
 void COM_WriteFile(const char *filename, void *data, int len);
-int COM_OpenFile(const char *filename, int *hndl); // TODO: not present in qw
-int COM_FOpenFile(const char *filename, FILE **file);
+//int COM_OpenFile(const char *filename, int *hndl); // TODO: not present in qw
+//int COM_FOpenFile(const char *filename, FILE **file);
 //void COM_CloseFile(int h); // TODO: void COM_CloseFile(FILE *h); in qw
 
 byte *COM_LoadStackFile(const char *path, void *buffer, int bufsize);
@@ -211,11 +216,18 @@ byte *COM_LoadTempFile(const char *path);
 byte *COM_LoadHunkFile(const char *path);
 void COM_LoadCacheFile(const char *path, struct cache_user_s *cu);
 
+byte *COM_LoadFileForMe(const char *sFileName, int *pLength);
+
+int COM_CompareFileTime(const char *sFileNameA, const char *sFileNameB, int *pCompare);
+
+void COM_AddAppDirectoryToSearchPath(const char *asBaseDir, const char *asAppName);
+
+//void COM_CreatePath(const char *path);
+
+void COM_GetGameDir(char *sGameDir);
+
 // TODO: qw
 /*
-void COM_CreatePath(const char *path);
-void COM_GameDir(const char *dir);
-
 unsigned Com_BlockChecksum(void *buffer, int length);
 void Com_BlockFullChecksum(void *buffer, int len, unsigned char *outbuf);
 byte COM_BlockSequenceCheckByte(byte *base, int length, int sequence, unsigned mapchecksum);
