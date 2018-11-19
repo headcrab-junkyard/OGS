@@ -8,11 +8,7 @@ endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-if(OGS_ENGINE_HW)
-	add_subdirectory(r_gl)
-else()
-	add_subdirectory(r_soft)
-endif()
+add_subdirectory(render)
 
 file(GLOB PROJECT_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/*.c
@@ -32,12 +28,12 @@ endif()
 
 add_library(${PROJECT_NAME} MODULE ${PROJECT_SOURCES})
 
-target_link_libraries(${PROJECT_NAME} ogs-interface)
+target_link_libraries(${PROJECT_NAME} ogs-interface ogs-mathlib)
 
 if(WIN32)
 	# NOTE: looks like wsock32 is loaded dynamically
 	# ws2_32
-	target_link_libraries(${PROJECT_NAME} wsock32 winmm dxguid.lib)
+	target_link_libraries(${PROJECT_NAME} wsock32 winmm dxguid)
 endif()
 
 if(NOT OGS_DEDICATED)
