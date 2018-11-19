@@ -505,6 +505,16 @@ void Con_DPrintf(const char *fmt, ...)
 	Con_Printf("%s", msg);
 }
 
+void Con_NPrintf(int anPos, const char *fmt, ...)
+{
+	// TODO
+};
+
+void Con_NXPrintf(struct con_nprint_s *apInfo, const char *fmt, ...)
+{
+	// TODO
+};
+
 /*
 ==================
 Con_SafePrintf
@@ -709,3 +719,9 @@ void Con_NotifyBox(const char *text)
 	key_dest = key_game;
 	realtime = 0; // put the cursor back to invisible
 }
+
+int Con_IsVisible()
+{
+	// TODO
+	return 0;
+};
