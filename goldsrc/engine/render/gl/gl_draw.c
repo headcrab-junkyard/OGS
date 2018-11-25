@@ -462,8 +462,8 @@ void Draw_Init(void)
 	conback->height = cb->height;
 	ncdata = cb->data;
 	conback->palette_colors = 256; // TODO: hardcode
-	conback->palette = (unsigned*)Z_Malloc(sizeof(unsigned) * conback->palette_colors);
-	Q_memcpy(conback->palette, cb->data + cb->width * cb->height + 2, sizeof(color24) * conback->palette_colors);
+	conback->palette = (byte*)Z_Malloc(3 * conback->palette_colors);
+	Q_memcpy(conback->palette, cb->data + cb->width * cb->height + 2, 3 * conback->palette_colors);
 #endif
 
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -1307,7 +1307,7 @@ done:;
 GL_Upload8
 ===============
 */
-void GL_Upload8(byte *data, unsigned *palette, int width, int height, qboolean mipmap, qboolean alpha)
+void GL_Upload8(byte *data, byte *palette, int width, int height, qboolean mipmap, qboolean alpha)
 {
 	static unsigned trans[640 * 480]; // FIXME, temporary
 	int i, s;
@@ -1326,7 +1326,9 @@ void GL_Upload8(byte *data, unsigned *palette, int width, int height, qboolean m
 			if(p == 255)
 				noalpha = false;
 			if(palette)
-				trans[i] = palette[p];
+			{
+				trans[i] = (palette[p * 3 + 0] << 0) | (palette[p * 3 + 1] << 8) | (palette[p * 3 + 2] << 16) | ((byte)255 << 24);
+			}
 			else
 				trans[i] = d_8to24table[p];
 		}
@@ -1342,10 +1344,10 @@ void GL_Upload8(byte *data, unsigned *palette, int width, int height, qboolean m
 		{
 			if(palette)
 			{
-				trans[i] = palette[data[i]];
-				trans[i + 1] = palette[data[i + 1]];
-				trans[i + 2] = palette[data[i + 2]];
-				trans[i + 3] = palette[data[i + 3]];
+				trans[i] = (palette[data[i] * 3 + 0] << 0) | (palette[data[i] * 3 + 1] << 8) | (palette[data[i] * 3 + 2] << 16) | ((byte)255 << 24);
+				trans[i + 1] = (palette[data[i + 1] * 3 + 0] << 0) | (palette[data[i + 1] * 3 + 1] << 8) | (palette[data[i + 1] * 3 + 2] << 16) | ((byte)255 << 24);
+				trans[i + 2] = (palette[data[i + 2] * 3 + 0] << 0) | (palette[data[i + 2] * 3 + 1] << 8) | (palette[data[i + 2] * 3 + 2] << 16) | ((byte)255 << 24);
+				trans[i + 3] = (palette[data[i + 3] * 3 + 0] << 0) | (palette[data[i + 3] * 3 + 1] << 8) | (palette[data[i + 3] * 3 + 2] << 16) | ((byte)255 << 24);
 			}
 			else
 			{
@@ -1371,7 +1373,7 @@ void GL_Upload8(byte *data, unsigned *palette, int width, int height, qboolean m
 GL_LoadTexture
 ================
 */
-int GL_LoadTexture(const char *identifier, int width, int height, byte *data, unsigned *palette, qboolean mipmap, qboolean alpha)
+int GL_LoadTexture(const char *identifier, int width, int height, byte *data, byte *palette, qboolean mipmap, qboolean alpha)
 {
 	int i;
 	gltexture_t *glt;
@@ -1426,8 +1428,8 @@ GL_LoadPicTexture
 int GL_LoadPicTexture(qpic_t *pic)
 {
 	pic->palette_colors = 256; // TODO: hardcode
-	pic->palette = (unsigned*)Z_Malloc(sizeof(unsigned) * pic->palette_colors);
-	Q_memcpy(pic->palette, pic->data + pic->width * pic->height + 2, sizeof(color24) * pic->palette_colors);
+	pic->palette = (byte*)Z_Malloc(3 * pic->palette_colors);
+	Q_memcpy(pic->palette, pic->data + (pic->width * pic->height) + 2, 3 * pic->palette_colors);
 	return GL_LoadTexture("", pic->width, pic->height, pic->data, pic->palette ? pic->palette : NULL, false, true);
 }
 
