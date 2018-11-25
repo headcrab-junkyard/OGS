@@ -20,7 +20,10 @@
 
 #pragma once
 
-typedef struct edict_s edict_t;
+#include "edict.h"
+#include "engine.h"
+
+//typedef struct edict_s edict_t;
 
 class CBaseEntity
 {
@@ -35,22 +38,22 @@ public:
 	virtual void Think()
 	{
 		if(mfnThinkCallback)
-			mfnThinkCallback();
+			(this->*mfnThinkCallback)();
 	};
 	virtual void Touch(CBaseEntity *other)
 	{
 		if(mfnTouchCallback)
-			mfnTouchCallback(other);
+			(this->*mfnTouchCallback)(other);
 	};
 	virtual void Use(CBaseEntity *other)
 	{
 		if(mfnUseCallback)
-			mfnUseCallback(other);
+			(this->*mfnUseCallback)(other);
 	};
 	virtual void Blocked(CBaseEntity *other)
 	{
 		if(mfnBlockedCallback)
-			mfnBlockedCallback(other);
+			(this->*mfnBlockedCallback)(other);
 	};
 	
 	virtual void Spawn(){}
@@ -71,47 +74,60 @@ public:
 	void SetKeyValue(const char *asKey, const char *asValue);
 	const char *GetKeyValue(const char *asKey) const;
 	
-	void SetHealth(float afHealth);
-	float GetHealth() const;
+	void SetHealth(float afHealth){self->v.health = afHealth;}
+	float GetHealth() const {return self->v.health;}
 	
 	//void SetMaxHealth(float afValue);
 	//float GetMaxHealth() const;
 	
-	void SetVelocity(const Vector3 &avVelocity);
-	const Vector3 &GetVelocity() const;
+	//void SetVelocity(const Vector3 &avVelocity);
+	//const Vector3 &GetVelocity() const;
 	
 	void SetAngles(const vec3_t avAngles);
-	vec3_t GetAngles();
+	//vec3_t GetAngles();
 	
-	void SetModel(const char *asName);
+	void SetModel(const char *asName)
+	{
+		gpEngine->pfnSetModel(self, asName);
+	};
 	const char *GetModel() const;
 	
-	void SetOrigin(const Vec3 &avOrigin);
-	const Vec3 &GetOrigin() const;
+	void SetOrigin(vec3_t avOrigin) //const Vec3 &avOrigin)
+	{
+		gpEngine->pfnSetOrigin(self, avOrigin);
+	};
+	//const Vec3 &GetOrigin() const;
 	
-	void SetSize(const CVec3 &avSize);
-	const Vec3 &GetSize() const;
+	void SetSize(vec3_t avMins, vec3_t avMaxs) //const CVec3 &avSize)
+	{
+		gpEngine->pfnSetSize(self, avMins, avMaxs);
+	};
+	//const Vec3 &GetSize() const;
 	
 	void SetMoveType(int anType){self->v.movetype = anType;}
 	int GetMoveType() const {return self->v.movetype;}
 	
 	void SetFlags(int anFlags){self->v.flags = anFlags;}
+	//void AddFlags(int anFlags){self->v.flags |= anFlags;}
 	int GetFlags() const {return self->v.flags;}
 	
 	void SetEffects(int anEffects){self->v.effects = anEffects;}
-	//void AddEffects();
+	//void AddEffects(int anEffects){self->v.effects |= anEffects;|
 	int GetEffects() const {return self->v.effects;}
 	
 	void EmitSound(int anChannel, const char *asSample, float afVolume, float afAttenuation, int anFlags, int anPitch)
 	{
-		gpEngine->pfnEmitSound(self, anChannel, asSample, afVolume, afAttenuation, anFlags, anPitch;
+		gpEngine->pfnEmitSound(self, anChannel, asSample, afVolume, afAttenuation, anFlags, anPitch);
 	};
 	
 	int GetWaterType() const {return self->v.watertype;}
 	int GetWaterLevel() const {return self->v.waterlevel;}
 	
-	void SetEnemy(CBaseEntity *apEnemy);
-	CBaseEntity *GetEnemy() const;
+	void SetOwner(CBaseEntity *apOwner){mpOwner = apOwner;}
+	CBaseEntity *GetOwner() const {return mpOwner;}
+	
+	void SetEnemy(CBaseEntity *apEnemy){mpEnemy = apEnemy;}
+	CBaseEntity *GetEnemy() const {return mpEnemy;}
 private:
 	edict_t *self{nullptr};
 	
@@ -119,4 +135,7 @@ private:
 	pfnTouchCallback mfnTouchCallback{nullptr};
 	pfnUseCallback mfnUseCallback{nullptr};
 	pfnBlockedCallback mfnBlockedCallback{nullptr};
+	
+	CBaseEntity *mpOwner{nullptr};
+	CBaseEntity *mpEnemy{nullptr};
 };
