@@ -46,7 +46,7 @@ typedef struct qpic_s
 	// own palette support
 	// TODO: these fields probably should be here (because they're present in a pic file)
 	short palette_colors; // Number of colors in a palette (can't be more than 256)
-	unsigned *palette; // TODO: color24 /*lbm*/palette[palette_colors][3]; // 8-bit RGB palette data // filestart + width*height*4 + 2?
+	/*color24*/ byte *palette; // TODO: color24 /*lbm*/palette[palette_colors][3]; // 8-bit RGB palette data // filestart + width*height*4 + 2?
 } qpic_t;
 
 typedef struct
