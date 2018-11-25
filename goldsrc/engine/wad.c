@@ -75,7 +75,7 @@ void W_LoadWadFile(const char *filename)
 
 	header = (wadinfo_t *)wad_base;
 
-	if(header->identification[0] != 'W' || header->identification[1] != 'A' || header->identification[2] != 'D' || (header->identification[3] != '2' || header->identification[3] != '3'))
+	if(header->identification[0] != 'W' || header->identification[1] != 'A' || header->identification[2] != 'D' || (header->identification[3] != '2' && header->identification[3] != '3'))
 		Sys_Error("Wad file %s doesn't have WAD2/WAD3 id\n", filename);
 
 	wad_numlumps = LittleLong(header->numlumps);
