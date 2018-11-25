@@ -52,7 +52,6 @@ public:
 
 	void Pause() override;
 	void Resume() override;
-
 private:
 	void Play(byte track, qboolean looping) /*override*/;
 	void Stop() /*override*/;
@@ -304,26 +303,26 @@ static void CD_f()
 
 	if(Q_strcasecmp(command, "on") == 0)
 	{
-		mbEnabled = true;
+		enabled = true;
 		return;
 	};
 
 	if(Q_strcasecmp(command, "off") == 0)
 	{
 		if(playing)
-			Stop();
-		mbEnabled = false;
+			CDAudio_Stop();
+		enabled = false;
 		return;
 	};
 
 	if(Q_strcasecmp(command, "reset") == 0)
 	{
-		mbEnabled = true;
+		enabled = true;
 		if(playing)
-			Stop();
+			CDAudio_Stop();
 		for(n = 0; n < 100; n++)
 			remap[n] = n;
-		GetAudioDiskInfo();
+		CDAudio_GetAudioDiskInfo();
 		return;
 	};
 
@@ -344,13 +343,13 @@ static void CD_f()
 
 	if(Q_strcasecmp(command, "close") == 0)
 	{
-		CloseDoor();
+		CDAudio_CloseDoor();
 		return;
 	};
 
 	if(!cdValid)
 	{
-		GetAudioDiskInfo();
+		CDAudio_GetAudioDiskInfo();
 		if(!cdValid)
 		{
 			Con_Printf("No CD in player.\n");
@@ -360,39 +359,39 @@ static void CD_f()
 
 	if(Q_strcasecmp(command, "play") == 0)
 	{
-		Play((byte)Q_atoi(Cmd_Argv(2)), false);
+		CDAudio_Play((byte)Q_atoi(Cmd_Argv(2)), false);
 		return;
 	};
 
 	if(Q_strcasecmp(command, "loop") == 0)
 	{
-		Play((byte)Q_atoi(Cmd_Argv(2)), true);
+		CDAudio_Play((byte)Q_atoi(Cmd_Argv(2)), true);
 		return;
 	};
 
 	if(Q_strcasecmp(command, "stop") == 0)
 	{
-		Stop();
+		CDAudio_Stop();
 		return;
 	};
 
 	if(Q_strcasecmp(command, "pause") == 0)
 	{
-		Pause();
+		CDAudio_Pause();
 		return;
 	};
 
 	if(Q_strcasecmp(command, "resume") == 0)
 	{
-		Resume();
+		CDAudio_Resume();
 		return;
 	};
 
 	if(Q_strcasecmp(command, "eject") == 0)
 	{
 		if(playing)
-			Stop();
-		Eject();
+			CDAudio_Stop();
+		CDAudio_Eject();
 		cdValid = false;
 		return;
 	};
@@ -424,7 +423,7 @@ extern "C" LONG CDAudio_MessageHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 		{
 			playing = false;
 			if(playLooping)
-				Play(playTrack, true);
+				CDAudio_Play(playTrack, true);
 		};
 		break;
 
@@ -434,7 +433,7 @@ extern "C" LONG CDAudio_MessageHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 
 	case MCI_NOTIFY_FAILURE:
 		Con_DPrintf("MCI_NOTIFY_FAILURE\n");
-		Stop();
+		CDAudio_Stop();
 		cdValid = false;
 		break;
 
