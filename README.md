@@ -31,11 +31,18 @@ For more information about the project you can visit its official [Wiki](https:/
 
 ## Mini-Q&A
 
-**Q: So no using of reverse-engineered code at all?**  
+**Q: What's this?**  
+**A:** This is a [GoldSource](https://en.wikipedia.org/wiki/GoldSrc) game engine reimplementation using only original id Tech 2 engine (NetQuake/QuakeWorld/Quake 2) sources (and 
+its forks) and no reverse-engineered code (like from ReHLDS or Xash3D)
+
+**Q: What's the purpose?**  
+**A:** If you can't see the purpose then you simply don't need it and you're just wasting your time here
+
+**Q: So no usage of reverse-engineered code at all?**  
 **A:** Nope, only backtrace logs and a lot of researching of original GS engine history
 
-**Q: How much the GoldSource engine is different from original Quake engine?**  
-**A:** Let's say it's pretty much a "dieselpunk" version of Quake engine
+**Q: How much the GoldSource engine is different from the original Quake engine?**  
+**A:** Let's say it's pretty much a "dieselpunk" version of the Quake engine
 
 **Q: What are the "backtrace logs"?**  
 **A:** Call stack of the latest called program functions/class methods before crash of the program. 
