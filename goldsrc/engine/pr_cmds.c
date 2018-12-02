@@ -1072,10 +1072,10 @@ int IndexOfEdict(const edict_t *pEnt)
 
 edict_t *PEntityOfEntIndex(int nIndex)
 {
-	if(nIndex < 0 || nIndex > sv.maxedicts)
+	if(nIndex < 0 || nIndex > sv.max_edicts)
 		return NULL;
 	
-	return sv.edicts[nIndex];
+	return &sv.edicts[nIndex];
 };
 
 edict_t *FindEntityByVars(struct entvars_s *pVars)
