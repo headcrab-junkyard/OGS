@@ -212,6 +212,7 @@ extern "C" {
 #include "bspfile.h"
 #include "vid.h"
 #include "sys.h"
+#include "mem.h"
 #include "filesystem_internal.h"
 #include "zone.h"
 #include "mathlib.h"
@@ -229,7 +230,7 @@ extern "C" {
 #include "cmd.h"
 #include "sbar.h"
 #include "sound.h"
-#include "vox.h" // TODO
+#include "vox.h"
 #include "render.h"
 #include "progs.h"
 #include "server.h"
@@ -237,10 +238,9 @@ extern "C" {
 //#include "client.h" // TODO: qw
 #include "cdll_int.h"
 
-#ifdef GLQUAKE
-#include "gl_model.h"
-#else
 #include "model.h"
+
+#ifndef GLQUAKE
 #include "d_iface.h"
 #endif
 
