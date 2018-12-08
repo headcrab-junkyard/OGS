@@ -1,16 +1,42 @@
+/*
+ * This file is part of OGS Engine
+ * Copyright (C) 2018 BlackPhrase
+ *
+ * OGS Engine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * OGS Engine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 /// @file
 
 #include <cstring>
 
-#include "eiface.h"
+#include "exports.h"
+#include "engine.h"
 
-#ifdef _WIN32
-	#define EXPORT [[dllexport]]
-#else
-	#define EXPORT [[visibility("default")]]
-#endif
+//
+// required prog functions
+//
+/*
 
-#define C_EXPORT extern "C" EXPORT
+void()          PutClientInServer;              // call after setting the parm1... parms
+
+void()          SetNewParms;                    // called when a client first connects to
+									// a server. sets parms so they can be
+									// saved off for restarts
+
+void()          SetChangeParms;                 // call to set parms for self so they can
+									// be saved for a level transition
+*/
 
 typedef struct globalvars_s globalvars_t;
 
@@ -50,7 +76,7 @@ extern void SpectatorThink(edict_t *pent);
 extern void Sys_Error_Game(const char *error);
 extern void PM_Init_Game(struct playermove_s *ppmove);
 extern void PM_Move_Game(struct playermove_s *ppmove, qboolean server);
-extern char PM_FindTextureType_Game(char *name);
+extern char PM_FindTextureType_Game(const char *name);
 extern void SetupVisibility(edict_t *pViewEntity, edict_t *pClientEnt, unsigned char **pvs, unsigned char **pas);
 extern void UpdateClientData(const edict_t *pent, int sendweapons, struct clientdata_s *pcd);
 extern int AddToFullPack(struct entity_state_s *state, int e, edict_t *pent, edict_t *host_edict, int hostflags, int player, unsigned char *pSet);
