@@ -1,30 +1,140 @@
+/*
+ * This file is part of OGS Engine
+ * Copyright (C) 2018 BlackPhrase
+ *
+ * OGS Engine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * OGS Engine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 /// @file
 
-#include "eiface.h"
-#include "custom.h" // TODO: temp?
-
-extern enginefuncs_t gEngFuncs;
+#include "exports.h"
+#include "engine.h"
+#include "BaseEntity.hpp"
 
 void GameInit()
 {
 	//gEngFuncs.pfnPrecacheModel("models/player.mdl"); // TODO: studio models are not supported yet...
 };
 
-int EntitySpawn(edict_t *pent){};
+int EntitySpawn(edict_t *pent)
+{
+	auto pPrivateData{gpEngine->pfnPvEntPrivateData(pent)};
+	
+	if(!pPrivateData)
+		return 0;
+	
+	auto pBaseEntity{reinterpret_cast<CBaseEntity*>(pPrivateData)};
+	
+	pBaseEntity->Spawn();
+	return 1;
+};
 
-void EntityThink(edict_t *pent){};
+void EntityThink(edict_t *pent)
+{
+	auto pPrivateData{gpEngine->pfnPvEntPrivateData(pent)};
+	
+	if(!pPrivateData)
+		return;
+	
+	auto pBaseEntity{reinterpret_cast<CBaseEntity*>(pPrivateData)};
+	
+	pBaseEntity->Think();
+};
 
-void EntityUse(edict_t *pent, edict_t *pother){};
+void EntityUse(edict_t *pent, edict_t *pother)
+{
+	auto pEntPrivateData{gpEngine->pfnPvEntPrivateData(pent)};
+	auto pOtherPrivateData{gpEngine->pfnPvEntPrivateData(pother)};
+	
+	if(!pEntPrivateData || !pOtherPrivateData)
+		return;
+	
+	auto pEntity{reinterpret_cast<CBaseEntity*>(pEntPrivateData)};
+	auto pOtherEntity{reinterpret_cast<CBaseEntity*>(pOtherPrivateData)};
+	
+	pEntity->Use(pOtherEntity);
+};
 
-void EntityTouch(edict_t *pent, edict_t *pother){};
+void EntityTouch(edict_t *pent, edict_t *pother)
+{
+	auto pEntPrivateData{gpEngine->pfnPvEntPrivateData(pent)};
+	auto pOtherPrivateData{gpEngine->pfnPvEntPrivateData(pother)};
+	
+	if(!pEntPrivateData || !pOtherPrivateData)
+		return;
+	
+	auto pEntity{reinterpret_cast<CBaseEntity*>(pEntPrivateData)};
+	auto pOtherEntity{reinterpret_cast<CBaseEntity*>(pOtherPrivateData)};
+	
+	pEntity->Touch(pOtherEntity);
+};
 
-void EntityBlocked(edict_t *pent, edict_t *pother){};
+void EntityBlocked(edict_t *pent, edict_t *pother)
+{
+	auto pEntPrivateData{gpEngine->pfnPvEntPrivateData(pent)};
+	auto pOtherPrivateData{gpEngine->pfnPvEntPrivateData(pother)};
+	
+	if(!pEntPrivateData || !pOtherPrivateData)
+		return;
+	
+	auto pEntity{reinterpret_cast<CBaseEntity*>(pEntPrivateData)};
+	auto pOtherEntity{reinterpret_cast<CBaseEntity*>(pOtherPrivateData)};
+	
+	pEntity->Blocked(pOtherEntity);
+};
 
-void EntityKeyValue(edict_t *pent, KeyValueData *pkvd){};
+void EntityKeyValue(edict_t *pent, KeyValueData *pkvd)
+{
+	auto pPrivateData{gpEngine->pfnPvEntPrivateData(pent)};
+	
+	if(!pPrivateData)
+		return;
+	
+	auto pBaseEntity{reinterpret_cast<CBaseEntity*>(pPrivateData)};
+	
+	//pkvd->bHandled = 0;
+	//pBaseEntity->HandleKeyValue(pkvd); // TODO
+	
+	//auto bHandled{pBaseEntity->HandleKeyValue(pkvd)};
+	//if(bHandled)
+		//pkvd->bHandled = 1;
+};
 
-void EntitySave(edict_t *pent, SAVERESTOREDATA *pSaveRestoreData){};
+void EntitySave(edict_t *pent, SAVERESTOREDATA *pSaveRestoreData)
+{
+	auto pPrivateData{gpEngine->pfnPvEntPrivateData(pent)};
+	
+	if(!pPrivateData)
+		return;
+	
+	auto pBaseEntity{reinterpret_cast<CBaseEntity*>(pPrivateData)};
+	
+	//pBaseEntity->Save(); // TODO
+};
 
-int EntityRestore(edict_t *pent, SAVERESTOREDATA *pSaveRestoreData, int globalentity){};
+int EntityRestore(edict_t *pent, SAVERESTOREDATA *pSaveRestoreData, int globalentity)
+{
+	auto pPrivateData{gpEngine->pfnPvEntPrivateData(pent)};
+	
+	if(!pPrivateData)
+		return 0;
+	
+	auto pBaseEntity{reinterpret_cast<CBaseEntity*>(pPrivateData)};
+	
+	//pBaseEntity->Restore(); // TODO
+	return 1;
+};
 
 void EntitySetAbsPos(edict_t *pent){};
 
@@ -38,108 +148,23 @@ void RestoreGlobalState(SAVERESTOREDATA *pSaveRestoreData){};
 
 void ResetGlobalState(){};
 
-qboolean ClientConnect(edict_t *pEntity, const char *name, const char *adr, char sRejectReason[128])
-{
-	return true;
-};
-
-void ClientDisconnect(edict_t *pclent){};
-
-void ClientKill(edict_t *pclent){};
-
-void ClientPutInServer(edict_t *pclent){};
-
-void ClientCommand(edict_t *pclent){};
-
-void ClientUserInfoChanged(edict_t *pclent, char *userinfo){};
-
-void ServerActivate(edict_t *edicts, int edictcount, int maxclients){};
-
-void ServerDeactivate(){};
-
-void PlayerPreThink(edict_t *pent){};
-
-void PlayerPostThink(edict_t *pent){};
-
-void StartFrame(){};
-
-void ParmsNewLevel(){}; // TODO: SetNewParms?
-
-void ParmsChangeLevel(){}; // TODO: SetChangeParms?
-
-const char *GetGameDescription()
-{
-	return "Stub (Null)";
-};
-
-void PlayerCustomization(edict_t *pPlayer, customization_t *pCustom){};
-
-void SpectatorConnect(edict_t *pent){};
-
-void SpectatorDisconnect(edict_t *pent){};
-
-void SpectatorThink(edict_t *pent){};
-
-void Sys_Error_Game(const char *error){};
-
 void PM_Init_Game(struct playermove_s *ppmove){};
 
 void PM_Move_Game(struct playermove_s *ppmove, qboolean server){};
 
-char PM_FindTextureType_Game(char *name)
+char PM_FindTextureType_Game(const char *name)
 {
 	return '\0';
-};
-
-void SetupVisibility(edict_t *pViewEntity, edict_t *pClientEnt, unsigned char **pvs, unsigned char **pas){};
-
-void UpdateClientData(const edict_t *pent, int sendweapons, struct clientdata_s *pcd){};
-
-int AddToFullPack(struct entity_state_s *state, int e, edict_t *pent, edict_t *host_edict, int hostflags, int player, unsigned char *pSet)
-{
-	return 0;
-};
-
-void CreateBaseline(int player, int entindex, struct entity_state_s *baseline, edict_t *entity, int playermodelindex, vec3_t player_mins, vec3_t player_maxs){};
-
-void RegisterEncoders(){};
-
-int GetWeaponData(edict_t *player, struct weapon_data_s *data)
-{
-	return 0;
-};
-
-void CmdStart(const edict_t *player, const struct usercmd_s *cmd, unsigned int random_seed){};
-
-void CmdEnd(const edict_t *player){};
-
-int ConnectionlessPacket(const struct netadr_s *net_from, const char *args, char *response_buffer, int *len)
-{
-	return 0;
-};
-
-int GetHullBounds(int hullnumber, float *mins, float *maxs)
-{
-	return 0;
-};
-
-void CreateInstancedBaselines(){};
-
-int InconsistentFile(const edict_t *player, const char *filename, char *disconnectmsg)
-{
-	return 0;
-};
-
-int AllowLagCompensation()
-{
-	return 0;
 };
 
 //
 
 void OnFreeEntPrivateData(edict_t *pent){};
 
-void GameShutdown(){};
+void GameShutdown()
+{
+	// NOTE: free resources here
+};
 
 int ShouldCollide(edict_t *pent, edict_t *pother)
 {
