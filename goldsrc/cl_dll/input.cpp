@@ -22,6 +22,11 @@
 #include <cstdlib>
 #include <cstring>
 
+extern "C"
+{
+#include "mathlib.h"
+};
+
 #include "input.h"
 #include "view.h"
 #include "usercmd.h"
