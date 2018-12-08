@@ -26,7 +26,7 @@ add_subdirectory(optional)
 add_subdirectory(dlls)
 
 add_subdirectory(filesystem)
-##add_subdirectory(engine)
+add_subdirectory(engine)
 add_subdirectory(dedicated)
 
 # If not building as dedicated server then build these modules too
