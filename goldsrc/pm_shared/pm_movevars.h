@@ -38,6 +38,9 @@ typedef struct movevars_s
 	float	bounce;
 	float	stepsize;
 	float	maxvelocity;
+	
+	float rollangle; // = cvar_t cl_rollangle
+	float rollspeed; // = cvar_t cl_rollspeed
 } movevars_t;
 
 extern movevars_t movevars;
