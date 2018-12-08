@@ -19,13 +19,16 @@
 /// @file
 
 #include "const.h"
-#include "cdll_int.h"
+#include "engine.h"
 #include "interface.h"
+#include "input.h"
 
 extern "C"
 {
 #include "pm_shared.h"
 };
+
+cl_enginefunc_t *gpEngine{nullptr};
 
 // TODO
 /*
@@ -37,12 +40,18 @@ int UserMsgHook_Test(const char *sName, int nSize, void *pBuf)
 
 int Initialize(cl_enginefunc_t *apEngFuncs, int anVersion)
 {
+	if(anVersion != CLDLL_INTERFACE_VERSION)
+		return 0;
+	
+	gpEngine = apEngFuncs;
+	
 	//gpEngine->pfnHookUserMsg("Test", UserMsgHook_Test);
-	return 0;
+	return 1;
 };
 
 void HUD_Init()
 {
+	InitInput();
 };
 
 int HUD_VidInit()
@@ -57,6 +66,7 @@ int HUD_Redraw(float time, int intermission)
 
 int HUD_UpdateClientData(struct clientdata_s *pData, float time)
 {
+	IN_Commands();
 	return 0;
 };
 
@@ -83,10 +93,6 @@ void IN_ActivateMouse()
 {
 };
 
-void IN_DeactivateMouse()
-{
-};
-
 void IN_MouseEvent(int mstate)
 {
 };
@@ -96,10 +102,6 @@ void IN_ClearStates()
 };
 
 void IN_Accumulate()
-{
-};
-
-void CL_CreateMove(float frametime, struct usercmd_s *cmd, int active)
 {
 };
 
