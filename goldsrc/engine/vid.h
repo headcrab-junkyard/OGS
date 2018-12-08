@@ -63,13 +63,13 @@ extern unsigned d_8to24table[256];
 extern void (*vid_menudrawfn)();
 extern void (*vid_menukeyfn)(int key);
 
-void VID_SetPalette(unsigned char *palette);
+void VID_SetPalette(unsigned short *palette);
 // called at startup and after any gamma correction
 
-void VID_ShiftPalette(unsigned char *palette);
+void VID_ShiftPalette(unsigned short *palette);
 // called for bonus and pain flashes, and for underwater color changes
 
-void VID_Init(unsigned char *palette);
+void VID_Init(unsigned short *palette);
 // Called at startup to set up translation tables, takes 256 8 bit RGB values
 // the palette data will go away after the call, so it must be copied off if
 // the video driver will need it again
@@ -80,7 +80,7 @@ void VID_Shutdown();
 void VID_Update(vrect_t *rects);
 // flushes the given rectangles from the view buffer to the screen
 
-int VID_SetMode(int modenum, unsigned char *palette);
+int VID_SetMode(int modenum, unsigned short *palette);
 // sets the mode; only used by the engine for resetting to mode 0 (the
 // base mode) on memory allocation failures
 
