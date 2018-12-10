@@ -55,3 +55,7 @@ void Sys_LowFPPrecision();
 void Sys_HighFPPrecision();
 
 void Sys_InitGame(const char *lpOrgCmdLine, const char *pBaseDir /*TODO: szBaseDir?*/, void *pwnd, int bIsDedicated);
+
+void Sys_InitArgv(char *lpCmdLine);
+
+void DedicatedExports_Print(const char *text);
