@@ -21,6 +21,8 @@
 
 #pragma once
 
+#include "const.h"
+
 typedef struct
 {
 	int	pad[28];
