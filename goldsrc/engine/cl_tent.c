@@ -151,16 +151,16 @@ void CL_ParseTEnt(void)
 		R_RunParticleEffect(pos, vec3_origin, 0, 10);
 #endif
 		if(rand() % 5)
-			S_StartSound(-1, 0, cl_sfx_tink1, pos, 1, 1);
+			S_StartDynamicSound(-1, 0, cl_sfx_tink1, pos, 1, 1, PITCH_NORM);
 		else
 		{
 			rnd = rand() & 3;
 			if(rnd == 1)
-				S_StartSound(-1, 0, cl_sfx_ric1, pos, 1, 1);
+				S_StartDynamicSound(-1, 0, cl_sfx_ric1, pos, 1, 1, PITCH_NORM);
 			else if(rnd == 2)
-				S_StartSound(-1, 0, cl_sfx_ric2, pos, 1, 1);
+				S_StartDynamicSound(-1, 0, cl_sfx_ric2, pos, 1, 1, PITCH_NORM);
 			else
-				S_StartSound(-1, 0, cl_sfx_ric3, pos, 1, 1);
+				S_StartDynamicSound(-1, 0, cl_sfx_ric3, pos, 1, 1, PITCH_NORM);
 		}
 		break;
 	case TE_SUPERSPIKE: // super spike hitting wall
@@ -170,16 +170,16 @@ void CL_ParseTEnt(void)
 		R_RunParticleEffect(pos, vec3_origin, 0, 20);
 
 		if(rand() % 5)
-			S_StartSound(-1, 0, cl_sfx_tink1, pos, 1, 1);
+			S_StartDynamicSound(-1, 0, cl_sfx_tink1, pos, 1, 1, PITCH_NORM);
 		else
 		{
 			rnd = rand() & 3;
 			if(rnd == 1)
-				S_StartSound(-1, 0, cl_sfx_ric1, pos, 1, 1);
+				S_StartDynamicSound(-1, 0, cl_sfx_ric1, pos, 1, 1, PITCH_NORM);
 			else if(rnd == 2)
-				S_StartSound(-1, 0, cl_sfx_ric2, pos, 1, 1);
+				S_StartDynamicSound(-1, 0, cl_sfx_ric2, pos, 1, 1, PITCH_NORM);
 			else
-				S_StartSound(-1, 0, cl_sfx_ric3, pos, 1, 1);
+				S_StartDynamicSound(-1, 0, cl_sfx_ric3, pos, 1, 1, PITCH_NORM);
 		}
 		break;
 
@@ -200,7 +200,7 @@ void CL_ParseTEnt(void)
 		dl->radius = 350;
 		dl->die = cl.time + 0.5;
 		dl->decay = 300;
-		S_StartSound(-1, 0, cl_sfx_r_exp3, pos, 1, 1);
+		S_StartDynamicSound(-1, 0, cl_sfx_r_exp3, pos, 1, 1, PITCH_NORM);
 		break;
 
 	case TE_TAREXPLOSION: // tarbaby explosion
@@ -209,7 +209,7 @@ void CL_ParseTEnt(void)
 		pos[2] = MSG_ReadCoord();
 		R_BlobExplosion(pos);
 
-		S_StartSound(-1, 0, cl_sfx_r_exp3, pos, 1, 1);
+		S_StartDynamicSound(-1, 0, cl_sfx_r_exp3, pos, 1, 1, PITCH_NORM);
 		break;
 
 	case TE_LIGHTNING1: // lightning bolts
@@ -256,7 +256,7 @@ void CL_ParseTEnt(void)
 		dl->radius = 350;
 		dl->die = cl.time + 0.5;
 		dl->decay = 300;
-		S_StartSound(-1, 0, cl_sfx_r_exp3, pos, 1, 1);
+		S_StartDynamicSound(-1, 0, cl_sfx_r_exp3, pos, 1, 1, PITCH_NORM);
 		break;
 
 #ifdef QUAKE2
@@ -264,7 +264,7 @@ void CL_ParseTEnt(void)
 		pos[0] = MSG_ReadCoord();
 		pos[1] = MSG_ReadCoord();
 		pos[2] = MSG_ReadCoord();
-		S_StartSound(-1, 0, cl_sfx_imp, pos, 1, 1);
+		S_StartDynamicSound(-1, 0, cl_sfx_imp, pos, 1, 1, PITCH_NORM);
 		break;
 
 	case TE_RAILTRAIL:
@@ -274,8 +274,8 @@ void CL_ParseTEnt(void)
 		endpos[0] = MSG_ReadCoord();
 		endpos[1] = MSG_ReadCoord();
 		endpos[2] = MSG_ReadCoord();
-		S_StartSound(-1, 0, cl_sfx_rail, pos, 1, 1);
-		S_StartSound(-1, 1, cl_sfx_r_exp3, endpos, 1, 1);
+		S_StartDynamicSound(-1, 0, cl_sfx_rail, pos, 1, 1, PITCH_NORM);
+		S_StartDynamicSound(-1, 1, cl_sfx_r_exp3, endpos, 1, 1, PITCH_NORM);
 		R_RocketTrail(pos, endpos, 0 + 128);
 		R_ParticleExplosion(endpos);
 		dl = CL_AllocDlight(-1);
