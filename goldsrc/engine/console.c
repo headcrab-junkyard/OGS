@@ -79,7 +79,7 @@ void Con_ToggleConsole_f()
 		}
 		else
 		{
-			M_Menu_Main_f();
+			Cbuf_AddText("menu_main"); //M_Menu_Main_f(); // TODO
 		}
 	}
 	else
