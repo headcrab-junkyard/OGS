@@ -320,7 +320,7 @@ qboolean GetPlayerUniqueID(int anPlayer, char asPlayerID[16])
 
 int GetTrackerIDForPlayer(int anPlayerSlot)
 {
-	if(anPlayer < 0 || anPlayer > cl.maxclients)
+	if(anPlayerSlot < 0 || anPlayerSlot > cl.maxclients)
 		return 0;
 	
 	// TODO
