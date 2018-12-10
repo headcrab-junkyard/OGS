@@ -39,9 +39,15 @@ solid_edge items only clip against bsp models.
 */
 
 cvar_t sv_friction = { "sv_friction", "4", false, true };
+cvar_t sv_waterfriction = { "sv_waterfriction", "4"};   
 cvar_t sv_stopspeed = { "sv_stopspeed", "100" };
 cvar_t sv_gravity = { "sv_gravity", "800", false, true };
 cvar_t sv_maxvelocity = { "sv_maxvelocity", "2000" };
+//cvar_t	sv_maxspeed			 = { "sv_maxspeed", "320"}; // TODO: already defined in sv_user
+cvar_t	sv_spectatormaxspeed = { "sv_spectatormaxspeed", "500"};
+//cvar_t	sv_accelerate		 = { "sv_accelerate", "10"}; // TODO: already defined in sv_user
+cvar_t	sv_airaccelerate	 = { "sv_airaccelerate", "0.7"};    
+cvar_t	sv_wateraccelerate	 = { "sv_wateraccelerate", "10"};
 cvar_t sv_nostep = { "sv_nostep", "0" };
 
 #ifdef QUAKE2
