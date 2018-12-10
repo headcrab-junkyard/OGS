@@ -497,6 +497,47 @@ void S_StartDynamicSound(int entnum, int entchannel, sfx_t *sfx, vec3_t origin, 
 	}
 }
 
+/*
+=================
+S_StaticSound
+=================
+*/
+void S_StartStaticSound(sfx_t *sfx, vec3_t origin, float vol, float attenuation, int pitch) // TODO: pitch support
+{
+	channel_t *ss;
+	sfxcache_t *sc;
+
+	if(!sfx)
+		return;
+
+	if(total_channels == MAX_CHANNELS)
+	{
+		Con_Printf("total_channels == MAX_CHANNELS\n");
+		return;
+	}
+
+	ss = &channels[total_channels];
+	total_channels++;
+
+	sc = S_LoadSound(sfx);
+	if(!sc)
+		return;
+
+	if(sc->loopstart == -1)
+	{
+		Con_Printf("Sound %s not looped\n", sfx->name);
+		return;
+	}
+
+	ss->sfx = sfx;
+	VectorCopy(origin, ss->origin);
+	ss->master_vol = vol;
+	ss->dist_mult = (attenuation / 64) / sound_nominal_clip_dist;
+	ss->end = paintedtime + sc->length;
+
+	SND_Spatialize(ss);
+}
+
 void S_StopSound(int entnum, int entchannel)
 {
 	int i;
@@ -588,47 +629,6 @@ void S_ClearBuffer()
 	{
 		Q_memset(shm->buffer, clear, shm->samples * shm->samplebits / 8);
 	}
-}
-
-/*
-=================
-S_StaticSound
-=================
-*/
-void S_StaticSound(sfx_t *sfx, vec3_t origin, float vol, float attenuation)
-{
-	channel_t *ss;
-	sfxcache_t *sc;
-
-	if(!sfx)
-		return;
-
-	if(total_channels == MAX_CHANNELS)
-	{
-		Con_Printf("total_channels == MAX_CHANNELS\n");
-		return;
-	}
-
-	ss = &channels[total_channels];
-	total_channels++;
-
-	sc = S_LoadSound(sfx);
-	if(!sc)
-		return;
-
-	if(sc->loopstart == -1)
-	{
-		Con_Printf("Sound %s not looped\n", sfx->name);
-		return;
-	}
-
-	ss->sfx = sfx;
-	VectorCopy(origin, ss->origin);
-	ss->master_vol = vol;
-	ss->dist_mult = (attenuation / 64) / sound_nominal_clip_dist;
-	ss->end = paintedtime + sc->length;
-
-	SND_Spatialize(ss);
 }
 
 //=============================================================================
