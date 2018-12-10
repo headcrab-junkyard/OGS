@@ -430,7 +430,7 @@ void SND_Spatialize(channel_t *ch)
 // Start a sound effect
 // =======================================================================
 
-void S_StartSound(int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float fvol, float attenuation)
+void S_StartDynamicSound(int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float fvol, float attenuation, int pitch) // TODO: pitch support
 {
 	channel_t *target_chan, *check;
 	sfxcache_t *sc;
@@ -899,7 +899,7 @@ void S_Play()
 		else
 			Q_strcpy(name, Cmd_Argv(i));
 		sfx = S_PrecacheSound(name);
-		S_StartSound(hash++, 0, sfx, listener_origin, 1.0, 1.0);
+		S_StartDynamicSound(hash++, 0, sfx, listener_origin, 1.0, 1.0, PITCH_NORM);
 		i++;
 	}
 }
@@ -924,7 +924,7 @@ void S_PlayVol()
 			Q_strcpy(name, Cmd_Argv(i));
 		sfx = S_PrecacheSound(name);
 		vol = Q_atof(Cmd_Argv(i + 1));
-		S_StartSound(hash++, 0, sfx, listener_origin, vol, 1.0);
+		S_StartDynamicSound(hash++, 0, sfx, listener_origin, vol, 1.0, PITCH_NORM);
 		i += 2;
 	}
 }
@@ -968,7 +968,7 @@ void S_LocalSound(const char *sound)
 		Con_Printf("S_LocalSound: can't cache %s\n", sound);
 		return;
 	}
-	S_StartSound(cl.viewentity, -1, sfx, vec3_origin, 1, 1);
+	S_StartDynamicSound(cl.viewentity, -1, sfx, vec3_origin, 1, 1, PITCH_NORM);
 }
 
 void S_ClearPrecache()

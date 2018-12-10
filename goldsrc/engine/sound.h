@@ -93,7 +93,7 @@ void S_Shutdown();
 
 void S_Startup();
 
-void S_StartSound(int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float fvol, float attenuation);
+void S_StartDynamicSound(int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float fvol, float attenuation, int pitch);
 void S_StaticSound(sfx_t *sfx, vec3_t origin, float vol, float attenuation);
 
 void S_StopSound(int entnum, int entchannel);
