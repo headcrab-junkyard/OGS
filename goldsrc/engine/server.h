@@ -233,7 +233,7 @@ void SV_Physics();
 qboolean SV_RunThink(edict_t *ent);
 
 void SV_StartParticle(vec3_t org, vec3_t dir, int color, int count);
-void SV_StartSound(edict_t *entity, int channel, const char *sample, int volume, float attenuation);
+void SV_StartSound(edict_t *entity, int channel, const char *sample, int volume, float attenuation, int pitch);
 
 void SV_DropClient(client_t *drop, qboolean crash, char *fmt, ...);
 
