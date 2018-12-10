@@ -39,6 +39,8 @@ void Con_DrawConsole(int lines, qboolean drawinput);
 void Con_Print(const char *txt);
 void Con_Printf(const char *fmt, ...);
 void Con_DPrintf(const char *fmt, ...);
+void Con_NPrintf(int anPos, const char *fmt, ...); // TODO
+void Con_NXPrintf(struct con_nprint_s *apInfo, const char *fmt, ...); // TODO
 void Con_SafePrintf(const char *fmt, ...);
 void Con_Clear_f();
 void Con_DrawNotify();
@@ -46,3 +48,5 @@ void Con_ClearNotify();
 void Con_ToggleConsole_f();
 
 void Con_NotifyBox(const char *text); // during startup for sound / cd warnings
+
+int Con_IsVisible(); // TODO

@@ -45,6 +45,7 @@ void Key_Event(int key, qboolean down);
 void Key_Init();
 void Key_WriteBindings(FILE *f);
 void Key_SetBinding(int keynum, const char *binding);
+const char *Key_LookupBinding(const char *asBinding);
 void Key_ClearStates();
 const char *Key_KeynumToString(int keynum);
 //int Key_GetKey (); // Q2
