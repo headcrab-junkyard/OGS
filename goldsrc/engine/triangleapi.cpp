@@ -21,6 +21,7 @@
 
 #include "quakedef.h"
 #include "triangleapi.h"
+#include "qgl.h"
 
 void Tri_RenderMode(int nMode)
 {
