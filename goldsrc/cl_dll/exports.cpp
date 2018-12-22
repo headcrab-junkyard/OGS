@@ -127,5 +127,5 @@ C_EXPORT void F(void /*cldll_func_t*/ *pv)
 		return;
 	
 	cldll_func_t *pcl_funcs = (cldll_func_t*)pv;
-	pcl_funcs = &gClientFuncs;
+	*pcl_funcs = gClientFuncs;
 };
