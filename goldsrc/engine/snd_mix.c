@@ -83,8 +83,8 @@ void S_TransferStereo16(int endtime)
 	{
 		reps = 0;
 
-		while((hresult = pDSBuf->lpVtbl->Lock(pDSBuf, 0, gSndBufSize, &pbuf, &dwSize,
-		                                      &pbuf2, &dwSize2, 0)) != DS_OK)
+		while((hresult = pDSBuf->lpVtbl->Lock(pDSBuf, 0, gSndBufSize, (void**)&pbuf, &dwSize,
+		                                      (void**)&pbuf2, &dwSize2, 0)) != DS_OK)
 		{
 			if(hresult != DSERR_BUFFERLOST)
 			{
@@ -170,8 +170,8 @@ void S_TransferPaintBuffer(int endtime)
 	{
 		reps = 0;
 
-		while((hresult = pDSBuf->lpVtbl->Lock(pDSBuf, 0, gSndBufSize, &pbuf, &dwSize,
-		                                      &pbuf2, &dwSize2, 0)) != DS_OK)
+		while((hresult = pDSBuf->lpVtbl->Lock(pDSBuf, 0, gSndBufSize, (void**)&pbuf, &dwSize,
+		                                      (void**)&pbuf2, &dwSize2, 0)) != DS_OK)
 		{
 			if(hresult != DSERR_BUFFERLOST)
 			{

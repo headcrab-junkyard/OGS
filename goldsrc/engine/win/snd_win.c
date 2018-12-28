@@ -360,7 +360,7 @@ sndinitstat SNDDMA_InitDirect()
 	// initialize the buffer
 	reps = 0;
 
-	while((hresult = pDSBuf->lpVtbl->Lock(pDSBuf, 0, gSndBufSize, &lpData, &dwSize, NULL, NULL, 0)) != DS_OK)
+	while((hresult = pDSBuf->lpVtbl->Lock(pDSBuf, 0, gSndBufSize, (void**)&lpData, &dwSize, NULL, NULL, 0)) != DS_OK)
 	{
 		if(hresult != DSERR_BUFFERLOST)
 		{
