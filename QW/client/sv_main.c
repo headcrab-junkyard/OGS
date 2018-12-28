@@ -40,29 +40,6 @@ qboolean ServerPaused()
 
 /*
 ================
-SV_Shutdown
-
-Quake calls this before calling Sys_Quit or Sys_Error
-================
-*/
-void SV_Shutdown ()
-{
-	Master_Shutdown ();
-	if (sv_logfile)
-	{
-		fclose (sv_logfile);
-		sv_logfile = NULL;
-	}
-	if (sv_fraglogfile)
-	{
-		fclose (sv_fraglogfile);
-		sv_logfile = NULL;
-	}
-	NET_Shutdown ();
-}
-
-/*
-================
 SV_Error
 
 Sends a datagram to all the clients informing them of the server crash,

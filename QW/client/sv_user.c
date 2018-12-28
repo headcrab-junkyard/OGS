@@ -275,27 +275,6 @@ void SV_Spawn_f ()
 	if (val)
 		val->_float = sv_maxspeed.value;
 
-//
-// force stats to be updated
-//
-	memset (host_client->stats, 0, sizeof(host_client->stats));
-
-	ClientReliableWrite_Begin (host_client, svc_updatestatlong, 6);
-	ClientReliableWrite_Byte (host_client, STAT_TOTALSECRETS);
-	ClientReliableWrite_Long (host_client, pr_global_struct->total_secrets);
-
-	ClientReliableWrite_Begin (host_client, svc_updatestatlong, 6);
-	ClientReliableWrite_Byte (host_client, STAT_TOTALMONSTERS);
-	ClientReliableWrite_Long (host_client, pr_global_struct->total_monsters);
-
-	ClientReliableWrite_Begin (host_client, svc_updatestatlong, 6);
-	ClientReliableWrite_Byte (host_client, STAT_SECRETS);
-	ClientReliableWrite_Long (host_client, pr_global_struct->found_secrets);
-
-	ClientReliableWrite_Begin (host_client, svc_updatestatlong, 6);
-	ClientReliableWrite_Byte (host_client, STAT_MONSTERS);
-	ClientReliableWrite_Long (host_client, pr_global_struct->killed_monsters);
-
 	// get the client to check and download skins
 	// when that is completed, a begin command will be issued
 	ClientReliableWrite_Begin (host_client, svc_stufftext, 8);
@@ -340,26 +319,6 @@ void SV_Begin_f ()
 	unsigned pmodel = 0, emodel = 0;
 	int		i;
 
-	if (host_client->spawned)
-		return; // don't begin again
-
-	host_client->spawned = true;
-
-	if (host_client->spectator)
-	{
-		
-	}
-	else
-	{
-		// client connection code
-	}
-
-	// clear the net statistics, because connecting gives a bogus picture
-	host_client->netchan.frame_latency = 0;
-	host_client->netchan.frame_rate = 0;
-	host_client->netchan.drop_count = 0;
-	host_client->netchan.good_count = 0;
-
 	//check he's not cheating
 
 	pmodel = atoi(Info_ValueForKey (host_client->userinfo, "pmodel"));
@@ -370,11 +329,12 @@ void SV_Begin_f ()
 		SV_BroadcastPrintf (PRINT_HIGH, "%s WARNING: non standard player/eyes model detected\n", host_client->name);
 
 	// if we are paused, tell the client
-	if (sv.paused) {
+	if (sv.paused)
+	{
 		ClientReliableWrite_Begin (host_client, svc_setpause, 2);
 		ClientReliableWrite_Byte (host_client, sv.paused);
 		SV_ClientPrintf(host_client, PRINT_HIGH, "Server is paused.\n");
-	}
+	};
 
 #if 0
 //
@@ -985,7 +945,7 @@ ucmd_t ucmds[] =
 	{"new", SV_New_f},
 	{"modellist", SV_Modellist_f},
 	{"soundlist", SV_Soundlist_f},
-	{"prespawn", SV_PreSpawn_f},
+	//{"prespawn", SV_PreSpawn_f},
 	{"spawn", SV_Spawn_f},
 
 	{"drop", SV_Drop_f},
