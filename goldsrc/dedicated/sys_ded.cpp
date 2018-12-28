@@ -32,17 +32,24 @@
 
 #include "interface.h"
 
+#ifdef _WIN32
+static bool sc_return_on_enter{false};
+HANDLE hinput, houtput;
+#endif
+
+IDedicatedServerAPI *gpEngine{nullptr}; // TODO: hacky way to access the command buffer...
+
 bool InitConsole()
 {
 // TODO
-/*
 #ifdef _WIN32
-	if(!AllocConsole())
-		Sys_Error("Couldn't create dedicated server console");
+	//if(!AllocConsole()) // TODO
+		//return false; // TODO: was Sys_Error("Couldn't create dedicated server console");
 
-	hinput = GetStdHandle (STD_INPUT_HANDLE);
-	houtput = GetStdHandle (STD_OUTPUT_HANDLE);
+	//hinput = GetStdHandle(STD_INPUT_HANDLE);
+	houtput = GetStdHandle(STD_OUTPUT_HANDLE);
 
+/*
 	// give QHOST a chance to hook into the console
 	if ((t = COM_CheckParm ("-HFILE")) > 0)
 	{
@@ -63,14 +70,11 @@ bool InitConsole()
 	};
 
 	InitConProc (hFile, heventParent, heventChild);
-#endif // _WIN32
 */
-};
+#endif // _WIN32
 
-#ifdef _WIN32
-static bool sc_return_on_enter{false};
-HANDLE hinput, houtput;
-#endif
+	return true;
+};
 
 char *Sys_ConsoleInput()
 {
@@ -250,7 +254,7 @@ void Host_GetConsoleCommands()
 		cmd = Sys_ConsoleInput();
 		if(!cmd)
 			break;
-		//Cbuf_AddText(cmd); // TODO
+		gpEngine->AddConsoleText(cmd);
 	};
 };
 
@@ -285,17 +289,20 @@ int RunServer() // void?
 	if(!pEngine)
 		return EXIT_FAILURE;
 	
+	gpEngine = pEngine;
+	
 	//char *basedir, char *cmdline, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory
 	if(!pEngine->Init(".", "TODO", Sys_GetFactoryThis(), pFSFactory))
 		return EXIT_FAILURE;
 	
 	// main loop
-	while(true)
+	bool bRunning{true};
+	while(bRunning)
 	{
 		// check for commands typed to the host
 		Host_GetConsoleCommands();
 		
-		pEngine->RunFrame();
+		bRunning = pEngine->RunFrame();
 	};
 	
 	pEngine->Shutdown();
