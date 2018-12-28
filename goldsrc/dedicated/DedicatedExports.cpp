@@ -18,7 +18,14 @@
 
 /// @file
 
+#include <cstring>
+
 #include "DedicatedExports.h"
+
+#ifdef _WIN32
+#include <windows.h>
+extern HANDLE houtput;
+#endif
 
 EXPOSE_SINGLE_INTERFACE(CDedicatedExports, IDedicatedExports, VENGINE_DEDICATEDEXPORTS_API_VERSION);
 
@@ -30,5 +37,10 @@ void CDedicatedExports::Sys_Printf(const char *text)
 	if(!text || !*text)
 		return;
 	
-	// TODO
+#ifdef _WIN32
+	DWORD dummy{0};
+	WriteFile(houtput, text, strlen(text), &dummy, nullptr);
+#else
+	printf("%s", text);
+#endif
 };
