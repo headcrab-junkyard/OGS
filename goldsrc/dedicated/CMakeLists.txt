@@ -7,7 +7,7 @@ file(GLOB PROJECT_SOURCES
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
-	OUTPUT_NAME "dedicated"
+	OUTPUT_NAME "ogsds"
 )
 
 target_link_libraries(${PROJECT_NAME} ogs-interface)
