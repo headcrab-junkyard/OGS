@@ -131,10 +131,11 @@ Sbar_DrawTransPic
 */
 void Sbar_DrawTransPic(int x, int y, qpic_t *pic)
 {
-	if(cl.gametype == GAME_DEATHMATCH)
-		Draw_TransPic(x /*+ ((vid.width - 320)>>1)*/, y + (vid.height - SBAR_HEIGHT), pic);
-	else
-		Draw_TransPic(x + ((vid.width - 320) >> 1), y + (vid.height - SBAR_HEIGHT), pic);
+	// TODO: ignoring for now
+	//if(cl.gametype == GAME_DEATHMATCH)
+		//Draw_TransPic(x /*+ ((vid.width - 320)>>1)*/, y + (vid.height - SBAR_HEIGHT), pic);
+	//else
+		//Draw_TransPic(x + ((vid.width - 320) >> 1), y + (vid.height - SBAR_HEIGHT), pic);
 }
 
 /*
