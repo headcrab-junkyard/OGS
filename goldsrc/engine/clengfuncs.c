@@ -98,14 +98,12 @@ void CenterPrint(const char *asMsg)
 
 int GetWindowCenterX()
 {
-	// TODO
-	return 0;
+	return window_center_x;
 };
 
 int GetWindowCenterY()
 {
-	// TODO
-	return 0;
+	return window_center_y;
 };
 
 void GetViewAngles(float *vAngles)
@@ -156,8 +154,7 @@ void GetMousePosition(int *apnX, int *apnY)
 
 int IsNoClipping()
 {
-	// TODO
-	return 0;
+	return noclip_anglehack;
 };
 
 struct cl_entity_s *GetLocalPlayer()
