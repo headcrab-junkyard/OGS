@@ -51,7 +51,14 @@ bool CApplication::Init()
 	if(!LoadFileSystemModule(FILESYSTEM_MODULE_NAME))
 		throw std::runtime_error(std::string("Failed to load the filesystem module (") + FILESYSTEM_MODULE_NAME + ")!");
 	
-	constexpr auto ENGINE_MODULE_NAME{"engine"}; // TODO: hw/sw
+	const char *ENGINE_MODULE_NAME{"hw"};
+	
+	// TODO: we're already in hardware by default, need to check the previous mode the engine was launched in
+	//if(strstr(msCmdLine, "-hw"))
+		//ENGINE_MODULE_NAME = "hw";
+	
+	if(strstr(msCmdLine, "-sw") && !strstr(msCmdLine, "-hw"))
+		ENGINE_MODULE_NAME = "sw";
 	
 	mpEngineLib = Sys_LoadModule(ENGINE_MODULE_NAME);
 	
