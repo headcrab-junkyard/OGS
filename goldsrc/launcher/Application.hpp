@@ -49,4 +49,6 @@ private:
 	bool mbRestart{false};
 protected:
 	virtual bool PostInit(){return true;}
+	
+	char msCmdLine[512]{};
 };

@@ -29,6 +29,4 @@ public:
 	~CWinApplication();
 	
 	bool PostInit() override;
-private:
-	char msCmdLine[512]{};
 };
