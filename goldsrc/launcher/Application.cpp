@@ -31,7 +31,7 @@ int CApplication::Run()
 		if(!Init())
 			return EXIT_FAILURE;
 		
-		if(!mpEngine->Run(nullptr, ".", "", "", Sys_GetFactoryThis(), mfnFSFactory))
+		if(!mpEngine->Run(nullptr, ".", msCmdLine, nullptr, Sys_GetFactoryThis(), mfnFSFactory))
 			return EXIT_FAILURE;
 		
 		mbRestart = false; // TODO
