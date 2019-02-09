@@ -13,6 +13,8 @@
 #include "net_api.h"
 #include "voicetweak.h"
 
+#include "winquake.h"
+
 void FillRGBA(int x, int y, int width, int height, int r, int g, int b, int a)
 {
 	// TODO
