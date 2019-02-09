@@ -34,6 +34,8 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
+#include "qgl.h"
+
 void GL_BeginRendering(int *x, int *y, int *width, int *height);
 void GL_EndRendering();
 
@@ -254,3 +256,55 @@ extern qboolean gl_mtexable;
 
 void GL_DisableMultitexture();
 void GL_EnableMultitexture();
+
+//
+// gl_warp.c
+//
+void GL_SubdivideSurface (msurface_t *fa);
+void EmitBothSkyLayers (msurface_t *fa);
+void EmitWaterPolys (msurface_t *fa);
+void EmitSkyPolys (msurface_t *fa);
+void R_DrawSkyChain (msurface_t *s);
+
+//
+// gl_draw.c
+//
+int GL_LoadPicTexture (qpic_t *pic);
+void GL_Set2D ();
+
+//
+// gl_rmain.c
+//
+qboolean R_CullBox (vec3_t mins, vec3_t maxs);
+void R_RotateForEntity (cl_entity_t *e);
+
+//
+// gl_rlight.c
+//
+void R_MarkLights (dlight_t *light, int bit, mnode_t *node);
+void R_AnimateLight ();
+void R_RenderDlights ();
+
+int R_LightPoint (vec3_t p);
+
+//
+// gl_refrag.c
+//
+void R_StoreEfrags (efrag_t **ppefrag);
+
+//
+// gl_mesh.c
+//
+void GL_MakeAliasModelDisplayLists (model_t *m, aliashdr_t *hdr);
+
+//
+// gl_rsurf.c
+//
+void R_DrawBrushModel (cl_entity_t *e);
+void R_DrawWorld ();
+void GL_BuildLightmaps ();
+
+//
+// gl_ngraph.c
+//
+//void R_NetGraph ();
