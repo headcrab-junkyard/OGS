@@ -23,10 +23,7 @@
 
 void CWalkMonster::StartGo()
 {
-	string	stemp;
-	entity	etemp;
-
-	self.origin_z = self.origin_z + 1;	// raise off floor a bit
+	self->origin_z = self->origin_z + 1;	// raise off floor a bit
 	gpEngine->pfnDropToFloor(self);
 	
 	if (!walkmove(0,0))
@@ -36,48 +33,49 @@ void CWalkMonster::StartGo()
 		dprint ("\n");
 	};
 	
-	self.takedamage = DAMAGE_AIM;
+	self->takedamage = DAMAGE_AIM;
 
-	self.ideal_yaw = self.angles * '0 1 0';
-	if (!self.yaw_speed)
-		self.yaw_speed = 20;
-	self.view_ofs = '0 0 25';
-	self.use = monster_use;
+	self->ideal_yaw = self->GetAngles() * '0 1 0';
+	if (!self->yaw_speed)
+		self->yaw_speed = 20;
+	self->view_ofs = '0 0 25';
+	self->SetUseCallback(monster_use);
 	
-	self.flags |= FL_MONSTER;
+	self->flags |= FL_MONSTER;
 	
-	if (self.target)
+	if (self->target)
 	{
-		self.goalentity = self.movetarget = find(world, targetname, self.target);
-		self.ideal_yaw = vectoyaw(self.goalentity.origin - self.origin);
-		if (!self.movetarget)
+		self->goalentity = self->movetarget = find(world, targetname, self->target);
+		self->ideal_yaw = vectoyaw(self->goalentity->GetOrigin() - self->GetOrigin());
+		if (!self->movetarget)
 		{
 			dprint ("Monster can't find target at ");
-			dprint (vtos(self.origin));
+			dprint (vtos(self->GetOrigin()));
 			dprint ("\n");
-		}
+		};
+
 // this used to be an objerror
-		if (self.movetarget.classname == "path_corner")
-			self.th_walk ();
+		if (self->movetarget->GetClassName() == "path_corner")
+			self->th_walk ();
 		else
-			self.pausetime = 99999999;
-			self.th_stand ();
+			self->pausetime = 99999999;
+			self->th_stand ();
 	}
 	else
 	{
-		self.pausetime = 99999999;
-		self.th_stand ();
+		self->pausetime = 99999999;
+		self->th_stand ();
 	};
 
 // spread think times so they don't all happen at same time
-	self.nextthink = self.nextthink + random()*0.5;
+	self->nextthink = self->nextthink + random() * 0.5;
 };
 
 void CWalkMonster::Start()
 {
 // delay drop to floor to make sure all doors have been spawned
 // spread think times so they don't all happen at same time
-	self.nextthink = self.nextthink + random()*0.5;
-	self.think = walkmonster_start_go;
-	total_monsters = total_monsters + 1;
+	self->SetNextThink(self->GetNextThink() + random() * 0.5);
+	self->SetThinkCallback(CWalkMonster::StartGo);
+	total_monsters++;
 };

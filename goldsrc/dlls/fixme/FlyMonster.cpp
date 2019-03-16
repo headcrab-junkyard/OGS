@@ -23,51 +23,53 @@
 
 void CFlyMonster::StartGo()
 {
-	self.takedamage = DAMAGE_AIM;
+	self->takedamage = DAMAGE_AIM;
 
-	self.ideal_yaw = self.angles * '0 1 0';
-	if (!self.yaw_speed)
-		self.yaw_speed = 10;
-	self.view_ofs = '0 0 25';
-	self.use = monster_use;
+	self->ideal_yaw = self->GetAngles() * '0 1 0';
 
-	self.flags = self.flags | FL_FLY;
-	self.flags = self.flags | FL_MONSTER;
+	if (!self->yaw_speed)
+		self->yaw_speed = 10;
+
+	self->view_ofs = '0 0 25';
+	self->SetUseCallback(monster_use);
+
+	self->flags = self.flags | FL_FLY;
+	self->flags = self.flags | FL_MONSTER;
 
 	if (!walkmove(0,0))
 	{
 		dprint ("flymonster in wall at: ");
-		dprint (vtos(self.origin));
+		dprint (vtos(self->GetOrigin()));
 		dprint ("\n");
 	};
 
-	if (self.target)
+	if (self->target)
 	{
-		self.goalentity = self.movetarget = find(world, targetname, self.target);
-		if (!self.movetarget)
+		self->goalentity = self->movetarget = find(world, targetname, self->target);
+		if (!self->movetarget)
 		{
 			dprint ("Monster can't find target at ");
-			dprint (vtos(self.origin));
+			dprint (vtos(self->GetOrigin()));
 			dprint ("\n");
 		}
 // this used to be an objerror
-		if (self.movetarget.classname == "path_corner")
-			self.th_walk ();
+		if (self->movetarget->GetClassName() == "path_corner")
+			self->th_walk ();
 		else
-			self.pausetime = 99999999;
-			self.th_stand ();
+			self->pausetime = 99999999;
+			self->th_stand ();
 	}
 	else
 	{
-		self.pausetime = 99999999;
-		self.th_stand ();
+		self->pausetime = 99999999;
+		self->th_stand ();
 	};
 };
 
 void CFlyMonster::Start()
 {
 // spread think times so they don't all happen at same time
-	self.nextthink = self.nextthink + random()*0.5;
-	self.think = flymonster_start_go;
-	total_monsters = total_monsters + 1;
+	self->SetNextThink(self->GetNextThink() + random() * 0.5);
+	self->SetThinkCallback(CFlyMonster::StartGo);
+	total_monsters++;
 };
