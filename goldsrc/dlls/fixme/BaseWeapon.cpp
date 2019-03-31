@@ -20,3 +20,39 @@
 
 #include "BaseWeapon.hpp"
 
+void CBaseWeapon::PrimaryAttack()
+{
+	GetOwner()->FireBullets();
+	WeaponSound(WEAPON_SINGLE);
+	SendWeaponAnim(ACT_VM_PRIMARYFIRE);
+	mfNextPrimaryAttack = gpGlobals->time + mfFireRate;
+	AddViewKick();
+};
+
+void CBaseWeapon::SecondaryAttack()
+{
+};
+
+void CBaseWeapon::DryFire()
+{
+	WeaponSound(WEAPON_EMPTY);
+	SendWeaponAnim(ACT_VM_DRYFIRE);
+	
+	mfNextPrimaryAttack = gpGlobals->time + 0.0f;
+};
+
+void CBaseWeapon::ItemPreFrame()
+{
+};
+
+void CBaseWeapon::ItemBusyFrame()
+{
+};
+
+void CBaseWeapon::ItemHolsterFrame()
+{
+};
+
+void CBaseWeapon::ItemPostFrame()
+{
+};
