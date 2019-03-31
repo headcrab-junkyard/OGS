@@ -30,7 +30,7 @@
 /*QUAKED info_null (0 0.5 0) (-4 -4 -4) (4 4 4)
 Used as a positional target for spotlights, etc.
 */
-void info_null()
+C_EXPORT void info_null(entvars_t *self)
 {
 	remove(self);
 };
@@ -38,7 +38,7 @@ void info_null()
 /*QUAKED info_notnull (0 0.5 0) (-4 -4 -4) (4 4 4)
 Used as a positional target for lightning.
 */
-void info_notnull()
+C_EXPORT void info_notnull(entvars_t *self)
 {
 };
 
@@ -91,7 +91,7 @@ Default style is 0
 If targeted, it will toggle between on or off.
 Makes steady fluorescent humming sound
 */
-void light_fluoro()
+C_EXPORT void light_fluoro(entvars_t *self)
 {
 	if (self.style >= 32)
 	{
@@ -112,7 +112,7 @@ Default light value is 300
 Default style is 10
 Makes sparking, broken fluorescent sound
 */
-void light_fluorospark()
+C_EXPORT void light_fluorospark(entvars_t *self)
 {
 	if (!self.style)
 		self.style = 10;
@@ -126,7 +126,7 @@ Sphere globe light.
 Default light value is 300
 Default style is 0
 */
-void light_globe()
+C_EXPORT void light_globe(entvars_t *self)
 {
 	gpEngine->pfnPrecacheModel ("sprites/s_light.spr");
 	gpEngine->pfnSetModel (self, "sprites/s_light.spr");
@@ -145,7 +145,7 @@ Short wall torch
 Default light value is 200
 Default style is 0
 */
-void light_torch_small_walltorch()
+C_EXPORT void light_torch_small_walltorch(entvars_t *self)
 {
 	gpEngine->pfnPrecacheModel ("models/flame.mdl");
 	gpEngine->pfnSetModel (self, "models/flame.mdl");
@@ -156,7 +156,7 @@ void light_torch_small_walltorch()
 /*QUAKED light_flame_large_yellow (0 1 0) (-10 -10 -12) (12 12 18)
 Large yellow flame ball
 */
-void light_flame_large_yellow()
+C_EXPORT void light_flame_large_yellow(entvars_t *self)
 {
 	gpEngine->pfnPrecacheModel ("models/flame2.mdl");
 	gpEngine->pfnSetModel (self, "models/flame2.mdl");
@@ -168,7 +168,7 @@ void light_flame_large_yellow()
 /*QUAKED light_flame_small_yellow (0 1 0) (-8 -8 -8) (8 8 8) START_OFF
 Small yellow flame ball
 */
-void light_flame_small_yellow()
+C_EXPORT void light_flame_small_yellow(entvars_t *self)
 {
 	gpEngine->pfnPrecacheModel ("models/flame2.mdl");
 	gpEngine->pfnSetModel (self, "models/flame2.mdl");
@@ -179,7 +179,7 @@ void light_flame_small_yellow()
 /*QUAKED light_flame_small_white (0 1 0) (-10 -10 -40) (10 10 40) START_OFF
 Small white flame ball
 */
-void light_flame_small_white()
+C_EXPORT void light_flame_small_white(entvars_t *self)
 {
 	gpEngine->pfnPrecacheModel ("models/flame2.mdl");
 	gpEngine->pfnSetModel (self, "models/flame2.mdl");
@@ -197,7 +197,7 @@ Lava Balls
 void fire_fly();
 void fire_touch();
 
-void misc_fireball()
+C_EXPORT void misc_fireball(entvars_t *self)
 {
 	gpEngine->pfnPrecacheModel ("models/lavaball.mdl");
 	self.classname = "fireball";
@@ -361,58 +361,57 @@ void Laser_Touch()
 	remove(self);   
 };
 
-void LaunchLaser(vector org, vector vec)
+void LaunchLaser(vec3_t org, vec3_t vec)
 {
-	vector  vec;
-		
-	if (self.classname == "monster_enforcer")
+	vec3_t vec;
+	
+	if (self->classname == "monster_enforcer")
 		sound (self, CHAN_WEAPON, "enforcer/enfire.wav", 1, ATTN_NORM);
 
 	vec = normalize(vec);
 	
-	newmis = spawn();
-	newmis.owner = self;
-	newmis.movetype = MOVETYPE_FLY;
-	newmis.solid = SOLID_BBOX;
-	newmis.effects = EF_DIMLIGHT;
+	newmis = gpEngine->pfnSpawn();
+	newmis->owner = self;
+	newmis->movetype = MOVETYPE_FLY;
+	newmis->solid = SOLID_BBOX;
+	newmis->effects = EF_DIMLIGHT;
 
 	gpEngine->pfnSetModel (newmis, "models/laser.mdl");
 	gpEngine->pfnSetSize (newmis, '0 0 0', '0 0 0');             
 
 	gpEngine->pfnSetOrigin (newmis, org);
 
-	newmis.velocity = vec * 600;
-	newmis.angles = vectoangles(newmis.velocity);
+	newmis->velocity = vec * 600;
+	newmis->angles = vectoangles(newmis->velocity);
 
-	newmis.nextthink = time + 5;
-	newmis.think = SUB_Remove;
-	newmis.touch = Laser_Touch;
+	newmis->nextthink = gpGlobals->time + 5;
+	newmis->think = SUB_Remove;
+	newmis->touch = Laser_Touch;
 };
 
 void spikeshooter_use()
 {
-	if (self.spawnflags & SPAWNFLAG_LASER)
+	if (self->spawnflags & SPAWNFLAG_LASER)
 	{
-		sound (self, CHAN_VOICE, "enforcer/enfire.wav", 1, ATTN_NORM);
-		LaunchLaser (self.origin, self.movedir);
+		self->EmitSound (CHAN_VOICE, "enforcer/enfire.wav", 1, ATTN_NORM);
+		LaunchLaser (self->GetOrigin(), self->GetMoveDir());
 	}
 	else
 	{
-		sound (self, CHAN_VOICE, "weapons/spike2.wav", 1, ATTN_NORM);
-		launch_spike (self.origin, self.movedir);
-		newmis.velocity = self.movedir * 500;
-		if (self.spawnflags & SPAWNFLAG_SUPERSPIKE)
-			newmis.touch = superspike_touch;
-	}
+		self->EmitSound (self, CHAN_VOICE, "weapons/spike2.wav", 1, ATTN_NORM);
+		launch_spike (self->GetOrigin(), self->GetMoveDir());
+		newmis->SetVelocity(self->GetMoveDir() * 500);
+		if (self->spawnflags & SPAWNFLAG_SUPERSPIKE)
+			newmis->SetTouchCallback(superspike_touch);
+	};
 };
 
 void shooter_think()
 {
 	spikeshooter_use ();
-	self.nextthink = time + self.wait;
-	newmis.velocity = self.movedir * 500;
+	self->SetNextThink(gpGlobals->time + self->wait);
+	newmis->SetVelocity(self->GetMoveDir() * 500);
 };
-
 
 /*QUAKED trap_spikeshooter (0 .5 .8) (-8 -8 -8) (8 8 8) superspike laser
 When triggered, fires a spike in the direction set in QuakeEd.
@@ -422,8 +421,8 @@ Laser is only for REGISTERED.
 void trap_spikeshooter()
 {
 	SetMovedir ();
-	self.use = spikeshooter_use;
-	if (self.spawnflags & SPAWNFLAG_LASER)
+	self->SetUseCallback(spikeshooter_use);
+	if (self->spawnflags & SPAWNFLAG_LASER)
 	{
 		gpEngine->pfnPrecacheModel ("models/laser.mdl");
 		
@@ -440,14 +439,14 @@ Continuously fires spikes.
 "wait" time between spike (1.0 default)
 "nextthink" delay before firing first spike, so multiple shooters can be stagered.
 */
-void trap_shooter()
+C_EXPORT void trap_shooter(entvars_t *self)
 {
 	trap_spikeshooter ();
 	
-	if (self.wait == 0)
-		self.wait = 1;
-	self.nextthink = self.nextthink + self.wait + self.ltime;
-	self.think = shooter_think;
+	if (self->wait == 0)
+		self->wait = 1;
+	self->nextthink = self->nextthink + self->wait + self->ltime;
+	self->think = shooter_think;
 };
 
 /*
@@ -466,16 +465,16 @@ void bubble_bob();
 testing air bubbles
 */
 
-void air_bubbles()
+C_EXPORT void air_bubbles(entvars_t *self)
 {
-	remove (self);
+	gpEngine->pfnRemove (self);
 };
 
 void make_bubbles()
 {
 	entity    bubble;
 
-	bubble = spawn();
+	bubble = gpEngine->pfnSpawn();
 	gpEngine->pfnSetModel (bubble, "sprites/s_bubble.spr");
 	setorigin (bubble, self.origin);
 	bubble.movetype = MOVETYPE_NOCLIP;
@@ -497,7 +496,7 @@ void make_bubbles()
 void bubble_split()
 {
 	entity    bubble;
-	bubble = spawn();
+	bubble = gpEngine->pfnSpawn();
 	
 	gpEngine->pfnSetModel (bubble, "sprites/s_bubble.spr");
 	setorigin (bubble, self.origin);
@@ -523,11 +522,11 @@ void bubble_split()
 
 void bubble_remove()
 {
-	if (other.classname == self.classname)
+	if (other->GetClassName() == self->GetClassName())
 	{
 //              dprint ("bump");
 		return;
-	}
+	};
 	remove(self);
 };
 
@@ -577,15 +576,14 @@ void bubble_bob()
 Just for the debugging level.  Don't use
 */
 
-void viewthing()
+C_EXPORT void viewthing(entvars_t *self)
 {
 	self.movetype = MOVETYPE_NONE;
 	self.solid = SOLID_NOT;
 	
 	gpEngine->pfnPrecacheModel ("models/player.mdl");
-	gpEngine->pfnSetModel (self, "models/player.mdl");
+	self->SetModel ("models/player.mdl");
 };
-
 
 /*
 ==============================================================================
@@ -604,60 +602,28 @@ void func_wall_use()
 /*QUAKED func_wall (0 .5 .8) ?
 This is just a solid wall if not inhibitted
 */
-void func_wall()
+C_EXPORT void func_wall(entvars_t *self)
 {
-	self.angles = '0 0 0';
-	self.movetype = MOVETYPE_PUSH;  // so it doesn't get pushed by anything
-	self.solid = SOLID_BSP;
-	self.use = func_wall_use;
+	self->angles = '0 0 0';
+	self->SetMoveType(MOVETYPE_PUSH);  // so it doesn't get pushed by anything
+	self->solid = SOLID_BSP;
+	self->SetUseCallback(func_wall_use);
 	
-	gpEngine->pfnSetModel (self, self.model);
+	self->SetModel (self.model);
 };
 
 /*QUAKED func_illusionary (0 .5 .8) ?
 A simple entity that looks solid but lets you walk through it.
 */
-void func_illusionary()
+C_EXPORT void func_illusionary(entvars_t *self)
 {
-	self.angles = '0 0 0';
-	self.movetype = MOVETYPE_NONE;
-	self.solid = SOLID_NOT;
+	self->SetAngles('0 0 0');
+	self->SetMoveType(MOVETYPE_NONE);
+	self->SetSolid(SOLID_NOT);
 	
-	gpEngine->pfnSetModel (self, self.model);
+	self->SetModel (self->GetModel());
 	
-	makestatic ();
-};
-
-/*QUAKED func_episodegate (0 .5 .8) ? E1 E2 E3 E4
-This bmodel will appear if the episode has allready been completed, so players can't reenter it.
-*/
-void func_episodegate()
-{
-	if (!(serverflags & self.spawnflags))
-		return;                 // can still enter episode
-
-	self.angles = '0 0 0';
-	self.movetype = MOVETYPE_PUSH;  // so it doesn't get pushed by anything
-	self.solid = SOLID_BSP;
-	self.use = func_wall_use;
-	
-	gpEngine->pfnSetModel (self, self.model);
-};
-
-/*QUAKED func_bossgate (0 .5 .8) ?
-This bmodel appears unless players have all of the episode sigils.
-*/
-void func_bossgate()
-{
-	if ( (serverflags & 15) == 15)
-		return;         // all episodes completed
-	
-	self.angles = '0 0 0';
-	self.movetype = MOVETYPE_PUSH;  // so it doesn't get pushed by anything
-	self.solid = SOLID_BSP;
-	self.use = func_wall_use;
-	
-	gpEngine->pfnSetModel (self, self.model);
+	gpEngine->pfnMakeStatic (this);
 };
 
 //============================================================================
@@ -667,7 +633,7 @@ void func_bossgate()
 void ambient_suck_wind()
 {
 	gpEngine->pfnPrecacheSound ("ambience/suck1.wav");
-	ambientsound (self.origin, "ambience/suck1.wav", 1, ATTN_STATIC);
+	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/suck1.wav", 1, ATTN_STATIC);
 };
 
 /*QUAKED ambient_drone (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
@@ -675,7 +641,7 @@ void ambient_suck_wind()
 void ambient_drone()
 {
 	gpEngine->pfnPrecacheSound ("ambience/drone6.wav");
-	ambientsound (self.origin, "ambience/drone6.wav", 0.5, ATTN_STATIC);
+	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/drone6.wav", 0.5, ATTN_STATIC);
 };
 
 /*QUAKED ambient_flouro_buzz (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
@@ -683,7 +649,7 @@ void ambient_drone()
 void ambient_flouro_buzz()
 {
 	gpEngine->pfnPrecacheSound ("ambience/buzz1.wav");
-	ambientsound (self.origin, "ambience/buzz1.wav", 1, ATTN_STATIC);
+	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/buzz1.wav", 1, ATTN_STATIC);
 };
 
 /*QUAKED ambient_drip (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
@@ -691,7 +657,7 @@ void ambient_flouro_buzz()
 void ambient_drip()
 {
 	gpEngine->pfnPrecacheSound ("ambience/drip1.wav");
-	ambientsound (self.origin, "ambience/drip1.wav", 0.5, ATTN_STATIC);
+	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/drip1.wav", 0.5, ATTN_STATIC);
 };
 
 /*QUAKED ambient_comp_hum (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
@@ -699,7 +665,7 @@ void ambient_drip()
 void ambient_comp_hum()
 {
 	gpEngine->pfnPrecacheSound ("ambience/comp1.wav");
-	ambientsound (self.origin, "ambience/comp1.wav", 1, ATTN_STATIC);
+	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/comp1.wav", 1, ATTN_STATIC);
 };
 
 /*QUAKED ambient_thunder (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
@@ -707,7 +673,7 @@ void ambient_comp_hum()
 void ambient_thunder()
 {
 	gpEngine->pfnPrecacheSound ("ambience/thunder1.wav");
-	ambientsound (self.origin, "ambience/thunder1.wav", 0.5, ATTN_STATIC);
+	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/thunder1.wav", 0.5, ATTN_STATIC);
 };
 
 /*QUAKED ambient_light_buzz (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
@@ -715,7 +681,7 @@ void ambient_thunder()
 void ambient_light_buzz()
 {
 	gpEngine->pfnPrecacheSound ("ambience/fl_hum1.wav");
-	ambientsound (self.origin, "ambience/fl_hum1.wav", 0.5, ATTN_STATIC);
+	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/fl_hum1.wav", 0.5, ATTN_STATIC);
 };
 
 /*QUAKED ambient_swamp1 (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
@@ -723,7 +689,7 @@ void ambient_light_buzz()
 void ambient_swamp1()
 {
 	gpEngine->pfnPrecacheSound ("ambience/swamp1.wav");
-	ambientsound (self.origin, "ambience/swamp1.wav", 0.5, ATTN_STATIC);
+	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/swamp1.wav", 0.5, ATTN_STATIC);
 };
 
 /*QUAKED ambient_swamp2 (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
@@ -731,30 +697,12 @@ void ambient_swamp1()
 void ambient_swamp2()
 {
 	gpEngine->pfnPrecacheSound ("ambience/swamp2.wav");
-	ambientsound (self.origin, "ambience/swamp2.wav", 0.5, ATTN_STATIC);
+	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/swamp2.wav", 0.5, ATTN_STATIC);
 };
 
 //============================================================================
 
-void noise_think()
-{
-	self.nextthink = time + 0.5;
-	
-	sound (self, 1, "enforcer/enfire.wav", 1, ATTN_NORM);
-	sound (self, 2, "enforcer/enfstop.wav", 1, ATTN_NORM);
-	sound (self, 3, "enforcer/sight1.wav", 1, ATTN_NORM);
-	sound (self, 4, "enforcer/sight2.wav", 1, ATTN_NORM);
-	sound (self, 5, "enforcer/sight3.wav", 1, ATTN_NORM);
-	sound (self, 6, "enforcer/sight4.wav", 1, ATTN_NORM);
-	sound (self, 7, "enforcer/pain1.wav", 1, ATTN_NORM);
-};
-
-/*QUAKED misc_noisemaker (1 0.5 0) (-10 -10 -10) (10 10 10)
-
-For optimzation testing, starts a lot of sounds.
-*/
-
-void misc_noisemaker()
+void CNoiseMaker::Spawn()
 {
 	gpEngine->pfnPrecacheSound ("enforcer/enfire.wav");
 	gpEngine->pfnPrecacheSound ("enforcer/enfstop.wav");
@@ -767,6 +715,28 @@ void misc_noisemaker()
 	gpEngine->pfnPrecacheSound ("enforcer/death1.wav");
 	gpEngine->pfnPrecacheSound ("enforcer/idle1.wav");
 
-	self.nextthink = time + 0.1 + random();
-	self.think = noise_think;
+	self->SetNextThink(gpGlobals->time + 0.1 + random());
+	self->SetThinkCallback(CNoiseMaker::Think);
+};
+
+void CNoiseMaker::Think()
+{
+	self->SetNextThink(gpGlobals->time + 0.5);
+	
+	self->EmitSound(1, "enforcer/enfire.wav", 1, ATTN_NORM);
+	self->EmitSound(2, "enforcer/enfstop.wav", 1, ATTN_NORM);
+	self->EmitSound(3, "enforcer/sight1.wav", 1, ATTN_NORM);
+	self->EmitSound(4, "enforcer/sight2.wav", 1, ATTN_NORM);
+	self->EmitSound(5, "enforcer/sight3.wav", 1, ATTN_NORM);
+	self->EmitSound(6, "enforcer/sight4.wav", 1, ATTN_NORM);
+	self->EmitSound(7, "enforcer/pain1.wav", 1, ATTN_NORM);
+};
+
+/*QUAKED misc_noisemaker (1 0.5 0) (-10 -10 -10) (10 10 10)
+
+For optimzation testing, starts a lot of sounds.
+*/
+C_EXPORT void misc_noisemaker(entvars_t *self)
+{
+	CNoiseMaker::Spawn();
 };

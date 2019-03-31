@@ -27,20 +27,20 @@
 
 /// @file
 
-void SUB_Null()
+void CBaseEntity::SUB_Null()
 {
 };
 
-void SUB_Remove(edict_t *self)
+void CBaseEntity::SUB_Remove()
 {
-	remove(self);
+	gpEngine->pfnRemove(self);
 };
 
 /*
 QuakeEd only writes a single float for angles (bad idea), so up and down are
 just constant angles.
 */
-vector SetMovedir(edict_t *self)
+vec3_t SetMovedir(edict_t *self)
 {
 	if (self->v.angles == '0 -1 0')
 		self->v.movedir = '0 0 1';
@@ -48,7 +48,7 @@ vector SetMovedir(edict_t *self)
 		self->v.movedir = '0 0 -1';
 	else
 	{
-		makevectors(self->v.angles);
+		gpEngine->pfnMakeVectors(self->v.angles);
 		self->v.movedir = v_forward;
 	};
 	
@@ -67,8 +67,8 @@ void InitTrigger(edict_t *self)
 	if (self->v.angles != '0 0 0')
 		SetMovedir (self);
 	self->v.solid = SOLID_TRIGGER;
-	gpEngine->pfnSetModel (self, self->v.model);	// set size and link into world
-	self->v.movetype = MOVETYPE_NONE;
+	self->SetModel (self->v.model);	// set size and link into world
+	self->SetMoveType(MOVETYPE_NONE);
 	self->v.modelindex = 0;
 	self->v.model = "";
 };
@@ -208,11 +208,11 @@ void SUB_CalcAngleMoveDone()
 
 //=============================================================================
 
-void DelayThink()
+void CBaseEntity::DelayThink() // TODO: CBaseDelay
 {
-	activator = self.enemy;
-	SUB_UseTargets ();
-	remove(self);
+	activator = self->GetEnemy();
+	SUB_UseTargets (activator);
+	gpEngine->pfnRemove(self);
 };
 
 /*
@@ -234,7 +234,7 @@ match (string)self.target and call their .use function
 
 ==============================
 */
-void SUB_UseTargets()
+void CBaseEntity::SUB_UseTargets(CBaseEntity *activator) // TODO: CBaseDelay
 {
 	entity t, stemp, otemp, act;
 
