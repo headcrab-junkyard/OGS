@@ -16,6 +16,11 @@
 
     See file, 'COPYING', for details.
 */
+
+/// @file
+
+#include "BaseMonster.hpp"
+
 /*
 ==============================================================================
 
@@ -23,6 +28,8 @@ ZOMBIE
 
 ==============================================================================
 */
+
+/*
 $cd /raid/quake/id1/models/zombie
 
 $origin	0 0 24
@@ -67,6 +74,7 @@ $frame paine20 paine21 paine22 paine23 paine24 paine25 paine26 paine27 paine28
 $frame paine29 paine30
 
 $frame cruc_1 cruc_2 cruc_3 cruc_4 cruc_5 cruc_6
+*/
 
 float	SPAWN_CRUCIFIED	= 1;
 
@@ -155,21 +163,22 @@ ATTACKS
 =============================================================================
 */
 
-void() ZombieGrenadeTouch =
+void ZombieGrenadeTouch(CBaseEntity *other)
 {
-	if (other == self.owner)
-		return;		// don't explode on owner
-	if (other.takedamage)
-	{
-		T_Damage (other, self, self.owner, 10 );
-		sound (self, CHAN_WEAPON, "zombie/z_hit.wav", 1, ATTN_NORM);
-		remove (self);
+	// don't explode on owner
+	if (other == self->GetOwner())
 		return;
-	}
-	sound (self, CHAN_WEAPON, "zombie/z_miss.wav", 1, ATTN_NORM);	// bounce sound
-	self.velocity = '0 0 0';
-	self.avelocity = '0 0 0';
-	self.touch = SUB_Remove;
+	if (other->takedamage)
+	{
+		T_Damage (other, self, self->GetOwner(), 10 );
+		self->EmitSound (CHAN_WEAPON, "zombie/z_hit.wav", 1, ATTN_NORM);
+		gpEngine->pfnRemove (self);
+		return;
+	};
+	self->EmitSound (CHAN_WEAPON, "zombie/z_miss.wav", 1, ATTN_NORM);	// bounce sound
+	self->SetVelocity('0 0 0');
+	self->avelocity = '0 0 0';
+	self->SetTouchCallback(SUB_Remove);
 };
 
 /*
@@ -177,20 +186,20 @@ void() ZombieGrenadeTouch =
 ZombieFireGrenade
 ================
 */
-void(vector st) ZombieFireGrenade =
+void ZombieFireGrenade(vec3_t st)
 {
-	local	entity missile, mpuff;
-	local	vector	org;
+	entity missile, mpuff;
+	vec3_t org;
 
-	sound (self, CHAN_WEAPON, "zombie/z_shot1.wav", 1, ATTN_NORM);
+	self->EmitSound(CHAN_WEAPON, "zombie/z_shot1.wav", 1, ATTN_NORM);
 
-	missile = spawn ();
-	missile.owner = self;
-	missile.movetype = MOVETYPE_BOUNCE;
-	missile.solid = SOLID_BBOX;
+	missile = gpEngine->pfnSpawn ();
+	missile->SetOwner(self);
+	missileSetMoveType(MOVETYPE_BOUNCE);
+	missile->solid = SOLID_BBOX;
 
 // calc org
-	org = self.origin + st_x * v_forward + st_y * v_right + (st_z - 24) * v_up;
+	org = self->GetOrigin() + st_x * v_forward + st_y * v_right + (st_z - 24) * v_up;
 	
 // set missile speed	
 
@@ -202,17 +211,16 @@ void(vector st) ZombieFireGrenade =
 
 	missile.avelocity = '3000 1000 2000';
 
-	missile.touch = ZombieGrenadeTouch;
+	missile->SetTouchCallback(ZombieGrenadeTouch);
 	
 // set missile duration
-	missile.nextthink = time + 2.5;
-	missile.think = SUB_Remove;
+	missile->SetNextThink(gpGlobals->time + 2.5);
+	missile->SetThinkCallback(SUB_Remove);
 
-	setmodel (missile, "progs/zom_gib.mdl");
-	setsize (missile, '0 0 0', '0 0 0');		
-	setorigin (missile, org);
+	missile->SetModel("progs/zom_gib.mdl");
+	missile->SetSize('0 0 0', '0 0 0');		
+	missile->SetOrigin(org);
 };
-
 
 void() zombie_atta1		=[	$atta1,		zombie_atta2	] {ai_face();};
 void() zombie_atta2		=[	$atta2,		zombie_atta3	] {ai_face();};
@@ -256,11 +264,9 @@ void() zombie_attc10	=[	$attc10,	zombie_attc11	] {ai_face();};
 void() zombie_attc11	=[	$attc11,	zombie_attc12	] {ai_face();};
 void() zombie_attc12	=[	$attc12,	zombie_run1		] {ai_face();ZombieFireGrenade('-12 -19 29');};
 
-void() zombie_missile =
+void zombie_missile()
 {
-	local float	r;
-	
-	r = random();
+	float r = random();
 	
 	if (r < 0.3)
 		zombie_atta1 ();
@@ -269,7 +275,6 @@ void() zombie_missile =
 	else
 		zombie_attc1 ();
 };
-
 
 /*
 =============================================================================
@@ -402,13 +407,21 @@ void() zombie_paine28	=[	$paine28,	zombie_paine29	] {ai_pain(1);};
 void() zombie_paine29	=[	$paine29,	zombie_paine30	] {};
 void() zombie_paine30	=[	$paine30,	zombie_run1		] {};
 
-void() zombie_die =
+class CMonsterZombie : public CBaseMonster
 {
-	sound (self, CHAN_VOICE, "zombie/z_gib.wav", 1, ATTN_NORM);
-	ThrowHead ("progs/h_zombie.mdl", self.health);
-	ThrowGib ("progs/gib1.mdl", self.health);
-	ThrowGib ("progs/gib2.mdl", self.health);
-	ThrowGib ("progs/gib3.mdl", self.health);
+public:
+	void Pain(CBaseEntity *attacker, float take);
+	void Die();
+};
+
+void CMonsterZombie::Die()
+{
+	self->EmitSound(CHAN_VOICE, "zombie/z_gib.wav", 1, ATTN_NORM);
+
+	ThrowHead ("progs/h_zombie.mdl", self->GetHealth());
+	ThrowGib ("progs/gib1.mdl", self->GetHealth());
+	ThrowGib ("progs/gib2.mdl", self->GetHealth());
+	ThrowGib ("progs/gib3.mdl", self->GetHealth());
 };
 
 /*
@@ -430,43 +443,43 @@ A hit of less than 10 points of damage (winged by a shotgun) will be ignored.
 FIXME: don't use pain_finished because of nightmare hack
 =================
 */
-void(entity attacker, float take) zombie_pain =
+void CMonsterZombie::Pain(CBaseEntity *attacker, float take)
 {
-	local float r;
+	float r;
 
-	self.health = 60;		// allways reset health
+	self->SetHealth(60); // always reset health
 
 	if (take < 9)
 		return;				// totally ignore
 
-	if (self.inpain == 2)
+	if (self->inpain == 2)
 		return;			// down on ground, so don't reset any counters
 
 // go down immediately if a big enough hit
 	if (take >= 25)
 	{
-		self.inpain = 2;
+		self->inpain = 2;
 		zombie_paine1 ();
 		return;
-	}
+	};
 	
-	if (self.inpain)
+	if (self->inpain)
 	{
 // if hit again in next gre seconds while not in pain frames, definately drop
-		self.pain_finished = time + 3;
+		self.pain_finished = gpGlobals->time + 3;
 		return;			// currently going through an animation, don't change
-	}
+	};
 	
-	if (self.pain_finished > time)
+	if (self->pain_finished > time)
 	{
 // hit again, so drop down
-		self.inpain = 2;
+		self->inpain = 2;
 		zombie_paine1 ();
 		return;
-	}
+	};
 
 // gp into one of the fast pain animations	
-	self.inpain = 1;
+	self->inpain = 1;
 
 	r = random();
 	if (r < 0.25)
@@ -485,47 +498,47 @@ void(entity attacker, float take) zombie_pain =
 
 If crucified, stick the bounding box 12 pixels back into a wall to look right.
 */
-void() monster_zombie =
+C_EXPORT void monster_zombie(entvars_t *self)
 {
 	if (deathmatch)
 	{
-		remove(self);
+		gpEngine->pfnRemove(self);
 		return;
-	}
+	};
 
-	precache_model ("progs/zombie.mdl");
-	precache_model ("progs/h_zombie.mdl");
-	precache_model ("progs/zom_gib.mdl");
+	gpEngine->pfnPrecacheModel ("progs/zombie.mdl");
+	gpEngine->pfnPrecacheModel ("progs/h_zombie.mdl");
+	gpEngine->pfnPrecacheModel ("progs/zom_gib.mdl");
 
-	precache_sound ("zombie/z_idle.wav");
-	precache_sound ("zombie/z_idle1.wav");
-	precache_sound ("zombie/z_shot1.wav");
-	precache_sound ("zombie/z_gib.wav");
-	precache_sound ("zombie/z_pain.wav");
-	precache_sound ("zombie/z_pain1.wav");
-	precache_sound ("zombie/z_fall.wav");
-	precache_sound ("zombie/z_miss.wav");
-	precache_sound ("zombie/z_hit.wav");
-	precache_sound ("zombie/idle_w2.wav");
+	gpEngine->pfnPrecacheSound ("zombie/z_idle.wav");
+	gpEngine->pfnPrecacheSound ("zombie/z_idle1.wav");
+	gpEngine->pfnPrecacheSound ("zombie/z_shot1.wav");
+	gpEngine->pfnPrecacheSound ("zombie/z_gib.wav");
+	gpEngine->pfnPrecacheSound ("zombie/z_pain.wav");
+	gpEngine->pfnPrecacheSound ("zombie/z_pain1.wav");
+	gpEngine->pfnPrecacheSound ("zombie/z_fall.wav");
+	gpEngine->pfnPrecacheSound("zombie/z_miss.wav");
+	gpEngine->pfnPrecacheSound ("zombie/z_hit.wav");
+	gpEngine->pfnPrecacheSound ("zombie/idle_w2.wav");
 
-	self.solid = SOLID_SLIDEBOX;
-	self.movetype = MOVETYPE_STEP;
+	self->solid = SOLID_SLIDEBOX;
+	self->SetMoveType(MOVETYPE_STEP);
 
-	setmodel (self, "progs/zombie.mdl");
+	self->SetModel("progs/zombie.mdl");
 
-	setsize (self, '-16 -16 -24', '16 16 40');
-	self.health = 60;
+	self->SetSize('-16 -16 -24', '16 16 40');
+	self->SetHealth(60);
 
 	self.th_stand = zombie_stand1;
 	self.th_walk = zombie_walk1;
 	self.th_run = zombie_run1;
-	self.th_pain = zombie_pain;
-	self.th_die = zombie_die;
+	self.th_pain = CMonsterZombie::Pain;
+	self.th_die = CMonsterZombie::Die;
 	self.th_missile = zombie_missile;
 
-	if (self.spawnflags & SPAWN_CRUCIFIED)
+	if (self->spawnflags & SPAWN_CRUCIFIED)
 	{
-		self.movetype = MOVETYPE_NONE;
+		self->SetMoveType(MOVETYPE_NONE);
 		zombie_cruc1 ();
 	}
 	else
