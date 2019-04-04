@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018-2019 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "progdefs.h"
 #include "mathlib.h"
 #include "edict.h"
+#include "Game.hpp"
 
 void set_suicide_frame(entvars_t *self);
 
@@ -37,16 +38,7 @@ called when a player connects to a server
 */
 qboolean ClientConnect(edict_t *pEntity, const char *name, const char *adr, char sRejectReason[128])
 {
-/*
-	bprint (PRINT_HIGH, pEntity->v.netname);
-	bprint (PRINT_HIGH, " entered the game\n");
-*/
-
-	// a client connecting during an intermission can cause problems
-	//if(intermission_running)
-		//GotoNextMap();
-	
-	return true;
+	return gpGame->GetRules()->HandleClientConnect(ToBaseEntity(pEntity), name, adr, sRejectReason);
 };
 
 /*
@@ -58,15 +50,7 @@ called when a player disconnects from a server
 */
 void ClientDisconnect(edict_t *self)
 {
-/*
-	// let everyone else know
-	bprint (PRINT_HIGH, self->v.netname);
-		bprint (PRINT_HIGH, " left the game with ");
-		bprint (PRINT_HIGH, ftos(self->v.frags));
-		bprint (PRINT_HIGH, " frags\n");
-	gpEngine->pfnEmitSound (self, CHAN_BODY, "player/tornoff2.wav", 1, ATTN_NONE);
-	set_suicide_frame (self->v);
-*/
+	gpGame->GetRules()->HandleClientDisconnect(ToBaseEntity(self));
 };
 
 // called by ClientKill and DeadThink
