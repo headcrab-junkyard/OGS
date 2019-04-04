@@ -22,6 +22,7 @@
 
 #include "quakedef.h"
 #include "r_local.h"
+#include "ref_params.h"
 
 /*
 
@@ -555,7 +556,63 @@ the entity origin, so any view position inside that will be valid
 */
 extern vrect_t scr_vrect;
 
-void V_RenderView(void)
+ref_params_t ref; // TODO: temp
+
+void V_SetupRefParams(ref_params_t *params)
+{
+	VectorCopy(vec3_origin, params->vieworg);
+	VectorCopy(vec3_origin, params->viewangles);
+	
+	VectorCopy(vec3_origin, params->forward);
+	VectorCopy(vec3_origin, params->right);
+	VectorCopy(vec3_origin, params->up);
+	
+	params->frametime = host_frametime;
+	params->time = cl.time;
+	
+	params->intermission = cl.intermission;
+	params->paused = cl.paused;
+	params->spectator = 0;
+	params->onground = cl.onground;
+	params->waterlevel = 0;
+	
+	VectorCopy(cl.velocity, params->simvel);
+	VectorCopy(vec3_origin, params->simorg);
+	
+	vec3_t vViewHeight;
+	vViewHeight[2] = cl.viewheight;
+	VectorCopy(vViewHeight, params->viewheight);
+	
+	params->idealpitch = cl.idealpitch;
+	
+	VectorCopy(cl.viewangles, params->cl_viewangles);
+	
+	params->health = cl.stats[STAT_HEALTH];
+	
+	VectorCopy(vec3_origin, params->crosshairangle);
+	
+	params->viewsize = scr_viewsize.value;
+	
+	VectorCopy(cl.punchangle, params->punchangle);
+	
+	params->maxclients = cl.maxclients; //sv.maxclients;
+	params->viewentity = cl.viewentity;
+	params->playernum = cl.playernum;
+	params->max_entities = 100;
+	params->demoplayback = cls.demoplayback;
+	params->hardware = 1;
+	params->smoothing = 0;
+	
+	params->cmd = &cl.frames[cls.netchan.outgoing_sequence & UPDATE_MASK].cmd;
+	params->movevars = clpmove.movevars;
+	
+	params->viewport[0] = params->viewport[1] = params->viewport[2] = params->viewport[3] = 0;
+	
+	params->nextView = 0;
+	params->onlyClientDraw = 0;
+};
+
+void V_RenderView()
 {
 	if(con_forcedup)
 		return;
@@ -568,8 +625,14 @@ void V_RenderView(void)
 		Cvar_Set("scr_ofsz", "0");
 	}
 
-	ClientDLL_CalcRefdef(NULL); // TODO
+	V_SetupRefParams(&ref);
+	
+	ClientDLL_CalcRefdef(&ref);
 
+	// TODO: temp?
+	VectorCopy(ref.vieworg, r_refdef.vieworg);
+	VectorCopy(ref.viewangles, r_refdef.viewangles);
+	
 	R_PushDlights();
 
 	if(lcd_x.value)
