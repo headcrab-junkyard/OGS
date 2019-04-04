@@ -20,6 +20,7 @@
 
 #pragma once
 
+struct IGameSetup;
 struct IGameRules;
 class CGameWorld;
 
@@ -29,7 +30,7 @@ extern CGame *gpGame;
 class CGame
 {
 public:
-	CGame(IGameRules *apRules, CGameWorld *apWorld);
+	CGame(IGameSetup *apSetup);
 	~CGame();
 	
 	void Init();
