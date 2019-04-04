@@ -21,6 +21,7 @@
 #include "exports.h"
 #include "engine.h"
 #include "BaseEntity.hpp"
+#include "Game.hpp"
 #include "GameSetup_Default.hpp"
 
 inline CBaseEntity *ToBaseEntity(edict_t *apEdict)
@@ -42,6 +43,9 @@ void GameInit()
 {
 	auto pGameSetup{new CGameSetup_Default()}; // TODO
 	
+	// Initialize the game (master) class
+	if(!gpGame)
+		gpGame = new CGame(pGameSetup->CreateRules(), pGameSetup->CreateWorld());
 	//gEngFuncs.pfnPrecacheModel("models/player.mdl"); // TODO: studio models are not supported yet...
 	
 	gpGame->Init();
