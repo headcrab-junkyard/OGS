@@ -22,6 +22,12 @@ struct IGameRules
 	///
 	virtual void LevelShutdown() = 0;
 	
+	///
+	virtual bool HandleClientConnect(CBaseEntity *apEntity, const char *asName, const char *asAdr, char sRejectReason[128]) = 0;
+	
+	///
+	virtual void HandleClientDisconnect(CBaseEntity *apEntity) = 0;
+	
 	// TODO
 	/*
 	Difficulty levels
