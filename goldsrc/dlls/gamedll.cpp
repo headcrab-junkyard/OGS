@@ -44,69 +44,32 @@ void GameInit()
 
 int EntitySpawn(edict_t *pent)
 {
-	auto pPrivateData{gpEngine->pfnPvEntPrivateData(pent)};
+	auto pBaseEntity{ToBaseEntity(pent)};
 	
-	if(!pPrivateData)
-		return 0;
+	if(pBaseEntity)
+		pBaseEntity->Spawn();
 	
-	auto pBaseEntity{reinterpret_cast<CBaseEntity*>(pPrivateData)};
-	
-	pBaseEntity->Spawn();
 	return 1;
 };
 
 void EntityThink(edict_t *pent)
 {
-	auto pPrivateData{gpEngine->pfnPvEntPrivateData(pent)};
-	
-	if(!pPrivateData)
-		return;
-	
-	auto pBaseEntity{reinterpret_cast<CBaseEntity*>(pPrivateData)};
-	
-	pBaseEntity->Think();
+	ToBaseEntity(pent)->Think();
 };
 
 void EntityUse(edict_t *pent, edict_t *pother)
 {
-	auto pEntPrivateData{gpEngine->pfnPvEntPrivateData(pent)};
-	auto pOtherPrivateData{gpEngine->pfnPvEntPrivateData(pother)};
-	
-	if(!pEntPrivateData || !pOtherPrivateData)
-		return;
-	
-	auto pEntity{reinterpret_cast<CBaseEntity*>(pEntPrivateData)};
-	auto pOtherEntity{reinterpret_cast<CBaseEntity*>(pOtherPrivateData)};
-	
-	pEntity->Use(pOtherEntity);
+	ToBaseEntity(pent)->Use(ToBaseEntity(pother));
 };
 
 void EntityTouch(edict_t *pent, edict_t *pother)
 {
-	auto pEntPrivateData{gpEngine->pfnPvEntPrivateData(pent)};
-	auto pOtherPrivateData{gpEngine->pfnPvEntPrivateData(pother)};
-	
-	if(!pEntPrivateData || !pOtherPrivateData)
-		return;
-	
-	auto pEntity{reinterpret_cast<CBaseEntity*>(pEntPrivateData)};
-	auto pOtherEntity{reinterpret_cast<CBaseEntity*>(pOtherPrivateData)};
-	
-	pEntity->Touch(pOtherEntity);
+	ToBaseEntity(pent)->Touch(ToBaseEntity(pother));
 };
 
 void EntityBlocked(edict_t *pent, edict_t *pother)
 {
-	auto pEntPrivateData{gpEngine->pfnPvEntPrivateData(pent)};
-	auto pOtherPrivateData{gpEngine->pfnPvEntPrivateData(pother)};
-	
-	if(!pEntPrivateData || !pOtherPrivateData)
-		return;
-	
-	auto pEntity{reinterpret_cast<CBaseEntity*>(pEntPrivateData)};
-	auto pOtherEntity{reinterpret_cast<CBaseEntity*>(pOtherPrivateData)};
-	
-	pEntity->Blocked(pOtherEntity);
+	ToBaseEntity(pent)->Blocked(ToBaseEntity(pother));
 };
 
 void EntityKeyValue(edict_t *pent, KeyValueData *pkvd)
@@ -128,26 +91,12 @@ void EntityKeyValue(edict_t *pent, KeyValueData *pkvd)
 
 void EntitySave(edict_t *pent, SAVERESTOREDATA *pSaveRestoreData)
 {
-	auto pPrivateData{gpEngine->pfnPvEntPrivateData(pent)};
-	
-	if(!pPrivateData)
-		return;
-	
-	auto pBaseEntity{reinterpret_cast<CBaseEntity*>(pPrivateData)};
-	
-	//pBaseEntity->Save(); // TODO
+	//ToBaseEntity(pent)->Save(); // TODO
 };
 
 int EntityRestore(edict_t *pent, SAVERESTOREDATA *pSaveRestoreData, int globalentity)
 {
-	auto pPrivateData{gpEngine->pfnPvEntPrivateData(pent)};
-	
-	if(!pPrivateData)
-		return 0;
-	
-	auto pBaseEntity{reinterpret_cast<CBaseEntity*>(pPrivateData)};
-	
-	//pBaseEntity->Restore(); // TODO
+	//ToBaseEntity(pent)->Restore(); // TODO
 	return 1;
 };
 
