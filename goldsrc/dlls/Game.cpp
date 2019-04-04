@@ -23,7 +23,7 @@
 
 CGame *gpGame = nullptr; // TODO
 
-CGame::CGame(IGameSetup *apSetup) : mpRules(apSetup->CreateRules()), mpWorld(apSetup->CreateWorld()){}
+CGame::CGame(IGameRules *apRules, CGameWorld *apWorld) : mpRules(apRules), mpWorld(apWorld){}
 
 CGame::~CGame() = default;
 

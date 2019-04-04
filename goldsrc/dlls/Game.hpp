@@ -30,7 +30,7 @@ extern CGame *gpGame;
 class CGame
 {
 public:
-	CGame(IGameSetup *apSetup);
+	CGame(IGameRules *apRules, CGameWorld *apWorld);
 	~CGame();
 	
 	void Init();
