@@ -22,6 +22,21 @@
 #include "engine.h"
 #include "BaseEntity.hpp"
 
+inline CBaseEntity *ToBaseEntity(edict_t *apEdict)
+{
+	auto pPrivateData{gpEngine->pfnPvEntPrivateData(apEdict)};
+	
+	if(!pPrivateData)
+		return nullptr;
+	
+	auto pBaseEntity{reinterpret_cast<CBaseEntity*>(pPrivateData)};
+	
+	if(!pBaseEntity)
+		return nullptr;
+	
+	return pBaseEntity;
+};
+
 void GameInit()
 {
 	//gEngFuncs.pfnPrecacheModel("models/player.mdl"); // TODO: studio models are not supported yet...
