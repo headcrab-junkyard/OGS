@@ -40,6 +40,8 @@ inline CBaseEntity *ToBaseEntity(edict_t *apEdict)
 void GameInit()
 {
 	//gEngFuncs.pfnPrecacheModel("models/player.mdl"); // TODO: studio models are not supported yet...
+	
+	gpGame->Init();
 };
 
 int EntitySpawn(edict_t *pent)
@@ -127,12 +129,12 @@ void OnFreeEntPrivateData(edict_t *pent){};
 
 void GameShutdown()
 {
-	// NOTE: free resources here
+	gpGame->Shutdown();
 };
 
 int ShouldCollide(edict_t *pent, edict_t *pother)
 {
-	return 0;
+	return gpGame->GetRules()->ShouldCollide(ToBaseEntity(pent), ToBaseEntity(pother));
 };
 
 void CvarValue(const edict_t *pent, const char *value){};
