@@ -1,25 +1,27 @@
 /*
-===========================================================================
-Copyright (C) 1999-2005 Id Software, Inc.
+ * This file is part of OGS Engine
+ * Copyright (C) 1999-2005 Id Software, Inc.
+ * Copyright (C) 2019 BlackPhrase
+ *
+ * OGS Engine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * OGS Engine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
+ */
 
-This file is part of Quake III Arena source code.
+/// @file
 
-Quake III Arena source code is free software; you can redistribute it
-and/or modify it under the terms of the GNU General Public License as
-published by the Free Software Foundation; either version 2 of the License,
-or (at your option) any later version.
-
-Quake III Arena source code is distributed in the hope that it will be
-useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Foobar; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-===========================================================================
-*/
-#include "q_shared.h"
+#include "mathlib/angles.h"
+#include "mathlib/matrix.h"
+//#include "q_shared.h"
 #include <float.h>
 
 angles_t ang_zero( 0.0f, 0.0f, 0.0f );
@@ -59,13 +61,13 @@ void toAngles( quat_t &src, angles_t &dst ) {
 	toAngles( temp, dst );
 }
 
-void toAngles( idVec3_t &src, angles_t &dst ) {
+void toAngles( idVec3 &src, angles_t &dst ) {
 	dst.pitch	= src[ 0 ];
 	dst.yaw		= src[ 1 ];
 	dst.roll	= src[ 2 ];
 }
 
-void angles_t::toVectors( idVec3_t *forward, idVec3_t *right, idVec3_t *up ) {
+void angles_t::toVectors( idVec3 *forward, idVec3 *right, idVec3 *up ) {
 	float			angle;
 	static float	sr, sp, sy, cr, cp, cy; // static to help MS compiler fp bugs
 	
@@ -94,7 +96,7 @@ void angles_t::toVectors( idVec3_t *forward, idVec3_t *right, idVec3_t *up ) {
 	}
 }
 
-idVec3_t angles_t::toForward( void ) {
+idVec3 angles_t::toForward( void ) {
 	float			angle;
 	static float	sp, sy, cp, cy; // static to help MS compiler fp bugs
 	
@@ -106,7 +108,7 @@ idVec3_t angles_t::toForward( void ) {
 	sp = sin( angle );
 	cp = cos( angle );
 
-	return idVec3_t( cp * cy, cp * sy, -sp );
+	return idVec3( cp * cy, cp * sy, -sp );
 }
 
 /*

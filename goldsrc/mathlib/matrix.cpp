@@ -1,27 +1,32 @@
 /*
-===========================================================================
-Copyright (C) 1999-2005 Id Software, Inc.
+ * This file is part of OGS Engine
+ * Copyright (C) 1999-2005 Id Software, Inc.
+ * Copyright (C) 2019 BlackPhrase
+ *
+ * OGS Engine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * OGS Engine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
+ */
 
-This file is part of Quake III Arena source code.
+/// @file
 
-Quake III Arena source code is free software; you can redistribute it
-and/or modify it under the terms of the GNU General Public License as
-published by the Free Software Foundation; either version 2 of the License,
-or (at your option) any later version.
+#include <cassert>
 
-Quake III Arena source code is distributed in the hope that it will be
-useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+#include "mathlib/matrix.h"
+#include "mathlib/quaternion.h"
+#include "mathlib/angles.h"
+//#include "q_shared.h"
 
-You should have received a copy of the GNU General Public License
-along with Foobar; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-===========================================================================
-*/
-#include "q_shared.h"
-
-mat3_t mat3_default( idVec3_t( 1, 0, 0 ), idVec3_t( 0, 1, 0 ), idVec3_t( 0, 0, 1 ) );
+mat3_t mat3_default( idVec3( 1, 0, 0 ), idVec3( 0, 1, 0 ), idVec3( 0, 0, 1 ) );
 
 void toMatrix( quat_t const &src, mat3_t &dst ) {
 	float	wx, wy, wz;
@@ -79,18 +84,18 @@ void toMatrix( angles_t const &src, mat3_t &dst ) {
 	dst[ 2 ].set( cr * sp * cy + -sr * -sy, cr * sp * sy + -sr * cy, cr * cp );
 }
 
-void toMatrix( idVec3_t const &src, mat3_t &dst ) {
+void toMatrix( idVec3 const &src, mat3_t &dst ) {
         angles_t sup = src;
         toMatrix(sup, dst);
 }
 
-void mat3_t::ProjectVector( const idVec3_t &src, idVec3_t &dst ) const {
+void mat3_t::ProjectVector( const idVec3 &src, idVec3 &dst ) const {
 	dst.x = src * mat[ 0 ];
 	dst.y = src * mat[ 1 ];
 	dst.z = src * mat[ 2 ];
 }
 
-void mat3_t::UnprojectVector( const idVec3_t &src, idVec3_t &dst ) const {
+void mat3_t::UnprojectVector( const idVec3 &src, idVec3 &dst ) const {
 	dst = mat[ 0 ] * src.x + mat[ 1 ] * src.y + mat[ 2 ] * src.z;
 }
 

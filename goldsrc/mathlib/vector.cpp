@@ -1,44 +1,45 @@
 /*
-===========================================================================
-Copyright (C) 1999-2005 Id Software, Inc.
+ * This file is part of OGS Engine
+ * Copyright (C) 1999-2005 Id Software, Inc.
+ * Copyright (C) 2019 BlackPhrase
+ *
+ * OGS Engine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * OGS Engine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
+ */
 
-This file is part of Quake III Arena source code.
+/// @file
 
-Quake III Arena source code is free software; you can redistribute it
-and/or modify it under the terms of the GNU General Public License as
-published by the Free Software Foundation; either version 2 of the License,
-or (at your option) any later version.
+#include <cassert>
+#include <cmath>
+#include <cstdio>
+#include <cstdarg>
+#include <cstring>
+#include <cstdlib>
+#include <ctime>
+#include <cctype>
 
-Quake III Arena source code is distributed in the hope that it will be
-useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Foobar; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-===========================================================================
-*/
+#include "mathlib/vector.h"
 //#include "../game/q_shared.h"
-#include "vector.h"
-#include <assert.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
-#include <stdlib.h>
-#include <time.h>
-#include <ctype.h>
 
 #define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
 
 #define LERP_DELTA 1e-6
 
-idVec3_t vec_zero( 0.0f, 0.0f, 0.0f );
+idVec3 vec_zero( 0.0f, 0.0f, 0.0f );
 
 Bounds	boundsZero;
 
-float idVec3_t::toYaw( void ) {
+float idVec3::toYaw( void ) {
 	float yaw;
 	
 	if ( ( y == 0 ) && ( x == 0 ) ) {
@@ -53,7 +54,7 @@ float idVec3_t::toYaw( void ) {
 	return yaw;
 }
 
-float idVec3_t::toPitch( void ) {
+float idVec3::toPitch( void ) {
 	float	forward;
 	float	pitch;
 	
@@ -75,7 +76,7 @@ float idVec3_t::toPitch( void ) {
 }
 
 /*
-angles_t idVec3_t::toAngles( void ) {
+angles_t idVec3::toAngles( void ) {
 	float forward;
 	float yaw;
 	float pitch;
@@ -104,7 +105,7 @@ angles_t idVec3_t::toAngles( void ) {
 }
 */
 
-idVec3_t LerpVector( idVec3_t &w1, idVec3_t &w2, const float t ) {
+idVec3 LerpVector( idVec3 &w1, idVec3 &w2, const float t ) {
 	float omega, cosom, sinom, scale0, scale1;
 
 	cosom = w1 * w2;
@@ -123,13 +124,13 @@ idVec3_t LerpVector( idVec3_t &w1, idVec3_t &w2, const float t ) {
 
 /*
 =============
-idVec3_t::string
+idVec3::string
 
 This is just a convenience function
 for printing vectors
 =============
 */
-char *idVec3_t::string( void ) {
+char *idVec3::string( void ) {
 	static	int		index = 0;
 	static	char	str[ 8 ][ 36 ];
 	char	*s;
