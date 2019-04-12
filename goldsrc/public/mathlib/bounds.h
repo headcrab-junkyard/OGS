@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1999-2005 Id Software, Inc.
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018-2019 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -116,7 +116,7 @@ inline void Bounds::AddBounds(const Bounds &bb)
 		b[1][2] = bb.b[1][2];
 };
 
-inline float Bounds::GetRadius()
+inline float Bounds::GetRadius() const
 {
 	float total{0.0f};
 	float a, aa;

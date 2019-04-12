@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1999-2005 Id Software, Inc.
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018-2019 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,12 +31,12 @@ class angles_t;
 class mat3_t
 {
 public:
-	idVec3_t mat[3];
+	idVec3 mat[3];
 
 	inline mat3_t() = default;
 	inline mat3_t(float src[3][3]){memcpy(mat, src, sizeof(src));}
 
-	inline mat3_t(idVec3_t const &x, idVec3_t const &y, idVec3_t const &z)
+	inline mat3_t(idVec3 const &x, idVec3 const &y, idVec3 const &z)
 	{
 		mat[0].x = x.x;
 		mat[0].y = x.y;
@@ -64,23 +64,23 @@ public:
 
 	friend void toMatrix(quat_t const &src, mat3_t &dst);
 	friend void toMatrix(angles_t const &src, mat3_t &dst);
-	friend void toMatrix(idVec3_t const &src, mat3_t &dst);
+	friend void toMatrix(idVec3 const &src, mat3_t &dst);
 
-	inline idVec3_t operator[](int index) const
+	inline idVec3 operator[](int index) const
 	{
 		assert((index >= 0) && (index < 3));
 		return mat[index];
 	};
 
-	inline idVec3_t &operator[](int index)
+	inline idVec3 &operator[](int index)
 	{
 		assert((index >= 0) && (index < 3));
 		return mat[index];
 	};
 
-	inline idVec3_t operator*(const idVec3_t &vec) const
+	inline idVec3 operator*(const idVec3 &vec) const
 	{
-		return idVec3_t(
+		return idVec3(
 		mat[0].x * vec.x + mat[1].x * vec.y + mat[2].x * vec.z,
 		mat[0].y * vec.x + mat[1].y * vec.y + mat[2].y * vec.z,
 		mat[0].z * vec.x + mat[1].z * vec.y + mat[2].z * vec.z);
@@ -124,7 +124,7 @@ public:
 		mat[2].x - a[2].x, mat[2].y - a[2].y, mat[2].z - a[2].z);
 	};
 
-	friend idVec3_t operator*(const idVec3_t &vec, const mat3_t &mat);
+	friend idVec3 operator*(const idVec3 &vec, const mat3_t &mat);
 	friend mat3_t operator*(float a, mat3_t const &b);
 
 	inline mat3_t &operator*=(float a)
@@ -174,8 +174,8 @@ public:
 
 	void Clear();
 
-	void ProjectVector(const idVec3_t &src, idVec3_t &dst) const;
-	void UnprojectVector(const idVec3_t &src, idVec3_t &dst) const;
+	void ProjectVector(const idVec3 &src, idVec3 &dst) const;
+	void UnprojectVector(const idVec3 &src, idVec3 &dst) const;
 
 	inline void OrthoNormalize()
 	{
@@ -205,12 +205,12 @@ public:
 	};
 
 	friend void InverseMultiply(const mat3_t &inv, const mat3_t &b, mat3_t &dst);
-	friend mat3_t SkewSymmetric(idVec3_t const &src);
+	friend mat3_t SkewSymmetric(idVec3 const &src);
 };
 
-inline idVec3_t operator*(const idVec3_t &vec, const mat3_t &mat)
+inline idVec3 operator*(const idVec3 &vec, const mat3_t &mat)
 {
-	return idVec3_t(
+	return idVec3(
 	mat[0].x * vec.x + mat[1].x * vec.y + mat[2].x * vec.z,
 	mat[0].y * vec.x + mat[1].y * vec.y + mat[2].y * vec.z,
 	mat[0].z * vec.x + mat[1].z * vec.y + mat[2].z * vec.z);
@@ -237,7 +237,7 @@ inline void InverseMultiply(const mat3_t &inv, const mat3_t &b, mat3_t &dst)
 	dst[2].z = inv[0].z * b[0].z + inv[1].z * b[1].z + inv[2].z * b[2].z;
 };
 
-inline mat3_t SkewSymmetric(idVec3_t const &src)
+inline mat3_t SkewSymmetric(idVec3 const &src)
 {
 	return mat3_t(0.0f, -src.z, src.y, src.z, 0.0f, -src.x, -src.y, src.x, 0.0f);
 };

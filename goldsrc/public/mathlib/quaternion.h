@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1999-2005 Id Software, Inc.
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018-2019 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ public:
 		this->w = w;
 	};
 
-	friend void toQuat(idVec3_t &src, quat_t &dst);
+	friend void toQuat(idVec3 &src, quat_t &dst);
 	friend void toQuat(angles_t &src, quat_t &dst);
 	friend void toQuat(mat3_t &src, quat_t &dst);
 

@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1999-2005 Id Software, Inc.
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018-2019 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,9 +24,6 @@
 #ifdef _WIN32
 #pragma warning(disable : 4244)
 #endif
-
-#include <cmath>
-#include <cassert>
 
 //#define DotProduct(a,b)			((a)[0]*(b)[0]+(a)[1]*(b)[1]+(a)[2]*(b)[2])
 //#define VectorSubtract(a,b,c)	((c)[0]=(a)[0]-(b)[0],(c)[1]=(a)[1]-(b)[1],(c)[2]=(a)[2]-(b)[2])
@@ -58,71 +55,6 @@
 	}
 
 //#include "util_heap.h"
-
-#ifndef EQUAL_EPSILON
-#define EQUAL_EPSILON 0.001
-#endif
-
-float Q_fabs(float f);
-
-// if this is defined, vec3 will take four elements, which may allow
-// easier SIMD optimizations
-//#define FAT_VEC3
-
-//#ifdef __ppc__
-//#pragma align(16)
-//#endif
-
-class angles_t;
-
-#ifdef __ppc__
-
-// Vanilla PPC code, but since PPC has a reciprocal square root estimate instruction,
-// runs *much* faster than calling sqrt(). We'll use two Newton-Raphson
-// refinement steps to get bunch more precision in the 1/sqrt() value for very little cost.
-// We'll then multiply 1/sqrt times the original value to get the sqrt.
-// This is about 12.4 times faster than sqrt() and according to my testing (not exhaustive)
-// it returns fairly accurate results (error below 1.0e-5 up to 100000.0 in 0.1 increments).
-
-static inline float idSqrt(float x)
-{
-	const float half = 0.5;
-	const float one = 1.0;
-	float B, y0, y1;
-
-	// This'll NaN if it hits frsqrte. Handle both +0.0 and -0.0
-	if(fabs(x) == 0.0)
-		return x;
-	B = x;
-
-#ifdef __GNUC__
-	asm("frsqrte %0,%1"
-	    : "=f"(y0)
-	    : "f"(B));
-#else
-	y0 = __frsqrte(B);
-#endif
-
-	// First refinement step
-
-	y1 = y0 + half * y0 * (one - B * y0 * y0);
-
-	// Second refinement step -- copy the output of the last step to the input of this step
-
-	y0 = y1;
-	y1 = y0 + half * y0 * (one - B * y0 * y0);
-
-	// Get sqrt(x) from x * 1/sqrt(x)
-	return x * y1;
-};
-#else
-static inline double idSqrt(double x)
-{
-	return sqrt(x);
-};
-#endif
-
-//===============================================================
 
 #include "bounds.h"
 
