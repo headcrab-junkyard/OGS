@@ -122,6 +122,8 @@ float gldepthmin, gldepthmax;
 
 modestate_t modestate = MS_UNINIT;
 
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 LONG WINAPI MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 void AppActivate(BOOL fActive, BOOL minimize);
 const char *VID_GetModeDescription(int mode);
@@ -943,6 +945,11 @@ LONG WINAPI MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	if(uMsg == uiWheelMessage)
 		uMsg = WM_MOUSEWHEEL;
 
+#ifdef OGS_USE_IMGUI
+	if(ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
+        return true;
+#endif
+	
 	switch(uMsg)
 	{
 	case WM_KILLFOCUS:
