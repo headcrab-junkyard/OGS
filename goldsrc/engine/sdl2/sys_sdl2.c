@@ -20,11 +20,17 @@
 
 #include "quakedef.h"
 
+extern void ImGui_ImplSDL2_ProcessEvent(SDL_Event *pEvent);
+
 void HandleSDLEvents()
 {
 	SDL_Event Event;
 	while(SDL_PollEvent(&Event))
 	{
+#ifdef OGS_USE_IMGUI
+		ImGui_ImplSDL2_ProcessEvent(&Event);
+#endif
+
 		switch(Event.type)
 		{
 		case SDL_CONTROLLERAXISMOTION:
