@@ -83,19 +83,11 @@ void EntityBlocked(edict_t *pent, edict_t *pother)
 
 void EntityKeyValue(edict_t *pent, KeyValueData *pkvd)
 {
-	auto pPrivateData{gpEngine->pfnPvEntPrivateData(pent)};
+	pkvd->fHandled = 0;
 	
-	if(!pPrivateData)
-		return;
-	
-	auto pBaseEntity{reinterpret_cast<CBaseEntity*>(pPrivateData)};
-	
-	//pkvd->bHandled = 0;
-	//pBaseEntity->HandleKeyValue(pkvd); // TODO
-	
-	//auto bHandled{pBaseEntity->HandleKeyValue(pkvd)};
-	//if(bHandled)
-		//pkvd->bHandled = 1;
+	auto bHandled{ToBaseEntity(pent)->HandleKeyValue(pkvd->szKeyName, pkvd->szValue)};
+	if(bHandled)
+		pkvd->fHandled = 1;
 };
 
 void EntitySave(edict_t *pent, SAVERESTOREDATA *pSaveRestoreData)
