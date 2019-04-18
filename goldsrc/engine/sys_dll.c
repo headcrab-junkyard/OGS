@@ -667,6 +667,12 @@ void Sys_Sleep()
 
 void Sys_SendKeyEvents()
 {
+#ifdef OGS_USE_SDL
+	//SDL_PumpEvents();
+	
+	HandleSDLEvents();
+#elif _WIN32
+
 #ifndef SWDS
 	static MSG msg;
 
@@ -681,7 +687,10 @@ void Sys_SendKeyEvents()
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	};
+#endif // SWDS
 #endif
+
+#endif // OGS_USE_SDL
 };
 
 //============================================
