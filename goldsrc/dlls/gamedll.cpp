@@ -121,13 +121,19 @@ void RestoreGlobalState(SAVERESTOREDATA *pSaveRestoreData){};
 
 void ResetGlobalState(){};
 
-void PM_Init_Game(struct playermove_s *ppmove){};
+void PM_Init_Game(struct playermove_s *ppmove)
+{
+	PM_Init(ppmove);
+};
 
-void PM_Move_Game(struct playermove_s *ppmove, qboolean server){};
+void PM_Move_Game(struct playermove_s *ppmove, qboolean server)
+{
+	PM_Move(ppmove, server);
+};
 
 char PM_FindTextureType_Game(const char *name)
 {
-	return '\0';
+	return PM_GetTextureType(name);
 };
 
 //
