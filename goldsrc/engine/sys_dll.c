@@ -665,7 +665,6 @@ void Sys_Sleep()
 #endif
 };
 
-#ifdef _WIN32
 void Sys_SendKeyEvents()
 {
 #ifndef SWDS
@@ -684,7 +683,6 @@ void Sys_SendKeyEvents()
 	};
 #endif
 };
-#endif // _WIN32
 
 //============================================
 
