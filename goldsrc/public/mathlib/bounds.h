@@ -29,8 +29,8 @@ public:
 	inline Bounds() = default;
 	inline Bounds(const idVec3 &mins, const idVec3 &maxs)
 	{
-		b[0] = mins;
-		b[1] = maxs;
+		this->mins = mins;
+		this->maxs = maxs;
 	};
 
 	inline void Clear()
@@ -69,7 +69,12 @@ public:
 		return true;
 	};
 	
-	idVec3 b[2];
+	union
+	{
+		idVec3 b[2];
+		idVec3 mins;
+		idVec3 maxs;
+	};
 };
 
 extern Bounds boundsZero;

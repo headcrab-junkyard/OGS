@@ -87,9 +87,13 @@ float Q_fabs(float f);
 
 class angles_t;
 
+using vec3_t = float[3];
+
 //class idVec3 : public idHeap<idVec3>
 class idVec3
 {
+public:
+	static idVec3 Origin;
 public:
 #ifndef FAT_VEC3
 	float x, y, z;
@@ -105,8 +109,23 @@ public:
 		this->y = y;
 		this->z = z;
 	};
+	
+	inline idVec3(const float value)
+	{
+		x = value;
+		y = value;
+		z = value;
+	};
+	
+	inline idVec3(const vec3_t &aData)
+	{
+		x = aData[0];
+		y = aData[1];
+		z = aData[2];
+	};
 
-	inline operator float *(){return &x;}
+	inline operator float *() {return &x;}
+	inline operator const float *() const {return &x;}
 
 	inline float operator[](const int index) const {return (&x)[index];}
 	inline float &operator[](const int index){return (&x)[index];}
@@ -125,6 +144,15 @@ public:
 		x = a.x;
 		y = a.y;
 		z = a.z;
+
+		return *this;
+	};
+	
+	inline idVec3 &operator=(const float value)
+	{
+		x = value;
+		y = value;
+		z = value;
 
 		return *this;
 	};
@@ -210,7 +238,7 @@ public:
 		return length;
 	};
 
-	inline void Zero(){x = y = z = 0.0f;}
+	inline void Clear(){x = y = z = 0.0f;} // TODO: Reset?
 
 	inline void Snap()
 	{
@@ -252,8 +280,6 @@ public:
 
 	char *string();
 };
-
-extern idVec3 vec_zero;
 
 inline idVec3 operator*(float a, idVec3 b)
 {
