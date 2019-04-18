@@ -48,7 +48,6 @@ void VGui_Shutdown()
 #endif
 };
 
-/*
 void VGui_Frame()
 {
 	//VGuiWrap_Frame();
@@ -58,7 +57,6 @@ void VGui_Frame()
 	ImGui_Frame();
 #endif
 };
-*/
 
 void VGui_ViewportPaintBackground(int extents[4])
 {

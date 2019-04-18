@@ -658,6 +658,8 @@ void _Host_Frame(float time)
 
 	Host_UpdateScreen(); // TODO: was SCR_UpdateScreen
 
+	VGui_Frame(); // TODO: wrong place?
+	
 	if(host_speeds.value)
 		time2 = Sys_FloatTime();
 
