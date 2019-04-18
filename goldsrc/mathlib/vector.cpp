@@ -35,7 +35,7 @@
 
 #define LERP_DELTA 1e-6
 
-idVec3 vec_zero( 0.0f, 0.0f, 0.0f );
+idVec3 idVec3::Origin{0.0f};
 
 Bounds	boundsZero;
 
