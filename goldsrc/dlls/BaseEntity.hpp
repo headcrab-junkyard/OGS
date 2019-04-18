@@ -20,10 +20,16 @@
 
 #pragma once
 
+#include <string>
+
 #include "edict.h"
 #include "engine.h"
+#include "mathlib/vec3.h"
+#include "mathlib/bounds.h"
 
-//typedef struct edict_s edict_t;
+//using edict_t = struct edict_s;
+
+class Bounds;
 
 class CBaseEntity
 {
@@ -33,7 +39,10 @@ public:
 	using pfnUseCallback = void (CBaseEntity::*)(CBaseEntity *apOther);
 	using pfnBlockedCallback = void (CBaseEntity::*)(CBaseEntity *apOther);
 public:
+	CBaseEntity(entvars_t *apData);
 	virtual ~CBaseEntity() = default;
+	
+	edict_t *ToEdict() const {return gpEngine->pfnFindEntityByVars(self);}
 	
 	virtual void Think()
 	{
@@ -58,78 +67,132 @@ public:
 	
 	virtual void Spawn(){}
 	
-	void SetName(const char *asName);
-	const char *GetName() const;
+	virtual void TraceAttack(float damage, const idVec3 &dir);
+	virtual void TakeDamage(CBaseEntity *inflictor, CBaseEntity *attacker, float damage); // TODO: was T_Damage
+	virtual void Killed(CBaseEntity *attacker);
 	
-	const char *GetClassName() const;
+	void FireBullets(float shotcount, const idVec3 &dir, const idVec3 &spread);
+	
+	void SetName(const std::string &asName);
+	const std::string &GetName() const;
+	
+	const std::string &GetClassName() const;
 	
 	void SetThinkCallback(pfnThinkCallback afnCallback); // TODO: IEntityThinkCallback?
 	void SetTouchCallback(pfnTouchCallback afnCallback); // TODO: IEntityTouchCallback?
 	void SetUseCallback(pfnUseCallback afnCallback); // TODO: IEntityUseCallback?
 	void SetBlockedCallback(pfnBlockedCallback afnCallback); // TODO: IEntityBlockedCallback?
 	
-	void SetNextThink(float afTime){self->v.nextthink = afTime;}
-	float GetNextThink() const {return self->v.nextthink;}
+	void SetNextThink(float afTime){self->nextthink = afTime;}
+	float GetNextThink() const {return self->nextthink;}
 	
-	void SetKeyValue(const char *asKey, const char *asValue);
-	const char *GetKeyValue(const char *asKey) const;
-	
-	void SetHealth(float afHealth){self->v.health = afHealth;}
-	float GetHealth() const {return self->v.health;}
-	
-	//void SetMaxHealth(float afValue);
-	//float GetMaxHealth() const;
-	
-	//void SetVelocity(const Vector3 &avVelocity);
-	//const Vector3 &GetVelocity() const;
-	
-	void SetAngles(const vec3_t avAngles);
-	//vec3_t GetAngles();
-	
-	void SetModel(const char *asName)
+	//void SetKeyValue(const std::string &asKey, const std::string &asValue);
+	//const std::string &GetKeyValue(const std::string &asKey) const;
+	bool HandleKeyValue(const std::string &asKey, const std::string &asValue)
 	{
-		gpEngine->pfnSetModel(self, asName);
-	};
-	const char *GetModel() const;
-	
-	void SetOrigin(vec3_t avOrigin) //const Vec3 &avOrigin)
-	{
-		gpEngine->pfnSetOrigin(self, avOrigin);
-	};
-	//const Vec3 &GetOrigin() const;
-	
-	void SetSize(vec3_t avMins, vec3_t avMaxs) //const CVec3 &avSize)
-	{
-		gpEngine->pfnSetSize(self, avMins, avMaxs);
-	};
-	//const Vec3 &GetSize() const;
-	
-	void SetMoveType(int anType){self->v.movetype = anType;}
-	int GetMoveType() const {return self->v.movetype;}
-	
-	void SetFlags(int anFlags){self->v.flags = anFlags;}
-	//void AddFlags(int anFlags){self->v.flags |= anFlags;}
-	int GetFlags() const {return self->v.flags;}
-	
-	void SetEffects(int anEffects){self->v.effects = anEffects;}
-	//void AddEffects(int anEffects){self->v.effects |= anEffects;|
-	int GetEffects() const {return self->v.effects;}
-	
-	void EmitSound(int anChannel, const char *asSample, float afVolume, float afAttenuation, int anFlags, int anPitch)
-	{
-		gpEngine->pfnEmitSound(self, anChannel, asSample, afVolume, afAttenuation, anFlags, anPitch);
+		return false;
 	};
 	
-	int GetWaterType() const {return self->v.watertype;}
-	int GetWaterLevel() const {return self->v.waterlevel;}
+	int GetIndex() const {return gpEngine->pfnIndexOfEdict(ToEdict());}
+	
+	void SetHealth(float afHealth){self->health = afHealth;}
+	float GetHealth() const {return self->health;}
+	
+	// TODO: should these be here?
+	void SetMaxHealth(float afValue);
+	float GetMaxHealth() const;
+	
+	void SetVelocity(const idVec3 &avVelocity)
+	{
+		mvVelocity = avVelocity;
+		
+		self->velocity[0] = avVelocity.x;
+		self->velocity[1] = avVelocity.y;
+		self->velocity[2] = avVelocity.z;
+	};
+	const idVec3 &GetVelocity() const {return mvVelocity;}
+	
+	void SetAngles(const idVec3 &avAngles)
+	{
+		mvAngles = avAngles;
+		
+		self->angles[0] = avAngles.x;
+		self->angles[1] = avAngles.y;
+		self->angles[2] = avAngles.z;
+	};
+	const idVec3 &GetAngles() const {return mvAngles;}
+	
+	void SetGravity(float afY){self->gravity = afY;}
+	//const idVec3 &GetGravity() const {return idVec3(0.0f, self->gravity, 0.0f);}
+	
+	void SetModel(const std::string &asName)
+	{
+		gpEngine->pfnSetModel(ToEdict(), asName.c_str());
+	};
+	const std::string &GetModel() const;
+	
+	void SetOrigin(const idVec3 &avOrigin)
+	{
+		mvOrigin = avOrigin;
+		gpEngine->pfnSetOrigin(ToEdict(), avOrigin);
+	};
+	const idVec3 &GetOrigin() const {return mvOrigin;}
+	
+	void SetSize(const Bounds &aSize)
+	{
+		gpEngine->pfnSetSize(ToEdict(), aSize.mins, aSize.maxs);
+	};
+	
+	void SetSize(const idVec3 &avMins, const idVec3 &avMaxs)
+	{
+		gpEngine->pfnSetSize(ToEdict(), avMins, avMaxs);
+	};
+	const Bounds &GetSize() const;
+	
+	void SetMoveType(int anType){self->movetype = anType;}
+	int GetMoveType() const {return self->movetype;}
+	
+	void SetSolidity(int anSolidity);
+	int GetSolidity() const;
+	
+	void SetFlags(int anFlags){self->flags = anFlags;}
+	//void AddFlags(int anFlags){self->flags |= anFlags;}
+	int GetFlags() const {return self->flags;}
+	
+	void SetEffects(int anEffects){self->effects = anEffects;}
+	//void AddEffects(int anEffects){self->effects |= anEffects;|
+	int GetEffects() const {return self->effects;}
+	
+	void SetSkin(int anSkin){self->skin = anSkin;}
+	int GetSkin() const {return self->skin;}
+	
+	void EmitSound(int anChannel, const std::string &asSample, float afVolume, float afAttenuation, int anFlags, int anPitch)
+	{
+		gpEngine->pfnEmitSound(ToEdict(), anChannel, asSample.c_str(), afVolume, afAttenuation, anFlags, anPitch);
+	};
+	
+	//void MarkForDeletion()
+	//{
+		//self->flags |= FL_KILLME;
+	//};
+	
+	int GetWaterType() const {return self->watertype;}
+	int GetWaterLevel() const {return self->waterlevel;}
 	
 	void SetOwner(CBaseEntity *apOwner){mpOwner = apOwner;}
 	CBaseEntity *GetOwner() const {return mpOwner;}
 	
 	void SetEnemy(CBaseEntity *apEnemy){mpEnemy = apEnemy;}
 	CBaseEntity *GetEnemy() const {return mpEnemy;}
+	
+	void SetGoal(CBaseEntity *apGoal){mpGoal = apGoal;}
+	CBaseEntity *GetGoal() const {return mpGoal;}
 private:
-	edict_t *self{nullptr};
+	idVec3 mvOrigin{0.0f};
+	idVec3 mvAngles{0.0f};
+	idVec3 mvVelocity{0.0f};
+	
+	entvars_t *self{nullptr};
 	
 	pfnThinkCallback mfnThinkCallback{nullptr};
 	pfnTouchCallback mfnTouchCallback{nullptr};
@@ -138,4 +201,5 @@ private:
 	
 	CBaseEntity *mpOwner{nullptr};
 	CBaseEntity *mpEnemy{nullptr};
+	CBaseEntity *mpGoal{nullptr};
 };
