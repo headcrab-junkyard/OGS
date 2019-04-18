@@ -7,6 +7,9 @@ project(OGSEngine VERSION 0.6.1)
 
 option(OGS_DEV "Developer Build" OFF)
 option(OGS_DEBUG "Debug Build" OFF)
+option(OGS_USE_SDL "Use SDL2 for platform-specific functionality implementation" OFF)
+option(OGS_USE_IMGUI "Use ImGui for internal GUI system implementation" OFF)
+
 option(OGS_4554 "4554 preset")
 option(OGS_6153 "6153+ preset")
 option(OGS_DEDICATED "Skip building of client-side modules" OFF)
@@ -44,6 +47,10 @@ endif()
 
 if(OGS_DEDICATED)
 	add_definitions(-DSWDS)
+endif()
+
+if(OGS_USE_SDL)
+	add_definitions(-DOGS_USE_SDL)
 endif()
 
 #####################################################################
