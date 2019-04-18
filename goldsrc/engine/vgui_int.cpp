@@ -1,6 +1,6 @@
 /*
  *	This file is part of OGS Engine
- *	Copyright (C) 2018 BlackPhrase
+ *	Copyright (C) 2018-2019 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,15 +22,20 @@
 #include "vgui_int.h"
 #include "vguiwrap.h"
 #include "vguiwrap2.h"
-//#include "imguiwrap.h"
+
+#ifdef OGS_USE_IMGUI
+#	include "imguiwrap.h"
+#endif
 
 void VGui_Startup()
 {
 	VGuiWrap_Startup();
 	VGuiWrap2_Startup();
 	
-	//if(!ImGui_Init())
-		//return;
+#ifdef OGS_USE_IMGUI
+	if(!ImGui_Init())
+		return;
+#endif
 };
 
 void VGui_Shutdown()
@@ -38,7 +43,9 @@ void VGui_Shutdown()
 	VGuiWrap_Shutdown();
 	VGuiWrap2_Shutdown();
 	
-	//ImGui_Shutdown();
+#ifdef OGS_USE_IMGUI
+	ImGui_Shutdown();
+#endif
 };
 
 /*
@@ -47,7 +54,9 @@ void VGui_Frame()
 	//VGuiWrap_Frame();
 	VGuiWrap2_Frame();
 	
-	//ImGui_Frame();
+#ifdef OGS_USE_IMGUI
+	ImGui_Frame();
+#endif
 };
 */
 
