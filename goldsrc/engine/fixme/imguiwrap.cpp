@@ -22,10 +22,13 @@
 #include "imguiwrap.h"
 #include "imgui.h"
 #include "imgui_impl_opengl2.h"
-//#include "imgui_impl_sdl.h"
 
-#ifdef _WIN32
-#include "imgui_impl_win32.h"
+#ifdef OGS_USE_SDL
+#	include "imgui_impl_sdl.h"
+#else
+#	ifdef _WIN32
+#		include "imgui_impl_win32.h"
+#	endif
 #endif
 
 qboolean ImGui_Init()
@@ -41,10 +44,16 @@ qboolean ImGui_Init()
 	ImGui::StyleColorsDark();
 	
 	// Setup Platform/Renderer bindings
-	//ImGui_ImplSDL2_InitForOpenGL(window, gl_context); // TODO
+#ifdef OGS_USE_SDL
+	ImGui_ImplSDL2_InitForOpenGL(window, gl_context); // TODO
+#else
+
 #ifdef _WIN32
 	ImGui_ImplWin32_Init(mainwindow);
 #endif
+
+#endif // OGS_USE_SDL
+
 	ImGui_ImplOpenGL2_Init();
 	return true;
 };
@@ -53,10 +62,17 @@ void ImGui_Shutdown()
 {
 	// Cleanup
 	ImGui_ImplOpenGL2_Shutdown();
-	//ImGui_ImplSDL2_Shutdown();
+	
+#ifdef OGS_USE_SDL
+	ImGui_ImplSDL2_Shutdown();
+#else
+
 #ifdef _WIN32
 	ImGui_ImplWin32_Shutdown();
 #endif
+
+#endif // OGS_USE_SDL
+
 	ImGui::DestroyContext();
 };
 
@@ -64,10 +80,17 @@ void ImGui_Frame()
 {
 	// Start the Dear ImGui frame
 	ImGui_ImplOpenGL2_NewFrame();
-	//ImGui_ImplSDL2_NewFrame(window);
+
+#ifdef OGS_USE_SDL
+	ImGui_ImplSDL2_NewFrame(window);
+#else
+
 #ifdef _WIN32
 	ImGui_ImplWin32_NewFrame();
 #endif
+
+#endif // OGS_USE_SDL
+
 	ImGui::NewFrame();
 	
 	ImGui::ShowDemoWindow(&show_demo_window);
