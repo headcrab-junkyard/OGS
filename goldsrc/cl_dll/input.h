@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018-2019 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,7 +47,10 @@ extern cvar_t *m_yaw;
 extern cvar_t *m_forward;
 extern cvar_t *m_side;
 
-extern kbutton_t in_mlook, in_klook;
+extern cvar_t *cl_pitchup;
+extern cvar_t *cl_pitchdown;
+
+extern kbutton_t in_mlook, in_klook, in_jlook;
 extern kbutton_t in_strafe;
 extern kbutton_t in_speed;
 

@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018-2019 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@ extern "C"
 #include "usercmd.h"
 #include "cvardef.h"
 #include "engine.h"
+#include "in_buttons.h"
 
 cvar_t *lookspring;
 cvar_t *lookstrafe;
@@ -53,7 +54,8 @@ cvar_t *m_yaw;
 cvar_t *m_forward;
 cvar_t *m_side;
 
-vec3_t cl_viewangles{};
+cvar_t *cl_pitchup;
+cvar_t *cl_pitchdown;
 
 /*
 ===============================================================================
@@ -78,6 +80,7 @@ state bit 2 is edge triggered on the down to up transition
 
 kbutton_t in_mlook;
 kbutton_t in_klook;
+kbutton_t in_jlook; // TODO
 kbutton_t in_left;
 kbutton_t in_right;
 kbutton_t in_forward;
@@ -179,6 +182,14 @@ void IN_MLookUp()
 	KeyUp(&in_mlook);
 	if(!(in_mlook.state & 1) && lookspring->value)
 		V_StartPitchDrift();
+}
+void IN_JLookDown()
+{
+	KeyDown(&in_jlook);
+}
+void IN_JLookUp()
+{
+	KeyUp(&in_jlook);
 }
 void IN_UpDown()
 {
@@ -375,6 +386,7 @@ void CL_AdjustAngles(float frametime)
 {
 	float speed;
 	float up, down;
+	vec3_t cl_viewangles{};
 
 	if(in_speed.state & 1)
 		speed = frametime * cl_anglespeedkey->value;
@@ -478,14 +490,60 @@ void CL_CreateMove(float frametime, usercmd_t *cmd, int active)
 	bits = 0;
 
 	if(in_attack.state & 3)
-		bits |= 1;
+		bits |= IN_ATTACK;
 	in_attack.state &= ~2;
 
+	if(in_attack2.state & 3)
+		bits |= IN_ATTACK2;
+	in_attack2.state &= ~2;
+	
+	if(in_reload.state & 3)
+		bits |= IN_RELOAD;
+	in_reload.state &= ~2;
+	
+	if(in_duck.state & 3)
+		bits |= IN_DUCK;
+	in_duck.state &= ~2;
+	
 	if(in_jump.state & 3)
-		bits |= 2;
+		bits |= IN_JUMP;
 	in_jump.state &= ~2;
 	
+	if(in_use.state & 3)
+		bits |= IN_USE;
+	in_use.state &= ~2;
+	
+	if(in_forward.state & 3)
+		bits |= IN_FORWARD;
+	in_forward.state &= ~2;
+	
+	if(in_back.state & 3)
+		bits |= IN_BACK;
+	in_back.state &= ~2;
+	
+	if(in_left.state & 3)
+		bits |= IN_LEFT;
+	in_left.state &= ~2;
+	
+	if(in_right.state & 3)
+		bits |= IN_RIGHT;
+	in_right.state &= ~2;
+	
+	if(in_moveleft.state & 3)
+		bits |= IN_MOVELEFT;
+	in_moveleft.state &= ~2;
+	
+	if(in_moveright.state & 3)
+		bits |= IN_MOVERIGHT;
+	in_moveright.state &= ~2;
+	
 	cmd->buttons = bits;
+	
+	vec3_t cl_viewangles;
+	gpEngine->GetViewAngles((float*)cl_viewangles);
+	VectorCopy(cl_viewangles, cmd->viewangles);
+	
+	// TODO: CBaseCombatWeapon::CreateMove
 }
 
 /*
@@ -550,6 +608,9 @@ void InitInput()
 	m_yaw = gpEngine->pfnRegisterVariable("m_yaw", "0.022", FCVAR_ARCHIVE);
 	m_forward = gpEngine->pfnRegisterVariable("m_forward", "1", FCVAR_ARCHIVE);
 	m_side = gpEngine->pfnRegisterVariable("m_side", "0.8", FCVAR_ARCHIVE);
+	
+	cl_pitchup = gpEngine->pfnRegisterVariable("cl_pitchup", "-70.0", 0);
+	cl_pitchdown = gpEngine->pfnRegisterVariable("cl_pitchdown", "80.0", 0);
 	
 	IN_Init();
 	V_Init();
