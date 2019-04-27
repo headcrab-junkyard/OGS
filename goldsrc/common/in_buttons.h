@@ -20,4 +20,21 @@
 
 #pragma once
 
-#define IN_JUMP 2
+#define BIT(x) (1<<x)
+
+#define IN_ATTACK BIT(0)
+#define IN_JUMP BIT(1)
+#define IN_DUCK BIT(2)
+#define IN_FORWARD BIT(3)
+#define IN_BACK BIT(4)
+#define IN_USE BIT(5)
+#define IN_CANCEL BIT(6)
+#define IN_LEFT BIT(7)
+#define IN_RIGHT BIT(8)
+#define IN_MOVELEFT BIT(9)
+#define IN_MOVERIGHT BIT(10)
+#define IN_ATTACK2 BIT(11)
+#define IN_RUN BIT(12)
+#define IN_RELOAD BIT(13)
+#define IN_ALT1 BIT(14)
+#define IN_SCORE BIT(15)
