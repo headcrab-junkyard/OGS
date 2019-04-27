@@ -135,67 +135,6 @@ float PF_random()
 
 /*
 =================
-PF_traceline
-
-Used for use tracing and shot targeting
-Traces are blocked by bbox and exact bsp entities, and also slide box entities
-if the tryents flag is set.
-
-traceline (vector1, vector2, tryents)
-=================
-*/
-void PF_traceline(float *v1, float *v2, int nomonsters, edict_t *ent)
-{
-	trace_t trace;
-
-	trace = SV_Move(v1, vec3_origin, vec3_origin, v2, nomonsters, ent);
-
-	gGlobalVariables.trace_allsolid = trace.allsolid;
-	gGlobalVariables.trace_startsolid = trace.startsolid;
-	gGlobalVariables.trace_fraction = trace.fraction;
-	gGlobalVariables.trace_inwater = trace.inwater;
-	gGlobalVariables.trace_inopen = trace.inopen;
-
-	VectorCopy(trace.endpos, gGlobalVariables.trace_endpos);
-	VectorCopy(trace.plane.normal, gGlobalVariables.trace_plane_normal);
-
-	gGlobalVariables.trace_plane_dist = trace.plane.dist;
-
-	if(trace.ent)
-		gGlobalVariables.trace_ent = EDICT_TO_PROG(trace.ent);
-	else
-		gGlobalVariables.trace_ent = EDICT_TO_PROG(sv.edicts);
-}
-
-#ifdef QUAKE2
-extern trace_t SV_Trace_Toss(edict_t *ent, edict_t *ignore);
-
-void PF_TraceToss(edict_t *ent, edict_t *ignore)
-{
-	trace_t trace;
-
-	trace = SV_Trace_Toss(ent, ignore);
-
-	gGlobalVariables.trace_allsolid = trace.allsolid;
-	gGlobalVariables.trace_startsolid = trace.startsolid;
-	gGlobalVariables.trace_fraction = trace.fraction;
-	gGlobalVariables.trace_inwater = trace.inwater;
-	gGlobalVariables.trace_inopen = trace.inopen;
-
-	VectorCopy(trace.endpos, gGlobalVariables.trace_endpos);
-	VectorCopy(trace.plane.normal, gGlobalVariables.trace_plane_normal);
-
-	gGlobalVariables.trace_plane_dist = trace.plane.dist;
-
-	if(trace.ent)
-		gGlobalVariables.trace_ent = EDICT_TO_PROG(trace.ent);
-	else
-		gGlobalVariables.trace_ent = EDICT_TO_PROG(sv.edicts);
-}
-#endif
-
-/*
-=================
 PF_checkpos
 
 Returns true if the given entity can move to the given position from it's
@@ -320,42 +259,6 @@ edict_t *PF_checkclient()
 //============================================================================
 
 /*
-=================
-PF_findradius
-
-Returns a chain of entities that have origins within a spherical area
-
-findradius (origin, radius)
-=================
-*/
-edict_t *PF_findradius(float *org, float rad)
-{
-	edict_t *ent, *chain;
-	vec3_t eorg;
-	int i, j;
-
-	chain = (edict_t *)sv.edicts;
-
-	ent = NEXT_EDICT(sv.edicts);
-	for(i = 1; i < sv.num_edicts; i++, ent = NEXT_EDICT(ent))
-	{
-		if(ent->free)
-			continue;
-		if(ent->v.solid == SOLID_NOT)
-			continue;
-		for(j = 0; j < 3; j++)
-			eorg[j] = org[j] - (ent->v.origin[j] + (ent->v.mins[j] + ent->v.maxs[j]) * 0.5);
-		if(Length(eorg) > rad)
-			continue;
-
-		ent->v.chain = EDICT_TO_PROG(chain);
-		chain = ent;
-	}
-
-	return chain;
-}
-
-/*
 =========
 PF_dprint
 =========
@@ -387,84 +290,6 @@ int PF_etos(edict_t *ent)
 {
 	sprintf(pr_string_temp, "entity %i", EDICT_NUM(ent));
 	return pr_string_temp - pr_strings;
-}
-#endif
-
-// entity (entity start, .string field, string match) find = #5;
-void PF_Find(edict_t *start, int f, const char *s)
-#ifdef QUAKE2
-{
-	int e;
-	char *t;
-	edict_t *ed;
-	edict_t *first;
-	edict_t *second;
-	edict_t *last;
-
-	first = second = last = (edict_t *)sv.edicts;
-	e = EDICT_NUM(start);
-	if(!s)
-		Host_Error("PF_Find: bad search string");
-
-	for(e++; e < sv.num_edicts; e++)
-	{
-		ed = EDICT_NUM(e);
-		if(ed->free)
-			continue;
-		t = E_STRING(ed, f);
-		if(!t)
-			continue;
-		if(!strcmp(t, s))
-		{
-			if(first == (edict_t *)sv.edicts)
-				first = ed;
-			else if(second == (edict_t *)sv.edicts)
-				second = ed;
-			ed->v.chain = EDICT_TO_PROG(last);
-			last = ed;
-		}
-	}
-
-	if(first != last)
-	{
-		if(last != second)
-			first->v.chain = last->v.chain;
-		else
-			first->v.chain = EDICT_TO_PROG(last);
-		last->v.chain = EDICT_TO_PROG((edict_t *)sv.edicts);
-		if(second && second != last)
-			second->v.chain = EDICT_TO_PROG(last);
-	}
-	return first;
-}
-#else
-{
-	int e;
-	int f;
-	char *s, *t;
-	edict_t *ed;
-
-	e = EDICT_NUM(OFS_PARM0);
-	f = G_INT(OFS_PARM1);
-	s = G_STRING(OFS_PARM2);
-	if(!s)
-		Host_Error("PF_Find: bad search string");
-
-	for(e++; e < sv.num_edicts; e++)
-	{
-		ed = EDICT_NUM(e);
-		if(ed->free)
-			continue;
-		t = E_STRING(ed, f);
-		if(!t)
-			continue;
-		if(!strcmp(t, s))
-		{
-			return ed;
-		}
-	}
-
-	return sv.edicts;
 }
 #endif
 

@@ -389,7 +389,7 @@ void PF_changepitch_I(edict_t *ent)
 
 	current = anglemod(ent->v.angles[0]);
 	ideal = ent->v.idealpitch;
-	//speed = ent->v.pitch_speed; // TODO
+	speed = ent->v.pitch_speed;
 
 	if(current == ideal)
 		return;
@@ -419,22 +419,122 @@ void PF_changepitch_I(edict_t *ent)
 	ent->v.angles[0] = anglemod(current + move);
 };
 
+// entity (entity start, .string field, string match) find = #5;
+//void PF_Find(edict_t *start, int f, const char *s)
 edict_t *FindEntityByString(edict_t *pEntStartSearchAfter, const char *sField, const char *sValue)
 {
-	// TODO
-	return NULL;
+#ifdef QUAKE2
+	int e;
+	char *t;
+	edict_t *ed;
+	edict_t *first;
+	edict_t *second;
+	edict_t *last;
+
+	first = second = last = (edict_t *)sv.edicts;
+	e = EDICT_NUM(pEntStartSearchAfter);
+	if(!s)
+		Host_Error("PF_Find: bad search string");
+
+	for(e++; e < sv.num_edicts; e++)
+	{
+		ed = EDICT_NUM(e);
+		if(ed->free)
+			continue;
+		t = E_STRING(ed, sField);
+		if(!t)
+			continue;
+		if(!strcmp(t, sValue))
+		{
+			if(first == (edict_t *)sv.edicts)
+				first = ed;
+			else if(second == (edict_t *)sv.edicts)
+				second = ed;
+			ed->v.chain = EDICT_TO_PROG(last);
+			last = ed;
+		}
+	}
+
+	if(first != last)
+	{
+		if(last != second)
+			first->v.chain = last->v.chain;
+		else
+			first->v.chain = EDICT_TO_PROG(last);
+		last->v.chain = EDICT_TO_PROG((edict_t *)sv.edicts);
+		if(second && second != last)
+			second->v.chain = EDICT_TO_PROG(last);
+	}
+	return first;
+#else
+	int e;
+	char *t;
+	edict_t *ed;
+
+	e = EDICT_NUM(pEntStartSearchAfter);
+	if(!sValue)
+		Host_Error("PF_Find: bad search string");
+
+	for(e++; e < sv.num_edicts; e++)
+	{
+		ed = EDICT_NUM(pEntStartSearchAfter);
+		if(ed->free)
+			continue;
+		//t = E_STRING(ed, sField); // TODO
+		if(!t)
+			continue;
+		if(!strcmp(t, sValue))
+		{
+			return ed;
+		}
+	}
+
+	return sv.edicts;
+#endif
 };
 
 int GetEntityIllum(edict_t *pEnt)
 {
-	// TODO
-	return 0;
+	if(!pEnt)
+		return 0;
+	
+	return pEnt->v.light_level;
 };
 
+/*
+=================
+PF_findradius
+
+Returns a chain of entities that have origins within a spherical area
+
+findradius (origin, radius)
+=================
+*/
 edict_t *FindEntityInSphere(edict_t *pEntStartSearchAfter, const float *origin, float radius)
 {
-	// TODO
-	return NULL;
+	edict_t *ent, *chain;
+	vec3_t eorg;
+	int i, j;
+
+	chain = (edict_t *)sv.edicts;
+
+	ent = NEXT_EDICT(pEntStartSearchAfter);
+	for(i = 1; i < sv.num_edicts; i++, ent = NEXT_EDICT(ent))
+	{
+		if(ent->free)
+			continue;
+		if(ent->v.solid == SOLID_NOT)
+			continue;
+		for(j = 0; j < 3; j++)
+			eorg[j] = origin[j] - (ent->v.origin[j] + (ent->v.mins[j] + ent->v.maxs[j]) * 0.5);
+		if(Length(eorg) > radius)
+			continue;
+
+		ent->v.chain = EDICT_TO_PROG(chain);
+		chain = ent;
+	}
+
+	return chain;
 };
 
 edict_t *PF_checkclient_I(edict_t *pEnt)
@@ -477,7 +577,7 @@ edict_t *CreateNamedEntity(int nClassName)
 {
 	// TODO
 	edict_t *ed = ED_Alloc();
-	//Q_strcpy(ed->netname, );
+	//Q_strcpy(ed->netname, ...);
 	return ed;
 };
 
@@ -647,14 +747,65 @@ void PF_ambientsound_I(float *pos, const char *samp, float vol, float attenuatio
 	MSG_WriteByte(&sv.signon, attenuation * 64);
 };
 
-void PF_traceline_DLL(const float *vPointA, const float *vPointB, int nNoMonsters, edict_t *pEntToSkip, TraceResult *pTraceResult)
+/*
+=================
+PF_traceline
+
+Used for use tracing and shot targeting
+Traces are blocked by bbox and exact bsp entities, and also slide box entities
+if the tryents flag is set.
+
+traceline (vector1, vector2, tryents)
+=================
+*/
+//void PF_traceline(float *v1, float *v2, int nomonsters, edict_t *ent)
+void PF_traceline_DLL(const float *vPointA, const float *vPointB, int nNoMonsters, edict_t *pEntToSkip, TraceResult *pTraceResult) // TODO: handle pTraceResult
 {
-	// TODO
+	trace_t trace;
+
+	trace = SV_Move(vPointA, vec3_origin, vec3_origin, vPointB, nNoMonsters, pEntToSkip);
+
+	gGlobalVariables.trace_allsolid = trace.allsolid;
+	gGlobalVariables.trace_startsolid = trace.startsolid;
+	gGlobalVariables.trace_fraction = trace.fraction;
+	gGlobalVariables.trace_inwater = trace.inwater;
+	gGlobalVariables.trace_inopen = trace.inopen;
+
+	VectorCopy(trace.endpos, gGlobalVariables.trace_endpos);
+	VectorCopy(trace.plane.normal, gGlobalVariables.trace_plane_normal);
+
+	gGlobalVariables.trace_plane_dist = trace.plane.dist;
+
+	if(trace.ent)
+		gGlobalVariables.trace_ent = EDICT_TO_PROG(trace.ent);
+	else
+		gGlobalVariables.trace_ent = EDICT_TO_PROG(sv.edicts);
 };
 
-void PF_TraceToss_DLL(edict_t *pEnt, edict_t *pEntToIgnore, TraceResult *pTraceResult)
+// TODO: q2
+extern trace_t SV_Trace_Toss(edict_t *ent, edict_t *ignore);
+//void PF_TraceToss(edict_t *ent, edict_t *ignore)
+void PF_TraceToss_DLL(edict_t *pEnt, edict_t *pEntToIgnore, TraceResult *pTraceResult) // TODO: handle pTraceResult
 {
-	// TODO
+	trace_t trace;
+
+	//trace = SV_Trace_Toss(pEnt, pEntToIgnore); // TODO
+
+	gGlobalVariables.trace_allsolid = trace.allsolid;
+	gGlobalVariables.trace_startsolid = trace.startsolid;
+	gGlobalVariables.trace_fraction = trace.fraction;
+	gGlobalVariables.trace_inwater = trace.inwater;
+	gGlobalVariables.trace_inopen = trace.inopen;
+
+	VectorCopy(trace.endpos, gGlobalVariables.trace_endpos);
+	VectorCopy(trace.plane.normal, gGlobalVariables.trace_plane_normal);
+
+	gGlobalVariables.trace_plane_dist = trace.plane.dist;
+
+	if(trace.ent)
+		gGlobalVariables.trace_ent = EDICT_TO_PROG(trace.ent);
+	else
+		gGlobalVariables.trace_ent = EDICT_TO_PROG(sv.edicts);
 };
 
 int TraceMonsterHull(edict_t *pEnt, const float *vPointA, const float *vPointB, int nNoMonsters, edict_t *pEntToSkip, TraceResult *pTraceResult)
@@ -1003,8 +1154,16 @@ void *PvAllocEntPrivateData(edict_t *pEnt, int32_t cb)
 		return NULL;
 	
 	void *pData = Mem_Alloc((size_t)cb); // TODO
-	Q_memset(pData, 0, cb);
-	return pData;
+	
+	if(pData)
+	{
+		Q_memset(pData, 0, cb);
+		pEnt->pvPrivateData = pData; // TODO: I think that's the reason it passes a pointer to an entity in here...
+		return pData;
+	};
+	
+	pEnt->pvPrivateData = NULL;
+	return NULL;
 };
 
 void *PvEntPrivateData(edict_t *pEnt)
