@@ -560,12 +560,12 @@ ref_params_t ref; // TODO: temp
 
 void V_SetupRefParams(ref_params_t *params)
 {
-	VectorCopy(vec3_origin, params->vieworg);
-	VectorCopy(vec3_origin, params->viewangles);
+	VectorCopy(r_refdef.vieworg, params->vieworg); // TODO: r_origin?
+	VectorCopy(r_refdef.viewangles, params->viewangles);
 	
-	VectorCopy(vec3_origin, params->forward);
-	VectorCopy(vec3_origin, params->right);
-	VectorCopy(vec3_origin, params->up);
+	VectorCopy(vpn, params->forward);
+	VectorCopy(vright, params->right);
+	VectorCopy(vup, params->up);
 	
 	params->frametime = host_frametime;
 	params->time = cl.time;
@@ -576,8 +576,8 @@ void V_SetupRefParams(ref_params_t *params)
 	params->onground = cl.onground;
 	params->waterlevel = 0;
 	
-	VectorCopy(cl.velocity, params->simvel);
-	VectorCopy(vec3_origin, params->simorg);
+	VectorCopy(cl.simvel, params->simvel);
+	VectorCopy(cl.simorg, params->simorg);
 	
 	vec3_t vViewHeight;
 	vViewHeight[2] = cl.viewheight;
@@ -598,7 +598,7 @@ void V_SetupRefParams(ref_params_t *params)
 	params->maxclients = cl.maxclients; //sv.maxclients;
 	params->viewentity = cl.viewentity;
 	params->playernum = cl.playernum;
-	params->max_entities = 100;
+	params->max_entities = 100; // TODO
 	params->demoplayback = cls.demoplayback;
 	params->hardware = 1;
 	params->smoothing = 0;
