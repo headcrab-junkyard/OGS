@@ -305,6 +305,10 @@ typedef struct
 	int light_level;
 #endif
 
+	vec3_t		simorg;
+	vec3_t		simvel;
+	vec3_t		simangles;
+
 	// TODO: temp(?) entries to support protocol 48
 	
 	int mapcrc;
