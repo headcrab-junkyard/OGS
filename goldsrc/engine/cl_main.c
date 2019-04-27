@@ -42,8 +42,6 @@ cvar_t	cl_hudswap	= {"cl_hudswap", "0", true};
 cvar_t	cl_maxfps	= {"fps_max", "0", true};
 */
 
-cvar_t sensitivity = { "sensitivity", "3", FCVAR_ARCHIVE };
-
 cvar_t entlatency = { "entlatency", "20" };
 cvar_t cl_predict_players = { "cl_predict_players", "1" };
 cvar_t cl_predict_players2 = { "cl_predict_players2", "1" };
@@ -1175,8 +1173,6 @@ void CL_Init()
 	//Cvar_RegisterVariable (&rcon_address);
 
 	Cvar_RegisterVariable(&cl_nolerp);
-	
-	Cvar_RegisterVariable(&sensitivity);
 
 	Cvar_RegisterVariable(&entlatency);
 	Cvar_RegisterVariable(&cl_predict_players2);
