@@ -89,22 +89,6 @@ char HUD_ClientTextureType(const char *name)
 	return PM_GetTextureType(name);
 };
 
-void IN_ActivateMouse()
-{
-};
-
-void IN_MouseEvent(int mstate)
-{
-};
-
-void IN_ClearStates()
-{
-};
-
-void IN_Accumulate()
-{
-};
-
 int CL_IsThirdPerson()
 {
 	return 0;
@@ -120,10 +104,6 @@ struct kbutton_s *KB_FindKey(const char *name)
 };
 
 void CAM_Think()
-{
-};
-
-void V_CalcRefdef(struct ref_params_s *pparams)
 {
 };
 
