@@ -31,6 +31,8 @@
 #	endif
 #endif
 
+extern HWND mainwindow;
+
 qboolean ImGui_Init()
 {
 	// Setup Dear ImGui context
@@ -93,7 +95,9 @@ void ImGui_Frame()
 
 	ImGui::NewFrame();
 	
-	ImGui::ShowDemoWindow(&show_demo_window);
+	bool show_demo_window = true;
+	if(show_demo_window)
+		ImGui::ShowDemoWindow(&show_demo_window);
 	
 	// Rendering
 	ImGui::EndFrame();
