@@ -126,11 +126,12 @@ float V_CalcRoll (vec3_t angles, vec3_t velocity, float rollangle, float rollspe
 	return side*sign;
 }
 
+// pitch drifting vars
 struct pitchdrift_t
 {
 	// TODO: move these fields here from the client state structure
 	float pitchvel;
-	int nodrift;
+	int nodrift; // TODO: qboolean
 	float driftmove;
 	double laststop;
 };
@@ -362,19 +363,20 @@ V_CalcIntermissionRefdef
 */
 void V_CalcIntermissionRefdef(struct ref_params_s *pparams)
 {
-	cl_entity_t *ent, *view;
+	//cl_entity_t *ent;
+	cl_entity_t *view;
 	float old;
 
 	// ent is the player model (visible when out of body)
-	ent = gpEngine->GetEntityByIndex(pparams->viewentity);
+	//ent = gpEngine->GetEntityByIndex(pparams->viewentity);
 	// view is the weapon model (only visible from inside body)
 	view = gpEngine->GetViewModel(); // TODO: was &cl.viewent;
 
-	VectorCopy(ent->origin, pparams->vieworg);
-	VectorCopy(ent->angles, pparams->viewangles);
+	VectorCopy(pparams->simorg, pparams->vieworg);
+	VectorCopy(pparams->viewangles, pparams->viewangles);
 	view->model = nullptr;
 
-	// allways idle in intermission
+	// always idle in intermission
 	old = v_idlescale->value;
 	v_idlescale->value = 1;
 	V_AddIdle(pparams);
@@ -383,56 +385,75 @@ void V_CalcIntermissionRefdef(struct ref_params_s *pparams)
 
 void V_CalcNormalRefdef(struct ref_params_s *pparams)
 {
-	cl_entity_t *ent, *view;
+	//cl_entity_t *ent;
+	cl_entity_t *view;
 	int i;
 	vec3_t forward, right, up;
 	vec3_t angles;
 	float bob;
 	
 	static float oldz = 0.0f;
-	static float lasttime = 0.0f;
+	static float lasttime = 0.0f; // TODO: unused in qw
 
 	V_DriftPitch(pparams);
 
 	// ent is the player model (visible when out of body)
-	ent = gpEngine->GetEntityByIndex(pparams->viewentity);
+	//ent = gpEngine->GetEntityByIndex(pparams->viewentity);
 	// view is the weapon model (only visible from inside body)
 	view = gpEngine->GetViewModel(); // TODO: was &cl.viewent
 
 	// transform the view offset by the model's matrix to get the offset from
 	// model origin for the view
-	ent->angles[YAW] = pparams->cl_viewangles[YAW];      // the model should face
+	//ent->angles[YAW] = pparams->cl_viewangles[YAW];      // the model should face
 	                                            // the view dir
-	ent->angles[PITCH] = -pparams->cl_viewangles[PITCH]; // the model should face
+	//ent->angles[PITCH] = -pparams->cl_viewangles[PITCH]; // the model should face
 	                                            // the view dir
 
 	bob = V_CalcBob(pparams);
 
-	// refresh position
-	VectorCopy(ent->origin, pparams->vieworg);
+	// TODO: temporary randomly modify the simulated origin
+	pparams->simorg[2] = 40;
+	
+	// refresh position from simulated origin
+	VectorCopy(pparams->simorg, pparams->vieworg);
 	pparams->vieworg[2] += bob;
-	VectorAdd(pparams->vieworg, pparams->viewheight, pparams->vieworg);
-
+	//VectorAdd(pparams->vieworg, pparams->viewheight, pparams->vieworg); // TODO: commented in, uncomment when fixed (viewheight is too high)
+	
 	// never let it sit exactly on a node line, because a water plane can
 	// dissapear when viewed with the eye exactly on it.
 	// the server protocol only specifies to 1/16 pixel, so add 1/32 in each axis
-	pparams->vieworg[0] += 1.0 / 32;
-	pparams->vieworg[1] += 1.0 / 32;
-	pparams->vieworg[2] += 1.0 / 32;
+	pparams->vieworg[0] += 1.0 / 32; // TODO: 16 in qw
+	pparams->vieworg[1] += 1.0 / 32; // TODO: 16 in qw
+	pparams->vieworg[2] += 1.0 / 32; // TODO: 16 in qw
 
 	VectorCopy(pparams->cl_viewangles, pparams->viewangles);
+
 	V_CalcViewRoll(pparams);
 	V_AddIdle(pparams);
 
+	// TODO: qw
+/*
+	if (view_message->flags & PF_GIB)
+		r_refdef.vieworg[2] += 8;	// gib view height
+	else if (view_message->flags & PF_DEAD)
+		r_refdef.vieworg[2] -= 16;	// corpse view height
+	else
+		r_refdef.vieworg[2] += 22;	// view height
+
+	if (view_message->flags & PF_DEAD)		// PF_GIB will also set PF_DEAD
+		r_refdef.viewangles[ROLL] = 80;	// dead view angle
+*/
+	
 	// offsets
-	angles[PITCH] = -ent->angles[PITCH]; // because entity pitches are actually backward
-	angles[YAW] = ent->angles[YAW];
-	angles[ROLL] = ent->angles[ROLL];
+	VectorCopy(pparams->cl_viewangles, angles); // TODO: gs, but i can't see anything in this case
+	//angles[PITCH] = -pparams->viewangles[PITCH]; // because entity pitches are actually backward
+	//angles[YAW] = pparams->viewangles[YAW];
+	//angles[ROLL] = pparams->viewangles[ROLL];
 
 	AngleVectors(angles, pparams->forward, pparams->right, pparams->up);
 
 	for(i = 0; i < 3; i++)
-		pparams->vieworg[i] += scr_ofsx->value * pparams->forward[i] + scr_ofsy->value * pparams->right[i] + scr_ofsz->value * pparams->up[i];
+		pparams->vieworg[i] += scr_ofsx->value * pparams->forward[i] + scr_ofsy->value * pparams->right[i] + scr_ofsz->value * pparams->up[i]; // TODO: not present in qw
 
 	//V_BoundOffsets(); // TODO
 
@@ -441,25 +462,21 @@ void V_CalcNormalRefdef(struct ref_params_s *pparams)
 
 	CalcGunAngle(pparams);
 
-	VectorCopy(ent->origin, view->origin);
-	//view->origin[2] += waterOffset; // TODO
-	VectorAdd(view->origin, pparams->viewheight, view->origin);
+	VectorCopy(pparams->simorg, view->origin);
+	view->origin[2] += 22; // TODO: += waterOffset;
+	VectorAdd(view->origin, pparams->viewheight, view->origin); // TODO: not present in qw
 
 	for(i = 0; i < 3; i++)
 	{
-		view->origin[i] += forward[i] * bob * 0.4;
-		//		view->origin[i] += right[i]*bob*0.4;
-		//		view->origin[i] += up[i]*bob*0.8;
+		view->origin[i] += pparams->forward[i] * bob * 0.4;
+		//view->origin[i] += pparams->right[i]*bob*0.4;
+		//view->origin[i] += pparams->up[i]*bob*0.8;
 	};
 	
 	view->origin[2] += bob;
 
-// fudge position around to keep amount of weapon visible
-// roughly equal with different FOV
-
-#if 0
-	if (cl.model_precache[cl.stats[STAT_WEAPON]] && strcmp (cl.model_precache[cl.stats[STAT_WEAPON]]->name,  "models/v_shot2.mdl"))
-#endif
+	// fudge position around to keep amount of weapon visible
+	// roughly equal with different FOV
 	if(pparams->viewsize == 110)
 		view->origin[2] += 1;
 	else if(pparams->viewsize == 100)
@@ -477,7 +494,7 @@ void V_CalcNormalRefdef(struct ref_params_s *pparams)
 	VectorAdd(pparams->viewangles, pparams->punchangle, pparams->viewangles);
 
 	// smooth out stair step ups
-	if(pparams->onground && ent->origin[2] - oldz > 0)
+	if(pparams->onground && pparams->simorg[2] - oldz > 0)
 	{
 		float steptime;
 
@@ -487,15 +504,15 @@ void V_CalcNormalRefdef(struct ref_params_s *pparams)
 			steptime = 0;
 
 		oldz += steptime * 80;
-		if(oldz > ent->origin[2])
-			oldz = ent->origin[2];
-		if(ent->origin[2] - oldz > 12)
-			oldz = ent->origin[2] - 12;
-		pparams->vieworg[2] += oldz - ent->origin[2];
-		view->origin[2] += oldz - ent->origin[2];
+		if(oldz > pparams->simorg[2])
+			oldz = pparams->simorg[2];
+		if(pparams->simorg[2] - oldz > 12)
+			oldz = pparams->simorg[2] - 12;
+		pparams->vieworg[2] += oldz - pparams->simorg[2];
+		view->origin[2] += oldz - pparams->simorg[2];
 	}
 	else
-		oldz = ent->origin[2];
+		oldz = pparams->simorg[2];
 
 	//if(chase_active->value) // TODO
 		//Chase_Update();
@@ -509,7 +526,7 @@ V_CalcRefdef
 
 ==================
 */
-C_EXPORT void V_CalcRefdef(struct ref_params_s *pparams)
+/*C_EXPORT*/ void V_CalcRefdef(struct ref_params_s *pparams)
 {
 	if(pparams->intermission)
 	{
