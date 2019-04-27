@@ -337,9 +337,14 @@ typedef struct enginefuncs_s
 	int (*pfnCheckParm)(const char *sCmdLineToken, char **ppnext);
 } enginefuncs_t;
 
-// TODO
+// Passed to pfnKeyValue
 typedef struct KeyValueData_s
 {
+	const char *szClassName; /// (in) entity class name
+	const char *szKeyName; /// (in) key name
+	const char *szValue; /// (in) key's value
+	
+	int32_t fHandled; ///< (out) set this to 1 if a request was processed
 } KeyValueData;
 
 // TODO
