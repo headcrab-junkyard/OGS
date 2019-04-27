@@ -26,6 +26,12 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 # Set additional paths to search for cmake modules
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
+# Set path to CEF
+set(CEF_ROOT ${CMAKE_SOURCE_DIR}/../cef_binary/latest
+	CACHE PATH
+	"Path to CEF binary distribution"
+)
+
 #####################################################################
 
 # Set C language standard
