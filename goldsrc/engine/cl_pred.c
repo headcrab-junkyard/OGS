@@ -1,7 +1,7 @@
 /*
  *	This file is part of OGS Engine
  *	Copyright (C) 1996-1997 Id Software, Inc.
- *	Copyright (C) 2018 BlackPhrase
+ *	Copyright (C) 2018-2019 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -32,6 +32,8 @@ extern frame_t *view_frame;
 CL_CheckPredictionError
 ===================
 */
+// TODO: fix
+/*
 void CL_CheckPredictionError()
 {
 	int frame;
@@ -39,7 +41,7 @@ void CL_CheckPredictionError()
 	int i;
 	int len;
 
-	if(!cl_predict->value || (cl.frame.playerstate.pmove.pm_flags & PMF_NO_PREDICTION))
+	if(!cl_predict.value || (cl.frame.playerstate.pmove.pm_flags & PMF_NO_PREDICTION))
 		return;
 
 	// calculate the last usercmd_t we sent that the server has processed
@@ -57,8 +59,8 @@ void CL_CheckPredictionError()
 	}
 	else
 	{
-		if(cl_showmiss->value && (delta[0] || delta[1] || delta[2]))
-			Com_Printf("prediction miss on %i: %i\n", cl.frame.serverframe,
+		if(cl_showmiss.value && (delta[0] || delta[1] || delta[2]))
+			Con_Printf("prediction miss on %i: %i\n", cl.frame.serverframe,
 			           delta[0] + delta[1] + delta[2]);
 
 		VectorCopy(cl.frame.playerstate.pmove.origin, cl.predicted_origins[frame]);
@@ -68,6 +70,7 @@ void CL_CheckPredictionError()
 			cl.prediction_error[i] = delta[i] * 0.125;
 	}
 }
+*/
 
 /*
 =================
@@ -83,17 +86,17 @@ void CL_NudgePosition()
 	vec3_t base;
 	int x, y;
 
-	if(PM_HullPointContents(&cl.model_precache[1]->hulls[1], 0, pmove.origin) == CONTENTS_EMPTY)
+	if(PM_HullPointContents(&cl.model_precache[1]->hulls[1], 0, clpmove.origin) == CONTENTS_EMPTY)
 		return;
 
-	VectorCopy(pmove.origin, base);
+	VectorCopy(clpmove.origin, base);
 	for(x = -1; x <= 1; x++)
 	{
 		for(y = -1; y <= 1; y++)
 		{
-			pmove.origin[0] = base[0] + x * 1.0 / 8;
-			pmove.origin[1] = base[1] + y * 1.0 / 8;
-			if(PM_HullPointContents(&cl.model_precache[1]->hulls[1], 0, pmove.origin) == CONTENTS_EMPTY)
+			clpmove.origin[0] = base[0] + x * 1.0 / 8;
+			clpmove.origin[1] = base[1] + y * 1.0 / 8;
+			if(PM_HullPointContents(&cl.model_precache[1]->hulls[1], 0, clpmove.origin) == CONTENTS_EMPTY)
 				return;
 		}
 	}
@@ -105,12 +108,12 @@ void CL_NudgePosition()
 CL_PredictUsercmd
 ==============
 */
-void CL_PredictUsercmd(player_state_t *from, player_state_t *to, usercmd_t *u, qboolean spectator) // TODO: player_state_t should be local_state_t
+void CL_PredictUsercmd(local_state_t *from, local_state_t *to, usercmd_t *u, qboolean spectator) // TODO: local_state_t was player_state_t
 {
 	// split up very long moves
 	if(u->msec > 50)
 	{
-		player_state_t temp;
+		local_state_t temp;
 		usercmd_t split;
 
 		split = *u;
@@ -121,27 +124,30 @@ void CL_PredictUsercmd(player_state_t *from, player_state_t *to, usercmd_t *u, q
 		return;
 	}
 
-	VectorCopy(from->origin, pmove.origin);
-	//	VectorCopy (from->viewangles, pmove.angles);
-	VectorCopy(u->angles, pmove.angles);
-	VectorCopy(from->velocity, pmove.velocity);
+	// TODO: clpmove was pmove
+	VectorCopy(from->origin, clpmove.origin);
+	//	VectorCopy (from->viewangles, clpmove.angles);
+	VectorCopy(u->viewangles, clpmove.angles);
+	VectorCopy(from->velocity, clpmove.velocity);
 
-	pmove.oldbuttons = from->oldbuttons;
-	pmove.waterjumptime = from->waterjumptime;
-	pmove.dead = cl.stats[STAT_HEALTH] <= 0;
-	pmove.spectator = spectator;
+	clpmove.oldbuttons = from->oldbuttons;
+	clpmove.waterjumptime = from->waterjumptime;
+	clpmove.dead = cl.stats[STAT_HEALTH] <= 0;
+	clpmove.spectator = spectator;
 
-	pmove.cmd = *u;
+	clpmove.cmd = *u;
 
-	PlayerMove();
+	ClientDLL_MoveClient(&clpmove); // TODO: was PlayerMove();
+	
 	//for (i=0 ; i<3 ; i++)
-	//pmove.origin[i] = ((int)(pmove.origin[i]*8))*0.125;
-	to->waterjumptime = pmove.waterjumptime;
-	to->oldbuttons = pmove.cmd.buttons;
-	VectorCopy(pmove.origin, to->origin);
-	VectorCopy(pmove.angles, to->viewangles);
-	VectorCopy(pmove.velocity, to->velocity);
-	to->onground = onground;
+		//clpmove.origin[i] = ((int)(clpmove.origin[i]*8))*0.125;
+	
+	to->waterjumptime = clpmove.waterjumptime;
+	to->oldbuttons = clpmove.cmd.buttons;
+	VectorCopy(clpmove.origin, to->origin);
+	VectorCopy(clpmove.angles, to->viewangles);
+	VectorCopy(clpmove.velocity, to->velocity);
+	to->onground = clpmove.onground;
 
 	to->weaponframe = from->weaponframe;
 }
@@ -153,6 +159,7 @@ CL_PredictMove
 */
 void CL_PredictMove()
 {
+	int ack, current;
 	int i;
 	float f;
 	frame_t *from, *to = NULL;
@@ -161,10 +168,13 @@ void CL_PredictMove()
 	if(cl_pushlatency.value > 0)
 		Cvar_Set("pushlatency", "0");
 
+	if(cls.state != ca_active)
+		return;
+	
 	if(cl.paused)
 		return;
 
-	cl.time = realtime - cls.latency - cl_pushlatency.value * 0.001;
+	cl.time = realtime - cl_pushlatency.value * 0.001; // TODO: cl.time = realtime - cls.latency - cl_pushlatency.value * 0.001;
 	if(cl.time > realtime)
 		cl.time = realtime;
 
@@ -174,19 +184,25 @@ void CL_PredictMove()
 	if(!cl.validsequence)
 		return;
 
-	if(cls.netchan.outgoing_sequence - cls.netchan.incoming_sequence >= UPDATE_BACKUP - 1)
+	ack = cls.netchan.incoming_acknowledged;
+	current = cls.netchan.outgoing_sequence;
+	
+	// if we are too far out of date, just freeze
+	if(current - ack >= UPDATE_BACKUP - 1)
+	{
 		return;
+	}
 
 	VectorCopy(cl.viewangles, cl.simangles);
 
 	// this is the last frame received from the server
-	from = &cl.frames[cls.netchan.incoming_sequence & UPDATE_MASK];
+	from = &cl.frames[ack & UPDATE_MASK];
 
 	// we can now render a frame
-	if(cls.state == ca_onserver)
+	//if(cls.state == ca_onserver) // TODO
 	{
 		// first update is the final signon stage
-		cls.state = ca_active;
+		//cls.state = ca_active; // TODO
 	}
 
 	if(cl_nopred.value)
@@ -197,21 +213,25 @@ void CL_PredictMove()
 	}
 
 	// predict forward until cl.time <= to->senttime
-	oldphysent = pmove.numphysent;
+	oldphysent = clpmove.numphysent;
 	CL_SetSolidPlayers(cl.playernum);
 
-	//	to = &cl.frames[cls.netchan.incoming_sequence & UPDATE_MASK];
+	//to = &cl.frames[ack & UPDATE_MASK];
 
-	for(i = 1; i < UPDATE_BACKUP - 1 && cls.netchan.incoming_sequence + i < cls.netchan.outgoing_sequence; i++)
+	// run frames
+	for(i = 1; i < UPDATE_BACKUP - 1 && ack + i < current; i++)
 	{
-		to = &cl.frames[(cls.netchan.incoming_sequence + i) & UPDATE_MASK];
-		CL_PredictUsercmd(&from->playerstate[cl.playernum], &to->playerstate[cl.playernum], &to->cmd, cl.spectator);
+		to = &cl.frames[(ack + i) & UPDATE_MASK];
+		CL_PredictUsercmd(&from->playerstate[cl.playernum], &to->playerstate[cl.playernum], &to->cmd, cl.spectator); // TODO: shouldn't the cmd be from the "from" state?
 		if(to->senttime >= cl.time)
 			break;
 		from = to;
+		
+		// save for debug checking
+		//VectorCopy(pm.s.origin, cl.predicted_origins[frame]);
 	}
 
-	pmove.numphysent = oldphysent;
+	clpmove.numphysent = oldphysent;
 
 	if(i == UPDATE_BACKUP - 1 || !to)
 		return; // net hasn't deliver packets in a long time...
