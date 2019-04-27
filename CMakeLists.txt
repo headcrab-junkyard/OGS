@@ -32,6 +32,12 @@ set(CEF_ROOT ${CMAKE_SOURCE_DIR}/../cef_binary/latest
 	"Path to CEF binary distribution"
 )
 
+# Set path to imgui
+set(OGS_IMGUI_PATH ${CMAKE_SOURCE_DIR}/../imgui
+	CACHE PATH
+	"Path to imgui library"
+)
+
 #####################################################################
 
 # Set C language standard
