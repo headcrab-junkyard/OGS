@@ -65,6 +65,10 @@ if(OGS_USE_SDL)
 	add_definitions(-DOGS_USE_SDL)
 endif()
 
+if(OGS_USE_IMGUI)
+	add_definitions(-DOGS_USE_IMGUI)
+endif()
+
 #####################################################################
 
 # Add subdirectories
