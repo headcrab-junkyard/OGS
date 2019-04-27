@@ -54,8 +54,25 @@ typedef enum
 	force_model_specifybounds_if_avail
 } FORCE_TYPE;
 
-typedef struct
+typedef struct TraceResult_s
 {
+	int fAllSolid;
+	int fStartSolid;
+	
+	int fInOpen;
+	int fInWater;
+	
+	float flFraction;
+	
+	vec3_t vecEndPos;
+	
+	float flPlaneDist;
+	
+	vec3_t vecPlaneNormal;
+	
+	edict_t *pHit;
+	
+	int iHitgroup;
 } TraceResult;
 
 typedef struct cvar_s cvar_t;
