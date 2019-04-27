@@ -241,10 +241,6 @@ typedef struct
 
 	// pitch drifting vars
 	float idealpitch;
-	float pitchvel;
-	qboolean nodrift;
-	float driftmove;
-	double laststop;
 
 	float viewheight;
 	float crouch; // local amount for smoothing stepups
