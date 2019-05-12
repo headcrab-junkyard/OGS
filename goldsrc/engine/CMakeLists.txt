@@ -26,6 +26,11 @@ if(WIN32)
 endif()
 )
 
+if(OGS_USE_IMGUI)
+	target_sources(${PROJECT_NAME}
+		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui_impl_opengl2.cpp
+	)
+endif()
 add_library(${PROJECT_NAME} MODULE ${PROJECT_SOURCES})
 
 target_link_libraries(${PROJECT_NAME} ogs-interface ogs-mathlib)
