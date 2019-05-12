@@ -881,6 +881,11 @@ void R_SetFrustum(void)
 {
 	int i;
 
+#if 0
+	/*
+	** this code is wrong, since it presume a 90 degree FOV both in the
+	** horizontal and vertical plane
+	*/
 	if(r_refdef.fov_x == 90)
 	{
 		// front side is visible
@@ -890,8 +895,16 @@ void R_SetFrustum(void)
 
 		VectorAdd(vpn, vup, frustum[2].normal);
 		VectorSubtract(vpn, vup, frustum[3].normal);
+		
+		// we theoretically don't need to normalize these vectors, but I do it
+		// anyway so that debugging is a little easier
+		VectorNormalize( frustum[0].normal );
+		VectorNormalize( frustum[1].normal );
+		VectorNormalize( frustum[2].normal );
+		VectorNormalize( frustum[3].normal );
 	}
 	else
+#endif // 0
 	{
 		// rotate VPN right by FOV_X/2 degrees
 		RotatePointAroundVector(frustum[0].normal, vup, vpn, -(90 - r_refdef.fov_x / 2));
