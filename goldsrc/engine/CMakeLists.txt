@@ -2,28 +2,33 @@ project(ogs-engine)
 
 option(OGS_ENGINE_HW "Build the engine module with hardware render (OpenGL) support, it will be using software render otherwise" ON)
 
-if(OGS_ENGINE_HW)
-	add_definitions(-DGLQUAKE) # TODO
-endif()
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
 add_subdirectory(render)
 
-file(GLOB PROJECT_SOURCES
-	${CMAKE_CURRENT_SOURCE_DIR}/*.c
-	${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
+add_library(${PROJECT_NAME} MODULE)
 
-if(WIN32)
-	${CMAKE_CURRENT_SOURCE_DIR}/win/*.c
-	${CMAKE_CURRENT_SOURCE_DIR}/win/*.cpp
-#else(UNIX)
-	#${CMAKE_CURRENT_SOURCE_DIR}/linux/*.c
-	#${CMAKE_CURRENT_SOURCE_DIR}/linux/*.cpp
-#else()
-	#${CMAKE_CURRENT_SOURCE_DIR}/null/*.c
-	#${CMAKE_CURRENT_SOURCE_DIR}/null/*.cpp
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} PROJECT_SOURCES)
+
+target_sources(${PROJECT_NAME}
+	PRIVATE ${PROJECT_SOURCES}
+)
+
+if(OGS_USE_SDL)
+	set(PLATFORM_NAME sdl2)
+	# TODO: cd and sound impls still should be taken from the platform-specific sources
+else()
+	if(WIN32)
+		set(PLATFORM_NAME win)
+	elseif(UNIX)
+		set(PLATFORM_NAME linux)
+	else()
+		set(PLATFORM_NAME null)
+	endif()
 endif()
+
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/${PLATFORM_NAME} PLATFORM_SOURCES)
+
+target_sources(${PROJECT_NAME}
+	PRIVATE ${PLATFORM_SOURCES}
 )
 
 if(OGS_USE_IMGUI)
@@ -31,7 +36,26 @@ if(OGS_USE_IMGUI)
 		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui_impl_opengl2.cpp
 	)
 endif()
-add_library(${PROJECT_NAME} MODULE ${PROJECT_SOURCES})
+
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
+if(OGS_USE_SDL)
+	target_include_directories(${PROJECT_NAME} PRIVATE ${SDL2_INCLUDE_DIR})
+endif()
+
+if(OGS_USE_IMGUI)
+	target_include_directories(${PROJECT_NAME} PRIVATE ${OGS_IMGUI_PATH})
+	target_include_directories(${PROJECT_NAME} PRIVATE ${OGS_IMGUI_PATH}/examples)
+	target_link_directories(${PROJECT_NAME} PRIVATE ${OGS_IMGUI_PATH}/build)
+endif()
+
+if(OGS_ENGINE_HW)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE GLQUAKE) # TODO
+endif()
+
+if(OGS_DEDICATED)
+	target_compile_definitions(${PROJECT_NAME} PRIVATE SWDS)
+endif()
 
 target_link_libraries(${PROJECT_NAME} ogs-interface ogs-mathlib)
 
