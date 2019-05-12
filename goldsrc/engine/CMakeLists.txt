@@ -30,6 +30,13 @@ add_library(${PROJECT_NAME} MODULE ${PROJECT_SOURCES})
 
 target_link_libraries(${PROJECT_NAME} ogs-interface ogs-mathlib)
 
+if(OGS_USE_IMGUI)
+	target_link_libraries(${PROJECT_NAME} imgui)
+	if(WIN32)
+		target_link_libraries(${PROJECT_NAME} XInput1_3)
+	endif()
+endif()
+
 if(WIN32)
 	# NOTE: looks like wsock32 is loaded dynamically
 	# ws2_32
