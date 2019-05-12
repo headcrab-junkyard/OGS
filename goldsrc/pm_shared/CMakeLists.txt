@@ -1,7 +1,9 @@
 project(ogs-pm_shared)
 
-file(GLOB PROJECT_SOURCES
-	${CMAKE_CURRENT_SOURCE_DIR}/*.c
-)
+add_library(${PROJECT_NAME} STATIC)
 
-add_library(${PROJECT_NAME} STATIC ${PROJECT_SOURCES})
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} PROJECT_SOURCES)
+
+target_sources(${PROJECT_NAME}
+	PRIVATE ${PROJECT_SOURCES}
+)
