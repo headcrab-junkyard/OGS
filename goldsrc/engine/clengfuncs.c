@@ -1,3 +1,21 @@
+/*
+ * This file is part of OGS Engine
+ * Copyright (C) 2018-2019 BlackPhrase
+ *
+ * OGS Engine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * OGS Engine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 /// @file
 /// @brief client-side engine functions exports
 
@@ -151,7 +169,16 @@ int CheckParm(const char *parm, char **ppnext)
 
 void GetMousePosition(int *apnX, int *apnY)
 {
-	// TODO
+#ifdef _WIN32
+	POINT current_pos;
+	GetCursorPos(&current_pos);
+	
+	if(apnX)
+		*apnX = current_pos.x;
+	
+	if(apnY)
+		*apnY = current_pos.y;
+#endif
 };
 
 int IsNoClipping()
@@ -343,17 +370,23 @@ void GetMousePos(struct tagPOINT *ppt)
 	if(!ppt)
 		return;
 	
-	// TODO
+#ifdef _WIN32
+	GetCursorPos(ppt);
+#endif
 };
 
 void SetMousePos(int x, int y)
 {
-	// TODO
+#ifdef _WIN32
+	SetCursorPos(x, y);
+#endif
 };
 
 void SetMouseEnable(qboolean abEnable)
 {
-	// TODO
+#ifdef _WIN32
+	ShowCursor(abEnable);
+#endif
 };
 
 struct cvar_s *GetFirstCvarPtr()
