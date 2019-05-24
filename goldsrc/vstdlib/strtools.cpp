@@ -27,16 +27,16 @@ static char* AllocString( const char *pStr, int nMaxChars )
 {
 	int allocLen;
 	if ( nMaxChars == -1 )
-		allocLen = V_strlen( pStr ) + 1;
+		allocLen = Q_strlen( pStr ) + 1;
 	else
-		allocLen = Min( V_strlen(pStr), nMaxChars ) + 1;
+		allocLen = Min( Q_strlen(pStr), nMaxChars ) + 1;
 
 	char *pOut = new char[allocLen];
-	V_strncpy( pOut, pStr, allocLen );
+	Q_strncpy( pOut, pStr, allocLen );
 	return pOut;
 }
 
-int V_strncmp( const char *s1, const char *s2, int count )
+int Q_strncmp( const char *s1, const char *s2, int count )
 {
 	Assert( count >= 0 );
 	Assert( count == 0 || s1 != NULL );
@@ -58,7 +58,7 @@ int V_strncmp( const char *s1, const char *s2, int count )
 //-----------------------------------------------------------------------------
 // Finds a string in another string with a case insensitive test w/ length validation
 //-----------------------------------------------------------------------------
-char const* V_strnistr( char const* pStr, char const* pSearch, int n )
+char const* Q_strnistr( char const* pStr, char const* pSearch, int n )
 {
 	Assert( pStr != NULL );
 	Assert( pSearch != NULL );
@@ -111,7 +111,7 @@ char const* V_strnistr( char const* pStr, char const* pSearch, int n )
 	return 0;
 }
 
-const char* V_strnchr( const char* pStr, char c, int n )
+const char* Q_strnchr( const char* pStr, char c, int n )
 {
 	char const* pLetter = pStr;
 	char const* pLast = pStr + n;
@@ -126,7 +126,7 @@ const char* V_strnchr( const char* pStr, char c, int n )
 	return NULL;
 }
 
-int V_strnicmp( const char *s1, const char *s2, int n )
+int Q_strnicmp( const char *s1, const char *s2, int n )
 {
 	Assert( n >= 0 );
 	Assert( n == 0 || s1 != NULL );
@@ -156,7 +156,7 @@ int V_strnicmp( const char *s1, const char *s2, int n )
 //-----------------------------------------------------------------------------
 // Finds a string in another string with a case insensitive test
 //-----------------------------------------------------------------------------
-char const* V_stristr( char const* pStr, char const* pSearch )
+char const* Q_stristr( char const* pStr, char const* pSearch )
 {
 	Assert( pStr != NULL );
 	Assert( pSearch != NULL );
@@ -212,7 +212,7 @@ char const* V_stristr( char const* pStr, char const* pSearch )
 // maxLen includes budget for the nul terminator at pDest,
 // so using maxLen = 3 would copy two characters from pSrc and add a trailing nul.
 //-----------------------------------------------------------------------------
-void V_strncpy( char *pDest, char const *pSrc, size_t maxLen )
+void Q_strncpy( char *pDest, char const *pSrc, size_t maxLen )
 {
 	Assert( maxLen == 0 || pDest != NULL );
 	Assert( pSrc != NULL );
@@ -228,7 +228,7 @@ void V_strncpy( char *pDest, char const *pSrc, size_t maxLen )
 		pstrDest[-1] = 0;
 }
 
-int V_snprintf( char *pDest, size_t bufferLen, char const *pFormat, ... )
+int Q_snprintf( char *pDest, size_t bufferLen, char const *pFormat, ... )
 {
 	Assert( bufferLen > 0 );
 	Assert( pDest != NULL );
@@ -251,7 +251,7 @@ int V_snprintf( char *pDest, size_t bufferLen, char const *pFormat, ... )
 	return len;
 }
 
-int V_vsnprintf( char *pDest, int bufferLen, char const *pFormat, va_list params )
+int Q_vsnprintf( char *pDest, int bufferLen, char const *pFormat, va_list params )
 {
 	Assert( bufferLen > 0 );
 	Assert( pDest != NULL );
@@ -269,7 +269,7 @@ int V_vsnprintf( char *pDest, int bufferLen, char const *pFormat, va_list params
 	return len;
 }
 
-int V_vsnprintfRet( char *pDest, int bufferLen, const char *pFormat, va_list params, bool *pbTruncated )
+int Q_vsnprintfRet( char *pDest, int bufferLen, const char *pFormat, va_list params, bool *pbTruncated )
 {
 	Assert( bufferLen > 0 );
 	Assert( bufferLen == 0 || pDest != NULL );
@@ -306,7 +306,7 @@ int V_vsnprintfRet( char *pDest, int bufferLen, const char *pFormat, va_list par
 //			max_chars_to_copy - COPY_ALL_CHARACTERS in pSrc or max # to copy
 // Output : char * the copied buffer
 //-----------------------------------------------------------------------------
-char *V_strncat(char *pDest, const char *pSrc, size_t destBufferSize, int max_chars_to_copy )
+char *Q_strncat(char *pDest, const char *pSrc, size_t destBufferSize, int max_chars_to_copy )
 {
 	size_t charstocopy = (size_t)0;
 
@@ -338,7 +338,7 @@ char *V_strncat(char *pDest, const char *pSrc, size_t destBufferSize, int max_ch
 	return pOut;
 }
 
-void V_SplitString2( const char *pString, const char * const *pSeparators, int nSeparators, CUtlVector<char*> &outStrings, bool bIncludeEmptyStrings )
+void Q_SplitString2( const char *pString, const char * const *pSeparators, int nSeparators, CUtlVector<char*> &outStrings, bool bIncludeEmptyStrings )
 {
 	outStrings.Purge();
 	const char *pCurPos = pString;
@@ -348,7 +348,7 @@ void V_SplitString2( const char *pString, const char * const *pSeparators, int n
 		const char *pFirstSeparator = 0;
 		for ( int i=0; i < nSeparators; i++ )
 		{
-			const char *pTest = V_stristr( pCurPos, pSeparators[i] );
+			const char *pTest = Q_stristr( pCurPos, pSeparators[i] );
 			if ( pTest && (!pFirstSeparator || pTest < pFirstSeparator) )
 			{
 				iFirstSeparator = i;
@@ -379,13 +379,13 @@ void V_SplitString2( const char *pString, const char * const *pSeparators, int n
 	}
 }
 
-void V_SplitString( const char *pString, const char *pSeparator, CUtlVector<char*> &outStrings, bool bIncludeEmptyStrings )
+void Q_SplitString( const char *pString, const char *pSeparator, CUtlVector<char*> &outStrings, bool bIncludeEmptyStrings )
 {
-	V_SplitString2( pString, &pSeparator, 1, outStrings, bIncludeEmptyStrings );
+	Q_SplitString2( pString, &pSeparator, 1, outStrings, bIncludeEmptyStrings );
 }
 
 //-----------------------------------------------------------------------------
-void V_StripTrailingWhitespaceASCII( char *pch )
+void Q_StripTrailingWhitespaceASCII( char *pch )
 {
 	if ( !pch )
 		return;
@@ -399,7 +399,7 @@ void V_StripTrailingWhitespaceASCII( char *pch )
 
 		// Non-whitespace?  Then assume termination immediately
 		// after, if we don't find any more whitespace
-		if ( !V_isspace( *pch ) )
+		if ( !Q_isspace( *pch ) )
 			t = pch+1;
 		++pch;
 	}
@@ -408,7 +408,7 @@ void V_StripTrailingWhitespaceASCII( char *pch )
 	*t = '\0';
 }
 
-int V_StrTrim( char *pStr )
+int Q_StrTrim( char *pStr )
 {
 	char *pSource = pStr;
 	char *pDest = pStr;
