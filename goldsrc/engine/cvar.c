@@ -220,6 +220,39 @@ void Cvar_RegisterVariable(cvar_t *variable)
 	cvar_vars = variable;
 }
 
+cvar_t *Cvar_AddVariable(const char *name, const char *value, int flags)
+{
+	// first check to see if it has already been defined
+	if(Cvar_FindVar(name))
+	{
+		Con_Printf("Can't register variable %s, allready defined\n", name);
+		return NULL;
+	};
+
+	// check for overlap with a command
+	if(Cmd_Exists(name))
+	{
+		Con_Printf("Cvar_RegisterVariable: %s is a command\n", name);
+		return NULL;
+	};
+
+	cvar_t *variable = Z_Malloc(sizeof(cvar_t));
+	
+	variable->name = name; // = Z_Malloc(Q_strlen(name) + 1);
+	
+	variable->string = Z_Malloc(Q_strlen(value) + 1);
+	Q_strcpy(variable->string, value);
+	variable->value = Q_atof(variable->string);
+
+	variable->flags = flags;
+	
+	// link the variable in
+	variable->next = cvar_vars;
+	cvar_vars = variable;
+	
+	return variable;
+};
+
 cvar_t *Cvar_RegisterClientVariable(const char *name, const char *value, int flags)
 {
 	//flags |= FCVAR_CLIENT;
