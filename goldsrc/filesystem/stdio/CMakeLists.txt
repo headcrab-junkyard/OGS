@@ -12,4 +12,4 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 	OUTPUT_NAME "filesystem_stdio"
 )
 
-target_link_libraries(${PROJECT_NAME} ogs-interface)
+target_link_libraries(${PROJECT_NAME} ogs-tier1)

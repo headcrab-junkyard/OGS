@@ -57,7 +57,7 @@ if(OGS_DEDICATED)
 	target_compile_definitions(${PROJECT_NAME} PRIVATE SWDS)
 endif()
 
-target_link_libraries(${PROJECT_NAME} ogs-interface ogs-mathlib)
+target_link_libraries(${PROJECT_NAME} ogs-tier1 ogs-mathlib)
 
 if(OGS_USE_IMGUI)
 	target_link_libraries(${PROJECT_NAME} imgui)

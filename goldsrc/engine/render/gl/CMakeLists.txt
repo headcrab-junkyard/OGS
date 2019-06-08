@@ -16,7 +16,7 @@ if(OGS_USE_INTERNAL_RENDER) #if(OGS_EVOL)
 		OUTPUT_NAME "r_gl"
 	)
 
-	target_link_libraries(${PROJECT_NAME} ogs-interface)
+	target_link_libraries(${PROJECT_NAME} ogs-tier1)
 else()
 	add_library(${PROJECT_NAME} STATIC ${PROJECT_SOURCES})
 endif()

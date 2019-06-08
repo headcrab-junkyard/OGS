@@ -26,5 +26,5 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 	OUTPUT_NAME "vgui2"
 )
 
-target_link_libraries(${PROJECT_NAME} ogs-interface)
+target_link_libraries(${PROJECT_NAME} ogs-tier1)
 #target_link_libraries(${PROJECT_NAME} ${CEGUI_LIBRARIES} ${CEGUI_OpenGLRenderer_LIBRARIES} -lopengl32)
