@@ -91,7 +91,7 @@ void *Sys_LoadModule(const char *name)
 void *Sys_GetExport(void *apModule, const char *proc)
 {
 #ifdef _WIN32
-	return static_cast<void*>(GetProcAddress(static_cast<HMODULE>(apModule), proc));
+	return reinterpret_cast<void*>(GetProcAddress(static_cast<HMODULE>(apModule), proc));
 #else // if __linux__ or __APPLE__
 	return dlsym(apModule, proc);
 #endif
@@ -99,7 +99,7 @@ void *Sys_GetExport(void *apModule, const char *proc)
 
 CreateInterfaceFn Sys_GetFactory(void *apModule)
 {
-	return static_cast<CreateInterfaceFn>(Sys_GetExport(apModule, CREATEINTERFACE_PROCNAME));
+	return reinterpret_cast<CreateInterfaceFn>(Sys_GetExport(apModule, CREATEINTERFACE_PROCNAME));
 };
 
 CreateInterfaceFn Sys_GetFactoryThis()
