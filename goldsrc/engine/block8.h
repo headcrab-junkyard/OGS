@@ -19,6 +19,8 @@
 
 /// @file
 
+// clang-format off
+
 LEnter16_8:
 	movb	(%esi),%al
 	movb	(%esi,%ebx,),%cl
@@ -143,3 +145,4 @@ LBPatch15:
 	movb	%cl,1(%edi)
 	addl	$0x2,%edi
 
+// clang-format on

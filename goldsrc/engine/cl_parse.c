@@ -1,7 +1,7 @@
 /*
  *	This file is part of OGS Engine
  *	Copyright (C) 1996-1997 Id Software, Inc.
- *	Copyright (C) 2018 BlackPhrase
+ *	Copyright (C) 2018-2019 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -282,7 +282,7 @@ void CL_ParseServerInfo()
 	
 	// TODO: the rest should be handled by svc_resourcelist
 	
-	// seperate the printfs so the server message can have a color
+	// separate the printfs so the server message can have a color
 	//Con_Printf("\n\n\35\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\37\n\n");
 	//Con_Printf("%c%s\n", 2, str);
 
@@ -525,7 +525,8 @@ void CL_ParseUpdate(int bits)
 		ent->forcelink = true;
 
 	if(forcelink)
-	{ // didn't have an update last message
+	{
+		// didn't have an update last message
 		VectorCopy(ent->ph[0].origin, ent->ph[1].origin);
 		VectorCopy(ent->ph[0].origin, ent->origin);
 		VectorCopy(ent->ph[0].angles, ent->ph[1].angles);
@@ -1221,7 +1222,7 @@ void CL_ParseServerMessage()
 			i = MSG_ReadByte ();
 			if (i < 0 || i >= MAX_CL_STATS)
 				Sys_Error ("svc_updatestat: %i is invalid", i);
-			cl.stats[i] = MSG_ReadLong ();;
+			cl.stats[i] = MSG_ReadLong ();
 			break;
 		*/
 		};

@@ -303,6 +303,7 @@ void Con_Init()
 	Cmd_AddCommand("messagemode2", Con_MessageMode2_f);
 	Cmd_AddCommand("clear", Con_Clear_f);
 	Cmd_AddCommand("condump", Con_Dump_f);
+	
 	con_initialized = true;
 }
 

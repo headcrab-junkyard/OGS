@@ -123,8 +123,7 @@ typedef struct
 	pixel_t *surfdat; // destination for generated surface
 	int rowbytes;     // destination logical width in bytes
 	msurface_t *surf; // description for surface to generate
-	fixed8_t lightadj[MAXLIGHTMAPS];
-	// adjust for lightmap levels for dynamic lighting
+	fixed8_t lightadj[MAXLIGHTMAPS]; // adjust for lightmap levels for dynamic lighting
 	texture_t *texture; // corrected for animating textures
 	int surfmip;        // mipmapped ratio of surface texels / world pixels
 	int surfwidth;      // in mipmapped texels

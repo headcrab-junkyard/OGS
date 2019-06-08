@@ -85,8 +85,7 @@ dlight_t *CL_AllocDlight(int key)
 CL_NewDlight
 ===============
 */
-void CL_NewDlight(int key, float x, float y, float z, float radius, float time,
-                  int type)
+void CL_NewDlight(int key, float x, float y, float z, float radius, float time, int type)
 {
 	dlight_t *dl;
 
@@ -134,7 +133,7 @@ CL_DecayLights
 ===============
 */
 /*
-void CL_DecayLights(void)
+void CL_DecayLights()
 {
 	int i;
 	dlight_t *dl;
@@ -240,7 +239,7 @@ FlushEntityPacket
 */
 // TODO: unused?
 /*
-void FlushEntityPacket(void)
+void FlushEntityPacket()
 {
 	int word;
 	entity_state_t olde, newe;
@@ -307,7 +306,8 @@ void CL_ParsePacketEntities(qboolean delta)
 	if(oldpacket != -1)
 	{
 		if(cls.netchan.outgoing_sequence - oldpacket >= UPDATE_BACKUP - 1)
-		{ // we can't use this, it is too old
+		{
+			// we can't use this, it is too old
 			//FlushEntityPacket(); // TODO
 			return;
 		}
@@ -330,7 +330,8 @@ void CL_ParsePacketEntities(qboolean delta)
 	{
 		word = (unsigned short)MSG_ReadShort();
 		if(msg_badread)
-		{ // something didn't parse right...
+		{
+			// something didn't parse right...
 			Host_EndGame("msg_badread in packetentities");
 			return;
 		}
@@ -425,7 +426,7 @@ CL_LinkPacketEntities
 
 ===============
 */
-void CL_LinkPacketEntities(void)
+void CL_LinkPacketEntities()
 {
 	cl_entity_t *ent;
 	packet_entities_t *pack;
@@ -588,7 +589,7 @@ int cl_num_projectiles;
 
 extern int cl_spikeindex;
 
-void CL_ClearProjectiles(void)
+void CL_ClearProjectiles()
 {
 	cl_num_projectiles = 0;
 }
@@ -600,7 +601,7 @@ CL_ParseProjectiles
 Nails are passed as efficient temporary entities
 =====================
 */
-void CL_ParseProjectiles(void)
+void CL_ParseProjectiles()
 {
 	int i, c, j;
 	byte bits[6];
@@ -633,7 +634,7 @@ CL_LinkProjectiles
 
 =============
 */
-void CL_LinkProjectiles(void)
+void CL_LinkProjectiles()
 {
 	int i;
 	projectile_t *pr;
@@ -664,7 +665,7 @@ void CL_LinkProjectiles(void)
 
 extern int cl_spikeindex, cl_playerindex, cl_flagindex;
 
-cl_entity_t *CL_NewTempEntity(void);
+cl_entity_t *CL_NewTempEntity();
 
 /*
 ===================
@@ -676,7 +677,7 @@ int parsecountmod; // TODO: temp
 // TODO: unused?
 /*
 extern double parsecounttime;
-void CL_ParsePlayerinfo(void)
+void CL_ParsePlayerinfo()
 {
 	int msec;
 	int flags;
@@ -834,7 +835,7 @@ Create visible entities in the correct position
 for all current players
 =============
 */
-void CL_LinkPlayers(void)
+void CL_LinkPlayers()
 {
 	int j;
 	player_info_t *info;
@@ -949,7 +950,7 @@ CL_SetSolid
 Builds all the pmove physents for the current frame
 ===============
 */
-void CL_SetSolidEntities(void)
+void CL_SetSolidEntities()
 {
 	int i;
 	frame_t *frame;
@@ -1108,7 +1109,7 @@ Builds the visedicts array for cl.time
 Made up of: clients, packet_entities, nails, and tents
 ===============
 */
-void CL_EmitEntities(void)
+void CL_EmitEntities()
 {
 	if(cls.state != ca_active)
 		return;

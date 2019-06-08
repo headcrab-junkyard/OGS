@@ -53,7 +53,7 @@ void CL_StopPlayback()
 
 	if(cls.timedemo)
 		CL_FinishTimeDemo();
-}
+};
 
 /*
 ====================
@@ -74,10 +74,11 @@ void CL_WriteDemoMessage()
 	{
 		f = LittleFloat(cl.viewangles[i]);
 		fwrite(&f, 4, 1, cls.demofile);
-	}
+	};
+
 	fwrite(net_message.data, net_message.cursize, 1, cls.demofile);
 	fflush(cls.demofile);
-}
+};
 
 /*
 ====================
@@ -170,7 +171,7 @@ void CL_Stop_f()
 	{
 		Con_Printf("Not recording a demo.\n");
 		return;
-	}
+	};
 
 	// write a disconnect message to the demo file
 	SZ_Clear(&net_message);
@@ -179,10 +180,12 @@ void CL_Stop_f()
 
 	// finish up
 	fclose(cls.demofile);
+
 	cls.demofile = NULL;
 	cls.demorecording = false;
+
 	Con_Printf("Completed demo\n");
-}
+};
 
 /*
 ====================
@@ -201,23 +204,24 @@ void CL_Record_f()
 		return;
 
 	c = Cmd_Argc();
+
 	if(c != 2 && c != 3 && c != 4)
 	{
 		Con_Printf("record <demoname> [<map> [cd track]]\n");
 		return;
-	}
+	};
 
 	if(strstr(Cmd_Argv(1), ".."))
 	{
 		Con_Printf("Relative pathnames are not allowed.\n");
 		return;
-	}
+	};
 
 	if(c == 2 && cls.state == ca_connected)
 	{
 		Con_Printf("Can not record - already connected to server\nClient demo recording must be started before connecting\n");
 		return;
-	}
+	};
 
 	// write the forced cd track number, or -1
 	if(c == 4)
@@ -243,17 +247,18 @@ void CL_Record_f()
 
 	Con_Printf("recording to %s.\n", name);
 	cls.demofile = FS_Open(name, "wb");
+
 	if(!cls.demofile)
 	{
 		Con_Printf("ERROR: couldn't open.\n");
 		return;
-	}
+	};
 
 	cls.forcetrack = track;
 	FS_FPrintf(cls.demofile, "%i\n", cls.forcetrack);
 
 	cls.demorecording = true;
-}
+};
 
 /*
 ====================
@@ -275,7 +280,7 @@ void CL_PlayDemo_f()
 	{
 		Con_Printf("play <demoname> : plays a demo\n");
 		return;
-	}
+	};
 
 	//
 	// disconnect from server
@@ -290,12 +295,13 @@ void CL_PlayDemo_f()
 
 	Con_Printf("Playing demo from %s.\n", name);
 	cls.demofile = FS_Open(name, "rb");
+
 	if(!cls.demofile)
 	{
 		Con_Printf("ERROR: couldn't open.\n");
 		cls.demonum = -1; // stop demo loop
 		return;
-	}
+	};
 
 	cls.demoplayback = true;
 	cls.state = ca_connected;
@@ -311,7 +317,7 @@ void CL_PlayDemo_f()
 		cls.forcetrack = -cls.forcetrack;
 	// ZOID, fscanf is evil
 	//	fscanf (cls.demofile, "%i\n", &cls.forcetrack);
-}
+};
 
 /*
 ====================
@@ -332,7 +338,7 @@ void CL_FinishTimeDemo()
 	if(!time)
 		time = 1;
 	Con_Printf("%i frames %5.1f seconds %5.1f fps\n", frames, time, frames / time);
-}
+};
 
 /*
 ====================
@@ -350,7 +356,7 @@ void CL_TimeDemo_f()
 	{
 		Con_Printf("timedemo <demoname> : gets demo speeds\n");
 		return;
-	}
+	};
 
 	CL_PlayDemo_f();
 
@@ -360,4 +366,4 @@ void CL_TimeDemo_f()
 	cls.timedemo = true;
 	cls.td_startframe = host_framecount;
 	cls.td_lastframe = -1; // get a new message this frame
-}
+};

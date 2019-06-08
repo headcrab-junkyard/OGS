@@ -16,7 +16,9 @@
  *	You should have received a copy of the GNU General Public License
  *	along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
-// cmd.c -- Quake script command processing module
+
+/// @file
+/// @brief engine script command processing module
 
 #include "quakedef.h"
 
@@ -274,6 +276,7 @@ void Cmd_Exec_f()
 		return;
 	}
 
+	// FIXME: is this safe freeing the hunk here???
 	mark = Hunk_LowMark();
 	f = (char *)COM_LoadHunkFile(Cmd_Argv(1));
 	if(!f)
@@ -307,7 +310,7 @@ void Cmd_Echo_f()
 ===============
 Cmd_Alias_f
 
-Creates a new command that executes a command string (possibly ; seperated)
+Creates a new command that executes a command string (possibly ; separated)
 ===============
 */
 
@@ -342,7 +345,7 @@ void Cmd_Alias_f()
 		return;
 	}
 
-	// if the alias allready exists, reuse it
+	// if the alias already exists, reuse it
 	for(a = cmd_alias; a; a = a->next)
 	{
 		if(!strcmp(s, a->name))

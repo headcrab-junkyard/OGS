@@ -164,7 +164,6 @@ void IN_Shutdown(void)
 //
 // IN_Commands - process buttons
 //
-
 void IN_Commands(void)
 {
 	// done in X event handler
@@ -173,7 +172,6 @@ void IN_Commands(void)
 //
 // IN_Move - process mouse moves
 //
-
 void IN_Move(usercmd_t *cmd)
 {
 	static int last_dx, last_dy;

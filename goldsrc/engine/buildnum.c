@@ -21,14 +21,14 @@
 
 #include "quakedef.h"
 
-// char *date = "Oct 9 2016";
-// char *time = "13:22:52";
-char *date = __DATE__;
-const char *curtime = __TIME__;
+//const char *date = "Oct 9 2016";
+//const char *time = "13:22:52";
+static char *date = __DATE__;
+//const char *curtime = __TIME__;
 
-const char *mon[12] =
+static const char *mon[12] =
 { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
-char mond[12] =
+static char mond[12] =
 { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
 // returns days since Oct 9 2016

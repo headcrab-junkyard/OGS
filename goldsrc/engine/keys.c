@@ -167,9 +167,10 @@ void Key_Console(int key)
 		history_line = edit_line;
 		key_lines[edit_line][0] = ']';
 		key_linepos = 1;
+		
 		if(cls.state == ca_disconnected)
-			SCR_UpdateScreen(); // force an update, because the command
-		                        // may take some time
+			SCR_UpdateScreen(); // force an update, because the command may take some time
+		
 		return;
 	}
 
@@ -201,9 +202,12 @@ void Key_Console(int key)
 		do
 		{
 			history_line = (history_line - 1) & 31;
-		} while(history_line != edit_line && !key_lines[history_line][1]);
+		}
+		while(history_line != edit_line && !key_lines[history_line][1]);
+		
 		if(history_line == edit_line)
 			history_line = (edit_line + 1) & 31;
+		
 		Q_strcpy(key_lines[edit_line], key_lines[history_line]);
 		key_linepos = Q_strlen(key_lines[edit_line]);
 		return;
@@ -213,10 +217,13 @@ void Key_Console(int key)
 	{
 		if(history_line == edit_line)
 			return;
+		
 		do
 		{
 			history_line = (history_line + 1) & 31;
-		} while(history_line != edit_line && !key_lines[history_line][1]);
+		}
+		while(history_line != edit_line && !key_lines[history_line][1]);
+		
 		if(history_line == edit_line)
 		{
 			key_lines[edit_line][0] = ']';

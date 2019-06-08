@@ -16,7 +16,8 @@
  *	You should have received a copy of the GNU General Public License
  *	along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
-// Z_zone.c
+
+/// @file
 
 #include "quakedef.h"
 
@@ -416,7 +417,7 @@ void *Hunk_AllocName(int size, char *name)
 	Q_strncpy(h->name, name, 8);
 
 	return (void *)(h + 1);
-}
+};
 
 /*
 ===================
