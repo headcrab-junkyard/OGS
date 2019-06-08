@@ -1,5 +1,5 @@
 /*
-Copyright 2018 Headcrab Garage
+Copyright 2018-2019 BlackPhrase
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
 files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
@@ -18,7 +18,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #pragma once
 
-#include <vector>
+#include <list>
 
 #define EXPOSE_INTERFACE_FN(FunctionName, InterfaceName, VersionName)\
 	static InterfaceRegistryEntry(VersionName, FunctionName);
@@ -47,7 +47,7 @@ constexpr auto CREATEINTERFACE_PROCNAME{"CreateInterface"};
 /// Base interface; all interfaces should derive from this
 struct IBaseInterface
 {
-	// Hi there!
+	// BP: Hi there!
 };
 
 /// Export function prototype
@@ -81,21 +81,18 @@ void Sys_UnloadModule(void *apModule);
 using pfnInstantiate = IBaseInterface *(*)();
 
 struct InterfaceRegistryEntry;
-using tInterfaceRegEntryVec = std::vector<InterfaceRegistryEntry*>;
+using tInterfaceRegEntryList = std::list<InterfaceRegistryEntry*>;
 
 struct InterfaceRegistryEntry
 {
 	InterfaceRegistryEntry(const char *asName, pfnInstantiate afnInstantiate)
 		: msName(asName), mfnInstantiate(afnInstantiate)
 	{
-		svEntries.push_back(this);
+		slstEntries.push_back(this);
 	};
 	
 	const char *msName{""};
 	pfnInstantiate mfnInstantiate{nullptr};
 	
-	//InterfaceRegistryEntry *mpNext{nullptr};
-	
-	//static InterfaceRegistryEntry *spEntryList;
-	static tInterfaceRegEntryVec svEntries;
+	static tInterfaceRegEntryList slstEntries;
 };

@@ -1,5 +1,5 @@
 /*
-Copyright 2018 Headcrab Garage
+Copyright 2018-2019 BlackPhrase
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation 
 files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, 
@@ -35,14 +35,14 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #define C_EXPORT extern "C" EXPORT
 
-tInterfaceRegEntryVec InterfaceRegistryEntry::svEntries;
+tInterfaceRegEntryList InterfaceRegistryEntry::slstEntries;
 
 C_EXPORT IBaseInterface *CreateInterface(const char *name, int *retval)
 {
 	if(retval)
 		*retval = 0;
 	
-	for(auto It : InterfaceRegistryEntry::svEntries)
+	for(auto It : InterfaceRegistryEntry::slstEntries)
 		if(!strcmp(It->msName, name))
 		{
 			if(It->mfnInstantiate)
@@ -69,7 +69,7 @@ void *Sys_LoadModule(const char *name)
 	void *pLib{nullptr};
 	
 #ifdef _WIN32
-	pLib = (void*)LoadLibrary(name);
+	pLib = static_cast<void*>(LoadLibrary(name));
 #else // if __linux__ or __APPLE__
 	pLib = dlopen(name, RTLD_NOW); // TODO: RTLD_LAZY?
 #endif
@@ -91,7 +91,7 @@ void *Sys_LoadModule(const char *name)
 void *Sys_GetExport(void *apModule, const char *proc)
 {
 #ifdef _WIN32
-	return (void*)GetProcAddress((HMODULE)apModule, proc);
+	return static_cast<void*>(GetProcAddress(static_cast<HMODULE>(apModule), proc));
 #else // if __linux__ or __APPLE__
 	return dlsym(apModule, proc);
 #endif
@@ -99,7 +99,7 @@ void *Sys_GetExport(void *apModule, const char *proc)
 
 CreateInterfaceFn Sys_GetFactory(void *apModule)
 {
-	return (CreateInterfaceFn)Sys_GetExport(apModule, CREATEINTERFACE_PROCNAME);
+	return static_cast<CreateInterfaceFn>(Sys_GetExport(apModule, CREATEINTERFACE_PROCNAME));
 };
 
 CreateInterfaceFn Sys_GetFactoryThis()
@@ -110,7 +110,7 @@ CreateInterfaceFn Sys_GetFactoryThis()
 void Sys_UnloadModule(void *apModule)
 {
 #ifdef _WIN32
-	FreeLibrary((HMODULE)apModule);
+	FreeLibrary(static_cast<HMODULE>(apModule));
 #else // if __linux__ or __APPLE__
 	dlclose(apModule);
 #endif
