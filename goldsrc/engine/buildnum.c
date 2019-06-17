@@ -31,13 +31,12 @@ static const char *mon[12] =
 static char mond[12] =
 { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
-// returns days since Oct 9 2016
+// returns days since Sep 09 2018 (first build)
 int build_number()
 {
 	int m = 0;
 	int d = 0;
 	int y = 0;
-	int hr, min;
 	static int b = 0;
 
 	if(b != 0)
@@ -57,22 +56,10 @@ int build_number()
 	b = d + (int)((y - 1) * 365.25);
 
 	if(((y % 4) == 0) && m > 1)
-	{
 		b += 1;
-	}
 
-	// TODO
-	b -= 34995; // Oct 24 1996
-	//b -= 35741; // Nov 9 1998
-	//b -= 42285; // Oct 9 2016
-	//b -= 42300; // Oct 24 2016
-
-	hr = (curtime[0] - '0') * 10 + (curtime[1] - '0');
-	min = (curtime[3] - '0') * 10 + (curtime[4] - '0');
-	//	sec = (curtime[6] - '0') * 10 + (curtime[7] - '0');
-
-	b *= 60 * 24;
-	b += hr * 60 + min;
+	//b -= 34995; // Oct 24 1996
+	b -= 42985; // Sep 9 2018
 
 	return b;
 };
