@@ -1555,3 +1555,21 @@ trace_t SV_Trace_Toss(edict_t *ent, edict_t *ignore)
 	return trace;
 }
 #endif
+
+// TODO: move to sv_phys.h?
+extern cvar_t sv_maxspeed;
+extern cvar_t sv_accelerate;
+
+void SV_SetMoveVars()
+{
+	movevars.gravity			= sv_gravity.value; 
+	movevars.stopspeed		    = sv_stopspeed.value;		 
+	movevars.maxspeed			= sv_maxspeed.value;			 
+	movevars.spectatormaxspeed  = sv_spectatormaxspeed.value; 
+	movevars.accelerate		    = sv_accelerate.value;		 
+	movevars.airaccelerate	    = sv_airaccelerate.value;	 
+	movevars.wateraccelerate	= sv_wateraccelerate.value;	   
+	movevars.friction			= sv_friction.value;			 
+	movevars.waterfriction	    = sv_waterfriction.value;	 
+	movevars.entgravity			= 1.0;
+}
