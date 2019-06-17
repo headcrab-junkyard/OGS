@@ -59,7 +59,7 @@ void VGui_Shutdown()
 	gbVGuiInitialized = false;
 };
 
-void VGui_Frame()
+extern "C" void VGui_Frame()
 {
 	if(!gbVGuiInitialized)
 		return;
