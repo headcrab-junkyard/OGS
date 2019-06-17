@@ -27,6 +27,13 @@
 #	include "imguiwrap.h"
 #endif
 
+static bool gbVGuiInitialized{false};
+
+bool VGui_IsInitialized()
+{
+	return gbVGuiInitialized;
+};
+
 void VGui_Startup()
 {
 	VGuiWrap_Startup();
@@ -36,6 +43,8 @@ void VGui_Startup()
 	if(!ImGui_Init())
 		return;
 #endif
+
+	gbVGuiInitialized = true;
 };
 
 void VGui_Shutdown()
@@ -46,10 +55,14 @@ void VGui_Shutdown()
 #ifdef OGS_USE_IMGUI
 	ImGui_Shutdown();
 #endif
+
+	gbVGuiInitialized = false;
 };
 
 void VGui_Frame()
 {
+	if(!gbVGuiInitialized)
+		return;
 	//VGuiWrap_Frame();
 	VGuiWrap2_Frame();
 	
