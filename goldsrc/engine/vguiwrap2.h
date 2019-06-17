@@ -24,7 +24,7 @@
 void VGuiWrap2_Startup();
 void VGuiWrap2_Shutdown();
 
-void VguiWrap2_Frame();
+void VGuiWrap2_Frame();
 
 void VGuiWrap2_Paint();
 void VguiWrap2_GetMouseDelta(int *x, int *y);
