@@ -1,7 +1,11 @@
 /*
- *	This file is part of OGS Engine
- *	Copyright (C) 1996-1997 Id Software, Inc.
- *	Copyright (C) 2018 BlackPhrase
+ * This file is part of OGS Engine
+ * Copyright (C) 1996-1997 Id Software, Inc.
+ * Copyright (C) 2002-2009 John Fitzgibbons and others
+ * Copyright (C) 2007-2008 Kristian Duske
+ * Copyright (C) 2010-2011 O. Sezer <sezero@users.sourceforge.net>
+ * Copyright (C) 2010-2014 QuakeSpasm developers
+ * Copyright (C) 2018 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -19,6 +23,7 @@
 // snd_dma.c -- main control for any streaming sound output device
 
 #include "quakedef.h"
+#include "snd_codec.h"
 
 #ifdef _WIN32
 #include "winquake.h"
@@ -226,6 +231,8 @@ void S_Init()
 	ambient_sfx[AMBIENT_WATER] = S_PrecacheSound("ambience/water1.wav");
 	ambient_sfx[AMBIENT_SKY] = S_PrecacheSound("ambience/wind2.wav");
 
+	S_CodecInit();
+
 	S_StopAllSounds(true);
 }
 
@@ -244,6 +251,8 @@ void S_Shutdown()
 	shm = 0;
 	sound_started = 0;
 
+	S_CodecShutdown();
+	
 	if(!fakedma)
 	{
 		SNDDMA_Shutdown();

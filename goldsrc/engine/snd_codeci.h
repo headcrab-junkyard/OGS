@@ -26,6 +26,8 @@
 #ifndef _SND_CODECI_H_
 #define _SND_CODECI_H_
 
+typedef struct snd_stream_s snd_stream_t;
+
 /* Codec internals */
 typedef qboolean (*CODEC_INIT)(void);
 typedef void (*CODEC_SHUTDOWN)(void);

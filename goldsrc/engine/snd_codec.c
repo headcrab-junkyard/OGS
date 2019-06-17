@@ -28,14 +28,37 @@
 #include "snd_codeci.h"
 
 /* headers for individual codecs */
+#ifdef USE_CODEC_MIKMOD
 #include "snd_mikmod.h"
+#endif
+
+#ifdef USE_CODEC_XMP
 #include "snd_xmp.h"
+#endif
+
+#ifdef USE_CODEC_UMX
 #include "snd_umx.h"
+#endif
+
+#ifdef USE_CODEC_WAVE
 #include "snd_wave.h"
+#endif
+
+#ifdef USE_CODEC_FLAC
 #include "snd_flac.h"
+#endif
+
+#ifdef USE_CODEC_MP3
 #include "snd_mp3.h"
+#endif
+
+#ifdef USE_CODEC_VORBIS
 #include "snd_vorbis.h"
+#endif
+
+#ifdef USE_CODEC_OPUS
 #include "snd_opus.h"
+#endif
 
 static snd_codec_t *codecs;
 
@@ -154,7 +177,7 @@ snd_stream_t *S_CodecOpenStreamExt (const char *filename)
 	snd_stream_t *stream;
 	const char *ext;
 
-	ext = COM_FileGetExtension(filename);
+	ext = COM_FileExtension(filename);
 	if (! *ext)
 	{
 		Con_Printf("No extension for %s\n", filename);
@@ -164,7 +187,7 @@ snd_stream_t *S_CodecOpenStreamExt (const char *filename)
 	codec = codecs;
 	while (codec)
 	{
-		if (!q_strcasecmp(ext, codec->ext))
+		if (!Q_strcasecmp(ext, codec->ext))
 			break;
 		codec = codec->next;
 	}
@@ -188,7 +211,7 @@ snd_stream_t *S_CodecOpenStreamAny (const char *filename)
 	snd_stream_t *stream;
 	const char *ext;
 
-	ext = COM_FileGetExtension(filename);
+	ext = COM_FileExtension(filename);
 	if (! *ext)	/* try all available */
 	{
 		char tmp[MAX_QPATH];
@@ -196,7 +219,7 @@ snd_stream_t *S_CodecOpenStreamAny (const char *filename)
 		codec = codecs;
 		while (codec)
 		{
-			Q_snprintf(tmp, sizeof(tmp), "%s.%s", filename, codec->ext);
+			snprintf(tmp, sizeof(tmp), "%s.%s", filename, codec->ext); // TODO: was Q_snprintf
 			stream = S_CodecUtilOpen(tmp, codec);
 			if (stream) {
 				if (codec->codec_open(stream)) {
@@ -270,13 +293,14 @@ int S_CodecReadStream (snd_stream_t *stream, int bytes, void *buffer)
 snd_stream_t *S_CodecUtilOpen(const char *filename, snd_codec_t *codec)
 {
 	snd_stream_t *stream;
-	FILE *handle;
+	FileHandle_t handle;
 	qboolean pak;
 	long length;
 
 	/* Try to open the file */
-	length = (long) COM_FOpenFile(filename, &handle, NULL);
-	pak = file_from_pak;
+	handle = FS_Open(filename, "rb");
+	length = (long)FS_FileSize(handle);
+	//pak = file_from_pak; // TODO
 	if (length == -1)
 	{
 		Con_DPrintf("Couldn't open %s\n", filename);
@@ -286,19 +310,22 @@ snd_stream_t *S_CodecUtilOpen(const char *filename, snd_codec_t *codec)
 	/* Allocate a stream, Z_Malloc zeroes its content */
 	stream = (snd_stream_t *) Z_Malloc(sizeof(snd_stream_t));
 	stream->codec = codec;
-	stream->fh.file = handle;
+	stream->fh = handle;
+	// TODO
+	/*
 	stream->fh.start = ftell(handle);
 	stream->fh.pos = 0;
 	stream->fh.length = length;
 	stream->fh.pak = stream->pak = pak;
-	Q_strlcpy(stream->name, filename, MAX_QPATH);
+	*/
+	Q_strncpy(stream->name, filename, MAX_QPATH); // TODO: was Q_strlcpy
 
 	return stream;
 }
 
 void S_CodecUtilClose(snd_stream_t **stream)
 {
-	fclose((*stream)->fh.file);
+	FS_Close((*stream)->fh);
 	Z_Free(*stream);
 	*stream = NULL;
 }
