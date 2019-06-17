@@ -703,12 +703,17 @@ void SV_ClientThink()
 SV_ReadClientMove
 ===================
 */
-void SV_ReadClientMove(usercmd_t *move)
+void SV_ReadClientMove(client_t *host_client, usercmd_t *move)
 {
 	int i;
 	vec3_t angle;
 	int bits;
 
+	MSG_ReadByte();
+	
+	// read lossage percentage
+	MSG_ReadByte();
+	
 	// read ping time
 	host_client->ping_times[host_client->num_pings % NUM_PING_TIMES] = sv.time - MSG_ReadFloat();
 	host_client->num_pings++;
@@ -724,19 +729,22 @@ void SV_ReadClientMove(usercmd_t *move)
 	move->sidemove = MSG_ReadShort();
 	move->upmove = MSG_ReadShort();
 
+	// read light level
+	host_client->edict->v.light_level = MSG_ReadByte();
+	
 	// read buttons
-	bits = MSG_ReadByte();
+	bits = MSG_ReadShort();
 	host_client->edict->v.button0 = bits & 1;
 	host_client->edict->v.button2 = (bits & 2) >> 1;
+	//TODO: host_client->edict->v.button = bits;
 
+	// read impulse
 	i = MSG_ReadByte();
 	if(i)
 		host_client->edict->v.impulse = i;
 
-#ifdef QUAKE2
-	// read light level
-	host_client->edict->v.light_level = MSG_ReadByte();
-#endif
+	// read weapon selection
+	MSG_ReadByte(); // TODO: handle
 }
 
 /*
@@ -1026,6 +1034,9 @@ void SV_ExecuteClientMessage(client_t *cl)
 			break;
 
 		case clc_move:
+			SV_ReadClientMove(cl, &cl->cmd);
+			// TODO: qw
+			/*
 			if(move_issued)
 				return; // someone is trying to cheat...
 
@@ -1080,6 +1091,7 @@ void SV_ExecuteClientMessage(client_t *cl)
 
 			cl->lastcmd = newcmd;
 			cl->lastcmd.buttons = 0; // avoid multiple fires on lag
+			*/
 			break;
 
 		case clc_stringcmd:
