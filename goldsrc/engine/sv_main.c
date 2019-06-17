@@ -3168,11 +3168,12 @@ void SV_SpawnServer(const char *server, const char *startspot)
 	SV_Physics();
 
 	// save movement vars
-	//SV_SetMoveVars();
+	SV_SetMoveVars();
 
 	// create a baseline for more efficient communications
 	//SV_CreateBaseline(); // TODO
 	//sv.signon_buffer_size[sv.num_signon_buffers-1] = sv.signon.cursize;
+
 
 	// TODO: not present in qw
 	// send serverinfo to all connected clients
