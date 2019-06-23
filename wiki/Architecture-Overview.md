@@ -1,0 +1,3 @@
+There could be possibly these engine architectures:
+* ***vanilla*** - integrated vgui with all its crap; no render dll; keep it original as much as possible
+* ***ac96/evol*** - vgui via mediator module (engine <-> mediator <-> vgui) or via vgui2 if it able to provide the vgui1 root panel; render dll; (other subsystems in dll?); mostly the same as vanilla with handy fixes of the original architecture; maybe x64 and multithreading

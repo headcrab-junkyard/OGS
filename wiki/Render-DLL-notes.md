@@ -1,0 +1,4 @@
+We can use Id Tech 2 approach and move render code into separate module  
+GS is using software render in dedicated mode somehow (swds) so we can preserve sw render code on engine module side and move work with OGL (and D3D/potentially some other impl) into render dll
+
+Using the approach rendering code can be almost fully removed from engine module and remain in their own dll. It seems that SW render code is usable in GS' swds in some ways so in our case we still can use it from our dll. This approach can give the ability to have only one compiled engine binary that could be used for both localhost/dedicated server purposes
