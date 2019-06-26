@@ -1,22 +1,21 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
+ *	This file is part of OGS Engine
+ *	Copyright (C) 1996-1997 Id Software, Inc.
+ *	Copyright (C) 2018-2019 BlackPhrase
+ *
+ *	OGS Engine is free software: you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License as published by
+ *	the Free Software Foundation, either version 3 of the License, or
+ *	(at your option) any later version.
+ *
+ *	OGS Engine is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *	GNU General Public License for more details.
+ *
+ *	You should have received a copy of the GNU General Public License
+ *	along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
+ */
 // models.c -- model loading and caching
 
 // models are the only shared resource between a client and server running
@@ -31,13 +30,20 @@ char	loadname[32];	// for hunk tags
 void Mod_LoadSpriteModel (model_t *mod, void *buffer);
 void Mod_LoadBrushModel (model_t *mod, void *buffer);
 void Mod_LoadAliasModel (model_t *mod, void *buffer);
+void Mod_LoadStudioModel(model_t *mod, void *buffer);
 model_t *Mod_LoadModel (model_t *mod, qboolean crash);
 
 byte	mod_novis[MAX_MAP_LEAFS/8];
 
-#define	MAX_MOD_KNOWN	256
+#define	MAX_MOD_KNOWN	512
 model_t	mod_known[MAX_MOD_KNOWN];
 int		mod_numknown;
+
+// TODO: not present in qw
+// values for model_t's needload
+#define NL_PRESENT 0
+#define NL_NEEDS_LOADED 1
+#define NL_UNREFERENCED 2
 
 /*
 ===============
@@ -51,7 +57,7 @@ void Mod_Init (void)
 
 /*
 ===============
-Mod_Init
+Mod_Extradata
 
 Caches the data if needed
 ===============
@@ -100,7 +106,6 @@ mleaf_t *Mod_PointInLeaf (vec3_t p, model_t *model)
 	
 	return NULL;	// never reached
 }
-
 
 /*
 ===================
@@ -179,7 +184,7 @@ Mod_FindName
 
 ==================
 */
-model_t *Mod_FindName (char *name)
+model_t *Mod_FindName (const char *name)
 {
 	int		i;
 	model_t	*mod;
@@ -199,7 +204,7 @@ model_t *Mod_FindName (char *name)
 		if (mod_numknown == MAX_MOD_KNOWN)
 			Sys_Error ("mod_numknown == MAX_MOD_KNOWN");
 		strcpy (mod->name, name);
-		mod->needload = true;
+		mod->needload = NL_NEEDS_LOADED; // TODO: = true in qw
 		mod_numknown++;
 	}
 
@@ -212,13 +217,13 @@ Mod_TouchModel
 
 ==================
 */
-void Mod_TouchModel (char *name)
+void Mod_TouchModel (const char *name)
 {
 	model_t	*mod;
 	
 	mod = Mod_FindName (name);
 	
-	if (!mod->needload)
+	if(mod->needload == NL_PRESENT) // TODO: !mod->needload in qw
 	{
 		if (mod->type == mod_alias)
 			Cache_Check (&mod->cache);
@@ -255,7 +260,6 @@ model_t *Mod_LoadModel (model_t *mod, qboolean crash)
 //
 	if (!crash)
 	{
-	
 	}
 	
 //
@@ -281,7 +285,7 @@ model_t *Mod_LoadModel (model_t *mod, qboolean crash)
 //
 
 // call the apropriate loader
-	mod->needload = false;
+	mod->needload = NL_PRESENT; // TODO: = false in qw
 	
 	switch (LittleLong(*(unsigned *)buf))
 	{
@@ -291,6 +295,10 @@ model_t *Mod_LoadModel (model_t *mod, qboolean crash)
 		
 	case IDSPRITEHEADER:
 		Mod_LoadSpriteModel (mod, buf);
+		break;
+	
+	case IDSTUDIOHEADER:
+		Mod_LoadStudioModel(mod, buf);
 		break;
 	
 	default:
@@ -308,7 +316,7 @@ Mod_ForName
 Loads in a model for the given name
 ==================
 */
-model_t *Mod_ForName (char *name, qboolean crash)
+model_t *Mod_ForName (const char *name, qboolean crash)
 {
 	model_t	*mod;
 	
@@ -345,7 +353,7 @@ void Mod_LoadTextures (lump_t *l)
 	{
 		loadmodel->textures = NULL;
 		return;
-	}
+	};
 	m = (dmiptexlump_t *)(mod_base + l->fileofs);
 	
 	m->nummiptex = LittleLong (m->nummiptex);
@@ -361,22 +369,26 @@ void Mod_LoadTextures (lump_t *l)
 		mt = (miptex_t *)((byte *)m + m->dataofs[i]);
 		mt->width = LittleLong (mt->width);
 		mt->height = LittleLong (mt->height);
+
 		for (j=0 ; j<MIPLEVELS ; j++)
 			mt->offsets[j] = LittleLong (mt->offsets[j]);
 		
 		if ( (mt->width & 15) || (mt->height & 15) )
 			Sys_Error ("Texture %s is not 16 aligned", mt->name);
+
 		pixels = mt->width*mt->height/64*85;
 		tx = Hunk_AllocName (sizeof(texture_t) +pixels, loadname );
 		loadmodel->textures[i] = tx;
 
-		memcpy (tx->name, mt->name, sizeof(tx->name));
+		Q_memcpy (tx->name, mt->name, sizeof(tx->name));
+
 		tx->width = mt->width;
 		tx->height = mt->height;
 		for (j=0 ; j<MIPLEVELS ; j++)
 			tx->offsets[j] = mt->offsets[j] + sizeof(texture_t) - sizeof(miptex_t);
+
 		// the pixels immediately follow the structures
-		memcpy ( tx+1, mt+1, pixels);
+		Q_memcpy ( tx+1, mt+1, pixels);
 		
 		if (!Q_strncmp(mt->name,"sky",3))	
 			R_InitSky (tx);
@@ -391,7 +403,7 @@ void Mod_LoadTextures (lump_t *l)
 		if (!tx || tx->name[0] != '+')
 			continue;
 		if (tx->anim_next)
-			continue;	// allready sequenced
+			continue;	// already sequenced
 
 	// find the number of frames in the animation
 		memset (anims, 0, sizeof(anims));
@@ -445,7 +457,7 @@ void Mod_LoadTextures (lump_t *l)
 			}
 			else
 				Sys_Error ("Bad animating texture %s", tx->name);
-		}
+		};
 		
 #define	ANIM_CYCLE	2
 	// link them all together
@@ -460,7 +472,8 @@ void Mod_LoadTextures (lump_t *l)
 			tx2->anim_next = anims[ (j+1)%max ];
 			if (altmax)
 				tx2->alternate_anims = altanims[0];
-		}
+		};
+
 		for (j=0 ; j<altmax ; j++)
 		{
 			tx2 = altanims[j];
@@ -472,9 +485,9 @@ void Mod_LoadTextures (lump_t *l)
 			tx2->anim_next = altanims[ (j+1)%altmax ];
 			if (max)
 				tx2->alternate_anims = anims[0];
-		}
-	}
-}
+		};
+	};
+};
 
 /*
 =================
@@ -487,7 +500,8 @@ void Mod_LoadLighting (lump_t *l)
 	{
 		loadmodel->lightdata = NULL;
 		return;
-	}
+	};
+
 	loadmodel->lightdata = Hunk_AllocName ( l->filelen, loadname);	
 	memcpy (loadmodel->lightdata, mod_base + l->fileofs, l->filelen);
 }
@@ -1135,6 +1149,8 @@ void Mod_LoadBrushModel (model_t *mod, void *buffer)
 	for (i=0 ; i<sizeof(dheader_t)/4 ; i++)
 		((int *)header)[i] = LittleLong ( ((int *)header)[i]);
 
+	// TODO: qw
+/*
 	mod->checksum = 0;
 	mod->checksum2 = 0;
 
@@ -1150,6 +1166,7 @@ void Mod_LoadBrushModel (model_t *mod, void *buffer)
 		mod->checksum2 ^= Com_BlockChecksum(mod_base + header->lumps[i].fileofs, 
 			header->lumps[i].filelen);
 	}
+*/
 	
 // load into heap
 
@@ -1797,8 +1814,8 @@ void Mod_LoadSpriteModel (model_t *mod, void *buffer)
 
 	version = LittleLong (pin->version);
 	if (version != SPRITE_VERSION)
-		Sys_Error ("%s has wrong version number "
-				 "(%i should be %i)", mod->name, version, SPRITE_VERSION);
+		Sys_Error ("%s has wrong version number (%i should be %i)"
+				 mod->name, version, SPRITE_VERSION);
 
 	numframes = LittleLong (pin->numframes);
 
@@ -1869,6 +1886,11 @@ void Mod_Print (void)
 	Con_Printf ("Cached models:\n");
 	for (i=0, mod=mod_known ; i < mod_numknown ; i++, mod++)
 	{
-		Con_Printf ("%8p : %s\n",mod->cache.data, mod->name);
+		Con_Printf ("%8p : %s",mod->cache.data, mod->name);
+		if(mod->needload & NL_UNREFERENCED)
+			Con_Printf(" (!R)");
+		if(mod->needload & NL_NEEDS_LOADED)
+			Con_Printf(" (!P)");
+		Con_Printf("\n");
 	}
 }

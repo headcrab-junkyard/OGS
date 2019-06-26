@@ -40,9 +40,6 @@ typedef struct
 // the client simulates or interpolates movement to get these values
 	double		time;			// this is the time value that the client
 								// is rendering at.  allways <= realtime
-	vec3_t		simorg;
-	vec3_t		simvel;
-	vec3_t		simangles;
 
 	float		punchangle;		// temporary view kick from weapon firing
 
@@ -50,10 +47,6 @@ typedef struct
 
 	int			num_entities;	// stored bottom up in cl_entities array
 	int			num_statics;	// stored top down in cl_entitiers
-
-	int			cdtrack;		// cd audio
-
-	entity_t	viewent;		// weapon model
 } client_state_t;
 
 extern  cvar_t	cl_warncmd;

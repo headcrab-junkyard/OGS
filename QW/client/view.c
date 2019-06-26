@@ -22,25 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 cvar_t	lcd_x = {"lcd_x", "0"};	// FIXME: make this work sometime...
 
-cvar_t	cl_rollspeed = {"cl_rollspeed", "200"};
-cvar_t	cl_rollangle = {"cl_rollangle", "2.0"};
-
-cvar_t	cl_bob = {"cl_bob","0.02", false};
-cvar_t	cl_bobcycle = {"cl_bobcycle","0.6", false};
-cvar_t	cl_bobup = {"cl_bobup","0.5", false};
-
-cvar_t	v_kicktime = {"v_kicktime", "0.5", false};
-cvar_t	v_kickroll = {"v_kickroll", "0.6", false};
-cvar_t	v_kickpitch = {"v_kickpitch", "0.6", false};
-
-cvar_t	crosshair = {"crosshair", "0", true};
-
 cvar_t  cl_crossx = {"cl_crossx", "0", true};
 cvar_t  cl_crossy = {"cl_crossy", "0", true};
-
-#ifdef GLQUAKE
-cvar_t	gl_cshiftpercent = {"gl_cshiftpercent", "100", false};
-#endif
 
 cvar_t  v_contentblend = {"v_contentblend", "1", false};
 
@@ -219,34 +202,6 @@ void V_DriftPitch (void)
 	}
 }
 
-
-
-
-
-/*
-============================================================================== 
- 
-						PALETTE FLASHES 
- 
-============================================================================== 
-*/ 
- 
- 
-cshift_t	cshift_empty = { {130,80,50}, 0 };
-cshift_t	cshift_water = { {130,80,50}, 128 };
-cshift_t	cshift_slime = { {0,25,5}, 150 };
-cshift_t	cshift_lava = { {255,80,0}, 150 };
-
-cvar_t		v_gamma = {"gamma", "1", true};
-
-byte		gammatable[256];	// palette is sent through this
-
-
-#ifdef	GLQUAKE
-byte		ramps[3][256];
-float		v_blend[4];		// rgba 0.0 - 1.0
-#endif	// GLQUAKE
-
 void V_ParseDamage ()
 {
 	int		armor, blood;
@@ -420,27 +375,6 @@ void V_CalcBlend (void)
 }
 #endif
 
-/*
-=============
-V_UpdatePalette
-=============
-*/
-#ifdef	GLQUAKE
-void V_UpdatePalette ()
-{
-}
-#else	// !GLQUAKE
-/*
-=============
-V_UpdatePalette
-=============
-*/
-void V_UpdatePalette ()
-{
-}
-
-#endif	// !GLQUAKE
-
 void CalcGunAngle (void)
 {	
 	float	yaw, pitch, move;
@@ -536,85 +470,8 @@ void V_CalcViewRoll (void)
 
 }
 
-void V_CalcIntermissionRefdef (void)
-{
-	cl_entity_t	*view;
-	float		old;
-
-// view is the weapon model
-	view = &cl.viewent;
-
-	VectorCopy (cl.simorg, r_refdef.vieworg);
-	VectorCopy (cl.simangles, r_refdef.viewangles);
-	view->model = NULL;
-
-// allways idle in intermission
-	old = v_idlescale.value;
-	v_idlescale.value = 1;
-	V_AddIdle ();
-	v_idlescale.value = old;
-}
-
 void V_CalcRefdef (void)
 {
-	entity_t	*view;
-	int			i;
-	vec3_t		forward, right, up;
-	float		bob;
-	static float oldz = 0;
-
-	V_DriftPitch ();
-
-// view is the weapon model (only visible from inside body)
-	view = &cl.viewent;
-
-	bob = V_CalcBob ();
-	
-// refresh position from simulated origin
-	VectorCopy (cl.simorg, r_refdef.vieworg);
-
-	r_refdef.vieworg[2] += bob;
-
-// never let it sit exactly on a node line, because a water plane can
-// dissapear when viewed with the eye exactly on it.
-// the server protocol only specifies to 1/8 pixel, so add 1/16 in each axis
-	r_refdef.vieworg[0] += 1.0/16;
-	r_refdef.vieworg[1] += 1.0/16;
-	r_refdef.vieworg[2] += 1.0/16;
-
-	VectorCopy (cl.simangles, r_refdef.viewangles);
-	V_CalcViewRoll ();
-	V_AddIdle ();
-
-	if (view_message->flags & PF_GIB)
-		r_refdef.vieworg[2] += 8;	// gib view height
-	else if (view_message->flags & PF_DEAD)
-		r_refdef.vieworg[2] -= 16;	// corpse view height
-	else
-		r_refdef.vieworg[2] += 22;	// view height
-
-	if (view_message->flags & PF_DEAD)		// PF_GIB will also set PF_DEAD
-		r_refdef.viewangles[ROLL] = 80;	// dead view angle
-
-
-// offsets
-	AngleVectors (cl.simangles, forward, right, up);
-	
-// set up gun position
-	VectorCopy (cl.simangles, view->angles);
-	
-	CalcGunAngle ();
-
-	VectorCopy (cl.simorg, view->origin);
-	view->origin[2] += 22;
-
-	for (i=0 ; i<3 ; i++)
-	{
-		view->origin[i] += forward[i]*bob*0.4;
-//		view->origin[i] += right[i]*bob*0.4;
-//		view->origin[i] += up[i]*bob*0.8;
-	}
-	view->origin[2] += bob;
 
 // fudge position around to keep amount of weapon visible
 // roughly equal with different FOV
@@ -632,7 +489,6 @@ void V_CalcRefdef (void)
  	else
 		view->model = cl.model_precache[cl.stats[STAT_WEAPON]];
 	view->frame = view_message->weaponframe;
-	view->colormap = vid.colormap;
 
 // set up the refresh position
 	r_refdef.viewangles[PITCH] += cl.punchangle;
@@ -640,8 +496,6 @@ void V_CalcRefdef (void)
 // smooth out stair step ups
 	if ( (view_message->onground != -1) && (cl.simorg[2] - oldz > 0) )
 	{
-		float steptime;
-		
 		steptime = host_frametime;
 	
 		oldz += steptime * 80;
@@ -652,8 +506,6 @@ void V_CalcRefdef (void)
 		r_refdef.vieworg[2] += oldz - cl.simorg[2];
 		view->origin[2] += oldz - cl.simorg[2];
 	}
-	else
-		oldz = cl.simorg[2];
 }
 
 /*
@@ -668,94 +520,10 @@ void DropPunchAngle (void)
 		cl.punchangle = 0;
 }
 
-/*
-==================
-V_RenderView
-
-The player's clipping box goes from (-16 -16 -24) to (16 16 32) from
-the entity origin, so any view position inside that will be valid
-==================
-*/
-extern vrect_t scr_vrect;
-
-void V_RenderView (void)
-{
-//	if (cl.simangles[ROLL])
-//		Sys_Error ("cl.simangles[ROLL]");	// DEBUG
-cl.simangles[ROLL] = 0;	// FIXME @@@ 
-
-	if (cls.state != ca_active)
-		return;
-
-	view_frame = &cl.frames[cls.netchan.incoming_sequence & UPDATE_MASK];
-	view_message = &view_frame->playerstate[cl.playernum];
-
-	DropPunchAngle ();
-	if (cl.intermission)
-	{	// intermission / finale rendering
-		V_CalcIntermissionRefdef ();	
-	}
-	else
-	{
-		V_CalcRefdef ();
-	}
-
-	R_PushDlights ();
-	R_RenderView ();
-	
-#ifndef GLQUAKE
-	if (crosshair.value)
-		Draw_Crosshair();
-#endif
-		
-}
-
-//============================================================================
-
-/*
-=============
-V_Init
-=============
-*/
 void V_Init (void)
 {
 	Cmd_AddCommand ("v_cshift", V_cshift_f);	
 	Cmd_AddCommand ("bf", V_BonusFlash_f);
-	Cmd_AddCommand ("centerview", V_StartPitchDrift);
-
-	Cvar_RegisterVariable (&v_centermove);
-	Cvar_RegisterVariable (&v_centerspeed);
-
-	Cvar_RegisterVariable (&v_iyaw_cycle);
-	Cvar_RegisterVariable (&v_iroll_cycle);
-	Cvar_RegisterVariable (&v_ipitch_cycle);
-	Cvar_RegisterVariable (&v_iyaw_level);
-	Cvar_RegisterVariable (&v_iroll_level);
-	Cvar_RegisterVariable (&v_ipitch_level);
 
 	Cvar_RegisterVariable (&v_contentblend);
-
-	Cvar_RegisterVariable (&v_idlescale);
-	Cvar_RegisterVariable (&crosshaircolor);
-	Cvar_RegisterVariable (&crosshair);
-	Cvar_RegisterVariable (&cl_crossx);
-	Cvar_RegisterVariable (&cl_crossy);
-#ifdef GLQUAKE
-	Cvar_RegisterVariable (&gl_cshiftpercent);
-#endif
-
-	Cvar_RegisterVariable (&cl_rollspeed);
-	Cvar_RegisterVariable (&cl_rollangle);
-	Cvar_RegisterVariable (&cl_bob);
-	Cvar_RegisterVariable (&cl_bobcycle);
-	Cvar_RegisterVariable (&cl_bobup);
-
-	Cvar_RegisterVariable (&v_kicktime);
-	Cvar_RegisterVariable (&v_kickroll);
-	Cvar_RegisterVariable (&v_kickpitch);	
-
-	BuildGammaTable (1.0);	// no gamma yet
-	Cvar_RegisterVariable (&v_gamma);
 }
-
-

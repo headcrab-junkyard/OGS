@@ -1,5 +1,24 @@
+/*
+ *	This file is part of OGS Engine
+ *	Copyright (C) 1996-1997 Id Software, Inc.
+ *	Copyright (C) 2018-2019 BlackPhrase
+ *
+ *	OGS Engine is free software: you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License as published by
+ *	the Free Software Foundation, either version 3 of the License, or
+ *	(at your option) any later version.
+ *
+ *	OGS Engine is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ *	GNU General Public License for more details.
+ *
+ *	You should have received a copy of the GNU General Public License
+ *	along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
+ */
 
-// vid_win.c -- Win32 video driver
+/// @file
+/// @brief Win32 video driver
 
 #include "quakedef.h"
 #include "winquake.h"
@@ -1789,7 +1808,7 @@ void VID_ForceLockState (int lk)
 	lockcount = lk;
 }
 
-void	VID_SetPalette (unsigned char *palette)
+void	VID_SetPalette (unsigned short *palette)
 {
 	INT			i;
 	palette_t	pal[256];
@@ -1858,7 +1877,7 @@ void	VID_SetPalette (unsigned char *palette)
 	}
 }
 
-void	VID_ShiftPalette (unsigned char *palette)
+void	VID_ShiftPalette (unsigned short *palette)
 {
 	VID_SetPalette (palette);
 }
@@ -2016,7 +2035,7 @@ void VID_ForceMode_f ()
 	}
 }
 
-void	VID_Init (unsigned char *palette)
+void	VID_Init (unsigned short *palette)
 {
 	int		i, bestmatch, bestmatchmetric, t, dr, dg, db;
 	int		basenummodes;
@@ -2987,11 +3006,7 @@ LONG WINAPI MainWndProc (
 		// crash on Win95)
 			if (!in_mode_set)
 			{
-				if (MessageBox (mainwindow, "Are you sure you want to quit?", "Confirm Exit",
-							MB_YESNO | MB_SETFOREGROUND | MB_ICONQUESTION) == IDYES)
-				{
 					Sys_Quit ();
-				}
 			}
 			break;
 

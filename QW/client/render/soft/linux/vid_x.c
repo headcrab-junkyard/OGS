@@ -108,7 +108,7 @@ static long X11_buffersize;
 int vid_surfcachesize;
 void *vid_surfcache;
 
-void (*vid_menudrawfn)(void);
+void (*vid_menudrawfn)();
 void (*vid_menukeyfn)(int key);
 void VID_MenuKey (int key);
 
@@ -211,7 +211,7 @@ static Cursor CreateNullCursor(Display *display, Window root)
     return cursor;
 }
 
-void ResetFrameBuffer(void)
+void ResetFrameBuffer()
 {
 	int mem;
 	int pwidth;
@@ -265,12 +265,10 @@ void ResetFrameBuffer(void)
 
 	vid.buffer = (byte*) (x_framebuffer[0]);
 	vid.conbuffer = vid.buffer;
-
 }
 
-void ResetSharedFrameBuffers(void)
+void ResetSharedFrameBuffers()
 {
-
 	int size;
 	int key;
 	int minsize = getpagesize();
@@ -303,7 +301,6 @@ void ResetSharedFrameBuffers(void)
 
 	for (frm=0 ; frm<2 ; frm++)
 	{
-
 	// free up old frame buffer memory
 
 		if (x_framebuffer[frm])
@@ -351,18 +348,15 @@ void ResetSharedFrameBuffers(void)
 			Sys_Error("VID: XShmAttach() failed\n");
 		XSync(x_disp, 0);
 		shmctl(x_shminfo[frm].shmid, IPC_RMID, 0);
-
 	}
-
 }
 
 // Called at startup to set up translation tables, takes 256 8 bit RGB values
 // the palette data will go away after the call, so it must be copied off if
 // the video driver will need it again
 
-void	VID_Init (unsigned char *palette)
+void	VID_Init (unsigned short *palette)
 {
-
    int pnum, i;
    XVisualInfo template;
    int num_visuals;
@@ -421,14 +415,16 @@ void	VID_Init (unsigned char *palette)
 		if (!vid.width || !vid.height)
 			Sys_Error("VID: Bad window width/height\n");
 	}
-	if ((pnum=COM_CheckParm("-width"))) {
+	if ((pnum=COM_CheckParm("-width")))
+	{
 		if (pnum >= com_argc-1)
 			Sys_Error("VID: -width <width>\n");
 		vid.width = Q_atoi(com_argv[pnum+1]);
 		if (!vid.width)
 			Sys_Error("VID: Bad window width\n");
 	}
-	if ((pnum=COM_CheckParm("-height"))) {
+	if ((pnum=COM_CheckParm("-height")))
+	{
 		if (pnum >= com_argc-1)
 			Sys_Error("VID: -height <height>\n");
 		vid.height = Q_atoi(com_argv[pnum+1]);
@@ -514,15 +510,12 @@ void	VID_Init (unsigned char *palette)
 			&attribs );
 		XStoreName( x_disp,x_win,"xquake");
 
-
 		if (x_visinfo->class != TrueColor)
 			XFreeColormap(x_disp, tmpcmap);
-
 	}
 
 	if (x_visinfo->depth == 8)
 	{
-
 	// create and upload the palette
 		if (x_visinfo->class == PseudoColor)
 		{
@@ -530,7 +523,6 @@ void	VID_Init (unsigned char *palette)
 			VID_SetPalette(palette);
 			XSetWindowColormap(x_disp, x_win, x_cmap);
 		}
-
 	}
 
 // inviso cursor
@@ -594,19 +586,15 @@ void	VID_Init (unsigned char *palette)
 	vid.aspect = ((float)vid.height / (float)vid.width) * (320.0 / 240.0);
 
 //	XSynchronize(x_disp, False);
-
 }
 
-void VID_ShiftPalette(unsigned char *p)
+void VID_ShiftPalette(unsigned short *p)
 {
 	VID_SetPalette(p);
 }
 
-
-
-void VID_SetPalette(unsigned char *palette)
+void VID_SetPalette(unsigned short *palette)
 {
-
 	int i;
 	XColor colors[256];
 
@@ -628,12 +616,11 @@ void VID_SetPalette(unsigned char *palette)
 		}
 		XStoreColors(x_disp, x_cmap, colors, 256);
 	}
-
 }
 
 // Called at shutdown
 
-void	VID_Shutdown (void)
+void	VID_Shutdown ()
 {
 	Con_Printf("VID_Shutdown\n");
 	XAutoRepeatOn(x_disp);
@@ -642,7 +629,6 @@ void	VID_Shutdown (void)
 
 int XLateKey(XKeyEvent *ev)
 {
-
 	int key;
 	char buf[64];
 	KeySym keysym;
@@ -783,13 +769,14 @@ int config_notify=0;
 int config_notify_width;
 int config_notify_height;
 						      
-void GetEvent(void)
+void GetEvent()
 {
 	XEvent x_event;
 	int b;
    
 	XNextEvent(x_disp, &x_event);
-	switch(x_event.type) {
+	switch(x_event.type)
+	{
 	case KeyPress:
 		keyq[keyq_head].key = XLateKey(&x_event.xkey);
 		keyq[keyq_head].down = true;
@@ -942,12 +929,11 @@ void	VID_Update (vrect_t *rects)
 		}
 		XSync(x_disp, False);
 	}
-
 }
 
 static int dither;
 
-void VID_DitherOn(void)
+void VID_DitherOn()
 {
     if (dither == 0)
     {
@@ -956,7 +942,7 @@ void VID_DitherOn(void)
     }
 }
 
-void VID_DitherOff(void)
+void VID_DitherOff()
 {
     if (dither)
     {
@@ -965,7 +951,7 @@ void VID_DitherOff(void)
     }
 }
 
-int Sys_OpenWindow(void)
+int Sys_OpenWindow()
 {
 	return 0;
 }
@@ -982,7 +968,7 @@ void Sys_DisplayWindow(int window)
 {
 }
 
-void Sys_SendKeyEvents(void)
+void Sys_SendKeyEvents()
 {
 // get events from x server
 	if (x_disp)
@@ -997,7 +983,7 @@ void Sys_SendKeyEvents(void)
 }
 
 #if 0
-char *Sys_ConsoleInput (void)
+char *Sys_ConsoleInput ()
 {
 
 	static char	text[256];
@@ -1037,7 +1023,7 @@ void D_EndDirectRect (int x, int y, int width, int height)
 // direct drawing of the "accessing disk" icon isn't supported under Linux
 }
 
-void IN_Init (void)
+void IN_Init ()
 {
 	Cvar_RegisterVariable (&_windowed_mouse);
 	Cvar_RegisterVariable (&m_filter);
@@ -1047,12 +1033,12 @@ void IN_Init (void)
    mouse_avail = 1;
 }
 
-void IN_Shutdown (void)
+void IN_Shutdown ()
 {
    mouse_avail = 0;
 }
 
-void IN_Commands (void)
+void IN_Commands ()
 {
 	int i;
    
@@ -1106,11 +1092,11 @@ void IN_Move (usercmd_t *cmd)
 	mouse_x = mouse_y = 0.0;
 }
 
-void VID_LockBuffer (void)
+void VID_LockBuffer ()
 {
 }
 
-void VID_UnlockBuffer (void)
+void VID_UnlockBuffer ()
 {
 }
 
