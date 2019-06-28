@@ -62,6 +62,12 @@ GoldSrc engine. You need to reimplement the game code yourself or use the reimpl
 I doubt that anyone else decides to rewrite the game code for this engine, so it probably end up being used as a tech demo of the GoldSrc 
 showcasing its features using some recreated HL Alpha maps)
 
+## Contributing
+
+Feel free to create issues or pull-requests if you have any problems or you want to support the project. 
+Any help is appreciated (especially from coders and documentation/wiki writers). 
+Please read the [Contributing Guidelines](CONTRIBUTING.md) before providing any changes and for additional information
+
 ## Screenshots
 
 ![Menu Test](docs/ogs-menu-test3.png)
