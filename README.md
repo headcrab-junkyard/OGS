@@ -22,20 +22,16 @@
 >
 >Mike
 
-GoldSource Engine Clone Prototype
+## Overview
 
-Clean open source reimplementation of the GoldSource game engine  
-Based on original Quake (Id Tech 2) engine sources
+This is a [GoldSource](https://en.wikipedia.org/wiki/GoldSrc) game engine reimplementation using only original id Tech 2 engine (NetQuake/QuakeWorld/Quake 2) sources (and 
+its forks) and no reverse-engineered code (like from ReHLDS or Xash3D)
 
 For more information about the project you can visit its official [Wiki](https://gitlab.com/BlackPhrase/OGS/wikis/home)
 
 ## Getting Started
-## Mini-Q&A
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. 
-**Q: What's this?**  
-**A:** This is a [GoldSource](https://en.wikipedia.org/wiki/GoldSrc) game engine reimplementation using only original id Tech 2 engine (NetQuake/QuakeWorld/Quake 2) sources (and 
-its forks) and no reverse-engineered code (like from ReHLDS or Xash3D)
 
 ### Prerequisites
 
@@ -69,6 +65,7 @@ It is recommended to launch the engine with the following command line arguments
 
 >-window -width 1280 -height 600 -force -developer 5 -condebug -gamma 1 +developer -zone 32768
 
+## Mini-Q&A
 
 **Q: What's the purpose?**  
 **A:** If you can't see the purpose then you simply don't need it and you're just wasting your time here
