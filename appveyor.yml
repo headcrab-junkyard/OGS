@@ -36,4 +36,4 @@ before_build:
    - cmake . -DSDL_STATIC=0 -DSDL_SHARED=1 -DOGS_DEDICATED=0
 
 build:
-  project: C:/BlackPhrase/OGS/build/OGS.sln
+  solution_name: OGS.sln
