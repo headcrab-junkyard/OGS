@@ -35,8 +35,8 @@ before_build:
    #- cd bin
    - cmake . -DSDL_STATIC=0 -DSDL_SHARED=1 -DOGS_DEDICATED=0
 
-#build:
-  #project: OGS.sln
+build:
+  project: C:\BlackPhrase\OGS\build\OGSEngine.sln
 
 platform:
   - Win32
@@ -55,11 +55,6 @@ skip_tags: true
 configuration:
   - Debug
   #- Release
-
-environment:
-  matrix:
-    - TOOLCHAIN_VERSION: 14.1
-      solution_name: OGS.sln
 
 cache:
   - C:\BlackPhrase\OGS\build
