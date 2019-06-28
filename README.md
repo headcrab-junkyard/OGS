@@ -29,11 +29,46 @@ Based on original Quake (Id Tech 2) engine sources
 
 For more information about the project you can visit its official [Wiki](https://gitlab.com/BlackPhrase/OGS/wikis/home)
 
+## Getting Started
 ## Mini-Q&A
 
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. 
 **Q: What's this?**  
 **A:** This is a [GoldSource](https://en.wikipedia.org/wiki/GoldSrc) game engine reimplementation using only original id Tech 2 engine (NetQuake/QuakeWorld/Quake 2) sources (and 
 its forks) and no reverse-engineered code (like from ReHLDS or Xash3D)
+
+### Prerequisites
+
+In order to build the engine you need to have the following software installed on your system:
+* CMake >= 3.8
+* MinGW-W64 >= 8.1.0
+
+You should be able to successfully build the engine having only this stuff
+
+### Building
+
+**NOTE:** Only MinGW build was tested so far. If you need engine binaries build by MSVC/Clang/other compilers then you're currently obligated to do that 
+yourself
+
+**NOTE:** At this state only hardware engine configuration (gl render) is supported. Dedicated mode should also be supported, but it's not fully "dedicated" yet
+
+Configure your build in 'cmake-gui' by choosing the location of engine sources and location which will be used for building purposes. Choose the compiler of your 
+preference and select the needed options (or leave everything as-is, it should compile fine). Fill the 'CMAKE_BUILD_TYPE' field with either "Debug" or "Release" 
+(untested) and you should be good to go and can hit 'Configure' and 'Generate' buttons. Now your can open your favorite IDE or Git Bash console and build the project
+
+If your experiencing issues with either the build process or with following the build instructions - feel free to open a new repo issue and let the developers know 
+about that so they can fix that and provide help
+
+### Installing
+
+All built binaries will be located in "%your chosen location%/bin" folder. You need to manually copy/move them into your game directory
+
+### Running
+
+It is recommended to launch the engine with the following command line arguments:
+
+>-window -width 1280 -height 600 -force -developer 5 -condebug -gamma 1 +developer -zone 32768
+
 
 **Q: What's the purpose?**  
 **A:** If you can't see the purpose then you simply don't need it and you're just wasting your time here
