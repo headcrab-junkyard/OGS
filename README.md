@@ -72,4 +72,4 @@ showcasing its features using some recreated HL Alpha maps)
 
 * [GNU GPL v3+](LICENSE) for most of the codebase;  
 * MIT for ogs-interface code ("Valve's interface/module factory" reimplementation; located in "goldsrc/tier1" and "goldsrc/public/tier1" folders);  
-* [BSD-3](LICENSE-GameNetworkingSockets) for pieces taken from the GameNetworkingSockets repo (tier0/vstdlib sources and headers written by Valve for original GS engine);
+* [BSD-3](https://github.com/ValveSoftware/GameNetworkingSockets/blob/master/LICENSE) for pieces taken from the GameNetworkingSockets repo (tier0/vstdlib sources and headers written by Valve for original GS engine);
