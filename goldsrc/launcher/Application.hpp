@@ -1,6 +1,6 @@
 /*
  *	This file is part of OGS Engine
- *	Copyright (C) 2018 BlackPhrase
+ *	Copyright (C) 2018-2019 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -37,12 +37,14 @@ private:
 	bool Init();
 	void Shutdown();
 	
-	bool LoadFileSystemModule(const char *name);
+	void LoadFileSystemModule(const char *asName);
+	void LoadEngineModule(const char *asName);
 	
 	void *mpFSLib{nullptr};
 	void *mpEngineLib{nullptr};
 	
 	CreateInterfaceFn mfnFSFactory{nullptr};
+	CreateInterfaceFn mfnEngineFactory{nullptr};
 	
 	IEngineAPI *mpEngine{nullptr};
 	

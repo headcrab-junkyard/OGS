@@ -1,6 +1,6 @@
 /*
  *	This file is part of OGS Engine
- *	Copyright (C) 2018 BlackPhrase
+ *	Copyright (C) 2018-2019 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,6 +20,9 @@
 
 #include <stdexcept>
 #include "Application.hpp"
+#include "AppConfig.hpp"
+
+int setenv(const char *name, const char *value, int overwrite);
 
 CApplication::CApplication() = default;
 CApplication::~CApplication() = default;
@@ -46,34 +49,40 @@ int CApplication::Run()
 
 bool CApplication::Init()
 {
-	constexpr auto FILESYSTEM_MODULE_NAME{"filesystem_stdio"};
+	// File system module name to load
+	const char *sFSModuleName{Config::Defaults::FSModuleName};
 	
-	if(!LoadFileSystemModule(FILESYSTEM_MODULE_NAME))
-		throw std::runtime_error(std::string("Failed to load the filesystem module (") + FILESYSTEM_MODULE_NAME + ")!");
+	LoadFileSystemModule(sFSModuleName);
 	
-	const char *ENGINE_MODULE_NAME{"hw"};
+	// Engine module name to load
+	const char *sEngineModuleName{Config::Defaults::EngineModuleName};
+
+	// Do we have an engine module name config var stored on the system?
+	char *sPrevEngineModule{getenv("OGS_ENGINE_MODULE")};
 	
-	// TODO: we're already in hardware by default, need to check the previous mode the engine was launched in
-	//if(strstr(msCmdLine, "-hw"))
-		//ENGINE_MODULE_NAME = "hw";
+	// Yes? Nice, then use it!
+	if(sPrevEngineModule && *sPrevEngineModule)
+		sEngineModuleName = sPrevEngineModule;
 	
-	if(strstr(msCmdLine, "-sw") && !strstr(msCmdLine, "-hw"))
-		ENGINE_MODULE_NAME = "sw";
+	// Any overrides?
+	if(strstr(msCmdLine, "-hw"))
+		// Skip checking for sw
+		sEngineModuleName = "hw";
+	else
+		if(strstr(msCmdLine, "-sw"))
+			// Skip checking for hw
+			sEngineModuleName = "sw";
+
+	// Try to load it
+	LoadEngineModule(sEngineModuleName);
 	
-	mpEngineLib = Sys_LoadModule(ENGINE_MODULE_NAME);
+	// Engine module was successfully loaded, so store its name
+	setenv("OGS_ENGINE_MODULE", sEngineModuleName, 1);
 	
-	if(!mpEngineLib)
-		throw std::runtime_error(std::string("Failed to load the engine module (") + ENGINE_MODULE_NAME + ")!");
-	
-	auto pEngineFactory{Sys_GetFactory(mpEngineLib)};
-	
-	if(!pEngineFactory)
-		return false;
-	
-	mpEngine = (IEngineAPI*)pEngineFactory(VENGINE_LAUNCHER_API_VERSION, nullptr);
+	mpEngine = static_cast<IEngineAPI*>(mfnEngineFactory(VENGINE_LAUNCHER_API_VERSION, nullptr));
 	
 	if(!mpEngine)
-		return false;
+		throw std::runtime_error(std::string("Failed to get the engine launcher interface (") + sEngineModuleName + ")!");
 	
 	return PostInit();
 };
@@ -83,23 +92,49 @@ void CApplication::Shutdown()
 	// TODO
 };
 
-bool CApplication::LoadFileSystemModule(const char *asName)
+void CApplication::LoadFileSystemModule(const char *asName)
 {
 	if(!asName || !*asName)
 	{
 		//throw std::invalid_argument(std::string("Argument passed to CApplication::LoadFileSystemModule is invalid! (").append(asName).append(")"));
-		return false;
+		return;
 	};
 	
-	mpFSLib = Sys_LoadModule(asName);
+	auto pFSLib{Sys_LoadModule(asName)};
 	
-	if(!mpFSLib)
-		return false;
+	if(!pFSLib)
+		throw std::runtime_error(std::string("Failed to load the filesystem module (") + asName + ")!");
 	
-	mfnFSFactory = Sys_GetFactory(mpFSLib);
+	mpFSLib = pFSLib;
 	
-	if(!mfnFSFactory)
-		return false;
+	auto fnFSFactory{Sys_GetFactory(mpFSLib)};
 	
-	return true;
+	if(!fnFSFactory)
+		throw std::runtime_error(std::string("Failed to get the filesystem module factory (") + asName + ")!");
+	
+	mfnFSFactory = fnFSFactory;
+};
+
+void CApplication::LoadEngineModule(const char *asName)
+{
+	if(!asName || !*asName)
+	{
+		//throw std::invalid_argument(std::string("Argument passed to CApplication::LoadEngineModule is invalid! (").append(asName).append(")"));
+		return;
+	};
+	
+	auto pEngineLib{Sys_LoadModule(asName)};
+	
+	// Rekt
+	if(!pEngineLib)
+		throw std::runtime_error(std::string("Failed to load the engine module (") + asName + ")!");
+	
+	mpEngineLib = pEngineLib;
+	
+	auto fnEngineFactory{Sys_GetFactory(mpEngineLib)};
+	
+	if(!fnEngineFactory)
+		throw std::runtime_error(std::string("Failed to get the engine module factory (") + asName + ")!");
+	
+	mfnEngineFactory = fnEngineFactory;
 };
