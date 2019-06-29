@@ -1020,7 +1020,8 @@ qglDisable (GL_DEPTH_TEST);
 		if(skymins[0][i] >= skymaxs[0][i] || skymins[1][i] >= skymaxs[1][i])
 			continue;
 
-		GL_Bind(SKY_TEX + skytexorder[i]);
+		GL_Bind (sky_images[skytexorder[i]].gl_texturenum); //GL_Bind (sky_images[skytexorder[i]]->texnum); //GL_Bind(SKY_TEX + skytexorder[i]);
+
 		qglBegin(GL_QUADS);
 		MakeSkyVec(skymins[0][i], skymins[1][i], i);
 		MakeSkyVec(skymins[0][i], skymaxs[1][i], i);
