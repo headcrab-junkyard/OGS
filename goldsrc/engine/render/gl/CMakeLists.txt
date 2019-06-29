@@ -1,16 +1,16 @@
 project(ogs-render-gl)
 
-if(NOT OGS_USE_INTERNAL_RENDER) #if(OGS_EVOL)
-	add_library(${PROJECT_NAME} MODULE)
-
-	set_target_properties(${PROJECT_NAME} PROPERTIES
-		OUTPUT_NAME "r_gl"
-	)
-
-	target_link_libraries(${PROJECT_NAME} ogs-tier1)
-else()
+#if(NOT OGS_USE_INTERNAL_RENDER) #if(OGS_EVOL)
+#	add_library(${PROJECT_NAME} MODULE)
+#
+#	set_target_properties(${PROJECT_NAME} PROPERTIES
+#		OUTPUT_NAME "r_gl"
+#	)
+#
+#	target_link_libraries(${PROJECT_NAME} ogs-tier1)
+#else()
 	add_library(${PROJECT_NAME} STATIC)
-endif()
+#endif()
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} PROJECT_SOURCES)
 
