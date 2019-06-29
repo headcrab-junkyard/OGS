@@ -6,9 +6,6 @@
 	<a href="https://ci.appveyor.com/project/BlackPhrase/OGS">
 		<img src="https://ci.appveyor.com/api/projects/status/gitlab/BlackPhrase/OGS?svg=true"/>
 	</a>
-	<a href="https://travis-ci.org/BlackPhrase/OGS">
-		<img src="https://travis-ci.org/BlackPhrase/OGS.svg"/>
-	</a>
 	<a href="https://codeclimate.com/gitlab/BlackPhrase/OGS/issues">
 		<img src="https://img.shields.io/codeclimate/issues/gitlab/BlackPhrase/OGS.svg"/>
 	</a>
