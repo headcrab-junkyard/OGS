@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(OGSEngine VERSION 0.6.3)
+project(OGSEngine VERSION 0.6.5)
 
 #####################################################################
 
