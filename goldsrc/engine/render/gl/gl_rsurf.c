@@ -1,7 +1,7 @@
 /*
  *	This file is part of OGS Engine
  *	Copyright (C) 1996-1997 Id Software, Inc.
- *	Copyright (C) 2018 BlackPhrase
+ *	Copyright (C) 2018-2019 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -951,7 +951,7 @@ void R_DrawWaterSurfaces (void)
 		t = cl.worldmodel->textures[i];
 		if (!t)
 			continue;
-		//s = t->texturechain; // TODO
+		s = t->texturechain;
 		if (!s)
 			continue;
 		if ( !(s->flags & SURF_DRAWTURB) )
@@ -960,10 +960,10 @@ void R_DrawWaterSurfaces (void)
 		// set modulate mode explicitly
 		GL_Bind (t->gl_texturenum);
 
-		//for ( ; s ; s=s->texturechain) // TODO
-			//R_RenderBrushPoly (s);
+		for ( ; s ; s=s->texturechain)
+			R_RenderBrushPoly (s);
 
-		//t->texturechain = NULL; // TODO
+		t->texturechain = NULL;
 	}
 
 	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -1004,10 +1004,10 @@ void R_DrawWaterSurfaces(void)
 		if(!waterchain)
 			return;
 
-		//for(s = waterchain; s; s = s->texturechain) // TODO
+		for(s = waterchain; s; s = s->texturechain)
 		{
-			//GL_Bind(s->texinfo->texture->gl_texturenum); // TODO
-			//EmitWaterPolys(s);
+			GL_Bind(s->texinfo->texture->gl_texturenum);
+			EmitWaterPolys(s);
 		}
 
 		waterchain = NULL;
@@ -1019,7 +1019,7 @@ void R_DrawWaterSurfaces(void)
 			t = cl.worldmodel->textures[i];
 			if(!t)
 				continue;
-			//s = t->texturechain; // TODO
+			s = t->texturechain;
 			if(!s)
 				continue;
 			if(!(s->flags & SURF_DRAWTURB))
@@ -1029,10 +1029,10 @@ void R_DrawWaterSurfaces(void)
 
 			GL_Bind(t->gl_texturenum);
 
-			//for(; s; s = s->texturechain) // TODO
-				//EmitWaterPolys(s);
+			for(; s; s = s->texturechain)
+				EmitWaterPolys(s);
 
-			//t->texturechain = NULL; // TODO
+			t->texturechain = NULL;
 		}
 	}
 
@@ -1076,7 +1076,7 @@ void DrawTextureChains(void)
 		t = cl.worldmodel->textures[i];
 		if(!t)
 			continue;
-		//s = t->texturechain; // TODO
+		s = t->texturechain;
 		if(!s)
 			continue;
 		if(i == skytexturenum)
@@ -1090,11 +1090,11 @@ void DrawTextureChains(void)
 		{
 			if((s->flags & SURF_DRAWTURB) && r_wateralpha.value != 1.0)
 				continue; // draw translucent water later
-			//for(; s; s = s->texturechain) // TODO
-				//R_RenderBrushPoly(s);
+			for(; s; s = s->texturechain)
+				R_RenderBrushPoly(s);
 		}
 
-		//t->texturechain = NULL; // TODO
+		t->texturechain = NULL;
 	}
 }
 
@@ -1318,18 +1318,18 @@ void R_RecursiveWorldNode(mnode_t *node)
 				{
 					if(!mirror || surf->texinfo->texture != cl.worldmodel->textures[mirrortexturenum])
 					{
-						//surf->texturechain = surf->texinfo->texture->texturechain; // TODO
-						//surf->texinfo->texture->texturechain = surf; // TODO
+						surf->texturechain = surf->texinfo->texture->texturechain;
+						surf->texinfo->texture->texturechain = surf;
 					}
 				}
 				else if(surf->flags & SURF_DRAWSKY)
 				{
-					//surf->texturechain = skychain; // TODO
+					surf->texturechain = skychain;
 					skychain = surf;
 				}
 				else if(surf->flags & SURF_DRAWTURB)
 				{
-					//surf->texturechain = waterchain; // TODO
+					surf->texturechain = waterchain;
 					waterchain = surf;
 				}
 				else

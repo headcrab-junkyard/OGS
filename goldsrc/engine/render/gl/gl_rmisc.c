@@ -485,7 +485,7 @@ void R_NewMap(void)
 			skytexturenum = i;
 		if(!Q_strncmp(cl.worldmodel->textures[i]->name, "window02_1", 10))
 			mirrortexturenum = i;
-		//cl.worldmodel->textures[i]->texturechain = NULL; // TODO
+		cl.worldmodel->textures[i]->texturechain = NULL;
 	};
 	
 	R_LoadSkys();

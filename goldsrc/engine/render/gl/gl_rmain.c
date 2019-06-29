@@ -1209,10 +1209,10 @@ void R_Mirror(void)
 	qglLoadMatrixf(r_base_world_matrix);
 
 	qglColor4f(1, 1, 1, r_mirroralpha.value);
-	//s = cl.worldmodel->textures[mirrortexturenum]->texturechain; // TODO
-	//for(; s; s = s->texturechain)
-		//R_RenderBrushPoly(s);
-	//cl.worldmodel->textures[mirrortexturenum]->texturechain = NULL; // TODO
+	s = cl.worldmodel->textures[mirrortexturenum]->texturechain;
+	for(; s; s = s->texturechain)
+		R_RenderBrushPoly(s);
+	cl.worldmodel->textures[mirrortexturenum]->texturechain = NULL;
 	qglDisable(GL_BLEND);
 	qglColor4f(1, 1, 1, 1);
 }
