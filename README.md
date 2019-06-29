@@ -24,7 +24,7 @@
 This is a [GoldSource](https://en.wikipedia.org/wiki/GoldSrc) game engine reimplementation using only original id Tech 2 engine (NetQuake/QuakeWorld/Quake 2) sources (and 
 its forks) and no reverse-engineered code (like from ReHLDS or Xash3D)
 
-For more information about the project you can visit its official [Wiki](https://gitlab.com/BlackPhrase/OGS/wikis/home)
+For more information about the project you can visit its official [Wiki](./wiki)
 
 ## Getting Started
 
