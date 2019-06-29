@@ -848,6 +848,7 @@ void CL_UpdateUserinfo()
 CL_ParseServerMessage
 =====================
 */
+extern void R_SetSky (const char *name, float rotate, vec3_t axis); // TODO: temp
 void CL_ParseServerMessage()
 {
 	int cmd;
@@ -1105,6 +1106,9 @@ void CL_ParseServerMessage()
 			float fSkyVecZ = MSG_ReadFloat();
 			
 			const char *sSkyName = MSG_ReadString();
+			vec3_t skyaxis = {0.0f, 0.0f, 0.0f};
+			
+			R_SetSky(sSkyName, 0.0f, skyaxis);
 			break;
 		}
 		case svc_resourcerequest:
