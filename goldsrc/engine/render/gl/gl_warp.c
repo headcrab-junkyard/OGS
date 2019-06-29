@@ -981,28 +981,46 @@ R_DrawSkyBox
 int skytexorder[6] = { 0, 2, 1, 3, 4, 5 };
 void R_DrawSkyBox(void)
 {
-	int i, j, k;
-	vec3_t v;
-	float s, t;
+	int i;
 
 #if 0
 qglEnable (GL_BLEND);
-qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE); // TODO: GL_TexEnv( GL_MODULATE );
 qglColor4f (1,1,1,0.5);
 qglDisable (GL_DEPTH_TEST);
 #endif
+
+	// TODO: q2
+	if (skyrotate)
+	{	// check for no sky at all
+		for (i=0 ; i<6 ; i++)
+			if (skymins[0][i] < skymaxs[0][i]
+			&& skymins[1][i] < skymaxs[1][i])
+				break;
+		if (i == 6)
+			return;		// nothing visible
+	}
+	
+	// TODO: q2
+	qglPushMatrix ();
+	qglTranslatef (r_origin[0], r_origin[1], r_origin[2]);
+	qglRotatef (r_newrefdef.time * skyrotate, skyaxis[0], skyaxis[1], skyaxis[2]);
+
 	for(i = 0; i < 6; i++)
 	{
+#if 0
+		if (skyrotate)
+		{	// hack, forces full sky to draw when rotating (q2)
+			skymins[0][i] = -1;
+			skymins[1][i] = -1;
+			skymaxs[0][i] = 1;
+			skymaxs[1][i] = 1;
+		}
+#endif
 		if(skymins[0][i] >= skymaxs[0][i] || skymins[1][i] >= skymaxs[1][i])
 			continue;
 
 		GL_Bind(SKY_TEX + skytexorder[i]);
-#if 0
-skymins[0][i] = -1;
-skymins[1][i] = -1;
-skymaxs[0][i] = 1;
-skymaxs[1][i] = 1;
-#endif
 		qglBegin(GL_QUADS);
 		MakeSkyVec(skymins[0][i], skymins[1][i], i);
 		MakeSkyVec(skymins[0][i], skymaxs[1][i], i);
@@ -1010,6 +1028,9 @@ skymaxs[1][i] = 1;
 		MakeSkyVec(skymaxs[0][i], skymins[1][i], i);
 		qglEnd();
 	}
+	
+	qglPopMatrix (); // TODO: q2
+	
 #if 0
 qglDisable (GL_BLEND);
 qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
