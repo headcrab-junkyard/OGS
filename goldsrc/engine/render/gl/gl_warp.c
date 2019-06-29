@@ -29,13 +29,11 @@ int solidskytexture;
 int alphaskytexture;
 float speedscale; // for top sky and bottom sky
 //
-// Q2
-/*
-char	skyname[MAX_QPATH];
-float	skyrotate;
-vec3_t	skyaxis;
-image_t	*sky_images[6];
-*/
+char skyname[MAX_QPATH];
+float skyrotate;
+vec3_t skyaxis;
+//image_t *sky_images[6];
+texture_t sky_images[6];
 //
 
 msurface_t *warpface;
@@ -642,7 +640,7 @@ void LoadTGA(FileHandle_t fin)
 R_LoadSkys
 ==================
 */
-char *suf[6] = { "rt", "bk", "lf", "ft", "up", "dn" };
+const char *suf[6] = { "rt", "bk", "lf", "ft", "up", "dn" };
 void R_LoadSkys(void)
 {
 	int i;
@@ -652,7 +650,7 @@ void R_LoadSkys(void)
 	for(i = 0; i < 6; i++)
 	{
 		GL_Bind(SKY_TEX + i);
-		sprintf(name, "gfx/env/bkgtst%s.tga", suf[i]);
+		sprintf(name, "gfx/env/%s%s.tga", "2desert", suf[i]); // TODO: was bkgtst; use sv_skyname.string
 		f = FS_Open(name, "rb");
 		if(!f)
 		{
@@ -716,6 +714,7 @@ int vec_to_st[6][3] =
 };
 
 float skymins[2][6], skymaxs[2][6];
+float sky_min, sky_max;
 
 void DrawSkyPolygon(int nump, vec3_t vecs)
 {
@@ -1083,4 +1082,58 @@ void R_InitSky(texture_t *mt)
 	qglTexImage2D(GL_TEXTURE_2D, 0, gl_alpha_format, 128, 128, 0, GL_RGBA, GL_UNSIGNED_BYTE, trans);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+}
+
+/*
+============
+R_SetSky
+============
+*/
+// 3dstudio environment map names
+// TODO
+//const char *suf[6] = {"rt", "bk", "lf", "ft", "up", "dn"};
+void R_SetSky (const char *name, float rotate, vec3_t axis)
+{
+	int		i;
+	char	pathname[MAX_QPATH];
+
+	strncpy (skyname, name, sizeof(skyname)-1);
+	skyrotate = rotate;
+	VectorCopy (axis, skyaxis);
+
+	for (i=0 ; i<6 ; i++)
+	{
+		// chop down rotating skies for less memory
+		//if (gl_skymip.value || skyrotate) // TODO: uncomment
+			//gl_picmip.value++; // TODO: uncomment
+
+		//if ( qglColorTableEXT && gl_ext_palettedtexture.value )
+			//Q_sprintf (pathname, sizeof(pathname), "env/%s%s.pcx", skyname, suf[i]);
+		//else
+			snprintf (pathname, sizeof(pathname), "gfx/env/%s%s.tga", skyname, suf[i]); // TODO: gfx/
+
+		sky_images[i].gl_texturenum = GL_FindTexture(pathname); // TODO: was sky_images[i] = GL_FindImage (pathname, it_sky);
+		// TODO: couldn't find? load manually
+		FileHandle_t f = FS_Open(pathname, "rb");
+		if(f)
+		{
+			LoadTGA(f);
+			qglTexImage2D(GL_TEXTURE_2D, 0, gl_solid_format, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, targa_rgba);
+			free(targa_rgba);
+		};
+		if (!sky_images[i].gl_texturenum) // TODO: was if(!sky_images[i])
+			sky_images[i] = *r_notexture_mip; // TODO: was = r_notexture
+
+		if (/*gl_skymip.value ||*/ skyrotate) // TODO: uncomment
+		{	// take less memory
+			//gl_picmip.value--; // TODO: uncomment
+			sky_min = 1.0/256;
+			sky_max = 255.0/256;
+		}
+		else	
+		{
+			sky_min = 1.0/512;
+			sky_max = 511.0/512;
+		}
+	}
 }
