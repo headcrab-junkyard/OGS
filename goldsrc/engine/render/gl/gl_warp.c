@@ -1004,7 +1004,7 @@ qglDisable (GL_DEPTH_TEST);
 	// TODO: q2
 	qglPushMatrix ();
 	qglTranslatef (r_origin[0], r_origin[1], r_origin[2]);
-	qglRotatef (r_newrefdef.time * skyrotate, skyaxis[0], skyaxis[1], skyaxis[2]);
+	//qglRotatef (r_refdef.time * skyrotate, skyaxis[0], skyaxis[1], skyaxis[2]);
 
 	for(i = 0; i < 6; i++)
 	{
