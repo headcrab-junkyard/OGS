@@ -252,53 +252,15 @@ Called every frame before physics are run
 */
 void PlayerPreThink(edict_t *self)
 {
-/*
-	float   mspeed, aspeed;
-	float   r;
-
-	if (intermission_running)
-	{
-		IntermissionThink ();   // otherwise a button could be missed between
-		return;                                 // the think tics
-	}
-
-	if (self->v.view_ofs == '0 0 0')
-		return;         // intermission or finale
-
-	makevectors (self->v.v_angle);             // is this still used
-
-	self->v.deathtype = "";
-
-	CheckRules ();
-	WaterMove (self);
-
-	//if (self->v.waterlevel == 2)
-		//CheckWaterJump (self);
-
-	if (self->v.deadflag >= DEAD_DEAD)
-	{
-		PlayerDeathThink (self);
-		return;
-	}
+	auto pBaseEntity{ToBaseEntity(self)};
 	
-	if (self->v.deadflag == DEAD_DYING)
-		return; // dying, so do nothing
-
-	if (self->v.button2)
-		PlayerJump (self);
-	else
-		self->v.flags = self->v.flags | FL_JUMPRELEASED;
-
-// teleporters can force a non-moving pause time        
-	if (time < self->v.pausetime)
-		self->v.velocity = '0 0 0';
-
-	if(time > self->v.attack_finished && self->v.currentammo == 0 && self->v.weapon != IT_AXE)
-	{
-		self->v.weapon = W_BestWeapon ();
-		W_SetCurrentAmmo ();
-	}
-*/
+	if(!pBaseEntity)
+		return;
+	
+	auto pBasePlayer{dynamic_cast<CBasePlayer*>(pBaseEntity)};
+	
+	if(pBasePlayer)
+		pBasePlayer->PreThink();
 };
 
 /*

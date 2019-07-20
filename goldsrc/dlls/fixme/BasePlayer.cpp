@@ -1173,6 +1173,57 @@ void CBasePlayer::CycleWeaponReverseCommand()
 	};
 };
 
+
+void CBasePlayer::PreThink()
+{
+	ItemPreFrame();
+	
+	float   mspeed, aspeed;
+	float   r;
+
+	if (intermission_running)
+	{
+		IntermissionThink ();   // otherwise a button could be missed between
+		return;                                 // the think tics
+	};
+
+	if (self->view_ofs == '0 0 0')
+		return;         // intermission or finale
+
+	makevectors (self->v_angle);             // is this still used
+
+	self->deathtype = "";
+
+	CheckRules ();
+	WaterMove(self);
+
+	//if(self->waterlevel == 2)
+		//CheckWaterJump(self);
+
+	if (self->deadflag >= DEAD_DEAD)
+	{
+		PlayerDeathThink ();
+		return;
+	};
+	
+	if (self->deadflag == DEAD_DYING)
+		return; // dying, so do nothing
+
+	if (self->button & IN_JUMP)
+		PlayerJump (self);
+	else
+		self->flags |= FL_JUMPRELEASED;
+
+// teleporters can force a non-moving pause time        
+	if (gpGlobals->time < self->pausetime)
+		self->SetVelocity('0 0 0');
+
+	if(gpGlobals->time > self->attack_finished && self->currentammo == 0 && self->weapon != IT_AXE)
+	{
+		self->weapon = W_BestWeapon ();
+		W_SetCurrentAmmo ();
+	};
+};
 void CBasePlayer::CreateViewModel()
 {
 	// TODO
