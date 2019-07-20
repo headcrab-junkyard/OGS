@@ -40,19 +40,19 @@ void CBaseEntity::SUB_Remove()
 QuakeEd only writes a single float for angles (bad idea), so up and down are
 just constant angles.
 */
-vec3_t SetMovedir(edict_t *self)
+void CBaseEntity::SetMovedir()
 {
-	if (self->v.angles == '0 -1 0')
-		self->v.movedir = '0 0 1';
-	else if (self->v.angles == '0 -2 0')
-		self->v.movedir = '0 0 -1';
+	if (GetAngles() == idVec3(0, -1, 0)) // TODO: -idVec3::Up
+		self->SetMoveDir(idVec3(0, 0, 1));
+	else if (GetAngles() == idVec3(0, -2, 0))
+		self->SetMoveDir(idVec3(0, 0, -1));
 	else
 	{
-		gpEngine->pfnMakeVectors(self->v.angles);
-		self->v.movedir = v_forward;
+		gpEngine->pfnMakeVectors(GetAngles());
+		self->SetMoveDir(gpGlobals->v_forward);
 	};
 	
-	self->v.angles = '0 0 0';
+	self->SetAngles(idVec3::Origin);
 };
 
 /*
