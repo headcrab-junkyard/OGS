@@ -712,6 +712,14 @@ void ambient_swamp2()
 
 //============================================================================
 
+class CNoiseMaker : public CBaseEntity
+{
+public:
+	void Spawn() override;
+	
+	void Think() override;
+};
+
 void CNoiseMaker::Spawn()
 {
 	gpEngine->pfnPrecacheSound ("enforcer/enfire.wav");
@@ -725,28 +733,25 @@ void CNoiseMaker::Spawn()
 	gpEngine->pfnPrecacheSound ("enforcer/death1.wav");
 	gpEngine->pfnPrecacheSound ("enforcer/idle1.wav");
 
-	self->SetNextThink(gpGlobals->time + 0.1 + random());
-	self->SetThinkCallback(CNoiseMaker::Think);
+	SetNextThink(gpGlobals->time + 0.1 + random());
+	SetThinkCallback(CNoiseMaker::Think);
 };
 
 void CNoiseMaker::Think()
 {
-	self->SetNextThink(gpGlobals->time + 0.5);
+	SetNextThink(gpGlobals->time + 0.5);
 	
-	self->EmitSound(1, "enforcer/enfire.wav", 1, ATTN_NORM);
-	self->EmitSound(2, "enforcer/enfstop.wav", 1, ATTN_NORM);
-	self->EmitSound(3, "enforcer/sight1.wav", 1, ATTN_NORM);
-	self->EmitSound(4, "enforcer/sight2.wav", 1, ATTN_NORM);
-	self->EmitSound(5, "enforcer/sight3.wav", 1, ATTN_NORM);
-	self->EmitSound(6, "enforcer/sight4.wav", 1, ATTN_NORM);
-	self->EmitSound(7, "enforcer/pain1.wav", 1, ATTN_NORM);
+	EmitSound(1, "enforcer/enfire.wav", 1, ATTN_NORM);
+	EmitSound(2, "enforcer/enfstop.wav", 1, ATTN_NORM);
+	EmitSound(3, "enforcer/sight1.wav", 1, ATTN_NORM);
+	EmitSound(4, "enforcer/sight2.wav", 1, ATTN_NORM);
+	EmitSound(5, "enforcer/sight3.wav", 1, ATTN_NORM);
+	EmitSound(6, "enforcer/sight4.wav", 1, ATTN_NORM);
+	EmitSound(7, "enforcer/pain1.wav", 1, ATTN_NORM);
 };
 
 /*QUAKED misc_noisemaker (1 0.5 0) (-10 -10 -10) (10 10 10)
 
 For optimzation testing, starts a lot of sounds.
 */
-C_EXPORT void misc_noisemaker(entvars_t *self)
-{
-	CNoiseMaker::Spawn();
-};
+LINK_ENTITY_TO_CLASS(misc_noisemaker, CNoiseMaker)
