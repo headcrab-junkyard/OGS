@@ -593,23 +593,33 @@ SIMPLE BMODELS
 ==============================================================================
 */
 
-void func_wall_use()
-{
-	// change to alternate textures
-	self.frame = 1 - self.frame;
-};
-
 /*QUAKED func_wall (0 .5 .8) ?
 This is just a solid wall if not inhibitted
 */
-C_EXPORT void func_wall(entvars_t *self)
+class CFuncWall : public CBaseEntity
+{
+public:
+	void Spawn() override;
+	
+	void Use(CBaseEntity *other) override;
+};
+
+LINK_ENTITY_TO_CLASS(func_wall, CFuncWall)
+
+void CFuncWall::Spawn()
 {
 	self->angles = '0 0 0';
-	self->SetMoveType(MOVETYPE_PUSH);  // so it doesn't get pushed by anything
-	self->solid = SOLID_BSP;
-	self->SetUseCallback(func_wall_use);
+	SetMoveType(MOVETYPE_PUSH); // so it doesn't get pushed by anything
+	SetSolidity(SOLID_BSP);
+	SetUseCallback(CFuncWall::Use);
 	
-	self->SetModel (self.model);
+	SetModel(GetModel());
+};
+
+void CFuncWall::Use(CBaseEntity *other)
+{
+	// change to alternate textures
+	self->frame = 1 - self->frame;
 };
 
 /*QUAKED func_illusionary (0 .5 .8) ?
