@@ -1224,6 +1224,43 @@ void CBasePlayer::PreThink()
 		W_SetCurrentAmmo ();
 	};
 };
+
+void CBasePlayer::PostThink()
+{
+	ItemPostFrame();
+	
+	float   mspeed, aspeed;
+	float   r;
+
+	//dprint ("post think\n");
+	if (self->view_ofs == '0 0 0')
+		return;         // intermission or finale
+	
+	if (self->deadflag)
+		return;
+
+// check to see if player landed and play landing sound 
+	if ((self->jump_flag < -300) && (self->GetFlags() & FL_ONGROUND) )
+	{
+		if (GetWaterType() == CONTENT_WATER)
+			EmitSound(CHAN_BODY, "player/h2ojump.wav", 1, ATTN_NORM);
+		else if (self->jump_flag < -650)
+		{
+			self->deathtype = "falling";
+			TakeDamage(world, world, 5); 
+			EmitSound(CHAN_VOICE, "player/land2.wav", 1, ATTN_NORM);
+		}
+		else
+			EmitSound(CHAN_VOICE, "player/land.wav", 1, ATTN_NORM);
+	};
+
+	self->jump_flag = self->GetVelocity().z;
+
+	CheckPowerups();
+
+	W_WeaponFrame();
+};
+
 void CBasePlayer::CreateViewModel()
 {
 	// TODO

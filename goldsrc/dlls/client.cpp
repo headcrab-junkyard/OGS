@@ -272,37 +272,15 @@ Called every frame after physics are run
 */
 void PlayerPostThink(edict_t *self)
 {
-/*
-	float   mspeed, aspeed;
-	float   r;
-
-	//dprint ("post think\n");
-	if (self->v.view_ofs == '0 0 0')
-		return;         // intermission or finale
-	if (self->v.deadflag)
+	auto pBaseEntity{ToBaseEntity(self)};
+	
+	if(!pBaseEntity)
 		return;
-
-// check to see if player landed and play landing sound 
-	if ((self->v.jump_flag < -300) && (self->v.flags & FL_ONGROUND) )
-	{
-		if (self->v.watertype == CONTENT_WATER)
-			gpEngine->pfnEmitSound(self, CHAN_BODY, "player/h2ojump.wav", 1, ATTN_NORM);
-		else if (self->v.jump_flag < -650)
-		{
-			self->v.deathtype = "falling";
-			T_Damage (self, world, world, 5); 
-			gpEngine->pfnEmitSound(self, CHAN_VOICE, "player/land2.wav", 1, ATTN_NORM);
-		}
-		else
-			gpEngine->pfnEmitSound(self, CHAN_VOICE, "player/land.wav", 1, ATTN_NORM);
-	};
-
-	self->v.jump_flag = self->v.velocity_z;
-
-	CheckPowerups ();
-
-	W_WeaponFrame (self);
-*/
+	
+	auto pBasePlayer{dynamic_cast<CBasePlayer*>(pBaseEntity)};
+	
+	if(pBasePlayer)
+		pBasePlayer->PostThink();
 };
 
 void ParmsNewLevel() // TODO: SetNewParms?
