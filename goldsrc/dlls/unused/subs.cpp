@@ -134,11 +134,11 @@ void SUB_CalcMove(vector tdest, float tspeed, void (*func)())
 After moving, set origin to exact final destination
 ============
 */
-void SUB_CalcMoveDone()
+void CBaseEntity::SUB_CalcMoveDone()
 {
-	gpEngine->pfnSetOrigin(self, self->v.finaldest);
-	self->v.velocity = '0 0 0';
-	self->v.nextthink = -1;
+	self->SetOrigin(self->v.finaldest);
+	self->SetVelocity(idVec3::Origin);
+	self->SetNextThink(-1);
 	if (self->v.think1)
 		self->v.think1();
 };
