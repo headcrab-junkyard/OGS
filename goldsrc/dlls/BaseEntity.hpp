@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018-2019 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@
 //using edict_t = struct edict_s;
 
 class Bounds;
+class CGameWorld;
 
 class CBaseEntity
 {
@@ -39,7 +40,7 @@ public:
 	using pfnUseCallback = void (CBaseEntity::*)(CBaseEntity *apOther);
 	using pfnBlockedCallback = void (CBaseEntity::*)(CBaseEntity *apOther);
 public:
-	CBaseEntity(entvars_t *apData);
+	//CBaseEntity(entvars_t *apData);
 	virtual ~CBaseEntity() = default;
 	
 	edict_t *ToEdict() const {return gpEngine->pfnFindEntityByVars(self);}
@@ -102,8 +103,14 @@ public:
 	float GetHealth() const {return self->health;}
 	
 	// TODO: should these be here?
-	void SetMaxHealth(float afValue);
-	float GetMaxHealth() const;
+	void SetMaxHealth(float afValue){self->max_health = afValue;}
+	float GetMaxHealth() const {return self->max_health;}
+	
+	void SetArmorType(int anType){self->armortype = anType;}
+	int GetArmorType() const {return self->armortype;}
+	
+	void SetArmorValue(int anValue){self->armorvalue = anValue;}
+	int GetArmorValue() const {return self->armorvalue;}
 	
 	void SetVelocity(const idVec3 &avVelocity)
 	{
@@ -174,10 +181,10 @@ public:
 		gpEngine->pfnEmitSound(ToEdict(), anChannel, asSample.c_str(), afVolume, afAttenuation, anFlags, anPitch);
 	};
 	
-	//void MarkForDeletion()
-	//{
-		//self->flags |= FL_KILLME;
-	//};
+	void MarkForDeletion()
+	{
+		//self->flags |= FL_KILLME; // TODO
+	};
 	
 	int GetWaterType() const {return self->watertype;}
 	int GetWaterLevel() const {return self->waterlevel;}
@@ -194,9 +201,10 @@ private:
 	idVec3 mvOrigin{0.0f};
 	idVec3 mvAngles{0.0f};
 	idVec3 mvVelocity{0.0f};
-	
+public:	
 	entvars_t *self{nullptr};
-	
+	CGameWorld *mpWorld{nullptr};
+private:	
 	pfnThinkCallback mfnThinkCallback{nullptr};
 	pfnTouchCallback mfnTouchCallback{nullptr};
 	pfnUseCallback mfnUseCallback{nullptr};
