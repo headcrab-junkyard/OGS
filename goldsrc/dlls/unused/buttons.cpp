@@ -25,81 +25,143 @@
 
 */
 
-class CButton
+/// @file
+
+#include "BaseEntity.hpp"
+
+class CButton : public CBaseEntity
 {
 public:
+	void Spawn() override;
+	
+	void Use(CBaseEntity *other) override;
+	void Touch(CBaseEntity *other) override;
+	void Blocked(CBaseEntity *other) override;
+	
 	void Wait();
 	void Done();
 	void Return();
-	void Blocked();
+	
 	void Fire();
-	void Use();
-	void Touch();
+	
 	void Killed();
 };
 
-void CButton::Wait()
+void CButton::Spawn()
 {
-	self.state = STATE_TOP;
-	self.nextthink = self.ltime + self.wait;
-	self.think = button_return;
-	activator = self.enemy;
-	SUB_UseTargets();
-	self.frame = 1;			// use alternate textures
+	if (self->sounds == 0)
+	{
+		gpEngine->pfnPrecacheSound ("buttons/airbut1.wav");
+		self->noise = "buttons/airbut1.wav";
+	};
+	if (self->sounds == 1)
+	{
+		gpEngine->pfnPrecacheSound ("buttons/switch21.wav");
+		self->noise = "buttons/switch21.wav";
+	};
+	if (self->sounds == 2)
+	{
+		gpEngine->pfnPrecacheSound ("buttons/switch02.wav");
+		self->noise = "buttons/switch02.wav";
+	};
+	if (self->sounds == 3)
+	{
+		gpEngine->pfnPrecacheSound ("buttons/switch04.wav");
+		self->noise = "buttons/switch04.wav";
+	};
+	
+	SetMovedir ();
+
+	self->SetMoveType(MOVETYPE_PUSH);
+	self->SetSolidity(SOLID_BSP);
+	self->SetModel(self->GetModel());
+
+	self->SetBlockedCallback(CButton::Blocked);
+	self->SetUseCallback(CButton::Use);
+
+	if (self->GetHealth())
+	{
+		self->SetMaxHealth(self->GetHealth());
+		self->th_die = CButton::Killed;
+		self->takedamage = DAMAGE_YES;
+	}
+	else
+		SetTouchCallback(CButton::Touch);
+
+	if (!self->speed)
+		self->speed = 40;
+	if (!self->wait)
+		self->wait = 1;
+	if (!self->lip)
+		self->lip = 4;
+
+	self->state = STATE_BOTTOM;
+
+	self->pos1 = self->GetOrigin();
+	self->pos2 = self->pos1 + self->movedir * (fabs(self->movedir * self->size) - self->lip);
 };
 
-void CButton::Done()
+void CButton::Use(CBaseEntity *other)
 {
-	self.state = STATE_BOTTOM;
+	self->SetEnemy(activator);
+	Fire();
 };
 
-void CButton::Return()
+void CButton::Touch(CBaseEntity *other)
 {
-	self.state = STATE_DOWN;
-	SUB_CalcMove (self.pos1, self.speed, button_done);
-	self.frame = 0;			// use normal textures
-	if (self.health)
-		self.takedamage = DAMAGE_YES;	// can be shot again
+	if (other->GetClassName() != "player")
+		return;
+	SetEnemy(other);
+	Fire ();
 };
 
-void CButton::Blocked()
+void CButton::Blocked(CBaseEntity *other)
 {
 	// do nothing, just don't ome all the way back out
 };
 
+void CButton::Wait()
+{
+	self->SetState(STATE_TOP);
+	SetNextThink(self->ltime + self->wait);
+	SetThinkCallback(CButton::Return);
+	activator = self->GetEnemy();
+	SUB_UseTargets(activator);
+	self->frame = 1; // use alternate textures
+};
+
+void CButton::Done()
+{
+	self->SetState(STATE_BOTTOM);
+};
+
+void CButton::Return()
+{
+	self->SetState(STATE_DOWN);
+	SUB_CalcMove(self->pos1, self->speed, button_done);
+	self->frame = 0; // use normal textures
+	if (GetHealth())
+		SetDamageable(DAMAGE_YES); // can be shot again
+};
+
 void CButton::Fire()
 {
-	if (self.state == STATE_UP || self.state == STATE_TOP)
+	if (self->GetState() == STATE_UP || self->GetState() == STATE_TOP)
 		return;
 
-	sound (self, CHAN_VOICE, self.noise, 1, ATTN_NORM);
+	EmitSound(CHAN_VOICE, self->noise, 1, ATTN_NORM);
 
-	self.state = STATE_UP;
-	SUB_CalcMove (self.pos2, self.speed, button_wait);
+	self->SetState(STATE_UP);
+	SUB_CalcMove (self->pos2, self->speed, button_wait);
 };
 
-void CButton::Use()
+void CButton::Killed(CBaseEntity *attacker)
 {
-	self.enemy = activator;
+	SetEnemy(damage_attacker);
+	SetHealth(GetMaxHealth());
+	SetDamageable(DAMAGE_NO); // wil be reset upon return
 	Fire ();
 };
-
-void CButton::Touch()
-{
-	if (other.classname != "player")
-		return;
-	self.enemy = other;
-	Fire ();
-};
-
-void CButton::Killed()
-{
-	self.enemy = damage_attacker;
-	self.health = self.max_health;
-	self.takedamage = DAMAGE_NO;	// wil be reset upon return
-	Fire ();
-};
-
 
 /*QUAKED func_button (0 .5 .8) ?
 When a button is touched, it moves some distance in the direction of it's angle, triggers all of it's targets, waits some time, then returns to it's original position where it can be triggered again.
@@ -116,58 +178,4 @@ When a button is touched, it moves some distance in the direction of it's angle,
 2) metallic click
 3) in-out
 */
-void func_button()
-{
-	float gtemp, ftemp;
-
-	if (self.sounds == 0)
-	{
-		precache_sound ("buttons/airbut1.wav");
-		self.noise = "buttons/airbut1.wav";
-	}
-	if (self.sounds == 1)
-	{
-		precache_sound ("buttons/switch21.wav");
-		self.noise = "buttons/switch21.wav";
-	}
-	if (self.sounds == 2)
-	{
-		precache_sound ("buttons/switch02.wav");
-		self.noise = "buttons/switch02.wav";
-	}
-	if (self.sounds == 3)
-	{
-		precache_sound ("buttons/switch04.wav");
-		self.noise = "buttons/switch04.wav";
-	}
-	
-	SetMovedir ();
-
-	self.movetype = MOVETYPE_PUSH;
-	self.solid = SOLID_BSP;
-	setmodel (self, self.model);
-
-	self.blocked = button_blocked;
-	self.use = button_use;
-
-	if (self.health)
-	{
-		self.max_health = self.health;
-		self.th_die = button_killed;
-		self.takedamage = DAMAGE_YES;
-	}
-	else
-		self.touch = button_touch;
-
-	if (!self.speed)
-		self.speed = 40;
-	if (!self.wait)
-		self.wait = 1;
-	if (!self.lip)
-		self.lip = 4;
-
-	self.state = STATE_BOTTOM;
-
-	self.pos1 = self.origin;
-	self.pos2 = self.pos1 + self.movedir*(fabs(self.movedir*self.size) - self.lip);
-};
+LINK_ENTITY_TO_CLASS(func_button, CButton)
