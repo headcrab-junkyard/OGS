@@ -1,5 +1,6 @@
 /*
  * This file is part of OGS Engine
+ * Copyright (C) 1996-1997 Id Software, Inc.
  * Copyright (C) 2019 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
@@ -22,7 +23,6 @@
 #include "engine.h"
 #include "Util.hpp"
 #include "BaseEntity.hpp"
-#include "mathlib/bounds.h"
 
 CGameWorld::CGameWorld() = default;
 CGameWorld::~CGameWorld() = default;
@@ -47,13 +47,24 @@ int CGameWorld::GetPointContents(const idVec3 &avOrigin) const
 	return gpEngine->pfnPointContents(avOrigin);
 };
 
-CBaseEntity *CGameWorld::SpawnEntity(const char *asName, const idVec3 &avOrigin = idVec3::Origin, const idVec3 &avAngles = idVec3::Origin, CBaseEntity *apOwner = nullptr)
+CBaseEntity *CGameWorld::SpawnEntity(const char *asClassName, const idVec3 &avOrigin = idVec3::Origin, const idVec3 &avAngles = idVec3::Origin, CBaseEntity *apOwner = nullptr)
 {
-	auto pEntity{ToBaseEntity(gpEngine->pfnCreateEntity())}; // TODO: pfnCreateNamedEntity
+	auto pEntity{ToBaseEntity(gpEngine->pfnCreateNamedEntity(gpEngine->pfnMakeString(asClassName)))};
+	
+	if(!pEntity)
+		return nullptr;
+	
+	//pEntity->SetClassName(asClassName); // TODO
 	pEntity->SetOrigin(avOrigin);
 	pEntity->SetAngles(avAngles);
 	pEntity->SetOwner(apOwner);
 	return pEntity;
+};
+
+void CGameWorld::DestroyEntity(CBaseEntity &aEntity)
+{
+	//aEntity.UpdateOnRemove(); // TODO
+	aEntity.MarkForDeletion();
 };
 
 void CGameWorld::SetLightStyle(int anStyle, const char *asValue)
@@ -69,6 +80,22 @@ void CGameWorld::CreateStaticDecal(const idVec3 &avOrigin, int anDecalIndex, int
 void CGameWorld::CreateParticleEffect(const idVec3 &origin, const idVec3 &direction, float color, float count)
 {
 	gpEngine->pfnParticleEffect(origin, direction, color, count);
+};
+
+/*
+================
+SpawnBlood
+================
+*/
+void CGameWorld::SpawnBlood(const idVec3 &avOrigin, float afDamage) // TODO: afDamage is unused
+{
+	gpEngine->pfnWriteByte(MSG_MULTICAST, SVC_TEMPENTITY);
+	gpEngine->pfnWriteByte(MSG_MULTICAST, TE_BLOOD);
+	gpEngine->pfnWriteByte(MSG_MULTICAST, 1);
+	gpEngine->pfnWriteCoord(MSG_MULTICAST, avOrigin.x);
+	gpEngine->pfnWriteCoord(MSG_MULTICAST, avOrigin.y);
+	gpEngine->pfnWriteCoord(MSG_MULTICAST, avOrigin.z);
+	gpEngine->pfnMulticast(avOrigin, MULTICAST_PVS);
 };
 
 void CGameWorld::ChangeLevel(const char *asName, const char *asStartSpot)
