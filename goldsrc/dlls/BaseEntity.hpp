@@ -65,6 +65,9 @@ public:
 			(this->*mfnBlockedCallback)(other);
 	};
 	
+	/// @return false if the entity shouldn't be spawn at all (instead of deleting itself on spawn)
+	virtual bool PreSpawn() const {return true;}
+	
 	virtual void Spawn(){}
 	
 	virtual void TraceAttack(float damage, const idVec3 &dir);
