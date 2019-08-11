@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 2001 James 'Ender' Brown [ender@quakesrc.org]
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018-2019 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,35 +43,69 @@ typedef float vec4_t[4];
  */
 typedef struct
 {
-	int		filetypeid;	//IDSP
+	int		id; //filetypeid // = "IDSP"
 	int		version;	//10
+
 	char	name[64];
-	int		filesize;
-	vec3_t	unknown3[3];
-	vec3_t  bbmin; // TODO
-	vec3_t  bbmax; // TODO
-	int		flags; // TODO
-	int		numbones;
-	int		boneindex;
-	int		numcontrollers;
-	int		controllerindex;
-	int		num_hitboxes;
-	int		ofs_hitboxes;
-	int		numseq;
+	int		length; //filesize
+
+	vec3_t	eyeposition; ///< Ideal eye position
+	vec3_t	min; ///< Ideal movement hull size
+	vec3_t	max;
+
+	vec3_t  bbmin; ///< Clipping bounding box
+	vec3_t  bbmax; // TODO: TODO what?
+	
+	int		flags; // Binary flags in little-endian order
+	
+	// After this point, the header contains many references to offsets
+	// within the MDL file and the number of items at those offsets
+	
+	// mstudiobone_t
+	int		numbones; ///< Number of bone data sections (of type mstudiobone_t or simply bones)
+	int		boneindex; ///< Offset of first data section
+	
+	// mstudiobonecontroller_t
+	int		numbonecontrollers; //numcontrollers ///< Bone controllers
+	int		bonecontrollerindex; //controllerindex
+	
+	// mstudiohitboxset_t
+	int		numhitboxes //num_hitboxes ///< Complex bounding boxes
+	int		hitboxindex; //ofs_hitboxes
+	
+	// mstudioanimdesc_t
+	int		numseq; ///< Number of (local) animation sequences
 	int		seqindex;
-	int		unknown6;		//external sequences
-	int		seqgroups;
-	int		numtextures;
-	int		textures;
-	int		unknown7;	//something to do with external textures
-	int		skinrefs;
-	int		skingroups;
-	int		skins;
+	
+	// mstudioseqdesc_t
+	int		numseqgroups; //unknown6 ///< Number of external (demand loaded) sequences
+	int		seqgroupindex; //seqgroups
+	
+	// mstudiotexture_t
+	int		numtextures; ///< Raw textures
+	int		textureindex; //textures
+	int		texturedataindex; // something to do with external textures
+	
+	int		numskinref; //skinrefs ///< Replaceable textures
+	int		numskinfamilies; //skingroups
+	int		skinindex; //skins
+	
+	// mstudiobodyparts_t
 	int		numbodyparts;
 	int		bodypartindex;
-	int		num_attachments;
-	int		ofs_attachments;
-	int		unknown9[6];	//sounds, transitions
+	
+	// Local attachment points
+	// mstudioattachment_t
+	int		numattachments; //num_attachments ///< Queryable attachable points
+	int		attachmentindex //ofs_attachments
+
+	int		soundtable;
+	int		soundindex;
+	int		soundgroups;
+	int		soundgroupindex;
+
+	int		numtransitions; ///< Animation node to animation node transition graph
+	int 	transitionindex;
 } studiohdr_t;
 
 // header for demand loaded sequence group data
@@ -79,19 +113,20 @@ typedef struct
 {
 	int magic;		//IDSQ
 	int version;	//10
+
 	char name[64];
-	int unk1;
+	int length; //unk1
 } studioseqhdr_t; // TODO: was hlmdl_sequencefile_t
 
 // bones
 typedef struct
 {
-	char	name[32];
-	int		parent;
-	int		unknown1; // TODO
-	int		bonecontroller[6];
-	float	value[6];
-	float	scale[6];
+	char	name[32]; ///< Bone name for symbolic links
+	int		parent; ///< Parent bone
+	int		flags; //unknown1
+	int		bonecontroller[6]; ///< Bone controller index, -1 = none
+	float	value[6]; ///< Default DoF values
+	float	scale[6]; ///< Scale for delta DoF values
 } mstudiobone_t;
 
 // bone controllers
@@ -101,8 +136,8 @@ typedef struct
 	int		type;
 	float	start;
 	float	end;
-	int		unknown1;
-	int		index;
+	int		rest; //unknown1 ///< Byte index value at rest
+	int		index; ///< 0-3 user set controller, 4 mouth
 } mstudiobonecontroller_t;
 
 // intersection boxes
@@ -110,15 +145,15 @@ typedef struct
 {
 	int bone;
 	int body;	//value reported to gamecode on impact
-	vec3_t mins;
+	vec3_t mins; ///< Bounding box
 	vec3_t maxs;
 } mstudiobbox_t;
 
 // demand loaded sequence groups
 typedef struct
 {
-	char            label[32];
-	char			name[64];
+	char            label[32]; ///< Textual name
+	char			name[64]; ///< File name
 	unsigned int	cache;
 	int				data;
 } mstudioseqgroup_t;
@@ -127,24 +162,35 @@ typedef struct
 typedef struct
 {
 	char	name[32];
+
 	float	timing;
 	int		loop;
+
 	int		unknown1[2];
+
 	int		num_events;
 	int		ofs_events;
+
 	int		numframes;
+
 	int		unknown2[2];
+
 	int		motiontype;
 	int		motionbone;
 	vec3_t	unknown3;
 	int		unknown4[2];
+
 	vec3_t	bbox[2];
+
 	int		hasblendseq;
 	int		index;
+
 	int		unknown7[2];
 	float	unknown[4];
 	int		unknown8;
+
 	unsigned int		seqindex;
+
 	int		unknown9[4];
 } mstudioseqdesc_t;
 
@@ -152,25 +198,28 @@ typedef struct
 //#include "studio_event.h"
 typedef struct
 {
-	int pose;
-	int code;
-	int unknown1;
-	char data[64];
+	int frame; //pose
+	int event; //code
+	int type; //unknown1
+	char options[64]; //data
 } mstudioevent_t;
 
 // pivots
 typedef struct
 {
+	vec3_t org; ///< Pivot point
+	int start;
+	int end;
 } mstudiopivot_t;
 
 // attachment
 typedef struct
 {
-	char name[32];	//I assume
-	int unk;
+	char name[32];
+	int type; //unk
 	int bone;
-	vec3_t org;
-	vec3_t unk2[3];
+	vec3_t org; ///< Attachment point
+	vec3_t vectors[3]; //unk2
 } mstudioattachment_t;
 
 typedef struct
@@ -194,7 +243,7 @@ typedef struct
 	char	name[64];
 	int		nummodels;
 	int		base;
-	int		modelindex;
+	int		modelindex; ///< Index into models array
 } mstudiobodyparts_t;
 
 // skin info
@@ -202,9 +251,9 @@ typedef struct
 {
 	char	name[64];
 	int		flags; /*flat, chrome, fullbright*/
-	int		w;	/* width */
-	int		h;	/* height */
-	int		offset;	/* index */
+	int		width; //w
+	int		height; //h
+	int		index; //offset
 } mstudiotexture_t;
 
 // skin families
@@ -214,16 +263,23 @@ typedef struct
 typedef struct
 {
 	char	name[64];
-	int		unknown1;
-	float	unknown2;
+
+	int		type; //unknown1
+
+	float	boundingradius; //unknown2
+
 	int		nummesh;
 	int		meshindex;
+
 	int		numverts;
 	int		vertinfoindex;
 	int		vertindex;
-	int		unknown3[2];
+	int		numnorms;
+	int 	norminfoindex;
 	int		normindex;
-	int		unknown4[2];
+
+	int		numgroups; ///< Deformation groups
+	int 	groupindex;
 } mstudiomodel_t;
 
 //vec3_t boundingbox[model][bone][2]; // complex intersection info
@@ -232,10 +288,10 @@ typedef struct
 typedef struct
 {
 	int numtris;
-	int index;
-	int skinindex;
-	int unknown2;
-	int unknown3;
+	int triindex; //index
+	int skinref; //skinindex
+	int numnorms; //unknown2 ///< Per-mesh normals
+	int normindex; //unknown3 ///< Normal vec3_t
 } mstudiomesh_t;
 
 // triangles
