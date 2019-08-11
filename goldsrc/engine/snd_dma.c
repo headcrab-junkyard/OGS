@@ -173,6 +173,8 @@ void S_Init()
 
 	Cmd_AddCommand("play", S_Play);
 	Cmd_AddCommand("playvol", S_PlayVol);
+	Cmd_AddCommand("speak", S_Speak_f);
+	Cmd_AddCommand("spk", S_Speak_f);
 	Cmd_AddCommand("stopsound", S_StopAllSoundsC);
 	Cmd_AddCommand("soundlist", S_SoundList);
 	Cmd_AddCommand("soundinfo", S_SoundInfo_f);
@@ -937,6 +939,37 @@ void S_PlayVol()
 		i += 2;
 	}
 }
+
+void S_Speak_f()
+{
+	static int hash = 543;
+	int i;
+	float vol;
+	char name[256];
+	sfx_t *sfx;
+
+	i = 1;
+	while(i < Cmd_Argc())
+	{
+		if(!Q_strrchr(Cmd_Argv(i), '.'))
+		{
+			Q_strcpy(name, Cmd_Argv(i));
+			Q_strcat(name, ".wav");
+		}
+		else
+			Q_strcpy(name, Cmd_Argv(i));
+		
+		// TODO
+		if(!Q_strrchr(Cmd_Argv(i), '/'))
+			sfx = S_PrecacheSound(va("vox/%s", name));
+		else
+			sfx = S_PrecacheSound(name);
+		
+		vol = Q_atof(Cmd_Argv(i + 1));
+		S_StartDynamicSound(hash++, 0, sfx, listener_origin, vol, 1.0, PITCH_NORM);
+		i += 2;
+	};
+};
 
 void S_SoundList()
 {
