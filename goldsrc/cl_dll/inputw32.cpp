@@ -1,6 +1,6 @@
 /*
  *	This file is part of OGS Engine
- *	Copyright (C) 1996-1997 Id Software, Inc.
+ *	Copyright (C) 1996-2001 Id Software, Inc.
  *	Copyright (C) 2018-2019 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
@@ -30,8 +30,8 @@
 #include "input.h"
 #include "usercmd.h"
 
-#ifdef _WIN32
-#include <windows.h>
+#if defined(_WIN32) && !defined(OGS_USE_SDL)
+#	include <windows.h>
 #endif
 
 // 02/21/97 JCB Added extended DirectInput code to support external controllers.
@@ -74,20 +74,8 @@ enum _ControlList
 	AxisTurn
 };
 
-DWORD dwAxisFlags[JOY_MAX_AXES] =
-{
-	JOY_RETURNX,
-	JOY_RETURNY,
-	JOY_RETURNZ,
-	JOY_RETURNR,
-	JOY_RETURNU,
-	JOY_RETURNV
-};
-
-
 DWORD dwAxisMap[JOY_MAX_AXES];
 DWORD dwControlMap[JOY_MAX_AXES];
-PDWORD pdwRawValue[JOY_MAX_AXES];
 
 // mouse variables
 cvar_t *m_filter;
@@ -122,10 +110,25 @@ qboolean joy_avail, joy_advancedinit, joy_haspov;
 DWORD joy_oldbuttonstate, joy_oldpovstate;
 
 int joy_id;
-DWORD joy_flags;
 DWORD joy_numbuttons;
 
+#if defined(_WIN32) && !defined(OGS_USE_SDL)
+DWORD dwAxisFlags[JOY_MAX_AXES] =
+{
+	JOY_RETURNX,
+	JOY_RETURNY,
+	JOY_RETURNZ,
+	JOY_RETURNR,
+	JOY_RETURNU,
+	JOY_RETURNV
+};
+
+PDWORD pdwRawValue[JOY_MAX_AXES];
+
+DWORD joy_flags;
+
 static JOYINFOEX ji;
+#endif // defined(_WIN32) && !defined(OGS_USE_SDL)
 
 /*
 ===========
@@ -151,15 +154,15 @@ IN_ActivateMouse
 */
 void IN_ActivateMouse()
 {
+#ifdef _WIN32
 	if(mouseinitialized)
 	{
-#ifdef _WIN32
 		if(mouseparmsvalid)
 			restore_spi = SystemParametersInfo(SPI_SETMOUSE, 0, newmouseparms, 0);
-#endif
 
 		mouseactive = true;
 	};
+#endif // _WIN32
 };
 
 /*
@@ -245,7 +248,9 @@ IN_ResetMouse
 */
 void IN_ResetMouse()
 {
+#ifdef _WIN32
 	SetCursorPos(gpEngine->GetWindowCenterX(), gpEngine->GetWindowCenterY());
+#endif
 };
 
 /*
@@ -336,10 +341,10 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 	if((in_mlook.state & 1) && !(in_strafe.state & 1))
 	{
 		viewangles[PITCH] += m_pitch->value * mouse_y;
-		if(viewangles[PITCH] > 80)
-			viewangles[PITCH] = 80;
-		if(viewangles[PITCH] < -70)
-			viewangles[PITCH] = -70;
+		if(viewangles[PITCH] > cl_pitchdown->value)
+			viewangles[PITCH] = cl_pitchdown->value;
+		if(viewangles[PITCH] < cl_pitchup->value) // TODO: -cl_pitchup->value
+			viewangles[PITCH] = cl_pitchup->value; // TODO: -cl_pitchup->value
 	}
 	else
 	{
@@ -410,22 +415,22 @@ IN_StartupJoystick
 */
 void IN_StartupJoystick()
 {
-/*
-	int i, numdevs;
-	JOYCAPS jc;
-	MMRESULT mmr;
+	// abort startup if user requests no joystick
+	if(gpEngine->CheckParm("-nojoy", nullptr))
+		return;
 
 	// assume no joystick
 	joy_avail = false;
 
-	// abort startup if user requests no joystick
-	if(COM_CheckParm("-nojoy"))
-		return;
+#if defined(_WIN32) && !defined(OGS_USE_SDL)
+	int i, numdevs;
+	JOYCAPS jc;
+	MMRESULT mmr;
 
 	// verify joystick driver is present
 	if((numdevs = joyGetNumDevs()) == 0)
 	{
-		Con_Printf("\njoystick not found -- driver not present\n\n");
+		gpEngine->Con_Printf("\njoystick not found -- driver not present\n\n");
 		return;
 	}
 
@@ -443,7 +448,7 @@ void IN_StartupJoystick()
 	// abort startup if we didn't find a valid joystick
 	if(mmr != JOYERR_NOERROR)
 	{
-		Con_Printf("\njoystick not found -- no valid joysticks (%x)\n\n", mmr);
+		gpEngine->Con_Printf("\njoystick not found -- no valid joysticks (%x)\n\n", mmr);
 		return;
 	}
 
@@ -452,13 +457,15 @@ void IN_StartupJoystick()
 	memset(&jc, 0, sizeof(jc));
 	if((mmr = joyGetDevCaps(joy_id, &jc, sizeof(jc))) != JOYERR_NOERROR)
 	{
-		Con_Printf("\njoystick not found -- invalid joystick capabilities (%x)\n\n", mmr);
+		gpEngine->Con_Printf("\njoystick not found -- invalid joystick capabilities (%x)\n\n", mmr);
 		return;
 	}
 
 	// save the joystick's number of buttons and POV status
 	joy_numbuttons = jc.wNumButtons;
 	joy_haspov = jc.wCaps & JOYCAPS_HASPOV;
+
+#endif // defined(_WIN32) && !defined(OGS_USE_SDL)
 
 	// old button and POV states default to no buttons pressed
 	joy_oldbuttonstate = joy_oldpovstate = 0;
@@ -470,7 +477,6 @@ void IN_StartupJoystick()
 	joy_advancedinit = false;
 
 	Con_Printf("\njoystick detected\n\n");
-*/
 };
 
 /*
@@ -478,11 +484,11 @@ void IN_StartupJoystick()
 RawValuePointer
 ===========
 */
-/*
 PDWORD RawValuePointer(int axis)
 {
 	switch(axis)
 	{
+#if defined(_WIN32) && !defined(OGS_USE_SDL)
 	case JOY_AXIS_X:
 		return &ji.dwXpos;
 	case JOY_AXIS_Y:
@@ -495,9 +501,9 @@ PDWORD RawValuePointer(int axis)
 		return &ji.dwUpos;
 	case JOY_AXIS_V:
 		return &ji.dwVpos;
+#endif // defined(_WIN32) && !defined(OGS_USE_SDL)
 	};
 };
-*/
 
 /*
 ===========
@@ -506,7 +512,6 @@ Joy_AdvancedUpdate_f
 */
 void Joy_AdvancedUpdate_f()
 {
-/*
 	// called once by IN_ReadJoystick and by user whenever an update is needed
 	// cvars are now available
 	int i;
@@ -520,7 +525,7 @@ void Joy_AdvancedUpdate_f()
 		pdwRawValue[i] = RawValuePointer(i);
 	}
 
-	if(joy_advanced.value == 0.0)
+	if(joy_advanced->value == 0.0)
 	{
 		// default joystick initialization
 		// 2 axes only with joystick control
@@ -531,34 +536,35 @@ void Joy_AdvancedUpdate_f()
 	}
 	else
 	{
-		if(Q_strcmp(joy_name.string, "joystick") != 0)
+		if(Q_strcmp(joy_name->string, "joystick") != 0)
 		{
 			// notify user of advanced controller
-			Con_Printf("\n%s configured\n\n", joy_name.string);
+			gpEngine->Con_Printf("\n%s configured\n\n", joy_name->string);
 		}
 
 		// advanced initialization here
 		// data supplied by user via joy_axisn cvars
-		dwTemp = (DWORD)joy_advaxisx.value;
+		dwTemp = (DWORD)joy_advaxisx->value;
 		dwAxisMap[JOY_AXIS_X] = dwTemp & 0x0000000f;
 		dwControlMap[JOY_AXIS_X] = dwTemp & JOY_RELATIVE_AXIS;
-		dwTemp = (DWORD)joy_advaxisy.value;
+		dwTemp = (DWORD)joy_advaxisy->value;
 		dwAxisMap[JOY_AXIS_Y] = dwTemp & 0x0000000f;
 		dwControlMap[JOY_AXIS_Y] = dwTemp & JOY_RELATIVE_AXIS;
-		dwTemp = (DWORD)joy_advaxisz.value;
+		dwTemp = (DWORD)joy_advaxisz->value;
 		dwAxisMap[JOY_AXIS_Z] = dwTemp & 0x0000000f;
 		dwControlMap[JOY_AXIS_Z] = dwTemp & JOY_RELATIVE_AXIS;
-		dwTemp = (DWORD)joy_advaxisr.value;
+		dwTemp = (DWORD)joy_advaxisr->value;
 		dwAxisMap[JOY_AXIS_R] = dwTemp & 0x0000000f;
 		dwControlMap[JOY_AXIS_R] = dwTemp & JOY_RELATIVE_AXIS;
-		dwTemp = (DWORD)joy_advaxisu.value;
+		dwTemp = (DWORD)joy_advaxisu->value;
 		dwAxisMap[JOY_AXIS_U] = dwTemp & 0x0000000f;
 		dwControlMap[JOY_AXIS_U] = dwTemp & JOY_RELATIVE_AXIS;
-		dwTemp = (DWORD)joy_advaxisv.value;
+		dwTemp = (DWORD)joy_advaxisv->value;
 		dwAxisMap[JOY_AXIS_V] = dwTemp & 0x0000000f;
 		dwControlMap[JOY_AXIS_V] = dwTemp & JOY_RELATIVE_AXIS;
 	}
 
+#if defined(_WIN32) && !defined(OGS_USE_SDL)
 	// compute the axes to collect from DirectInput
 	joy_flags = JOY_RETURNCENTERED | JOY_RETURNBUTTONS | JOY_RETURNPOV;
 	for(i = 0; i < JOY_MAX_AXES; i++)
@@ -568,7 +574,7 @@ void Joy_AdvancedUpdate_f()
 			joy_flags |= dwAxisFlags[i];
 		}
 	}
-*/
+#endif
 }
 
 /*
@@ -578,14 +584,14 @@ IN_Commands
 */
 void IN_Commands()
 {
-/*
 	int i, key_index;
-	DWORD buttonstate, povstate;
 
 	if(!joy_avail)
 	{
 		return;
 	}
+
+	DWORD buttonstate, povstate;
 
 	// loop through the joystick buttons
 	// key a joystick event or auxillary event for higher number buttons for each state change
@@ -595,13 +601,13 @@ void IN_Commands()
 		if((buttonstate & (1 << i)) && !(joy_oldbuttonstate & (1 << i)))
 		{
 			key_index = (i < 4) ? K_JOY1 : K_AUX1;
-			Key_Event(key_index + i, true);
+			gpEngine->Key_Event(key_index + i, true);
 		}
 
 		if(!(buttonstate & (1 << i)) && (joy_oldbuttonstate & (1 << i)))
 		{
 			key_index = (i < 4) ? K_JOY1 : K_AUX1;
-			Key_Event(key_index + i, false);
+			gpEngine->Key_Event(key_index + i, false);
 		}
 	}
 	joy_oldbuttonstate = buttonstate;
@@ -612,6 +618,7 @@ void IN_Commands()
 		// this avoids any potential problems related to moving from one
 		// direction to another without going through the center position
 		povstate = 0;
+#if defined(_WIN32) && !defined(OGS_USE_SDL)
 		if(ji.dwPOV != JOY_POVCENTERED)
 		{
 			if(ji.dwPOV == JOY_POVFORWARD)
@@ -623,22 +630,22 @@ void IN_Commands()
 			if(ji.dwPOV == JOY_POVLEFT)
 				povstate |= 0x08;
 		}
+#endif
 		// determine which bits have changed and key an auxillary event for each change
 		for(i = 0; i < 4; i++)
 		{
 			if((povstate & (1 << i)) && !(joy_oldpovstate & (1 << i)))
 			{
-				Key_Event(K_AUX29 + i, true);
+				gpEngine->Key_Event(K_AUX29 + i, true);
 			}
 
 			if(!(povstate & (1 << i)) && (joy_oldpovstate & (1 << i)))
 			{
-				Key_Event(K_AUX29 + i, false);
+				gpEngine->Key_Event(K_AUX29 + i, false);
 			}
 		}
 		joy_oldpovstate = povstate;
 	}
-*/
 };
 
 /* 
@@ -648,6 +655,7 @@ IN_ReadJoystick
 */
 qboolean IN_ReadJoystick()
 {
+#if defined(_WIN32) && !defined(OGS_USE_SDL)
 	memset(&ji, 0, sizeof(ji));
 	ji.dwSize = sizeof(ji);
 	ji.dwFlags = joy_flags;
@@ -672,6 +680,7 @@ qboolean IN_ReadJoystick()
 		// joy_avail = false;
 		return false;
 	}
+#endif
 };
 
 /*
@@ -849,10 +858,10 @@ void IN_JoyMove(float frametime, usercmd_t *cmd)
 	}
 
 	// bounds check pitch
-	if(viewangles[PITCH] > cl_pitchdown->value) // TODO: was 80.0
-		viewangles[PITCH] = cl_pitchdown->value; // TODO: was 80.0
-	if(viewangles[PITCH] < -cl_pitchup->value) // TODO: was -70.0
-		viewangles[PITCH] = -cl_pitchup->value; // TODO: was -70.0
+	if(viewangles[PITCH] > cl_pitchdown->value)
+		viewangles[PITCH] = cl_pitchdown->value;
+	if(viewangles[PITCH] < cl_pitchup->value) // TODO: should be -cl_pitchup->value
+		viewangles[PITCH] = cl_pitchup->value; // TODO: should be -cl_pitchup->value
 
 	gpEngine->SetViewAngles((float*)viewangles);
 };
