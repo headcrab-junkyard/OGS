@@ -21,7 +21,7 @@
 #include "quakedef.h"
 #include "imguiwrap.h"
 #include "imgui.h"
-#include "imgui_impl_opengl2.h"
+#include "imgui/imgui_impl_qgl.h"
 
 #ifdef OGS_USE_SDL
 #	include "imgui_impl_sdl.h"
@@ -56,14 +56,14 @@ qboolean ImGui_Init()
 
 #endif // OGS_USE_SDL
 
-	ImGui_ImplOpenGL2_Init();
+	ImGui_ImplQGL_Init();
 	return true;
 };
 
 void ImGui_Shutdown()
 {
 	// Cleanup
-	ImGui_ImplOpenGL2_Shutdown();
+	ImGui_ImplQGL_Shutdown();
 	
 #ifdef OGS_USE_SDL
 	ImGui_ImplSDL2_Shutdown();
@@ -81,7 +81,7 @@ void ImGui_Shutdown()
 void ImGui_Frame()
 {
 	// Start the Dear ImGui frame
-	ImGui_ImplOpenGL2_NewFrame();
+	ImGui_ImplQGL_NewFrame();
 
 #ifdef OGS_USE_SDL
 	ImGui_ImplSDL2_NewFrame(window);
@@ -106,6 +106,6 @@ void ImGui_Frame()
 	//glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 	//glClear(GL_COLOR_BUFFER_BIT);
 	//glUseProgram(0); // You may want this if using this code in an OpenGL 3+ context where shaders may be bound
-	ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
+	ImGui_ImplQGL_RenderDrawData(ImGui::GetDrawData());
 	//SDL_GL_SwapWindow(window);
 };
