@@ -410,9 +410,6 @@ void V_CalcNormalRefdef(struct ref_params_s *pparams)
 	                                            // the view dir
 
 	bob = V_CalcBob(pparams);
-
-	// TODO: temporary randomly modify the simulated origin
-	pparams->simorg[2] = 40;
 	
 	// refresh position from simulated origin
 	VectorCopy(pparams->simorg, pparams->vieworg);
@@ -428,6 +425,9 @@ void V_CalcNormalRefdef(struct ref_params_s *pparams)
 
 	VectorCopy(pparams->cl_viewangles, pparams->viewangles);
 
+	// TODO: temp
+	pparams->health = 100;
+	
 	V_CalcViewRoll(pparams);
 	V_AddIdle(pparams);
 
