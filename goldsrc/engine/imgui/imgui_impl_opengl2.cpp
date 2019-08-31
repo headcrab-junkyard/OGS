@@ -1,4 +1,4 @@
-// dear imgui: Renderer for OpenGL2 (legacy OpenGL, fixed pipeline)
+// dear imgui: Renderer for OpenGL1 (legacy OpenGL, fixed pipeline, dynamic linkage)
 // This needs to be used along with a Platform Binding (e.g. GLFW, SDL, Win32, custom..)
 
 // Implemented features:
@@ -14,10 +14,11 @@
 // If your code is using GL3+ context or any semi modern OpenGL calls, using this is likely to make everything more
 // complicated, will require your code to reset every single OpenGL attributes to their initial state, and might
 // confuse your GPU driver.
-// The GL2 code is unable to reset attributes or even call e.g. "glUseProgram(0)" because they don't exist in that API.
+// The GL1 code is unable to reset attributes or even call e.g. "glUseProgram(0)" because they don't exist in that API.
 
 // CHANGELOG
 // (minor and older changes stripped away, please see git history for details)
+//  2019-08-31: Misc: Reused for QGL implementation
 //  2019-02-11: OpenGL: Projecting clipping rectangles correctly using draw_data->FramebufferScale to allow multi-viewports for retina display.
 //  2018-11-30: Misc: Setting up io.BackendRendererName so it can be displayed in the About Window.
 //  2018-08-03: OpenGL: Disabling/restoring GL_LIGHTING and GL_COLOR_MATERIAL to increase compatibility with legacy OpenGL applications.
@@ -30,7 +31,7 @@
 
 #include "quakedef.h"
 #include "imgui.h"
-#include "imgui_impl_opengl2.h"
+#include "imgui_impl_qgl.h"
 #if defined(_MSC_VER) && _MSC_VER <= 1500 // MSVC 2008 or earlier
 #include <stddef.h>     // intptr_t
 #else
@@ -59,28 +60,28 @@
 static GLuint       g_FontTexture = 0;
 
 // Functions
-bool    ImGui_ImplOpenGL2_Init()
+bool    ImGui_ImplQGL_Init()
 {
     ImGuiIO& io = ImGui::GetIO();
-    io.BackendRendererName = "imgui_impl_opengl2";
+    io.BackendRendererName = "imgui_impl_qgl";
     return true;
 }
 
-void    ImGui_ImplOpenGL2_Shutdown()
+void    ImGui_ImplQGL_Shutdown()
 {
-    ImGui_ImplOpenGL2_DestroyDeviceObjects();
+    ImGui_ImplQGL_DestroyDeviceObjects();
 }
 
-void    ImGui_ImplOpenGL2_NewFrame()
+void    ImGui_ImplQGL_NewFrame()
 {
     if (!g_FontTexture)
-        ImGui_ImplOpenGL2_CreateDeviceObjects();
+        ImGui_ImplQGL_CreateDeviceObjects();
 }
 
-// OpenGL2 Render function.
+// OpenGL1 Render function.
 // (this used to be set in io.RenderDrawListsFn and called by ImGui::Render(), but you can now call this directly from your main loop)
 // Note that this implementation is little overcomplicated because we are saving/setting up/restoring every OpenGL state explicitly, in order to be able to run within any OpenGL engine that doesn't do so.
-void ImGui_ImplOpenGL2_RenderDrawData(ImDrawData* draw_data)
+void ImGui_ImplQGL_RenderDrawData(ImDrawData* draw_data)
 {
     // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
     int fb_width = (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
@@ -113,7 +114,7 @@ void ImGui_ImplOpenGL2_RenderDrawData(ImDrawData* draw_data)
     //  GLint last_program; 
     //  qglGetIntegerv(GL_CURRENT_PROGRAM, &last_program);
     //  qglUseProgram(0);
-    //  ImGui_ImplOpenGL2_RenderDrawData(...);
+    //  ImGui_ImplQGL_RenderDrawData(...);
     //  qglUseProgram(last_program)
 
     // Setup viewport, orthographic projection matrix
@@ -187,7 +188,7 @@ void ImGui_ImplOpenGL2_RenderDrawData(ImDrawData* draw_data)
     qglScissor(last_scissor_box[0], last_scissor_box[1], (GLsizei)last_scissor_box[2], (GLsizei)last_scissor_box[3]);
 }
 
-bool ImGui_ImplOpenGL2_CreateFontsTexture()
+bool ImGui_ImplQGL_CreateFontsTexture()
 {
     // Build texture atlas
     ImGuiIO& io = ImGui::GetIO();
@@ -214,7 +215,7 @@ bool ImGui_ImplOpenGL2_CreateFontsTexture()
     return true;
 }
 
-void ImGui_ImplOpenGL2_DestroyFontsTexture()
+void ImGui_ImplQGL_DestroyFontsTexture()
 {
     if (g_FontTexture)
     {
@@ -225,12 +226,12 @@ void ImGui_ImplOpenGL2_DestroyFontsTexture()
     }
 }
 
-bool    ImGui_ImplOpenGL2_CreateDeviceObjects()
+bool    ImGui_ImplQGL_CreateDeviceObjects()
 {
-    return ImGui_ImplOpenGL2_CreateFontsTexture();
+    return ImGui_ImplQGL_CreateFontsTexture();
 }
 
-void    ImGui_ImplOpenGL2_DestroyDeviceObjects()
+void    ImGui_ImplQGL_DestroyDeviceObjects()
 {
-    ImGui_ImplOpenGL2_DestroyFontsTexture();
+    ImGui_ImplQGL_DestroyFontsTexture();
 }

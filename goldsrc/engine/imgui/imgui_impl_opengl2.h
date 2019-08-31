@@ -1,4 +1,4 @@
-// dear imgui: Renderer for OpenGL2 (legacy OpenGL, fixed pipeline)
+// dear imgui: Renderer for OpenGL1 (legacy OpenGL, fixed pipeline, dynamic linkage)
 // This needs to be used along with a Platform Binding (e.g. GLFW, SDL, Win32, custom..)
 
 // Implemented features:
@@ -14,17 +14,17 @@
 // If your code is using GL3+ context or any semi modern OpenGL calls, using this is likely to make everything more
 // complicated, will require your code to reset every single OpenGL attributes to their initial state, and might
 // confuse your GPU driver.
-// The GL2 code is unable to reset attributes or even call e.g. "glUseProgram(0)" because they don't exist in that API.
+// The GL1 code is unable to reset attributes or even call e.g. "glUseProgram(0)" because they don't exist in that API.
 
 #pragma once
 
-IMGUI_IMPL_API bool     ImGui_ImplOpenGL2_Init();
-IMGUI_IMPL_API void     ImGui_ImplOpenGL2_Shutdown();
-IMGUI_IMPL_API void     ImGui_ImplOpenGL2_NewFrame();
-IMGUI_IMPL_API void     ImGui_ImplOpenGL2_RenderDrawData(ImDrawData* draw_data);
+IMGUI_IMPL_API bool     ImGui_ImplQGL_Init();
+IMGUI_IMPL_API void     ImGui_ImplQGL_Shutdown();
+IMGUI_IMPL_API void     ImGui_ImplQGL_NewFrame();
+IMGUI_IMPL_API void     ImGui_ImplQGL_RenderDrawData(ImDrawData* draw_data);
 
 // Called by Init/NewFrame/Shutdown
-IMGUI_IMPL_API bool     ImGui_ImplOpenGL2_CreateFontsTexture();
-IMGUI_IMPL_API void     ImGui_ImplOpenGL2_DestroyFontsTexture();
-IMGUI_IMPL_API bool     ImGui_ImplOpenGL2_CreateDeviceObjects();
-IMGUI_IMPL_API void     ImGui_ImplOpenGL2_DestroyDeviceObjects();
+IMGUI_IMPL_API bool     ImGui_ImplQGL_CreateFontsTexture();
+IMGUI_IMPL_API void     ImGui_ImplQGL_DestroyFontsTexture();
+IMGUI_IMPL_API bool     ImGui_ImplQGL_CreateDeviceObjects();
+IMGUI_IMPL_API void     ImGui_ImplQGL_DestroyDeviceObjects();
