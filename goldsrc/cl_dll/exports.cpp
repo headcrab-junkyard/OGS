@@ -69,7 +69,7 @@ extern void HUD_TempEntUpdate(double frametime, double client_time, double cl_gr
 extern struct cl_entity_s *HUD_GetUserEntity(int index);
 extern void HUD_VoiceStatus(int entindex, qboolean bTalking);
 extern void HUD_DirectorMessage(int iSize, void *pbuf);
-extern int HUD_StudioInterface(int version, struct r_studio_interface_s **ppInterface, struct engine_studio_api_s *pStudio);
+extern int HUD_GetStudioModelInterface(int version, struct r_studio_interface_s **ppInterface, struct engine_studio_api_s *pStudio);
 extern void HUD_ChatInputPosition(int *x, int *y);
 extern int HUD_GetPlayerTeam(int playernum);
 extern void *HUD_ClientFactory();
@@ -115,7 +115,7 @@ cldll_func_t gClientFuncs =
 	HUD_GetUserEntity,
 	HUD_VoiceStatus,
 	HUD_DirectorMessage,
-	HUD_StudioInterface,
+	HUD_GetStudioModelInterface,
 	HUD_ChatInputPosition,
 	HUD_GetPlayerTeam,
 	HUD_ClientFactory
