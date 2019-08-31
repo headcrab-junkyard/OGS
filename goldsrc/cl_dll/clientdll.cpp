@@ -188,11 +188,6 @@ void HUD_DirectorMessage(int iSize, void *pbuf)
 {
 };
 
-int HUD_StudioInterface(int version, struct r_studio_interface_s **ppInterface, struct engine_studio_api_s *pStudio)
-{
-	return 0;
-};
-
 void HUD_ChatInputPosition(int *x, int *y)
 {
 };
