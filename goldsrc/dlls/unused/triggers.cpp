@@ -31,7 +31,7 @@ entity stemp, otemp, s, old;
 
 void trigger_reactivate()
 {
-	self.solid = SOLID_TRIGGER;
+	self->SetSolidity(SOLID_TRIGGER);
 };
 
 //=============================================================================
@@ -42,11 +42,11 @@ const float	SPAWNFLAG_NOTOUCH = 1;
 // the wait time has passed, so set back up for another activation
 void multi_wait()
 {
-	if (self.max_health)
+	if (self->GetMaxHealth())
 	{
-		self.health = self.max_health;
-		self.takedamage = DAMAGE_YES;
-		self.solid = SOLID_BBOX;
+		self->SetHealth(self->GetMaxHealth());
+		self->SetDamageable(DAMAGE_YES);
+		self->SetSolidity(SOLID_BBOX);
 	};
 };
 
@@ -55,46 +55,46 @@ void multi_wait()
 // so wait for the delay time before firing
 void multi_trigger()
 {
-	if (self.nextthink > time)
-	{
-		return;		// already been triggered
-	}
+	// already been triggered
+	if (self->GetNextThink() > gpGlobals->time)
+		return;
 
-	if (self.classname == "trigger_secret")
+	if (self->GetClassName() == "trigger_secret")
 	{
-		if (self.enemy.classname != "player")
+		if (self->GetEnemy()->GetClassName() != "player")
 			return;
-		found_secrets = found_secrets + 1;
+		found_secrets++;
 		WriteByte (MSG_ALL, SVC_FOUNDSECRET);
-	}
+	};
 
 	if (self.noise)
-		sound (self, CHAN_VOICE, self.noise, 1, ATTN_NORM);
+		self->EmitSound (CHAN_VOICE, self.noise, 1, ATTN_NORM);
 
-// don't trigger again until reset
-	self.takedamage = DAMAGE_NO;
+	// don't trigger again until reset
+	self->SetDamageable(DAMAGE_NO);
 
-	activator = self.enemy;
+	activator = self->GetEnemy();
 	
 	SUB_UseTargets();
 
 	if (self.wait > 0)	
 	{
-		self.think = multi_wait;
-		self.nextthink = time + self.wait;
+		self->SetThinkCallback(multi_wait);
+		self->SetNextThink(gpGlobals->time + self.wait);
 	}
 	else
-	{	// we can't just remove (self) here, because this is a touch function
+	{
+		// we can't just remove (self) here, because this is a touch function
 		// called wheil C code is looping through area links...
-		self.touch = SUB_Null;
-		self.nextthink = time + 0.1;
-		self.think = SUB_Remove;
-	}
+		self->SetTouchCallback(SUB_Null);
+		self->SetNextThink(gpGlobals->time + 0.1);
+		self->SetThinkCallback(SUB_Remove);
+	};
 };
 
 void multi_killed()
 {
-	self.enemy = damage_attacker;
+	self->SetEnemy(damage_attacker);
 	multi_trigger();
 };
 
@@ -104,9 +104,9 @@ void multi_use()
 	multi_trigger();
 };
 
-void multi_touch()
+void multi_touch(CBaseEntity *other)
 {
-	if (other.classname != "player")
+	if (other->GetClassName() != "player")
 		return;
 	
 // if the trigger has an angles field, check player's facing direction
@@ -115,7 +115,7 @@ void multi_touch()
 		makevectors (other.angles);
 		if (v_forward * self.movedir < 0)
 			return;		// not facing the right way
-	}
+	};
 	
 	self.enemy = other;
 	multi_trigger ();
@@ -138,17 +138,17 @@ void trigger_multiple()
 {
 	if (self.sounds == 1)
 	{
-		precache_sound ("misc/secret.wav");
+		gpEngine->pfnPrecacheSound ("misc/secret.wav");
 		self.noise = "misc/secret.wav";
 	}
 	else if (self.sounds == 2)
 	{
-		precache_sound ("misc/talk.wav");
+		gpEngine->pfnPrecacheSound ("misc/talk.wav");
 		self.noise = "misc/talk.wav";
 	}
 	else if (self.sounds == 3)
 	{
-		precache_sound ("misc/trigger1.wav");
+		gpEngine->pfnPrecacheSound ("misc/trigger1.wav");
 		self.noise = "misc/trigger1.wav";
 	}
 	
@@ -171,10 +171,8 @@ void trigger_multiple()
 	else
 	{
 		if ( !(self.spawnflags & SPAWNFLAG_NOTOUCH) )
-		{
 			self.touch = multi_touch;
-		}
-	}
+	};
 };
 
 
@@ -308,7 +306,7 @@ const float	SILENT = 2;
 void play_teleport()
 {
 	float v;
-	string tmpstr;
+	string_t tmpstr;
 
 	v = random() * 5;
 	if (v < 1)
@@ -326,9 +324,9 @@ void play_teleport()
 	remove (self);
 };
 
-void spawn_tfog(vector org)
+void spawn_tfog(const idVec3 &org)
 {
-	s = spawn ();
+	s = gpEngine->pfnCreateEntity ();
 	s.origin = org;
 	s.nextthink = time + 0.2;
 	s.think = play_teleport;
@@ -341,10 +339,9 @@ void spawn_tfog(vector org)
 	multicast (org, MULTICAST_PHS);
 };
 
-
-void() tdeath_touch =
+void tdeath_touch()
 {
-	local entity other2;
+	entity other2;
 
 	if (other == self.owner)
 		return;
@@ -361,69 +358,57 @@ void() tdeath_touch =
 			other2 = self.owner;
 			self.owner = other;
 			T_Damage (other2, self, self, 50000);
-		}
+		};
 			
 		if (other.invincible_finished > time)
 		{
-			self.classname = "teledeath2";
-			T_Damage (self.owner, self, self, 50000);
+			self->SetClassName("teledeath2");
+			self->GetOwner()->TakeDamage (self, self, 50000);
 			return;
-		}
-		
-	}
+		};
+	};
 
 	if (other.health)
-	{
-		T_Damage (other, self, self, 50000);
-	}
+		other->TakeDamage(self, self, 50000);
 };
 
-
-void spawn_tdeath(vector org, entity death_owner)
+void spawn_tdeath(const idVec3 &org, CBaseEntity *death_owner)
 {
-	entity	death;
-
-	death = spawn();
-	death.classname = "teledeath";
-	death.movetype = MOVETYPE_NONE;
+	CBaseEntity *death = mpWorld->SpawnEntity();
+	death->SetClassName("teledeath");
+	death->SetMoveType(MOVETYPE_NONE);
 	death.solid = SOLID_TRIGGER;
-	death.angles = '0 0 0';
-	setsize (death, death_owner.mins - '1 1 1', death_owner.maxs + '1 1 1');
-	setorigin (death, org);
+	death->SetAngles('0 0 0');
+	death->SetSize(death_owner->GetSize().mins - idVec3(1.0f), death_owner->GetSize().maxs + idVec3(1.0f));
+	death->SetOrigin(org);
 	death.touch = tdeath_touch;
 	death.nextthink = time + 0.2;
 	death.think = SUB_Remove;
 	death.owner = death_owner;
 	
-	force_retouch = 2;		// make sure even still objects get hit
+	force_retouch = 2; // make sure even still objects get hit
 };
 
 void teleport_touch()
 {
-	entity	t;
-	vector	org;
+	edict_t t;
+	idVec3 org;
 
 	if (self.targetname)
-	{
 		if (self.nextthink < time)
-		{
 			return;		// not fired yet
-		}
-	}
 
 	if (self.spawnflags & PLAYER_ONLY)
-	{
 		if (other.classname != "player")
 			return;
-	}
 
-// only teleport living creatures
+	// only teleport living creatures
 	if (other.health <= 0 || other.solid != SOLID_SLIDEBOX)
 		return;
 
 	SUB_UseTargets ();
 
-// put a tfog where the player was
+	// put a tfog where the player was
 	spawn_tfog (other.origin);
 
 	t = find (world, targetname, self.target);
@@ -486,7 +471,7 @@ If the trigger_teleport has a targetname, it will only teleport entities when it
 */
 void trigger_teleport()
 {
-	vector o;
+	idVec3 o;
 
 	InitTrigger ();
 	self.touch = teleport_touch;
