@@ -270,9 +270,9 @@ public:
 	CTrain();
 	~CTrain();
 	
-	void Blocked(edict_t *other);
-	void Use();
-	void Wait());
+	void Blocked(CBaseEntity *other);
+	void Use(CBaseEntity *other);
+	void Wait();
 private:
 };
 
@@ -290,7 +290,7 @@ void CTrain::Blocked(edict_t *other)
 
 void CTrain::Use()
 {
-	if (self.think != func_train_find)
+	if (self->think != func_train_find)
 		return;		// already activated
 	train_next();
 };
@@ -299,20 +299,20 @@ void CTrain::Wait()
 {
 	if (self->v.wait)
 	{
-		self->v.nextthink = self->v.ltime + self->v.wait;
-		pEngine->sound (self, CHAN_NO_PHS_ADD+CHAN_VOICE, self->v.noise, 1, ATTN_NORM);
+		self->SetNextThink(self->v.ltime + self->v.wait);
+		pEngine->pfnEmitSound(self, CHAN_NO_PHS_ADD+CHAN_VOICE, self->v.noise, 1, ATTN_NORM);
 	}
 	else
-		self->v.nextthink = self->v.ltime + 0.1;
+		self->SetNextThink(self->v.ltime + 0.1);
 	
-	self->v.think = train_next;
+	self->SetThinkCallback(train_next);
 };
 
 void train_next()
 {
 	entity	targ;
 
-	targ = find (world, targetname, self.target);
+	targ = gpEngine->pfnFindEntityByString(world, targetname, self.target);
 	self.target = targ.target;
 	if (!self.target)
 		objerror ("train_next: no next target");
@@ -320,7 +320,7 @@ void train_next()
 		self.wait = targ.wait;
 	else
 		self.wait = 0;
-	pEngine->sound (self, CHAN_VOICE, self.noise1, 1, ATTN_NORM);
+	pEngine->pfnEmitSound (self, CHAN_VOICE, self.noise1, 1, ATTN_NORM);
 	SUB_CalcMove (targ.origin - self.mins, self.speed, train_wait);
 };
 
@@ -330,12 +330,12 @@ void func_train_find()
 
 	targ = find (world, targetname, self.target);
 	self.target = targ.target;
-	pEngine->setorigin (self, targ.origin - self.mins);
+	self->SetOrigin(targ.origin - self.mins);
 	if (!self.targetname)
 	{	// not triggered, so start immediately
 		self.nextthink = self.ltime + 0.1;
 		self.think = train_next;
-	}
+	};
 };
 
 /*QUAKED func_train (0 .5 .8) ?
