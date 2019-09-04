@@ -30,59 +30,12 @@
 void T_MissileTouch();
 void info_player_start();
 void ClientObituary(entity targ, entity attacker);
-void T_RadiusDamage(entity inflictor, entity attacker, float damage, entity ignore, string dtype);
 
 /*SERVER
 void monster_death_use();
 */
 
 //============================================================================
-
-/*
-============
-T_RadiusDamage
-============
-*/
-void T_RadiusDamage(CBaseEntity *inflictor, CBaseEntity *attacker, float damage, CBaseEntity *ignore, string dtype)
-{
-	float points;
-	CBaseEntity *head;
-	vec3_t org;
-
-	head = findradius(inflictor->GetOrigin(), damage+40);
-	
-	while (head)
-	{
-		//bprint (PRINT_HIGH, head->GetClassName());
-		//bprint (PRINT_HIGH, " | ");
-		//bprint (PRINT_HIGH, head->netname);
-		//bprint (PRINT_HIGH, "\n");
-	
-		if (head != ignore)
-		{
-			if (head->v.takedamage)
-			{
-				org = head->GetOrigin() + (head->v.mins + head->v.maxs)*0.5;
-				points = 0.5*vlen (inflictor->GetOrigin() - org);
-				if (points < 0)
-					points = 0;
-				points = damage - points;
-				
-				if (head == attacker)
-					points = points * 0.5;
-				if (points > 0)
-				{
-					if (CanDamage (head, inflictor))
-					{
-						head->v.deathtype = dtype;
-						T_Damage (head, inflictor, attacker, points);
-					}
-				}
-			}
-		}
-		head = head.chain;
-	}
-};
 
 /*
 ============
