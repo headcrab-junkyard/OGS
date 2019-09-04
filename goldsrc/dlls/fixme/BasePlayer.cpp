@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 1996-1997 Id Software, Inc.
+ * Copyright (C) 1996-2001 Id Software, Inc.
  * Copyright (C) 2018-2019 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
@@ -266,6 +266,52 @@ void() player_rocket3   =[$rockatt3, player_rocket4  ] {self.weaponframe=3;};
 void() player_rocket4   =[$rockatt4, player_rocket5  ] {self.weaponframe=4;};
 void() player_rocket5   =[$rockatt5, player_rocket6  ] {self.weaponframe=5;};
 void() player_rocket6   =[$rockatt6, player_run  ] {self.weaponframe=6;};
+
+void CBasePlayer::Spawn()
+{
+	self->classname = "player";
+	SetMaxHealth(100);
+	SetHealth(GetMaxHealth());
+	self->takedamage = DAMAGE_AIM;
+	self->solid = SOLID_SLIDEBOX;
+	SetMoveType(MOVETYPE_WALK);
+	self->show_hostile = 0;
+	SetFlags(FL_CLIENT);
+	self->air_finished = gpGlobals->time + 12;
+	self->dmg = 2; // initial water damage
+	
+/*
+	self->super_damage_finished = 0;
+	self->radsuit_finished = 0;
+	self->invisible_finished = 0;
+	self->invincible_finished = 0;
+*/
+	SetEffects(0); // TODO: ClearEffects?
+	self->invincible_time = 0;
+	
+	DecodeLevelParms ();
+	
+	W_SetCurrentAmmo ();
+
+	self->attack_finished = gpGlobals->time;
+	self->th_pain = player_pain;
+	self->th_die = PlayerDie;
+	
+	self->deadflag = DEAD_NO;
+// paustime is set by teleporters to keep the player from moving a while
+	self->pausetime = 0;
+	
+	// oh, this is a hack!
+	SetModel("models/eyes.mdl");
+	modelindex_eyes = self->modelindex;
+
+	SetModel("models/player.mdl");
+	modelindex_player = self->modelindex;
+
+	SetSize(VEC_HULL_MIN, VEC_HULL_MAX);
+	
+	mpGame->GetRules()->OnPlayerSpawn(this);
+};
 
 void CBasePlayer::PainSound()
 {
