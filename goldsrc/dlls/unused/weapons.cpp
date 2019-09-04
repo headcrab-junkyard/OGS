@@ -254,7 +254,33 @@ ROCKETS
 ==============================================================================
 */
 
-void T_MissileTouch()
+class CMissile : public CBaseEntity
+{
+public:
+	void Spawn() override;
+	
+	void Touch(CBaseEntity *other) override;
+};
+
+void CMissile::Spawn()
+{
+	self->SetMoveType(MOVETYPE_FLYMISSILE);
+	self->SetSolidity(SOLID_BBOX);
+
+	// set speed
+	
+	self->SetTouchCallback(CMissile::Touch);
+	self->voided = 0;
+	
+	// set duration
+	self->SetNextThink(gpGlobals->time + 5);
+	self->SetThinkCallback(SUB_Remove);
+
+	self->SetModel("models/missile.mdl");
+	self->SetSize(idVec3::Origin, idVec3::Origin);             
+};
+
+void CMissile::Touch(CBaseEntity *other)
 {
 	float     damg;
 
@@ -283,25 +309,25 @@ void T_MissileTouch()
 
 	self.voided = 1;
 
-	if (pointcontents(self.origin) == CONTENT_SKY)
+	if (mpWorld->GetPointContents(self->GetOrigin()) == CONTENT_SKY)
 	{
-		remove(self);
+		gpEngine->pfnRemove(self);
 		return;
-	}
+	};
 
 	damg = 100 + random()*20;
 	
-	if (other.health)
+	if (other->GetHealth())
 	{
 		other.deathtype = "rocket";
-		T_Damage (other, self, self.owner, damg );
+		other->TakeDamage (self, self.owner, damg );
 	}
 
 	// don't do radius damage to the other, because all the damage
 	// was done in the impact
 
 
-	T_RadiusDamage (self, self.owner, 120, other, "rocket");
+	mpWorld->RadiusDamage (self, self.owner, 120, other, "rocket");
 
 //  sound (self, CHAN_WEAPON, "weapons/r_exp3.wav", 1, ATTN_NORM);
 	self.origin = self.origin - 8 * normalize(self.velocity);
