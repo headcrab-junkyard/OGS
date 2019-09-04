@@ -390,16 +390,17 @@ LIGHTNING
 ===============================================================================
 */
 
-void LightningHit(entity from, float damage)
+void LightningHit(CBaseEntity *hitme, CBaseEntity *from, float damage)
 {
 	WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
 	WriteByte (MSG_MULTICAST, TE_LIGHTNINGBLOOD);
 	WriteCoord (MSG_MULTICAST, trace_endpos_x);
 	WriteCoord (MSG_MULTICAST, trace_endpos_y);
 	WriteCoord (MSG_MULTICAST, trace_endpos_z);
-	multicast (trace_endpos, MULTICAST_PVS);
+	multicast (gpGlobals->trace_endpos, MULTICAST_PVS);
 
-	T_Damage (trace_ent, from, from, damage);
+	// NOTE: hitme = gpGlobals->trace_ent
+	hitme->T_Damage (from, from, damage);
 };
 
 /*
@@ -530,7 +531,7 @@ void GrenadeExplode()
 	}
 	self.voided = 1;
 
-	T_RadiusDamage (self, self.owner, 120, world, "grenade");
+	mpWorld->RadiusDamage (self, self.owner, 120, world, "grenade");
 
 	WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
 	WriteByte (MSG_MULTICAST, TE_EXPLOSION);
