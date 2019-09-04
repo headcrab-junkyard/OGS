@@ -17,17 +17,29 @@
     See file, 'COPYING', for details.
 */
 
-void() jctrig =
-{
-dprint ("here\n\n");
-	lightstyle(0, "az");
-};
+#include "BaseEntity.hpp"
 
 /*QUAKED trigger_jctest (.5 .5 .5) ?
 */
-void() trigger_jctest =
+class CTriggerJCTest : public CBaseEntity
 {
-	setsize (self, self.mins, self.maxs);
-	self.solid = SOLID_EDGE;
-	self.touch = jctrig;
+public:
+	void Spawn() override;
+	
+	void Touch(CBaseEntity *other) override;
+};
+
+LINK_ENTITY_TO_CLASS(trigger_jctest, CTriggerJCTest)
+
+void CTriggerJCTest::Spawn()
+{
+	SetSize(GetSize().mins, GetSize().maxs);
+	SetSolidity(SOLID_EDGE);
+	SetTouchCallback(CTriggerJCTest::Touch);
+};
+
+void CTriggerJCTest::Touch(CBaseEntity *other)
+{
+	dprint("here\n\n");
+	mpWorld->SetLightStyle(0, "az");
 };
