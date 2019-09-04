@@ -125,12 +125,12 @@ void CPlatform::center_touch(edict_t *other)
 		self->nextthink = self->ltime + 1;	// delay going down
 };
 
-void CPlatform::outside_touch(edict_t *other)
+void CPlatform::outside_touch(CBaseEntity *other)
 {
-	if (other->v.classname != "player")
+	if (other->GetClassName() != "player")
 		return;
 
-	if (other->v.health <= 0)
+	if (other->GetHealth() <= 0)
 		return;
 		
 //dprint ("plat_outside_touch\n");
@@ -139,19 +139,19 @@ void CPlatform::outside_touch(edict_t *other)
 		go_down();
 };
 
-void CPlatform::trigger_use()
+void CPlatform::trigger_use(CBaseEntity *other) // TODO: , CBaseEntity *activator; Use_Plat in q2
 {
 	if (self->think)
-		return;		// already activated
+		return;		// already activated/down
 	go_down();
 };
 
-void CPlatform::crush(edict_t *other)
+void CPlatform::crush(CBaseEntity *other)
 {
 //dprint ("plat_crush\n");
 
 	other->v.deathtype = "squish";
-	T_Damage(other, self, self, 1);
+	other->TakeDamage(self, self, 1);
 	
 	if (self->state == STATE_UP)
 		go_down();
@@ -177,15 +177,15 @@ Plats are always drawn in the extended position, so they will light correctly.
 If the plat is the target of another trigger or button, it will start out disabled in the extended position until it is trigger, when it will lower and become a normal plat.
 
 If the "height" key is set, that will determine the amount the plat moves, instead of being implicitly determined by the model's height.
+
 Set "sounds" to one of the following:
 1) base fast
 2) chain slow
 */
 
-void func_plat()
+C_EXPORT void func_plat(entvars_t *self)
 {
-	entity t;
-
+// TODO: unused by q2
 	if (!self->v.t_length)
 		self->v.t_length = 80;
 	if (!self->v.t_width)
@@ -197,57 +197,59 @@ void func_plat()
 
 	if (self->v.sounds == 1)
 	{
-		pEngine->precache_sound ("plats/plat1.wav");
-		pEngine->precache_sound ("plats/plat2.wav");
+		pEngine->pfnPrecacheSound ("plats/plat1.wav");
+		pEngine->pfnPrecacheSound ("plats/plat2.wav");
 		self->v.noise = "plats/plat1.wav";
 		self->v.noise1 = "plats/plat2.wav";
-	}
+	};
 
 	if (self->v.sounds == 2)
 	{
-		pEngine->precache_sound ("plats/medplat1.wav");
-		pEngine->precache_sound ("plats/medplat2.wav");
+		pEngine->pfnPrecacheSound ("plats/medplat1.wav");
+		pEngine->pfnPrecacheSound ("plats/medplat2.wav");
 		self->v.noise = "plats/medplat1.wav";
 		self->v.noise1 = "plats/medplat2.wav";
-	}
+	};
+// end unused by q2
 
-	self->v.mangle = self->v.angles;
-	self->v.angles = '0 0 0';
+	self->v.mangle = self->v.angles; // TODO: remove?
+	self->v.angles = '0 0 0'; // VectorClear
 
-	self->v.classname = "plat";
-	self->v.solid = SOLID_BSP;
-	self->v.movetype = MOVETYPE_PUSH;
+	this->SetClassName("plat"); // TODO: should we do this here?
+	this->SetSolidity(SOLID_BSP);
+	this->SetMoveType(MOVETYPE_PUSH);
 	
-	pEngine->setorigin (self, self->v.origin);	
-	pEngine->setmodel (self, self->v.model);
-	pEngine->setsize (self, self->v.mins , self.maxs);
+	this->SetOrigin(this->GetOrigin()); // TODO: q2 doesn't do that
+	this->SetModel(this->GetModel());
+	this->SetSize(this->GetSize().mins , this->GetSize().maxs); // TODO: q2 doesn't do that
 
-	self->v.blocked = plat_crush;
-	if (!self->v.speed)
-		self->v.speed = 150;
+	this->SetBlockedCallback(CPlatform::crush); // TODO: plat_blocked in q2
+	
+	if (!self->speed)
+		self->speed = 150;
 
 // pos1 is the top position, pos2 is the bottom
-	self->v.pos1 = self->v.origin;
-	self->v.pos2 = self->v.origin;
+	self->pos1 = self->origin;
+	self->pos2 = self->origin;
 	if (self->v.height)
 		self->v.pos2_z = self->v.origin_z - self->v.height;
 	else
 		self->v.pos2_z = self->v.origin_z - self->v.size_z + 8;
 
-	self->v.use = plat_trigger_use;
+	this->SetUseCallback(CPlatform::trigger_use); // TODO: Use_Plat in q2
 
 	plat_spawn_inside_trigger (self);	// the "start moving" trigger	
 
-	if (self->v.targetname)
+	if (self->targetname)
 	{
-		self->v.state = STATE_UP;
-		self->v.use = plat_use;
+		self->state = STATE_UP; // TODO: self->moveinfo.state in q2
+		this->SetUseCallback(CPlatform::Use); // TODO: not present in q2
 	}
 	else
 	{
-		pEngine->setorigin (self, self->v.pos2);
-		self->v.state = STATE_BOTTOM;
-	}
+		this->SetOrigin(self->v.pos2);
+		self->state = STATE_BOTTOM; // TODO: self->moveinfo.state in q2
+	};
 };
 
 //============================================================================
