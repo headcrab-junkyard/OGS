@@ -33,7 +33,7 @@ void CBaseEntity::SUB_Null()
 
 void CBaseEntity::SUB_Remove()
 {
-	gpEngine->pfnRemove(self);
+	gpEngine->pfnRemove(ToEdict());
 };
 
 /*
@@ -43,16 +43,16 @@ just constant angles.
 void CBaseEntity::SetMovedir()
 {
 	if (GetAngles() == idVec3(0, -1, 0)) // TODO: -idVec3::Up
-		self->SetMoveDir(idVec3(0, 0, 1));
+		SetMoveDir(idVec3(0, 0, 1));
 	else if (GetAngles() == idVec3(0, -2, 0))
-		self->SetMoveDir(idVec3(0, 0, -1));
+		SetMoveDir(idVec3(0, 0, -1));
 	else
 	{
 		gpEngine->pfnMakeVectors(GetAngles());
-		self->SetMoveDir(gpGlobals->v_forward);
+		SetMoveDir(gpGlobals->v_forward);
 	};
 	
-	self->SetAngles(idVec3::Origin);
+	SetAngles(idVec3::Origin);
 };
 
 /*
@@ -60,17 +60,17 @@ void CBaseEntity::SetMovedir()
 InitTrigger
 ================
 */
-void InitTrigger(edict_t *self)
+void InitTrigger()
 {
-// trigger angles are used for one-way touches.  An angle of 0 is assumed
-// to mean no restrictions, so use a yaw of 360 instead.
-	if (self->v.angles != '0 0 0')
+	// trigger angles are used for one-way touches.  An angle of 0 is assumed
+	// to mean no restrictions, so use a yaw of 360 instead.
+	if (self->GetAngles() != '0 0 0')
 		SetMovedir (self);
-	self->v.solid = SOLID_TRIGGER;
-	self->SetModel (self->v.model);	// set size and link into world
+	self->SetSolidity(SOLID_TRIGGER);
+	self->SetModel(self->GetModel()); // set size and link into world
 	self->SetMoveType(MOVETYPE_NONE);
 	self->v.modelindex = 0;
-	self->v.model = "";
+	self->SetModel("");
 };
 
 /*
@@ -91,27 +91,27 @@ void SUB_CalcMoveEnt(edict_t *ent, vector tdest, float tspeed, void (*func)())
 	self = stemp;
 };
 
-void SUB_CalcMove(vector tdest, float tspeed, void (*func)())
+void SUB_CalcMove(idVec3 tdest, float tspeed, void (*func)())
 {
-	vector	vdestdelta;
+	idVec3	vdestdelta;
 	float		len, traveltime;
 
 	if (!tspeed)
 		objerror("No speed is defined!");
 
-	self->v.think1 = func;
-	self->v.finaldest = tdest;
-	self->v.think = SUB_CalcMoveDone;
+	self->think1 = func;
+	self->finaldest = tdest;
+	self->think = SUB_CalcMoveDone;
 
-	if (tdest == self->v.origin)
+	if (tdest == self->GetOrigin())
 	{
-		self->v.velocity = '0 0 0';
-		self->v.nextthink = self->v.ltime + 0.1;
+		self->velocity = '0 0 0';
+		self->nextthink = self->ltime + 0.1;
 		return;
-	}
+	};
 		
 // set destdelta to the vector needed to move
-	vdestdelta = tdest - self->v.origin;
+	vdestdelta = tdest - self->GetOrigin();
 	
 // calculate length of vector
 	len = vlen (vdestdelta);
@@ -123,10 +123,10 @@ void SUB_CalcMove(vector tdest, float tspeed, void (*func)())
 		traveltime = 0.03;
 	
 // set nextthink to trigger a think when dest is reached
-	self->v.nextthink = self->v.ltime + traveltime;
+	self->nextthink = self->ltime + traveltime;
 
 // scale the destdelta vector by the time spent traveling to get velocity
-	self->v.velocity = vdestdelta * (1/traveltime);	// qcc won't take vec/float	
+	self->velocity = vdestdelta * (1/traveltime);	// qcc won't take vec/float	
 };
 
 /*
@@ -134,15 +134,14 @@ void SUB_CalcMove(vector tdest, float tspeed, void (*func)())
 After moving, set origin to exact final destination
 ============
 */
-void CBaseEntity::SUB_CalcMoveDone()
+void CBaseEntity::SUB_CalcMoveDone() // TODO: CBaseToggle::LinearMoveDone in gs?
 {
-	self->SetOrigin(self->v.finaldest);
-	self->SetVelocity(idVec3::Origin);
-	self->SetNextThink(-1);
-	if (self->v.think1)
-		self->v.think1();
+	SetOrigin(self->finaldest);
+	SetVelocity(idVec3::Origin);
+	SetNextThink(-1);
+	if (self->think1)
+		self->think1();
 };
-
 
 /*
 =============
@@ -196,23 +195,21 @@ void SUB_CalcAngleMove(vector destangle, float tspeed, void() func)
 After rotating, set angle to exact final angle
 ============
 */
-void SUB_CalcAngleMoveDone()
+void CBaseEntity::SUB_CalcAngleMoveDone() // TODO: CBaseToggle::AngularMoveDone in gs?
 {
-	self.angles = self.finalangle;
-	self.avelocity = '0 0 0';
-	self.nextthink = -1;
-	if (self.think1)
-		self.think1();
+	SetAngles(self->finalangle);
+	SetAngularVelocity(idVec3::Origin);
+	SetNextThink(-1);
+	if (self->think1)
+		self->think1();
 };
-
 
 //=============================================================================
 
 void CBaseEntity::DelayThink() // TODO: CBaseDelay
 {
-	activator = self->GetEnemy();
-	SUB_UseTargets (activator);
-	gpEngine->pfnRemove(self);
+	SUB_UseTargets (GetEnemy());
+	gpEngine->pfnRemove(ToEdict());
 };
 
 /*
@@ -236,39 +233,38 @@ match (string)self.target and call their .use function
 */
 void CBaseEntity::SUB_UseTargets(CBaseEntity *activator) // TODO: CBaseDelay
 {
-	entity t, stemp, otemp, act;
+	CBaseEntity *stemp, *otemp, *act;
 
-//
-// check for a delay
-//
-	if (self.delay)
+	//
+	// check for a delay
+	//
+	if (self->delay)
 	{
-	// create a temp object to fire at a later time
-		t = spawn();
-		t.classname = "DelayedUse";
-		t.nextthink = time + self.delay;
-		t.think = DelayThink;
-		t.enemy = activator;
-		t.message = self.message;
-		t.killtarget = self.killtarget;
-		t.target = self.target;
+		// create a temp object to fire at a later time
+		CBaseEntity *t = mpWorld->SpawnEntity();
+		t->SetClassName("DelayedUse");
+		t->SetNextThink(gpGlobals->time + self->delay);
+		t->SetThinkCallback(CBaseEntity::DelayThink);
+		t->SetEnemy(activator);
+		t->message = self->message;
+		t->killtarget = self->killtarget;
+		t->SetTarget(self->target);
 		return;
-	}
+	};
 	
-	
-//
-// print the message
-//
-	if (activator.classname == "player" && self.message != "")
+	//
+	// print the message
+	//
+	if (activator->GetClassName() == "player" && self.message != "")
 	{
-		centerprint (activator, self.message);
-		if (!self.noise)
-			gpEngine->pfnEmitSound(activator, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NORM);
-	}
+		gpEngine->pfnCenterPrint (activator, self->message);
+		if (!self->noise)
+			activator->EmitSound(CHAN_VOICE, "misc/talk.wav", 1, ATTN_NORM);
+	};
 
-//
-// kill the killtagets
-//
+	//
+	// kill the killtagets
+	//
 	if (self.killtarget)
 	{
 		t = world;
@@ -277,13 +273,14 @@ void CBaseEntity::SUB_UseTargets(CBaseEntity *activator) // TODO: CBaseDelay
 			t = find (t, targetname, self.killtarget);
 			if (!t)
 				return;
-			remove (t);
-		} while ( 1 );
-	}
+			gpEngine->pfnRemove (t);
+		}
+		while ( 1 );
+	};
 	
-//
-// fire targets
-//
+	//
+	// fire targets
+	//
 	if (self.target)
 	{
 		act = activator;
@@ -292,21 +289,19 @@ void CBaseEntity::SUB_UseTargets(CBaseEntity *activator) // TODO: CBaseDelay
 		{
 			t = find (t, targetname, self.target);
 			if (!t)
-			{
 				return;
-			}
 			stemp = self;
 			otemp = other;
 			self = t;
 			other = stemp;
 			if (self.use != SUB_Null)
 			{
-				if (self.use)
-					self.use ();
-			}
+				self->Use();
+			};
 			self = stemp;
 			other = otemp;
 			activator = act;
-		} while ( 1 );
+		}
+		while ( 1 );
 	};
 };
