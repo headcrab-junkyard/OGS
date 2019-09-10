@@ -30,10 +30,18 @@
 /*QUAKED info_null (0 0.5 0) (-4 -4 -4) (4 4 4)
 Used as a positional target for spotlights, etc.
 */
-C_EXPORT void info_null(entvars_t *self)
+class CInfoNull : public CBaseEntity
 {
-	remove(self);
+public:
+	void Spawn() override;
 };
+
+void CInfoNull::Spawn()
+{
+	gpEngine->pfnRemoveEntity(self);
+};
+
+LINK_ENTITY_TO_CLASS(info_null, CInfoNull)
 
 /*QUAKED info_notnull (0 0.5 0) (-4 -4 -4) (4 4 4)
 Used as a positional target for lightning.
@@ -46,17 +54,25 @@ C_EXPORT void info_notnull(entvars_t *self)
 
 const float START_OFF = 1;
 
-void light_use()
+class CLight : public CBaseEntity
 {
-	if (self.spawnflags & START_OFF)
+public:
+	void Spawn() override;
+	
+	void Use(CBaseEntity *other) override;
+};
+
+void CLight::Use(CBaseEntity *other)
+{
+	if(self->spawnflags & START_OFF)
 	{
-		lightstyle(self.style, "m");
-		self.spawnflags = self.spawnflags - START_OFF;
+		gpEngine->SetLightStyle(self->style, "m");
+		self->spawnflags = self->spawnflags - START_OFF;
 	}
 	else
 	{
-		lightstyle(self.style, "a");
-		self.spawnflags = self.spawnflags + START_OFF;
+		gpEngine->SetLightStyle(self->style, "a");
+		self->spawnflags = self->spawnflags + START_OFF;
 	};
 };
 
@@ -66,7 +82,9 @@ Default light value is 300
 Default style is 0
 If targeted, it will toggle between on or off.
 */
-void light()
+LINK_ENTITY_TO_CLASS(light, CLight)
+
+void CLight::Spawn()
 {
 	if (!self.targetname)
 	{       // inert light
@@ -575,14 +593,18 @@ void bubble_bob()
 
 Just for the debugging level.  Don't use
 */
-
 C_EXPORT void viewthing(entvars_t *self)
 {
-	self.movetype = MOVETYPE_NONE;
-	self.solid = SOLID_NOT;
+	CViewthing::Spawn();
+};
+
+void CViewthing::Spawn()
+{
+	SetMoveType(MOVETYPE_NONE);
+	SetSolidity(SOLID_NOT);
 	
-	gpEngine->pfnPrecacheModel ("models/player.mdl");
-	self->SetModel ("models/player.mdl");
+	gpEngine->pfnPrecacheModel("models/player.mdl");
+	SetModel("models/player.mdl");
 };
 
 /*
