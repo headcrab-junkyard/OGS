@@ -57,16 +57,16 @@ THINK FUNCTIONS
 void CDoor::go_down();
 void CDoor::go_up();
 
-void CDoor::Blocked(edict_t *other)
+void CDoor::Blocked(CBaseEntity *other)
 {
-	other.deathtype = "squish";
-	T_Damage (other, self, self.goalentity, self.dmg);
+	other->deathtype = "squish";
+	other->TakeDamage (self, self->goalentity, self->dmg);
 
 // if a door has a negative wait, it would never come back if blocked,
 // so let it just squash the object to death real fast
-	if (self.wait >= 0)
+	if (self->wait >= 0)
 	{
-		if (self.state == STATE_DOWN)
+		if (self->state == STATE_DOWN)
 			this->go_up ();
 		else
 			this->go_down ();
@@ -75,12 +75,12 @@ void CDoor::Blocked(edict_t *other)
 
 void CDoor::hit_top()
 {
-	gpEngine->pfnEmitSound (self, CHAN_NO_PHS_ADD+CHAN_VOICE, self.noise1, 1, ATTN_NORM);
-	self.state = STATE_TOP;
-	if (self.spawnflags & DOOR_TOGGLE)
+	self->EmitSound (CHAN_NO_PHS_ADD+CHAN_VOICE, self->noise1, 1, ATTN_NORM);
+	self->state = STATE_TOP;
+	if (self->spawnflags & DOOR_TOGGLE)
 		return;         // don't come down automatically
-	self.think = this->go_down;
-	self.nextthink = self.ltime + self.wait;
+	self->SetThinkCallback(this->go_down);
+	self->SetNextThink(self->ltime + self->wait);
 };
 
 void CDoor::hit_bottom()
@@ -91,15 +91,15 @@ void CDoor::hit_bottom()
 
 void CDoor::go_down()
 {
-	gpEngine->pfnEmitSound (self, CHAN_VOICE, self.noise2, 1, ATTN_NORM);
-	if (self.max_health)
+	self->EmitSound (CHAN_VOICE, self->noise2, 1, ATTN_NORM);
+	if (self->GetMaxHealth())
 	{
-		self.takedamage = DAMAGE_YES;
-		self.health = self.max_health;
+		self->takedamage = DAMAGE_YES;
+		self->SetHealth(self->GetMaxHealth());
 	};
 	
-	self.state = STATE_DOWN;
-	SUB_CalcMove (self.pos1, self.speed, this->hit_bottom);
+	self->state = STATE_DOWN;
+	SUB_CalcMove (self->pos1, self->speed, this->hit_bottom);
 };
 
 void CDoor::go_up()
@@ -129,7 +129,7 @@ ACTIVATION FUNCTIONS
 =============================================================================
 */
 
-void CDoor::fire()
+void CDoor::Fire(CBaseEntity *activator)
 {
 	entity    oself;
 	entity    starte;
@@ -172,7 +172,7 @@ void CDoor::fire()
 	self = oself;
 };
 
-void CDoor::Use()
+void CDoor::Use(CBaseEntity *other)
 {
 	entity oself;
 
@@ -182,12 +182,11 @@ void CDoor::Use()
 
 	oself = self;
 	self = self.owner;
-	Fire();
+	Fire(other);
 	self = oself;
 };
 
-
-void CDoor::trigger_touch()
+void CDoor::trigger_touch(CBaseEntity *other)
 {
 	if (other.health <= 0)
 		return;
@@ -204,16 +203,13 @@ void CDoor::trigger_touch()
 
 void CDoor::Killed()
 {
-	entity oself;
-	
-	oself = self;
-	self = self.owner;
-	self.health = self.max_health;
-	self.takedamage = DAMAGE_NO;    // wil be reset upon return
-	Use ();
+	entvars_t *oself = self;
+	self = self->GetOwner();
+	self->SetHealth(self->GetMaxHealth());
+	self->takedamage = DAMAGE_NO;    // wil be reset upon return
+	Use();
 	self = oself;
 };
-
 
 /*
 ================
@@ -222,7 +218,7 @@ door_touch
 Prints messages and opens key doors
 ================
 */
-void CDoor::Touch()
+void CDoor::Touch(CBaseEntity *other)
 {
 	if (other.classname != "player")
 		return;
@@ -298,10 +294,10 @@ SPAWNING FUNCTIONS
 =============================================================================
 */
 
-entity spawn_field(vector fmins, vector fmaxs)
+entity spawn_field(const idVec3 &fmins, const idVec3 &fmaxs)
 {
 	entity    trigger;
-	vector  t1, t2;
+	idVec3 t1, t2;
 
 	trigger = spawn();
 	trigger.movetype = MOVETYPE_NONE;
@@ -342,8 +338,8 @@ LinkDoors
 */
 void LinkDoors()
 {
-	entity    t, starte;
-	vector    cmins, cmaxs;
+	entvars_t t, starte;
+	idVec3 cmins, cmaxs;
 
 	if (self.enemy)
 		return;         // already linked by another door
@@ -588,57 +584,6 @@ const float SECRET_1ST_DOWN = 4;              // 1st move is down from arrow
 const float SECRET_NO_SHOOT = 8;              // only opened by trigger
 const float SECRET_YES_SHOOT = 16;    // shootable even if targeted
 
-void fd_secret_use(edict_t *self)
-{
-	float temp;
-	
-	self->v.health = 10000;
-
-	// exit if still moving around...
-	if (self->v.origin != self->v.oldorigin)
-		return;
-	
-	self->v.message = string_null;             // no more message
-
-	SUB_UseTargets();                               // fire all targets / killtargets
-	
-	if (!(self->v.spawnflags & SECRET_NO_SHOOT))
-	{
-		self->v.th_pain = SUB_Null;
-		self->v.takedamage = DAMAGE_NO;
-	};
-	
-	self->v.velocity = '0 0 0';
-
-	// Make a sound, wait a little...
-	
-	gpEngine->pfnEmitSound(self, CHAN_VOICE, self->v.noise1, 1, ATTN_NORM);
-	self->v.nextthink = self->v.ltime + 0.1;
-
-	temp = 1 - (self->v.spawnflags & SECRET_1ST_LEFT); // 1 or -1
-	makevectors(self->v.mangle);
-	
-	if (!self->v.t_width)
-	{
-		if (self->v.spawnflags & SECRET_1ST_DOWN)
-			self->v.t_width = fabs(v_up * self->v.size);
-		else
-			self->v.t_width = fabs(v_right * self->v.size);
-	};
-		
-	if (!self->v.t_length)
-		self->v.t_length = fabs(v_forward * self->v.size);
-
-	if (self->v.spawnflags & SECRET_1ST_DOWN)
-		self->v.dest1 = self->v.origin - v_up * self->v.t_width;
-	else
-		self->v.dest1 = self->v.origin + v_right * (self->v.t_width * temp);
-		
-	self->v.dest2 = self->v.dest1 + v_forward * self->v.t_length;
-	SUB_CalcMove(self->v.dest1, self.speed, fd_secret_move1);
-	gpEngine->pfnEmitSound(self, CHAN_VOICE, self->v.noise2, 1, ATTN_NORM);
-};
-
 // Wait after first movement...
 void fd_secret_move1()
 {
@@ -698,39 +643,6 @@ void fd_secret_done()
 	gpEngine->pfnEmitSound(self, CHAN_NO_PHS_ADD+CHAN_VOICE, self.noise3, 1, ATTN_NORM);
 };
 
-void secret_blocked()
-{
-	if (time < self.attack_finished)
-		return;
-	self.attack_finished = time + 0.5;
-	other.deathtype = "squish";
-	T_Damage (other, self, self, self.dmg);
-};
-
-/*
-================
-secret_touch
-
-Prints messages
-================
-*/
-void secret_touch()
-{
-	if (other.classname != "player")
-		return;
-	if (self.attack_finished > time)
-		return;
-
-	self.attack_finished = time + 2;
-	
-	if (self.message)
-	{
-		centerprint (other, self.message);
-		gpEngine->pfnEmitSound (other, CHAN_BODY, "misc/talk.wav", 1, ATTN_NORM);
-	};
-};
-
-
 /*QUAKED func_door_secret (0 .5 .8) ? open_once 1st_left 1st_down no_shoot always_shoot
 Basic secret door. Slides back, then to the side. Angle determines direction.
 wait  = # of seconds before coming back
@@ -747,61 +659,155 @@ If a secret door has a targetname, it will only be opened by it's botton or trig
 2) metal
 3) base
 */
-
-void func_door_secret()
+class CFuncDoorSecret : public CBaseEntity
 {
-	if (self.sounds == 0)
-		self.sounds = 3;
-	if (self.sounds == 1)
+public:
+	void Spawn() override;
+	
+	void Use(CBaseEntity *other) override;
+	void Touch(CBaseEntity *other) override;
+	void Think() override;
+};
+
+LINK_ENTITY_TO_CLASS(func_door_secret, CFuncDoorSecret)
+
+void CFuncDoorSecret::Spawn()
+{
+	if (self->sounds == 0)
+		self->sounds = 3;
+	if (self->sounds == 1)
 	{
 		gpEngine->pfnPrecacheSound ("doors/latch2.wav");
 		gpEngine->pfnPrecacheSound ("doors/winch2.wav");
 		gpEngine->pfnPrecacheSound ("doors/drclos4.wav");
-		self.noise1 = "doors/latch2.wav";
-		self.noise2 = "doors/winch2.wav";
-		self.noise3 = "doors/drclos4.wav";
-	}
-	if (self.sounds == 2)
+		self->noise1 = "doors/latch2.wav";
+		self->noise2 = "doors/winch2.wav";
+		self->noise3 = "doors/drclos4.wav";
+	};
+	if (self->sounds == 2)
 	{
 		gpEngine->pfnPrecacheSound ("doors/airdoor1.wav");
 		gpEngine->pfnPrecacheSound ("doors/airdoor2.wav");
-		self.noise2 = "doors/airdoor1.wav";
-		self.noise1 = "doors/airdoor2.wav";
-		self.noise3 = "doors/airdoor2.wav";
-	}
-	if (self.sounds == 3)
+		self->noise2 = "doors/airdoor1.wav";
+		self->noise1 = "doors/airdoor2.wav";
+		self->noise3 = "doors/airdoor2.wav";
+	};
+	if (self->sounds == 3)
 	{
 		gpEngine->pfnPrecacheSound ("doors/basesec1.wav");
 		gpEngine->pfnPrecacheSound ("doors/basesec2.wav");
-		self.noise2 = "doors/basesec1.wav";
-		self.noise1 = "doors/basesec2.wav";
-		self.noise3 = "doors/basesec2.wav";
-	}
+		self->noise2 = "doors/basesec1.wav";
+		self->noise1 = "doors/basesec2.wav";
+		self->noise3 = "doors/basesec2.wav";
+	};
 
-	if (!self.dmg)
-		self.dmg = 2;
+	if (!self->dmg)
+		self->dmg = 2;
 		
 	// Magic formula...
-	self.mangle = self.angles;
-	self.angles = '0 0 0';
-	self.solid = SOLID_BSP;
-	self.movetype = MOVETYPE_PUSH;
-	self.classname = "door";
+	self->mangle = self->angles;
+	self->SetAngles(idVec3(0));
+	self->SetSolidity(SOLID_BSP);
+	self->SetMoveType(MOVETYPE_PUSH);
+	self->SetClassName("door");
 	
-	gpEngine->pfnSetModel (self, self.model);
-	gpEngine->pfnSetOrigin (self, self.origin);  
+	self->SetModel(self->GetModel());
+	self->SetOrigin(self->GetOrigin());  
 	
-	self.touch = secret_touch;
-	self.blocked = secret_blocked;
-	self.speed = 50;
-	self.use = fd_secret_use;
-	if ( !self.targetname || self.spawnflags&SECRET_YES_SHOOT)
+	self->SetTouchCallback(secret_touch);
+	self->SetBlockedCallback(secret_blocked);
+	self->SetSpeed(50);
+	self->SetUseCallback(fd_secret_use);
+	if ( !self->targetname || self->spawnflags & SECRET_YES_SHOOT)
 	{
-		self.health = 10000;
-		self.takedamage = DAMAGE_YES;
-		self.th_pain = fd_secret_use;
-	}
-	self.oldorigin = self.origin;
-	if (!self.wait)
-		self.wait = 5;          // 5 seconds before closing
+		self->SetHealth(10000);
+		self->takedamage = DAMAGE_YES;
+		self->th_pain = fd_secret_use;
+	};
+	self->oldorigin = self->GetOrigin();
+	if (!self->wait)
+		self->wait = 5;          // 5 seconds before closing
+};
+
+void CFuncDoorSecret::fd_secret_use(CBaseEntity *other)
+{
+	float temp;
+	
+	self->SetHealth(10000);
+
+	// exit if still moving around...
+	if (self->GetOrigin() != self->oldorigin)
+		return;
+	
+	self->message = string_null;             // no more message
+
+	SUB_UseTargets();                               // fire all targets / killtargets
+	
+	if (!(self->spawnflags & SECRET_NO_SHOOT))
+	{
+		self->th_pain = SUB_Null;
+		self->takedamage = DAMAGE_NO;
+	};
+	
+	self->SetVelocity(idVec3(0));
+
+	// Make a sound, wait a little...
+	
+	self->EmitSound(CHAN_VOICE, self->noise1, 1, ATTN_NORM);
+	self->SetNextThink(self->ltime + 0.1);
+
+	temp = 1 - (self->spawnflags & SECRET_1ST_LEFT); // 1 or -1
+	makevectors(self->mangle);
+	
+	if (!self->t_width)
+	{
+		if (self->spawnflags & SECRET_1ST_DOWN)
+			self->t_width = fabs(v_up * self->size);
+		else
+			self->t_width = fabs(v_right * self->size);
+	};
+		
+	if (!self->t_length)
+		self->t_length = fabs(v_forward * self->size);
+
+	if (self->spawnflags & SECRET_1ST_DOWN)
+		self->dest1 = self->origin - v_up * self->t_width;
+	else
+		self->dest1 = self->origin + v_right * (self->t_width * temp);
+		
+	self->dest2 = self->dest1 + v_forward * self->t_length;
+	SUB_CalcMove(self->dest1, self->speed, fd_secret_move1);
+	self->EmitSound(CHAN_VOICE, self->noise2, 1, ATTN_NORM);
+};
+
+void CFuncDoorSecret::secret_blocked(CBaseEntity *other)
+{
+	if (gpGlobals->time < self->attack_finished)
+		return;
+	self->attack_finished = gpGlobals->time + 0.5;
+	other->deathtype = "squish";
+	other->TakeDamage(self, self, self->dmg);
+};
+
+/*
+================
+secret_touch
+
+Prints messages
+================
+*/
+void CFuncDoorSecret::secret_touch(CBaseEntity *other)
+{
+	if (other->GetClassName() != "player")
+		return;
+	if (self->attack_finished > gpGlobals->time)
+		return;
+
+	self->attack_finished = gpGlobals->time + 2;
+	
+	if (self->message)
+	{
+		other->CenterPrint (self->message);
+		other->EmitSound(CHAN_BODY, "misc/talk.wav", 1, ATTN_NORM);
+	};
 };
