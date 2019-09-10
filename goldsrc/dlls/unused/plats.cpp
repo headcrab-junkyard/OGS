@@ -257,15 +257,6 @@ C_EXPORT void func_plat(entvars_t *self)
 void train_next();
 void func_train_find();
 
-class CEntity
-{
-public:
-	CEntity();
-	~CEntity();
-protected:
-	edict_t *self{nullptr};
-};
-
 class CTrain : public CEntity
 {
 public:
