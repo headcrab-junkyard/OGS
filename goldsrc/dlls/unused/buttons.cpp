@@ -29,7 +29,7 @@
 
 #include "BaseEntity.hpp"
 
-class CButton : public CBaseEntity
+class CBaseButton : public CBaseEntity
 {
 public:
 	void Spawn() override;
@@ -38,6 +38,8 @@ public:
 	void Touch(CBaseEntity *other) override;
 	void Blocked(CBaseEntity *other) override;
 	
+	bool HandleKeyValue(KeyValueData *apData) override;
+	
 	void Wait();
 	void Done();
 	void Return();
@@ -45,6 +47,10 @@ public:
 	void Fire();
 	
 	void Killed();
+private:
+	CEntityHandle mpActivator{nullptr};
+
+	int state{0};
 };
 
 void CButton::Spawn()
@@ -72,16 +78,16 @@ void CButton::Spawn()
 	
 	SetMovedir ();
 
-	self->SetMoveType(MOVETYPE_PUSH);
-	self->SetSolidity(SOLID_BSP);
-	self->SetModel(self->GetModel());
+	SetMoveType(MOVETYPE_PUSH);
+	SetSolidity(SOLID_BSP);
+	SetModel(self->GetModel());
 
-	self->SetBlockedCallback(CButton::Blocked);
-	self->SetUseCallback(CButton::Use);
+	SetBlockedCallback(CButton::Blocked);
+	SetUseCallback(CButton::Use);
 
-	if (self->GetHealth())
+	if (GetHealth())
 	{
-		self->SetMaxHealth(self->GetHealth());
+		SetMaxHealth(GetHealth());
 		self->th_die = CButton::Killed;
 		self->takedamage = DAMAGE_YES;
 	}
@@ -95,9 +101,9 @@ void CButton::Spawn()
 	if (!self->lip)
 		self->lip = 4;
 
-	self->state = STATE_BOTTOM;
+	state = STATE_BOTTOM;
 
-	self->pos1 = self->GetOrigin();
+	self->pos1 = GetOrigin();
 	self->pos2 = self->pos1 + self->movedir * (fabs(self->movedir * self->size) - self->lip);
 };
 
@@ -111,8 +117,12 @@ void CButton::Touch(CBaseEntity *other)
 {
 	if (other->GetClassName() != "player")
 		return;
+	
+	mpActivator = other;
+	
 	SetEnemy(other);
-	Fire ();
+	
+	Fire();
 };
 
 void CButton::Blocked(CBaseEntity *other)
@@ -123,10 +133,14 @@ void CButton::Blocked(CBaseEntity *other)
 void CButton::Wait()
 {
 	self->SetState(STATE_TOP);
-	SetNextThink(self->ltime + self->wait);
-	SetThinkCallback(CButton::Return);
-	activator = self->GetEnemy();
-	SUB_UseTargets(activator);
+	
+	{
+		SetNextThink(self->ltime + self->wait);
+		SetThinkCallback(CButton::Return);
+	};
+	
+	SUB_UseTargets(GetEnemy(), USE_TOGGLE, 0);
+	
 	self->frame = 1; // use alternate textures
 };
 
@@ -138,7 +152,7 @@ void CButton::Done()
 void CButton::Return()
 {
 	self->SetState(STATE_DOWN);
-	SUB_CalcMove(self->pos1, self->speed, button_done);
+	SUB_CalcMove(self->pos1, self->speed, CButton::Done);
 	self->frame = 0; // use normal textures
 	if (GetHealth())
 		SetDamageable(DAMAGE_YES); // can be shot again
