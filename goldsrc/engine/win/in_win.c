@@ -373,19 +373,6 @@ void IN_Shutdown()
 
 /*
 ===========
-IN_MouseEvent
-===========
-*/
-void IN_MouseEvent(int mstate)
-{
-	//if(mouseactive && !dinput)
-	{
-		ClientDLL_MouseEvent(mstate); // TODO: here or below???
-	};
-};
-
-/*
-===========
 IN_MouseMove
 ===========
 */
@@ -493,29 +480,6 @@ void IN_Move(usercmd_t *cmd)
 	{
 	};
 }
-
-/*
-===========
-IN_Accumulate
-===========
-*/
-void IN_Accumulate()
-{
-	//if(!dinput) // TODO: not present in qw
-	{
-		ClientDLL_IN_Accumulate();
-	}
-}
-
-/*
-===================
-IN_ClearStates
-===================
-*/
-void IN_ClearStates()
-{
-	ClientDLL_ClearStates();
-};
 
 /* 
 =============== 
