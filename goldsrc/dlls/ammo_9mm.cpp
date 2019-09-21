@@ -5,9 +5,9 @@
 class CAmmo9MM : public CBaseAmmo
 {
 public:
-	void PostSpawn() override;
-	
 	bool GiveTo(CBasePlayer *apPlayer) override;
+private:
+	void PostSpawn() override;
 };
 
 LINK_ENTITY_TO_CLASS(ammo_glockclip, CAmmo9MM)
