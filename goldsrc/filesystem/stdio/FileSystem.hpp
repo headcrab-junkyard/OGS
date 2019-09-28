@@ -23,7 +23,21 @@
 
 #include "public/FileSystem.h"
 
+// directory searching
+#define SFF_ARCH    0x01
+#define SFF_HIDDEN  0x02
+#define SFF_RDONLY  0x04
+#define SFF_SUBDIR  0x08
+#define SFF_SYSTEM  0x10
+
 typedef struct pack_s pack_t;
+
+/*
+** pass in an attribute mask of things you wish to REJECT
+*/
+char *Sys_FindFirst(const char *path, unsigned int musthave, unsigned int canthave);
+char *Sys_FindNext(unsigned int musthave, unsigned int canthave);
+void Sys_FindClose();
 
 class CFileSystem final : public IFileSystem
 {

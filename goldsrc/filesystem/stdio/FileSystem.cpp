@@ -1,7 +1,7 @@
 /*
  *	This file is part of OGS Engine
  *	Copyright (C) 1996-1997 Id Software, Inc.
- *	Copyright (C) 2016-2018 BlackPhrase
+ *	Copyright (C) 2016-2019 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -384,13 +384,13 @@ void CFileSystem::ReleaseReadBuffer(FileHandle_t file, void *readBuffer)
 const char *CFileSystem::FindFirst(const char *pWildCard, FileFindHandle_t *pHandle, const char *pathID)
 {
 	TRACE_LOG("CFileSystem::FindFirst(%s, %p, %d)", pWildCard, pHandle, pathID);
-	return ""; // TODO: Sys_FindFirst(pathID, 0, 0);
+	return Sys_FindFirst(pathID, 0, 0); // TODO
 };
 
 const char *CFileSystem::FindNext(FileFindHandle_t handle)
 {
 	TRACE_LOG("CFileSystem::FindNext(%d)", handle);
-	return ""; // TODO: Sys_FindNext(handle, 0, 0);
+	return Sys_FindNext(0, 0); // TODO
 };
 
 bool CFileSystem::FindIsDirectory(FileFindHandle_t handle)
@@ -402,7 +402,7 @@ bool CFileSystem::FindIsDirectory(FileFindHandle_t handle)
 void CFileSystem::FindClose(FileFindHandle_t handle)
 {
 	TRACE_LOG("CFileSystem::FindClose(%d)", handle);
-	// TODO: Sys_FindClose(handle);
+	Sys_FindClose(); // TODO
 };
 
 void CFileSystem::GetLocalCopy(const char *pFileName)
