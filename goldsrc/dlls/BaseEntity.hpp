@@ -97,6 +97,8 @@ public:
 		return false;
 	};
 	
+	bool IsValid() const {return (!ToEdict() || ToEdict()->free || self->flags & FL_KILLME) ? false : true;}
+	
 	int GetIndex() const {return gpEngine->pfnIndexOfEdict(ToEdict());}
 	
 	void SetHealth(float afHealth){self->health = afHealth;}
