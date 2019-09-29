@@ -71,8 +71,8 @@ public:
 	
 	virtual void Spawn(){}
 	
-	virtual void TraceAttack(float damage, const idVec3 &dir);
-	virtual void TakeDamage(CBaseEntity *inflictor, CBaseEntity *attacker, float damage); // TODO: was T_Damage
+	virtual void TraceAttack(CBaseEntity *apAttacker, float damage, const idVec3 &dir, const TraceResult &aTraceResult, int anDmgBitSum);
+	virtual void TakeDamage(CBaseEntity *inflictor, CBaseEntity *attacker, float damage, int anDmgBitSum); // TODO: was T_Damage
 	virtual void Killed(CBaseEntity *attacker);
 	
 	void FireBullets(float shotcount, const idVec3 &dir, const idVec3 &spread);
