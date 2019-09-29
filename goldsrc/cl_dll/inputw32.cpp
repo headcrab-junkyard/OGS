@@ -30,11 +30,13 @@
 #include "input.h"
 #include "usercmd.h"
 
-#if defined(_WIN32) && !defined(OGS_USE_SDL)
-#	include <windows.h>
-#else // if not win32 (and SDL2 support disabled), use SDL2 by default
+#if defined(OGS_USE_SDL)
 #	include <SDL2/SDL_mouse.h>
 #	include <SDL2/SDL_gamecontroller.h>
+#elif defined(_WIN32)
+#	include <windows.h>
+#else // if not win32 and SDL2 support disabled
+#	error "Unsupported platform! Try enabling SDL2 support!"
 #endif
 
 // 02/21/97 JCB Added extended DirectInput code to support external controllers.
@@ -115,7 +117,11 @@ DWORD joy_oldbuttonstate, joy_oldpovstate;
 int joy_id;
 DWORD joy_numbuttons;
 
-#if defined(_WIN32) && !defined(OGS_USE_SDL)
+#if defined(OGS_USE_SDL)
+int pdwRawValue[JOY_MAX_AXES];
+
+SDL_GameController *gpJoystick{nullptr};
+#elif defined(_WIN32)
 DWORD dwAxisFlags[JOY_MAX_AXES] =
 {
 	JOY_RETURNX,
@@ -131,11 +137,9 @@ PDWORD pdwRawValue[JOY_MAX_AXES];
 DWORD joy_flags;
 
 static JOYINFOEX ji;
-#else // if not win32 (and SDL2 support disabled), use SDL2 by default
-int pdwRawValue[JOY_MAX_AXES];
-
-SDL_GameController *gpJoystick{nullptr};
-#endif // defined(_WIN32) && !defined(OGS_USE_SDL)
+#else // if not win32 and SDL2 support disabled
+#	error "Unsupported platform! Have you forgot to enable the SDL2 support?"
+#endif // defined(OGS_USE_SDL)
 
 /*
 ===========
@@ -532,15 +536,27 @@ void IN_StartupJoystick()
 RawValuePointer
 ===========
 */
-#if defined(_WIN32) && !defined(OGS_USE_SDL)
+#if defined(OGS_USE_SDL)
+int RawValuePointer(int axis)
+#elif defined(_WIN32)
 PDWORD RawValuePointer(int axis)
 #else
-int RawValuePointer(int axis)
+#	error "So... Still haven't?"
 #endif
 {
 	switch(axis)
 	{
-#if defined(_WIN32) && !defined(OGS_USE_SDL)
+#if defined(OGS_USE_SDL)
+	default:
+	case JOY_AXIS_X:
+		return SDL_GameControllerGetAxis(s_pJoystick, SDL_CONTROLLER_AXIS_LEFTX);
+	case JOY_AXIS_Y:
+		return SDL_GameControllerGetAxis(s_pJoystick, SDL_CONTROLLER_AXIS_LEFTY);
+	case JOY_AXIS_Z:
+		return SDL_GameControllerGetAxis(s_pJoystick, SDL_CONTROLLER_AXIS_RIGHTX);
+	case JOY_AXIS_R:
+		return SDL_GameControllerGetAxis(s_pJoystick, SDL_CONTROLLER_AXIS_RIGHTY);
+#elif defined(_WIN32)
 	case JOY_AXIS_X:
 		return &ji.dwXpos;
 	case JOY_AXIS_Y:
@@ -553,17 +569,9 @@ int RawValuePointer(int axis)
 		return &ji.dwUpos;
 	case JOY_AXIS_V:
 		return &ji.dwVpos;
-#else // if not win32 (and SDL2 support disabled), we're using SDL2 by default
-	default:
-	case JOY_AXIS_X:
-		return SDL_GameControllerGetAxis(s_pJoystick, SDL_CONTROLLER_AXIS_LEFTX);
-	case JOY_AXIS_Y:
-		return SDL_GameControllerGetAxis(s_pJoystick, SDL_CONTROLLER_AXIS_LEFTY);
-	case JOY_AXIS_Z:
-		return SDL_GameControllerGetAxis(s_pJoystick, SDL_CONTROLLER_AXIS_RIGHTX);
-	case JOY_AXIS_R:
-		return SDL_GameControllerGetAxis(s_pJoystick, SDL_CONTROLLER_AXIS_RIGHTY);
-#endif // defined(_WIN32) && !defined(OGS_USE_SDL)
+#else // if not win32 and SDL2 support disabled
+#	error "Just enable SDL2 support!"
+#endif // defined(OGS_USE_SDL)
 	};
 };
 
@@ -657,9 +665,7 @@ void IN_Commands()
 
 	// loop through the joystick buttons
 	// key a joystick event or auxillary event for higher number buttons for each state change
-#if defined(_WIN32) && !defined(OGS_USE_SDL)
-	buttonstate = ji.dwButtons;
-#else
+#if OGS_USE_SDL
 	buttonstate = 0;
 
 	for(i = 0; i < SDL_CONTROLLER_BUTTON_MAX; ++i)
@@ -670,6 +676,10 @@ void IN_Commands()
 
 	for(i = 0; i < JOY_MAX_AXES; ++i)
 		pdwRawValue[i] = RawValuePointer(i);
+#elif defined(_WIN32)
+	buttonstate = ji.dwButtons;
+#else // if not win32 and SDL2 support disabled
+#	error "Better luck next time!"
 #endif
 
 	for(i = 0; i < joy_numbuttons; i++)
@@ -731,7 +741,10 @@ IN_ReadJoystick
 */
 qboolean IN_ReadJoystick()
 {
-#if defined(_WIN32) && !defined(OGS_USE_SDL)
+#if defined(OGS_USE_SDL)
+	SDL_JoystickUpdate();
+	return 1;
+#elif defined(_WIN32)
 	memset(&ji, 0, sizeof(ji));
 	ji.dwSize = sizeof(ji);
 	ji.dwFlags = joy_flags;
@@ -756,10 +769,9 @@ qboolean IN_ReadJoystick()
 		// joy_avail = false;
 		return false;
 	}
-#else
-	SDL_JoystickUpdate();
-	return 1;
-#endif
+#else // if not win32 and SDL2 support disabled
+#	error "Oof!"
+#endif // defined(OGS_USE_SDL)
 };
 
 /*
