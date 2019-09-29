@@ -385,7 +385,15 @@ void IN_Accumulate()
 	{
 		if(mouseactive)
 		{
-#if defined(_WIN32) && !defined(OGS_USE_SDL)
+#if defined(OGS_USE_SDL)
+			{
+				int nDeltaX, nDeltaY;
+				SDL_GetRelativeMouseState(&nDeltaX, &nDeltaY);
+				mx_accum += nDeltaX;
+				my_accum += nDeltaY;
+			}
+			//else
+#elif defined(_WIN32)
 			//if(!rawinput)
 
 			{
@@ -400,14 +408,9 @@ void IN_Accumulate()
 				//{
 				//};
 			}
-			else
+			//else // TODO: where this else came from?
 #else // if not win32 (and SDL2 support disabled), use SDL2 by default
-			{
-				int nDeltaX, nDeltaY;
-				SDL_GetRelativeMouseState(&nDeltaX, &nDeltaY);
-				mx_accum += nDeltaX;
-				my_accum += nDeltaY;
-			};
+#	error "Creeper?! Aww man..."
 #endif // defined(_WIN32) && !defined(OGS_USE_SDL)
 
 			// force the mouse to the center, so there's room to move
@@ -445,7 +448,36 @@ void IN_StartupJoystick()
 	// assume no joystick
 	joy_avail = false;
 
-#if defined(_WIN32) && !defined(OGS_USE_SDL)
+#if defined(OGS_USE_SDL)
+	int nJoysticks = SDL_NumJoysticks();
+	if(nJoysticks > 0)
+	{
+		for(int i = 0; i < nJoysticks; ++i)
+		{
+			if(SDL_IsGameController(i))
+			{
+				s_pJoystick = SDL_GameControllerOpen(i);
+				if(s_pJoystick)
+				{
+					// save the joystick's number of buttons and POV status
+					joy_numbuttons = SDL_CONTROLLER_BUTTON_MAX;
+					joy_haspov = 0;
+
+					gpEngine->Con_Printf("\njoystick detected\n\n");
+					break;
+				};
+			};
+		};
+
+		gpEngine->Con_Printf("\njoystick not found -- no valid joysticks\n\n");
+		return;
+	}
+	else
+	{
+		gpEngine->Con_Printf("\njoystick not found -- driver not present\n\n");
+		return;
+	};
+#elif defined(_WIN32)
 	int i, numdevs;
 	JOYCAPS jc;
 	MMRESULT mmr;
@@ -489,34 +521,7 @@ void IN_StartupJoystick()
 	joy_haspov = jc.wCaps & JOYCAPS_HASPOV;
 
 #else // if not win32 (and SDL2 support disabled, use SDL2 by default)
-	int nJoysticks = SDL_NumJoysticks();
-	if(nJoysticks > 0)
-	{
-		for(int i = 0; i < nJoysticks; ++i)
-		{
-			if(SDL_IsGameController(i))
-			{
-				s_pJoystick = SDL_GameControllerOpen(i);
-				if(s_pJoystick)
-				{
-					// save the joystick's number of buttons and POV status
-					joy_numbuttons = SDL_CONTROLLER_BUTTON_MAX;
-					joy_haspov = 0;
-
-					gpEngine->Con_Printf("\njoystick detected\n\n");
-					break;
-				};
-			};
-		};
-
-		gpEngine->Con_Printf("\njoystick not found -- no valid joysticks\n\n");
-		return;
-	}
-	else
-	{
-		gpEngine->Con_Printf("\njoystick not found -- driver not present\n\n");
-		return;
-	};
+#	error "Something went wrong..."
 #endif // defined(_WIN32) && !defined(OGS_USE_SDL)
 
 	// old button and POV states default to no buttons pressed
