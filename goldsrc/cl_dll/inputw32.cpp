@@ -18,7 +18,7 @@
  */
 
 /// @file
-/// @brief windows 95 mouse and joystick code
+/// @brief windows 95 & SDL2 mouse and joystick code
 
 #include <cmath>
 
@@ -32,6 +32,9 @@
 
 #if defined(_WIN32) && !defined(OGS_USE_SDL)
 #	include <windows.h>
+#else // if not win32 (and SDL2 support disabled), use SDL2 by default
+#	include <SDL2/SDL_mouse.h>
+#	include <SDL2/SDL_gamecontroller.h>
 #endif
 
 // 02/21/97 JCB Added extended DirectInput code to support external controllers.
@@ -128,6 +131,10 @@ PDWORD pdwRawValue[JOY_MAX_AXES];
 DWORD joy_flags;
 
 static JOYINFOEX ji;
+#else // if not win32 (and SDL2 support disabled), use SDL2 by default
+int pdwRawValue[JOY_MAX_AXES];
+
+SDL_GameController *gpJoystick{nullptr};
 #endif // defined(_WIN32) && !defined(OGS_USE_SDL)
 
 /*
@@ -370,27 +377,39 @@ IN_Accumulate
 */
 void IN_Accumulate()
 {
-	if(mouseactive)
+	// TODO
 	{
-#ifdef _WIN32
-		//if(!rawinput)
+		if(mouseactive)
 		{
-			//if(!mousethread)
-			{
-				GetCursorPos(&current_pos);
+#if defined(_WIN32) && !defined(OGS_USE_SDL)
+			//if(!rawinput)
 
-				mx_accum += current_pos.x - gpEngine->GetWindowCenterX();
-				my_accum += current_pos.y - gpEngine->GetWindowCenterY();
-				
-				// force the mouse to the center, so there's room to move
-				IN_ResetMouse();
+			{
+				//if(!mousethread)
+				{
+					GetCursorPos(&current_pos);
+
+					mx_accum += current_pos.x - gpEngine->GetWindowCenterX();
+					my_accum += current_pos.y - gpEngine->GetWindowCenterY();
+				}
+				//else
+				//{
+				//};
+			}
+			else
+#else // if not win32 (and SDL2 support disabled), use SDL2 by default
+			{
+				int nDeltaX, nDeltaY;
+				SDL_GetRelativeMouseState(&nDeltaX, &nDeltaY);
+				mx_accum += nDeltaX;
+				my_accum += nDeltaY;
 			};
-		}
-		//else
-		{
+#endif // defined(_WIN32) && !defined(OGS_USE_SDL)
+
+			// force the mouse to the center, so there's room to move
+			IN_ResetMouse();
 		};
 	};
-#endif
 };
 
 /*
@@ -465,6 +484,35 @@ void IN_StartupJoystick()
 	joy_numbuttons = jc.wNumButtons;
 	joy_haspov = jc.wCaps & JOYCAPS_HASPOV;
 
+#else // if not win32 (and SDL2 support disabled, use SDL2 by default)
+	int nJoysticks = SDL_NumJoysticks();
+	if(nJoysticks > 0)
+	{
+		for(int i = 0; i < nJoysticks; ++i)
+		{
+			if(SDL_IsGameController(i))
+			{
+				s_pJoystick = SDL_GameControllerOpen(i);
+				if(s_pJoystick)
+				{
+					// save the joystick's number of buttons and POV status
+					joy_numbuttons = SDL_CONTROLLER_BUTTON_MAX;
+					joy_haspov = 0;
+
+					gpEngine->Con_Printf("\njoystick detected\n\n");
+					break;
+				};
+			};
+		};
+
+		gpEngine->Con_Printf("\njoystick not found -- no valid joysticks\n\n");
+		return;
+	}
+	else
+	{
+		gpEngine->Con_Printf("\njoystick not found -- driver not present\n\n");
+		return;
+	};
 #endif // defined(_WIN32) && !defined(OGS_USE_SDL)
 
 	// old button and POV states default to no buttons pressed
@@ -484,7 +532,11 @@ void IN_StartupJoystick()
 RawValuePointer
 ===========
 */
+#if defined(_WIN32) && !defined(OGS_USE_SDL)
 PDWORD RawValuePointer(int axis)
+#else
+int RawValuePointer(int axis)
+#endif
 {
 	switch(axis)
 	{
@@ -501,6 +553,16 @@ PDWORD RawValuePointer(int axis)
 		return &ji.dwUpos;
 	case JOY_AXIS_V:
 		return &ji.dwVpos;
+#else // if not win32 (and SDL2 support disabled), we're using SDL2 by default
+	default:
+	case JOY_AXIS_X:
+		return SDL_GameControllerGetAxis(s_pJoystick, SDL_CONTROLLER_AXIS_LEFTX);
+	case JOY_AXIS_Y:
+		return SDL_GameControllerGetAxis(s_pJoystick, SDL_CONTROLLER_AXIS_LEFTY);
+	case JOY_AXIS_Z:
+		return SDL_GameControllerGetAxis(s_pJoystick, SDL_CONTROLLER_AXIS_RIGHTX);
+	case JOY_AXIS_R:
+		return SDL_GameControllerGetAxis(s_pJoystick, SDL_CONTROLLER_AXIS_RIGHTY);
 #endif // defined(_WIN32) && !defined(OGS_USE_SDL)
 	};
 };
@@ -595,7 +657,21 @@ void IN_Commands()
 
 	// loop through the joystick buttons
 	// key a joystick event or auxillary event for higher number buttons for each state change
+#if defined(_WIN32) && !defined(OGS_USE_SDL)
 	buttonstate = ji.dwButtons;
+#else
+	buttonstate = 0;
+
+	for(i = 0; i < SDL_CONTROLLER_BUTTON_MAX; ++i)
+	{
+		if(SDL_GameControllerGetButton(gpJoystick, (SDL_GameControllerButton)i))
+			buttonstate |= 1 << i; // TODO: BIT(i)
+	};
+
+	for(i = 0; i < JOY_MAX_AXES; ++i)
+		pdwRawValue[i] = RawValuePointer(i);
+#endif
+
 	for(i = 0; i < joy_numbuttons; i++)
 	{
 		if((buttonstate & (1 << i)) && !(joy_oldbuttonstate & (1 << i)))
@@ -680,6 +756,9 @@ qboolean IN_ReadJoystick()
 		// joy_avail = false;
 		return false;
 	}
+#else
+	SDL_JoystickUpdate();
+	return 1;
 #endif
 };
 
