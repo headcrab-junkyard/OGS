@@ -2,6 +2,21 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.ogsengine.test" >
 
+	<!-- Touchscreen support -->
+	<uses-feature
+		android:name="android.hardware.touchscreen"
+		android:required="false" />
+
+	<!-- Game controller support -->
+	<uses-feature
+		android:name="android.hardware.gamepad"
+		android:required="false" />
+	
+	<!-- External mouse input events support -->
+	<uses-feature
+		android:name="android.hardware.type.pc"
+		android:required="false" />
+	
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
