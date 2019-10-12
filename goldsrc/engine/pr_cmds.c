@@ -1,7 +1,7 @@
 /*
  *	This file is part of OGS Engine
  *	Copyright (C) 1996-1997 Id Software, Inc.
- *	Copyright (C) 2018 BlackPhrase
+ *	Copyright (C) 2018-2019 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -1468,8 +1468,23 @@ const char *PF_GetPhysicsInfoString(const edict_t *pClient)
 
 unsigned short EV_Precache(int nType, const char *sName)
 {
-	// TODO
-	return 0;
+	static unsigned short nLast = 0;
+	
+	if(nType != 1)
+		Sys_Error("EV_Precache: only file type 1 supported currently");
+	
+	if(!sName)
+		Sys_Error("EV_Precache: NULL pointer");
+	
+	if(!*sName)
+		Sys_Error("EV_Precache: Bad string '%s'"); // TODO
+	
+	if(!FS_FileExists(sName))
+		Sys_Error("EV_Precache: file %s missing from server", sName);
+
+	Q_strcpy(sv.event_precache[nLast].name, sName);
+	
+	return nLast++;
 };
 
 void EV_Playback(int nFlags, const struct edict_s *pInvoker, unsigned short nEventIndex, float fDelay,
