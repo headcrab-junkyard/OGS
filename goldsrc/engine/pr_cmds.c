@@ -1476,7 +1476,24 @@ void EV_Playback(int nFlags, const struct edict_s *pInvoker, unsigned short nEve
 					float *vOrigin, float *vAngles, float fParam1, float fParam2, int nParam1, int nParam2,
 					int bParam1, int bParam2)
 {
-	// TODO
+	event_args_t args;
+	Q_memset(&args, 0, sizeof(args));
+	
+	VectorCopy(avOrigin, args.origin);
+	VectorCopy(avAngles, args.angles);
+	
+	args.fparam1 = afParam1;
+	args.fparam2 = afParam2;
+	
+	args.iparam1 = anParam1;
+	args.iparam2 = anParam2;
+	
+	args.bparam1 = abParam1;
+	args.bparam2 = abParam2;
+	
+	args.flags = anFlags; // TODO
+	
+	SV_BroadcastEvent(anFlags, nIndex, afDelay, &args); // TODO
 };
 
 extern byte *SV_FatPVS(float *org);
