@@ -70,9 +70,33 @@ void CL_ParseEvent()
 	// TODO
 	
 	event_args_t args;
-	memset(&args, 0, sizeof(args));
 	
-	CL_QueEvent(&args, 0.0f);
+	int i = 0;
+	int nNumberOfEvents = MSG_ReadByte();
+	while(i < nNumberOfEvents)
+	{
+		++i;
+
+		short nEventIndex = MSG_ReadShort();
+
+		qboolean bHasEntsInPack = MSG_ReadOneBit(); // TODO
+
+		short nPacketIndex = MSG_ReadShort(); // TODO
+
+		Q_memset(&args, 0, sizeof(args));
+		
+		qboolean bHasEventArgs = MSG_ReadOneBit();
+		if(bHasEventArgs)
+			MSG_ReadEventArgs(&args);
+
+		float fFireTime = 0.0f;
+
+		qboolean bHasFireTime = MSG_ReadOneBit();
+		if(bHasFireTime)
+			fFireTime = MSG_ReadShort();
+
+		CL_QueueEvent(0, nEventIndex, fFireTime, &args); // TODO: read flags
+	};
 };
 
 void CL_FireEvents()
