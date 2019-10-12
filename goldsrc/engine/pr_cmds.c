@@ -1465,21 +1465,19 @@ const char *PF_GetPhysicsInfoString(const edict_t *pClient)
 	return NULL;
 };
 
-extern unsigned short EV_Precache(int type, const char *name);
-extern void EV_Playback(int flags, const edict_t *pInvoker, unsigned short eventindex, float delay, float *origin, float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2);
 
-/*
-unsigned short EV_Precache(int type, const char *name)
+unsigned short EV_Precache(int nType, const char *sName)
 {
 	// TODO
 	return 0;
 };
 
-void EV_Playback(int flags, const edict_t *pInvoker, unsigned short eventindex, float delay, float *origin, float *angles, float fparam1, float fparam2, int iparam1, int iparam2, int bparam1, int bparam2)
+void EV_Playback(int nFlags, const struct edict_s *pInvoker, unsigned short nEventIndex, float fDelay,
+					float *vOrigin, float *vAngles, float fParam1, float fParam2, int nParam1, int nParam2,
+					int bParam1, int bParam2)
 {
 	// TODO
 };
-*/
 
 extern byte *SV_FatPVS(float *org);
 /*
