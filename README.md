@@ -100,7 +100,7 @@ Please read the [Contributing Guidelines](CONTRIBUTING.md) before providing any 
 ## Screenshots
 
 ![Menu Test](docs/ogs-menu-test3.png)
-![Map Test](docs/ogs-map-test2.png)
+![Map Test](docs/ogs-map-test3.png)
 ![ImGui Test](docs/ogs-imgui-test.png)
 
 ## License
