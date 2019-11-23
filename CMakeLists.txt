@@ -40,6 +40,11 @@ set(OGS_IMGUI_PATH ${CMAKE_SOURCE_DIR}/../imgui
 
 #####################################################################
 
+# Find required packages
+
+if(OGS_USE_SDL)
+	find_package(SDL2 REQUIRED)
+endif()
 # Set C language standard
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
