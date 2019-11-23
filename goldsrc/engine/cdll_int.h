@@ -81,7 +81,19 @@ typedef struct client_sprite_s
 
 typedef struct hud_player_info_s
 {
-	// TODO
+	char *name; // TODO: const char?
+	short ping;
+	
+	byte thisplayer; ///< true if this is the calling player
+	byte spectator;
+	byte packetloss;
+	
+	char *model; // TODO: const char?
+	
+	short topcolor;
+	short bottomcolor;
+	
+	uint64_t m_nSteamID;
 } hud_player_info_t;
 
 typedef struct module_s
