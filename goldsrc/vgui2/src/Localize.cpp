@@ -1,6 +1,6 @@
 /*
  *	This file is part of OGS Engine
- *	Copyright (C) 2018 BlackPhrase
+ *	Copyright (C) 2018-2019 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 
 namespace vgui2
 {
+
+EXPOSE_SINGLE_INTERFACE(CLocalize, ILocalize, VGUI_LOCALIZE_INTERFACE_VERSION)
 
 bool CLocalize::AddFile(IFileSystem *fileSystem, const char *fileName)
 {
