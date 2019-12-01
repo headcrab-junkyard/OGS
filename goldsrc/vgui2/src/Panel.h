@@ -1,6 +1,6 @@
 /*
  *	This file is part of OGS Engine
- *	Copyright (C) 2016-2018 BlackPhrase
+ *	Copyright (C) 2016-2019 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -25,7 +25,8 @@
 namespace vgui2
 {
 
-class CPanel : public IPanel // TODO: CPanel -> Panel?
+// BP: Looks like this is called VPanelWrapper in the original VGUI2
+class CPanelManager : public IPanel // TODO: CPanelController?
 {
 public:
 	void Init(VPANEL vguiPanel, IClientPanel *panel) override;
