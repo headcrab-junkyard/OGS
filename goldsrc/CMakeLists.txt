@@ -21,9 +21,7 @@ include_directories(
 
 # Add subdirectories
 
-add_subdirectory(mathlib)
 add_subdirectory(pm_shared)
-add_subdirectory(tier1)
 #add_subdirectory(utils)
 
 add_subdirectory(optional)
