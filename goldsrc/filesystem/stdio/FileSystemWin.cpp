@@ -19,6 +19,8 @@
 
 /// @file
 
+#include <io.h>
+
 #include "FileSystem.hpp"
 
 char findbase[MAX_OSPATH];
