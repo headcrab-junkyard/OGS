@@ -26,7 +26,7 @@ static char findpath[MAX_OSPATH];
 static char findpattern[MAX_OSPATH];
 static DIR *fdir;
 
-static qboolean CompareAttributes(char *path, char *name, unsigned musthave, unsigned canthave )
+static bool CompareAttributes(char *path, char *name, unsigned musthave, unsigned canthave )
 {
 	struct stat st;
 	char fn[MAX_OSPATH];
