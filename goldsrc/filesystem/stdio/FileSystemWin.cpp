@@ -59,7 +59,10 @@ char *Sys_FindFirst (const char *path, unsigned int musthave, unsigned int canth
 	struct _finddata_t findinfo;
 
 	if (findhandle)
-		Sys_Error ("Sys_FindFirst without close");
+	{
+		//Sys_Error ("Sys_FindFirst without close"); // TODO
+		return nullptr;
+	};
 	findhandle = 0;
 
 	//COM_FilePath (path, findbase); // TODO
