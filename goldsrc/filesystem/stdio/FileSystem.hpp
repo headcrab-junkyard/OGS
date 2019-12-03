@@ -21,6 +21,8 @@
 
 #pragma once
 
+#include <cstdio>
+
 #include "public/FileSystem.h"
 
 // directory searching
@@ -29,6 +31,8 @@
 #define SFF_RDONLY  0x04
 #define SFF_SUBDIR  0x08
 #define SFF_SYSTEM  0x10
+
+#define MAX_OSPATH 128 // max length of a filesystem pathname
 
 typedef struct pack_s pack_t;
 

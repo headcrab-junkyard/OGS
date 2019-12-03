@@ -19,7 +19,6 @@
 
 /// @file
 
-#include <cstdio>
 #include <cstdarg>
 #include <cstring>
 #include <cstdlib>
@@ -28,8 +27,6 @@
 
 // TODO
 #define MAX_QPATH 64   // max length of a quake game pathname
-#define MAX_OSPATH 128 // max length of a filesystem pathname
-
 int com_filesize{0};
 
 char com_cachedir[MAX_OSPATH]{};
