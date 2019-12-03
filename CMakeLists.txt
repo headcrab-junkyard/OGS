@@ -26,11 +26,17 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 # Set additional paths to search for cmake modules
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
-# Set path to CEF
-set(CEF_ROOT ${CMAKE_SOURCE_DIR}/../cef_binary/latest
+# Set path to SDK
+set(OGS_SDK_PATH ${CMAKE_SOURCE_DIR}/../ogs-sdk/goldsrc
 	CACHE PATH
-	"Path to CEF binary distribution"
+	"Path to engine SDK"
 )
+
+# Set path to CEF
+#set(CEF_ROOT ${CMAKE_SOURCE_DIR}/../cef_binary/latest
+#	CACHE PATH
+#	"Path to CEF binary distribution"
+#)
 
 # Set path to imgui
 set(OGS_IMGUI_PATH ${CMAKE_SOURCE_DIR}/../imgui
@@ -77,6 +83,9 @@ endif()
 #####################################################################
 
 # Add subdirectories
+
+# Add engine sdk directory
+add_subdirectory(${OGS_SDK_PATH} ${CMAKE_BINARY_DIR}/sdk)
 
 # Add engine root directory
 add_subdirectory(goldsrc)

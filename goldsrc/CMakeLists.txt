@@ -12,6 +12,11 @@ include_directories(
 	${OGS_ROOT}/engine
 	${OGS_ROOT}/pm_shared
 	${OGS_ROOT}/public
+	${OGS_SDK_PATH}
+	${OGS_SDK_PATH}/common
+	${OGS_SDK_PATH}/engine
+	${OGS_SDK_PATH}/pm_shared
+	${OGS_SDK_PATH}/public
 )
 
 # Add subdirectories
