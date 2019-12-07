@@ -40,8 +40,8 @@ int main(int argc, char **argv)
 {
 #ifdef _WIN32
 	// previous instances do not exist in Win32
-	//if(hPrevInstance)
-		//return 0;
+	if(hPrevInstance)
+		return 0;
 
 	//global_hInstance = hInstance;
 	//global_nCmdShow = nCmdShow;
