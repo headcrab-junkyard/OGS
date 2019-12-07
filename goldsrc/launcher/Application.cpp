@@ -22,6 +22,8 @@
 #include "Application.hpp"
 #include "AppConfig.hpp"
 
+//const char *gsPostRestartCmdLine{""}; // TODO
+
 int setenv(const char *name, const char *value, int overwrite);
 
 CApplication::CApplication() = default;
