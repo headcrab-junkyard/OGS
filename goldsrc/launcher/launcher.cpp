@@ -28,8 +28,8 @@
 #endif
 
 #ifdef _WIN32
-//HINSTANCE global_hInstance;
-//int global_nCmdShow;
+//HINSTANCE global_hInstance{0};
+//int global_nCmdShow{0};
 #endif
 
 #ifdef _WIN32
@@ -43,7 +43,7 @@ int main(int argc, char **argv)
 	if(hPrevInstance)
 		return 0;
 
-	//global_hInstance = hInstance;
+	//global_hInstance = hInstance; // TODO: move to engine space
 	//global_nCmdShow = nCmdShow;
 	
 	CWinApplication App(lpCmdLine);
