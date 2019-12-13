@@ -48,5 +48,5 @@ struct IDedicatedServerAPI : public IBaseInterface
 	virtual void AddConsoleText(const char *text) = 0;
 	
 	/// Update host status
-	virtual void UpdateStatus(float *fps, int *nActive, int *nMaxPlayers, /*const*/ char *pszMap) = 0;
+	virtual void UpdateStatus(float *fps, int *nActive, int *nMaxPlayers, char *pszMap) = 0;
 };
