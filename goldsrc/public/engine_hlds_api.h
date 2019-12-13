@@ -27,6 +27,11 @@ const char VENGINE_HLDS_API_VERSION[] = "VENGINE_HLDS_API_VERSION002";
 
 struct IDedicatedServerAPI : public IBaseInterface
 {
+	/// Initialize the engine in dedicated server mode
+	/// @param basedir - a game directory to use as a base
+	/// @param cmdline - an application startup command line arguments string
+	/// @param launcherFactory - a function pointer to the application's interface factory
+	/// @param filesystemFactory - a function pointer to the file system module's interface factory
 	/// @return true if success
 	virtual bool Init(const char *basedir, const char *cmdline, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory) = 0;
 	
@@ -39,6 +44,7 @@ struct IDedicatedServerAPI : public IBaseInterface
 	virtual bool RunFrame() = 0;
 	
 	/// Add the specified text to command buffer to execute it
+	/// @param text - a string for execution
 	virtual void AddConsoleText(const char *text) = 0;
 	
 	/// Update host status
