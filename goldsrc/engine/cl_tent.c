@@ -29,10 +29,6 @@ sfx_t *cl_sfx_ric1;
 sfx_t *cl_sfx_ric2;
 sfx_t *cl_sfx_ric3;
 sfx_t *cl_sfx_r_exp3;
-#ifdef QUAKE2
-sfx_t *cl_sfx_imp;
-sfx_t *cl_sfx_rail;
-#endif
 
 /*
 =================
@@ -46,10 +42,6 @@ void CL_InitTEnts(void)
 	cl_sfx_ric2 = S_PrecacheSound("weapons/ric2.wav");
 	cl_sfx_ric3 = S_PrecacheSound("weapons/ric3.wav");
 	cl_sfx_r_exp3 = S_PrecacheSound("weapons/r_exp3.wav");
-#ifdef QUAKE2
-	cl_sfx_imp = S_PrecacheSound("shambler/sattck1.wav");
-	cl_sfx_rail = S_PrecacheSound("weapons/lstart.wav");
-#endif
 }
 
 /*
