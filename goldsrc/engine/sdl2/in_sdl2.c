@@ -33,9 +33,4 @@ void IN_Shutdown()
 void IN_Commands()
 {
 }
-
-void IN_Move(usercmd_t *cmd)
-{
-}
-
 // TODO: IN_ClearStates?

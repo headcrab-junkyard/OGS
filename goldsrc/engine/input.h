@@ -31,9 +31,6 @@ void IN_Commands();
 
 //void IN_Frame (); // Q2
 
-void IN_Move(usercmd_t *cmd);
-// add additional movement on top of the keyboard move cmd
-
 void IN_ClearStates(); // not present in Q2
 // restores all button and position states to defaults
 
