@@ -39,15 +39,3 @@ void IN_Move(usercmd_t *cmd)
 }
 
 // TODO: IN_ClearStates?
-
-// TODO: unused?
-/*
-===========
-IN_ModeChanged
-===========
-*/
-/*
-void IN_ModeChanged()
-{
-}
-*/

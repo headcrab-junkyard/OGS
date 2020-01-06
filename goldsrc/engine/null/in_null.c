@@ -42,18 +42,6 @@ void IN_ClearStates()
 {
 };
 
-// TODO: unused?
-/*
-===========
-IN_ModeChanged
-===========
-*/
-/*
-void IN_ModeChanged()
-{
-};
-*/
-
 // TODO
 //#ifdef _WIN32
 
