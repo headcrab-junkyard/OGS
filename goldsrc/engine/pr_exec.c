@@ -21,9 +21,9 @@
 
 #include "quakedef.h"
 
-qboolean pr_trace;
+//qboolean pr_trace; // TODO: unused
 
-int pr_argc;
+//int pr_argc; // TODO: unused
 
 //=============================================================================
 
