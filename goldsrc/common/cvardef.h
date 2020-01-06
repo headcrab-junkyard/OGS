@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-2001 Id Software, Inc.
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018-2019 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@
 typedef struct cvar_s
 {
 	const char	*name;
-	char	*string;
+	/*const*/ char	*string;
 	int			flags;
 	//qboolean archive;		// set to true to cause it to be saved to vars.rc
 	//qboolean server;		// notifies players when changed // TODO: qboolean info in QW (either userinfo or serverinfo)
