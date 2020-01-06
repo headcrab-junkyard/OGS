@@ -73,71 +73,9 @@ cvar_t		scr_showpause = {"showpause","1"};
 cvar_t		scr_printspeed = {"scr_printspeed","8"};
 cvar_t		scr_allowsnap = {"scr_allowsnap", "1"};
 
-qboolean	scr_initialized;		// ready to draw
-
-qpic_t		*scr_ram;
-qpic_t		*scr_net;
-qpic_t		*scr_turtle;
-
-int			scr_fullupdate;
-
-int			clearconsole;
-int			clearnotify;
-
 int			sb_lines;
 
-viddef_t	vid;				// global video state
-
-vrect_t		*pconupdate;
-vrect_t		scr_vrect;
-
-qboolean	scr_disabled_for_loading;
-
 qboolean	scr_skipupdate;
-
-qboolean	block_drawing;
-
-void SCR_ScreenShot_f (void);
-void SCR_RSShot_f (void);
-
-/*
-===============================================================================
-
-CENTER PRINTING
-
-===============================================================================
-*/
-
-char		scr_centerstring[1024];
-float		scr_centertime_start;	// for slow victory printing
-float		scr_centertime_off;
-int			scr_center_lines;
-int			scr_erase_lines;
-int			scr_erase_center;
-
-/*
-==============
-SCR_CenterPrint
-
-Called for important messages that should stay in the center of the screen
-for a few moments
-==============
-*/
-void SCR_CenterPrint (const char *str)
-{
-	strncpy (scr_centerstring, str, sizeof(scr_centerstring)-1);
-	scr_centertime_off = scr_centertime.value;
-	scr_centertime_start = cl.time;
-
-// count the number of lines for centering
-	scr_center_lines = 1;
-	while (*str)
-	{
-		if (*str == '\n')
-			scr_center_lines++;
-		str++;
-	}
-}
 
 void SCR_EraseCenterString (void)
 {

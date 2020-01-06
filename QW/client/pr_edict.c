@@ -1,23 +1,3 @@
-/*
-Copyright (C) 1996-1997 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
-
 int				pr_edict_size;	// in bytes
 
 int		type_size[8] = {1,sizeof(void *)/4,1,3,1,1,sizeof(void *)/4,sizeof(void *)/4};
@@ -34,10 +14,6 @@ typedef struct {
 } gefv_cache;
 
 static gefv_cache	gefvCache[GEFV_CACHESIZE] = {{NULL, ""}, {NULL, ""}};
-
-func_t SpectatorConnect;
-func_t SpectatorThink;
-func_t SpectatorDisconnect;
 
 edict_t *ED_Alloc ()
 {
@@ -588,14 +564,4 @@ void PR_LoadProgs ()
 
 	for (i=0 ; i<progs->numglobals ; i++)
 		((int *)pr_globals)[i] = LittleLong (((int *)pr_globals)[i]);
-
-	// Zoid, find the spectator functions
-	SpectatorConnect = SpectatorThink = SpectatorDisconnect = 0;
-
-	if ((f = ED_FindFunction ("SpectatorConnect")) != NULL)
-		SpectatorConnect = (func_t)(f - pr_functions);
-	if ((f = ED_FindFunction ("SpectatorThink")) != NULL)
-		SpectatorThink = (func_t)(f - pr_functions);
-	if ((f = ED_FindFunction ("SpectatorDisconnect")) != NULL)
-		SpectatorDisconnect = (func_t)(f - pr_functions);
 }
