@@ -122,6 +122,11 @@ void Cbuf_InsertText(const char *text)
 	}
 }
 
+void Cbuf_InsertTextLines()
+{
+	// TODO
+};
+
 /*
 ============
 Cbuf_Execute
