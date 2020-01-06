@@ -1,7 +1,7 @@
 /*
  *	This file is part of OGS Engine
  *	Copyright (C) 1996-1997 Id Software, Inc.
- *	Copyright (C) 2018 BlackPhrase
+ *	Copyright (C) 2018-2019 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -159,14 +159,6 @@ void IN_Shutdown(void)
 	XUngrabPointer(x_disp, CurrentTime);
 	XUngrabKeyboard(x_disp, CurrentTime);
 	XAutoRepeatOn(x_disp);
-}
-
-//
-// IN_Commands - process buttons
-//
-void IN_Commands(void)
-{
-	// done in X event handler
 }
 
 //

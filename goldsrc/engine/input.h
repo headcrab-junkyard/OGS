@@ -1,7 +1,7 @@
 /*
  *	This file is part of OGS Engine
  *	Copyright (C) 1996-1997 Id Software, Inc.
- *	Copyright (C) 2018 BlackPhrase
+ *	Copyright (C) 2018-2019 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -25,9 +25,6 @@
 void IN_Init();
 
 void IN_Shutdown();
-
-void IN_Commands();
-// oportunity for devices to stick commands on the script buffer
 
 //void IN_Frame (); // Q2
 

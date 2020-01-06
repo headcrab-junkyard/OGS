@@ -489,12 +489,3 @@ IN_StartupJoystick
 void IN_StartupJoystick()
 {
 }
-
-/*
-===========
-IN_Commands
-===========
-*/
-void IN_Commands()
-{
-}
