@@ -1,7 +1,7 @@
 /*
  *	This file is part of OGS Engine
  *	Copyright (C) 1996-2001 Id Software, Inc.
- *	Copyright (C) 2018 BlackPhrase
+ *	Copyright (C) 2018-2019 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -580,7 +580,7 @@ void _Host_Frame(float time)
 	Sys_SendKeyEvents();
 
 	// allow mice or other external controllers to add commands
-	IN_Commands();
+	ClientDLL_UpdateClientData(); // TODO: was IN_Commands(); is this the right place?
 
 	// process console commands
 	Cbuf_Execute();
