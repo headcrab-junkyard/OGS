@@ -34,38 +34,38 @@ typedef struct ref_params_s
 	float frametime; // = host_frametime
 	float time; // = cl.time
 	
-	int intermission;
-	int paused;
+	int intermission; // = cl.intermission
+	int paused; // = cl.paused
 	int spectator;
-	int onground;
+	int onground; // = cl.onground
 	int waterlevel;
 	
-	vec3_t simvel;
+	vec3_t simvel; // = cl.velocity in NQ, cl.simvel in QW
 	vec3_t simorg;
 	
-	vec3_t viewheight;
+	vec3_t viewheight; // = cl.viewheight
 	
-	int idealpitch;
+	float idealpitch; // = cl.idealpitch
 	
-	vec3_t cl_viewangles;
+	vec3_t cl_viewangles; // = cl.viewangles
 	
-	int health;
+	int health; // = cl.health? or cl.stats[STAT_HEALTH]
 	
 	vec3_t crosshairangle;
 	
-	float viewsize;
+	float viewsize; // = scr_viewsize
 	
-	vec3_t punchangle;
+	vec3_t punchangle; // = cl.punchangle
 	
-	int maxclients;
-	int viewentity;
+	int maxclients; // = sv.maxclients?
+	int viewentity; // = cl.viewentity
 	int playernum;
 	int max_entities;
-	int demoplayback;
+	int demoplayback; // = cls.demoplayback
 	int hardware;
 	int smoothing;
 	
-	struct usercmd_s *cmd;
+	struct usercmd_s *cmd; // = cl.cmd
 	struct movevars_s *movevars;
 	
 	int viewport[4];
