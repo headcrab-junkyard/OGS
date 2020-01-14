@@ -52,7 +52,7 @@ int old_mouse_x, old_mouse_y, mx_accum, my_accum;
 static qboolean restore_spi;
 static int originalmouseparms[3], newmouseparms[3] = { 0, 0, 1 };
 
-qboolean mouseactive;
+qboolean mouseactive; // false when not focus app
 qboolean mouseinitialized;
 
 static qboolean mouseparmsvalid;

@@ -60,6 +60,8 @@ void ShutdownInput();
 void IN_Init();
 void IN_Shutdown();
 
+// oportunity for devices to stick commands on the script buffer
 void IN_Commands();
 
+// add additional movement on top of the keyboard move cmd
 void IN_Move(float frametime, struct usercmd_s *cmd);
