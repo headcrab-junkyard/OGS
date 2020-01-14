@@ -132,6 +132,16 @@ void KeyDown(kbutton_t *b)
 
 	if(b->state & 1)
 		return;        // still down
+	
+	// TODO: q2
+	/*
+	// save timestamp
+	c = Cmd_Argv(2);
+	b->downtime = atoi(c);
+	if (!b->downtime)
+		b->downtime = sys_frame_time - 100;
+	*/
+	
 	b->state |= 1 + 2; // down + impulse down
 }
 
