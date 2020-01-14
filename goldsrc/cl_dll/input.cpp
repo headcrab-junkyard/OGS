@@ -336,7 +336,7 @@ void IN_JumpUp()
 
 void IN_Impulse()
 {
-	in_impulse = atoi(gpEngine->Cmd_Argv(1));
+	in_impulse = atoi(gpEngine->Cmd_Argv(1)); // TODO: Q_atoi
 }
 
 /*
@@ -457,6 +457,8 @@ void CL_CreateMove(float frametime, usercmd_t *cmd, int active)
 
 		memset(cmd, 0, sizeof(*cmd));
 
+		//VectorCopy(cl_viewangles, cmd->viewangles); // TODO: qw
+		
 		if(in_strafe.state & 1)
 		{
 			cmd->sidemove += cl_sidespeed->value * CL_KeyState(&in_right);
