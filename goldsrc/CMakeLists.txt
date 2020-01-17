@@ -36,9 +36,9 @@ add_subdirectory(dedicated)
 if(NOT OGS_DEDICATED)
 	add_subdirectory(vgui2)
 
-	add_subdirectory(cl_dll)
+	#add_subdirectory(cl_dll)
 	
 	add_subdirectory(gameui)
 	
-	add_subdirectory(launcher)
+	#add_subdirectory(launcher)
 endif()
