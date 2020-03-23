@@ -30,15 +30,15 @@ struct IGameRules
 	virtual bool ShouldCollide(const CBaseEntity &lhs, const CBaseEntity &rhs) const = 0;
 	
 	///
-	virtual float GetAmmoDamage(const char *asName) const = 0;
+	//virtual float GetAmmoDamage(const char *asName) const = 0;
 	
 	// Server
 	
 	///
-	virtual void EndGameFrame() = 0;
+	//virtual void EndGameFrame() = 0;
 	
 	///
-	virtual void LevelShutdown() = 0;
+	//virtual void LevelShutdown() = 0;
 	
 	///
 	virtual bool HandleClientConnect(CBaseEntity *apEntity, const char *asName, const char *asAdr, char sRejectReason[128]) = 0;
@@ -46,14 +46,24 @@ struct IGameRules
 	///
 	virtual void HandleClientDisconnect(CBaseEntity *apEntity) = 0;
 	
+	///
+	//virtual bool CanSpawn(CBaseEntity *apEntity) = 0; // TODO: CBasePlayer?
+	
+	///
+	//virtual bool CanRespawn(CBaseEntity *apEntity) = 0; // TODO: CBasePlayer?
+	
+	///
+	virtual void OnPlayerSpawn(CBasePlayer *apPlayer) = 0;
+	
+	///
+	virtual void OnPlayerDeath(CBasePlayer *apPlayer) = 0;
+	
 	// TODO
 	/*
 	Difficulty levels
 	The single/multiplayer status of a game
-	Client connection & disconnection
 	Client damage rules
 	Client kills and scoring
-	Spawning and respawning control
 	Weapon Damage
 	Weapon/item/ammo retrieval
 	Weapon/item spawn and respawn control
