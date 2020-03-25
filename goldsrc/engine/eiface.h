@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-2001 Id Software, Inc.
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018-2019 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -262,16 +262,16 @@ typedef struct enginefuncs_s
 	
 	char *(*pfnGetInfoKeyBuffer)(edict_t *pent);
 	
-	char *(*pfnInfoKeyValue)(char *infobuffer, char *key);
+	char *(*pfnInfoKeyValue)(char *infobuffer, const char *key);
 	
-	void (*pfnSetKeyValue)(char *infobuffer, char *key, char *value);
-	void (*pfnSetClientKeyValue)(int clientindex, char *infobuffer, char *key, char *value);
+	void (*pfnSetKeyValue)(char *infobuffer, const char *key, const char *value);
+	void (*pfnSetClientKeyValue)(int clientindex, char *infobuffer, const char *key, const char *value);
 	
-	int (*pfnIsMapValid)(char *filename);
+	int (*pfnIsMapValid)(const char *filename);
 	
 	void (*pfnStaticDecal)(const float *origin, int decalIndex, int entityIndex, int modelIndex);
 	
-	int (*pfnPrecacheGeneric)(char *s);
+	int (*pfnPrecacheGeneric)(const char *s);
 	
 	int (*pfnGetPlayerUserId)(edict_t *player);
 	
@@ -322,7 +322,7 @@ typedef struct enginefuncs_s
 	
 	void (*pfnGetPlayerStats)(const edict_t *pPlayer, int *ping, int *packet_loss);
 	
-	void (*pfnAddServerCommand)(char *cmd_name, void (*function)());
+	void (*pfnAddServerCommand)(const char *cmd_name, void (*function)());
 	
 	qboolean (*pfnVoice_GetClientListening)(int nReceiver, int nSender);
 	qboolean (*pfnVoice_SetClientListening)(int nReceiver, int nSender, qboolean bListen);
@@ -332,7 +332,7 @@ typedef struct enginefuncs_s
 	sequenceEntry_s *(*pfnSequenceGet)(const char *fileName, const char *entryName);
 	sentenceEntry_s *(*pfnSequencePickSentence)(const char *groupName, int pickMethod, int *picked);
 	
-	int (*pfnGetFileSize)(char *filename);
+	int (*pfnGetFileSize)(const char *filename);
 	
 	uint (*pfnGetApproxWavePlayLen)(const char *filepath);
 	
