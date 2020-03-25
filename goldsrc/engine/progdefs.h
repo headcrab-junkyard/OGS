@@ -29,13 +29,20 @@ typedef struct
 	int	world;
 	float	time;
 	float	frametime;
-	float	force_retouch;
+	float	force_retouch;	// force all entities to touch triggers
+							// next frame.  this is needed because
+							// non-moving things don't normally scan
+							// for triggers, and when a trigger is
+							// created (like a teleport trigger), it
+							// needs to catch everything.
+							// decremented each frame, so set to 2
+							// to guarantee everything is touched
 	string_t	mapname;
 	string_t	startspot;
 	float	deathmatch;
 	float	coop;
 	float	teamplay;
-	float	serverflags;
+	float	serverflags; // propagated from level to level, used to keep track of completed episodes
 	
 	float	total_secrets;
 	float	total_monsters;
@@ -82,7 +89,10 @@ typedef struct
 	//string_t	null;
 } globalvars_t;
 
-typedef struct
+//
+// system fields (*** = do not set in prog code, maintained by C code)
+//
+typedef struct entvars_s
 {
 	string_t	classname; // spawn function
 	
@@ -127,6 +137,7 @@ typedef struct
 	
 	float	frame;
 	
+	// stats
 	float	health;
 	float	frags;
 	float	weapon; // one of the IT_SHOTGUN, etc flags
@@ -167,8 +178,12 @@ typedef struct
 	string_t	netname;
 	string_t	message; // trigger messages
 	
+	// damage is accumulated through a frame. and sent as one single
+	// message, so the super shotgun doesn't generate huge messages
 	float	dmg_take;
 	float	dmg_save;
+	
+	// contains names of wavs to play
 	string_t	noise;
 	string_t	noise1;
 	string_t	noise2;
