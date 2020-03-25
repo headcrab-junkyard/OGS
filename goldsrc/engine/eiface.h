@@ -96,7 +96,7 @@ typedef struct enginefuncs_s
 	void (*pfnSetModel)(edict_t *ent, const char *name);
 	
 	int (*pfnModelIndex)(const char *name);
-	int (*pfnModeFrames)(int modelindex);
+	int (*pfnModelFrames)(int modelindex);
 	
 	void (*pfnSetSize)(edict_t *ent, const float *pfMin, const float *pfMax);
 	
