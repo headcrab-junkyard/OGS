@@ -96,6 +96,7 @@ typedef struct
 	float	modelindex; // *** model index in the precached list
 	string_t	model;
 	
+	string_t	weaponmodel;
 	
 	vec3_t	absmin; // *** origin + mins / maxs
 	vec3_t	absmax;
@@ -119,29 +120,31 @@ typedef struct
 	
 	float	health;
 	float	frags;
-	float	weapon;
-	string_t	weaponmodel;
+	float	weapon; // one of the IT_SHOTGUN, etc flags
 	float	weaponframe;
 	float	currentammo;
 	float	takedamage;
+	
+	int	deadflag;
 	int	chain;
-	float	deadflag;
-	vec3_t	view_ofs;
-	float	button0;
-	float	button1;
-	float	button2;
-	float	impulse;
 	float	fixangle;
 	vec3_t	v_angle;
 	float	idealpitch;
-	string_t	netname;
 	int	enemy;
+	vec3_t	view_ofs; // add to origin to get eye point
+	
+	int	button0; // fire
+	int	button1; // use
+	int	button2; // jump
+	int	impulse; // weapon changes
 	float	flags;
 	float	colormap;
 	float	team;
-	float	max_health;
-	float	teleport_time;
-	float	armortype;
+	
+	float	max_health; // players maximum health is stored here
+	float	teleport_time; // don't back up
+	
+	float	armortype; // save this fraction of incoming damage
 	float	armorvalue;
 	float	ideal_yaw;
 	float	yaw_speed;
@@ -153,12 +156,14 @@ typedef struct
 	
 	string_t	target;
 	string_t	targetname;
+	string_t	netname;
+	string_t	message; // trigger messages
+	
 	float	dmg_take;
 	float	dmg_save;
 	int	dmg_inflictor;
 	int	owner;
 	vec3_t	movedir;
-	string_t	message;
 	float	sounds;
 	string_t	noise;
 	string_t	noise1;
