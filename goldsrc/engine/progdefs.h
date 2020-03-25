@@ -123,7 +123,7 @@ typedef struct
 	float	effects;
 	
 	float	gravity;
-	int	groundentity;
+	
 	
 	float	frame;
 	
@@ -135,8 +135,6 @@ typedef struct
 	float	takedamage;
 	
 	int	deadflag;
-	int	chain;
-	int	enemy;
 	vec3_t	view_ofs; // add to origin to get eye point
 	
 	int	button0; // fire
@@ -144,6 +142,11 @@ typedef struct
 	int	button2; // jump
 	int	impulse; // weapon changes
 	
+	edict_t *chain; // entity
+	edict_t *dmg_inflictor;
+	edict_t *enemy;
+	edict_t *owner; // who launched a missile
+	edict_t	*groundentity;
 	float	spawnflags;
 	float	flags;
 	
@@ -168,8 +171,6 @@ typedef struct
 	
 	float	dmg_take;
 	float	dmg_save;
-	int	dmg_inflictor;
-	int	owner;
 	float	sounds;
 	string_t	noise;
 	string_t	noise1;
