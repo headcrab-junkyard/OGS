@@ -178,3 +178,9 @@ typedef struct
 	//float	ammo_cells;
 	
 	//float	items; // bit flags
+	//float	items2; // TODO: q2
+	
+	//float	drawPercent; // TODO: q2
+	
+	//float	mass; // TODO: q2
+} entvars_t;
