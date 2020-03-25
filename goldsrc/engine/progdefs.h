@@ -82,9 +82,6 @@ typedef struct
 	//string_t	null;
 } globalvars_t;
 
-#ifdef QUAKE2
-#include "progdefs.q2.h"
-#else
 typedef struct
 {
 	string_t	classname; // spawn function
