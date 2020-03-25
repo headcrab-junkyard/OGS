@@ -89,9 +89,18 @@ typedef struct
 	vec3_t	origin; // ***
 	vec3_t	oldorigin; // ***
 	vec3_t	velocity;
+	
+	vec3_t	movedir; // mostly for doors, but also used for waterjump
+	
 	vec3_t	angles;
 	vec3_t	avelocity;
 	vec3_t	punchangle;
+	vec3_t	v_angle; // view / targeting angle for players 
+	
+	float	fixangle;
+	float	idealpitch;
+	float	ideal_yaw;
+	float	yaw_speed;
 	
 	float	modelindex; // *** model index in the precached list
 	string_t	model;
@@ -127,9 +136,6 @@ typedef struct
 	
 	int	deadflag;
 	int	chain;
-	float	fixangle;
-	vec3_t	v_angle;
-	float	idealpitch;
 	int	enemy;
 	vec3_t	view_ofs; // add to origin to get eye point
 	
@@ -137,7 +143,10 @@ typedef struct
 	int	button1; // use
 	int	button2; // jump
 	int	impulse; // weapon changes
+	
+	float	spawnflags;
 	float	flags;
+	
 	float	colormap;
 	float	team;
 	
@@ -146,11 +155,9 @@ typedef struct
 	
 	float	armortype; // save this fraction of incoming damage
 	float	armorvalue;
-	float	ideal_yaw;
-	float	yaw_speed;
 	int	aiment;
 	int	goalentity;
-	float	spawnflags;
+	
 	float	waterlevel; // 0 = not in, 1 = feet, 2 = wast, 3 = eyes
 	float	watertype; // a contents value
 	
@@ -163,7 +170,6 @@ typedef struct
 	float	dmg_save;
 	int	dmg_inflictor;
 	int	owner;
-	vec3_t	movedir;
 	float	sounds;
 	string_t	noise;
 	string_t	noise1;
