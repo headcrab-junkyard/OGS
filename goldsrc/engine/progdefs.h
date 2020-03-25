@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018-2019 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -87,40 +87,45 @@ typedef struct
 #else
 typedef struct
 {
-	float	modelindex;
-	vec3_t	absmin;
-	vec3_t	absmax;
-	float	ltime;
-	float	movetype;
-	float	solid;
-	vec3_t	origin;
-	vec3_t	oldorigin;
+	string_t	classname; // spawn function
+	
+	vec3_t	origin; // ***
+	vec3_t	oldorigin; // ***
 	vec3_t	velocity;
 	vec3_t	angles;
 	vec3_t	avelocity;
 	vec3_t	punchangle;
-	string_t	classname;
+	
+	float	modelindex; // *** model index in the precached list
 	string_t	model;
-	float	frame;
+	
+	
+	vec3_t	absmin; // *** origin + mins / maxs
+	vec3_t	absmax;
+	vec3_t	mins; // bounding box extents relative to origin
+	vec3_t	maxs;
+	vec3_t	size; // maxs - mins
+	
+	float	ltime; // local time for entity
+	float	nextthink;
+	
+	float	movetype;
+	float	solid;
+	
 	float	skin;
 	float	effects;
+	
 	float	gravity;
-	vec3_t	mins;
-	vec3_t	maxs;
-	vec3_t	size;
-	float	nextthink;
 	int	groundentity;
+	
+	float	frame;
+	
 	float	health;
 	float	frags;
 	float	weapon;
 	string_t	weaponmodel;
 	float	weaponframe;
 	float	currentammo;
-	float	ammo_shells;
-	float	ammo_nails;
-	float	ammo_rockets;
-	float	ammo_cells;
-	float	items;
 	float	takedamage;
 	int	chain;
 	float	deadflag;
@@ -141,13 +146,14 @@ typedef struct
 	float	teleport_time;
 	float	armortype;
 	float	armorvalue;
-	float	waterlevel;
-	float	watertype;
 	float	ideal_yaw;
 	float	yaw_speed;
 	int	aiment;
 	int	goalentity;
 	float	spawnflags;
+	float	waterlevel; // 0 = not in, 1 = feet, 2 = wast, 3 = eyes
+	float	watertype; // a contents value
+	
 	string_t	target;
 	string_t	targetname;
 	float	dmg_take;
@@ -162,4 +168,11 @@ typedef struct
 	string_t	noise2;
 	string_t	noise3;
 } entvars_t;
-#endif
+#endif	//float	ammo_shells;
+	///////////////////////////////////
+	
+	//float	ammo_nails;
+	//float	ammo_rockets;
+	//float	ammo_cells;
+	
+	//float	items; // bit flags
