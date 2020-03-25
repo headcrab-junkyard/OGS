@@ -130,8 +130,6 @@ typedef struct
 	float	health;
 	float	frags;
 	float	weapon; // one of the IT_SHOTGUN, etc flags
-	float	weaponframe;
-	float	currentammo;
 	float	takedamage;
 	
 	int	deadflag;
@@ -159,7 +157,6 @@ typedef struct
 	float	armortype; // save this fraction of incoming damage
 	float	armorvalue;
 	int	aiment;
-	int	goalentity;
 	
 	float	waterlevel; // 0 = not in, 1 = feet, 2 = wast, 3 = eyes
 	float	watertype; // a contents value
@@ -171,21 +168,29 @@ typedef struct
 	
 	float	dmg_take;
 	float	dmg_save;
-	float	sounds;
 	string_t	noise;
 	string_t	noise1;
 	string_t	noise2;
 	string_t	noise3;
-} entvars_t;
-#endif	//float	ammo_shells;
+	
+	
 	///////////////////////////////////
 	
+	//float	weaponframe;
+	
+	//float	currentammo;
+	
+	//float	ammo_shells;
 	//float	ammo_nails;
 	//float	ammo_rockets;
 	//float	ammo_cells;
 	
 	//float	items; // bit flags
 	//float	items2; // TODO: q2
+	
+	//int	goalentity; // a movetarget or an enemy 
+	
+	//float	sounds; // either a cd track number or sound number
 	
 	//float	drawPercent; // TODO: q2
 	
