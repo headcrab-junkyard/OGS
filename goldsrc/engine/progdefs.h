@@ -143,8 +143,10 @@ typedef struct
 	edict_t *chain; // entity
 	edict_t *dmg_inflictor;
 	edict_t *enemy;
+	edict_t	*aiment;
 	edict_t *owner; // who launched a missile
 	edict_t	*groundentity;
+	
 	float	spawnflags;
 	float	flags;
 	
@@ -156,7 +158,6 @@ typedef struct
 	
 	float	armortype; // save this fraction of incoming damage
 	float	armorvalue;
-	int	aiment;
 	
 	float	waterlevel; // 0 = not in, 1 = feet, 2 = wast, 3 = eyes
 	float	watertype; // a contents value
