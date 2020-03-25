@@ -32,6 +32,8 @@ typedef struct entity_state_s
 {
 	int		number;			///< edict index
 	
+	int messagenum; // all player's won't be updated each frame
+	
 	vec3_t	origin;
 	vec3_t	angles;
 	
@@ -41,8 +43,15 @@ typedef struct entity_state_s
 	int		skin;
 	int		effects;
 	
-	int		eflags;			///< nolerp, etc
+	byte	eflags;			///< nolerp, etc
+	
+	int movetype;
+	vec3_t velocity;
+	
+	int oldbuttons;
+	int onground; // -1 = in air, else pmove entity number
 } entity_state_t;
+
 typedef struct clientdata_s
 {
 	vec3_t origin;
