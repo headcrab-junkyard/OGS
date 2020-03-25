@@ -104,11 +104,13 @@ typedef struct entvars_s
 	
 	vec3_t	angles;
 	vec3_t	avelocity;
+	vec3_t	basevelocity; // TODO: q2
 	vec3_t	punchangle;
 	vec3_t	v_angle; // view / targeting angle for players 
 	
 	float	fixangle;
 	float	idealpitch;
+	float	pitch_speed; // TODO: q2
 	float	ideal_yaw;
 	float	yaw_speed;
 	
@@ -134,6 +136,7 @@ typedef struct entvars_s
 	
 	float	gravity;
 	
+	int	light_level; // TODO: q2
 	
 	float	frame;
 	
@@ -182,6 +185,8 @@ typedef struct entvars_s
 	// message, so the super shotgun doesn't generate huge messages
 	float	dmg_take;
 	float	dmg_save;
+	float	dmg; // TODO: q2
+	float	dmgtime; // TODO: q2
 	
 	// contains names of wavs to play
 	string_t	noise;
