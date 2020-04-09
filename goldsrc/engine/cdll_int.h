@@ -198,7 +198,7 @@ typedef struct cl_enginefuncs_s
 	int (*GetWindowCenterX)();
 	int (*GetWindowCenterY)();
 	
-	void (*GetViewAngles)(float *);
+	void (*GetViewAngles)(float *); // TODO: returns cl.viewangles
 	void (*SetViewAngles)(float *);
 	
 	int (*GetMaxClients)();
