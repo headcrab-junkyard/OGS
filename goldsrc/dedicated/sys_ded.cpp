@@ -42,10 +42,10 @@ IDedicatedServerAPI *gpEngine{nullptr}; // TODO: hacky way to access the command
 int CreateConsoleWindow()
 {
 #ifdef _WIN32
-	//if(!AllocConsole()) // TODO
-		//return false; // TODO: was Sys_Error("Couldn't create dedicated server console");
+	if(!AllocConsole())
+		return 0; // TODO: was Sys_Error("Couldn't create dedicated server console");
 
-	//hinput = GetStdHandle(STD_INPUT_HANDLE);
+	hinput = GetStdHandle(STD_INPUT_HANDLE);
 	houtput = GetStdHandle(STD_OUTPUT_HANDLE);
 
 	InitConProc();
