@@ -40,6 +40,10 @@ BOOL WriteText (LPCTSTR szText);
 int CharToCode (char c);
 BOOL SetConsoleCXCY(HANDLE hStdout, int cx, int cy);
 
+void Con_SafePrintf(const char *msg)
+{
+	// TODO
+};
 
 void InitConProc ()
 {
