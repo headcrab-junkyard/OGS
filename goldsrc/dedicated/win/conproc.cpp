@@ -47,6 +47,27 @@ void InitConProc (HANDLE hFile, HANDLE heventParent, HANDLE heventChild)
 	CONSOLE_SCREEN_BUFFER_INFO	info;
 	int		wheight, wwidth;
 
+/*
+	// give QHOST a chance to hook into the console
+	if ((t = COM_CheckParm ("-HFILE")) > 0)
+	{
+		if (t < com_argc)
+			hFile = (HANDLE)Q_atoi (com_argv[t+1]);
+	};
+		
+	if ((t = COM_CheckParm ("-HPARENT")) > 0)
+	{
+		if (t < com_argc)
+			heventParent = (HANDLE)Q_atoi (com_argv[t+1]);
+	};
+		
+	if ((t = COM_CheckParm ("-HCHILD")) > 0)
+	{
+		if (t < com_argc)
+			heventChild = (HANDLE)Q_atoi (com_argv[t+1]);
+	};
+*/
+	
 // ignore if we don't have all the events.
 	if (!hFile || !heventParent || !heventChild)
 		return;
