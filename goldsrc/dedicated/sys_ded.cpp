@@ -74,6 +74,15 @@ bool InitConsole()
 #endif // _WIN32
 
 	return true;
+
+void DestroyConsoleWindow()
+{
+#ifdef _WIN32
+	FreeConsole();
+	
+	// shutdown QHOST hooks if necessary
+	DeinitConProc();
+#endif
 };
 
 char *Sys_ConsoleInput()
@@ -327,12 +336,7 @@ int main(int argc, char **argv)
 	if(!RunServer())
 		return EXIT_FAILURE;
 	
-#ifdef _WIN32
-	FreeConsole();
-	
-	// shutdown QHOST hooks if necessary
-	//DeinitConProc(); // TODO
-#endif
+	DestroyConsoleWindow();
 
 	// return success of application
 	return EXIT_SUCCESS;
