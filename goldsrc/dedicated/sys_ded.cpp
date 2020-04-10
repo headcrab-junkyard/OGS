@@ -39,9 +39,8 @@ HANDLE hinput, houtput;
 
 IDedicatedServerAPI *gpEngine{nullptr}; // TODO: hacky way to access the command buffer...
 
-bool InitConsole()
+int CreateConsoleWindow()
 {
-// TODO
 #ifdef _WIN32
 	//if(!AllocConsole()) // TODO
 		//return false; // TODO: was Sys_Error("Couldn't create dedicated server console");
@@ -73,7 +72,8 @@ bool InitConsole()
 */
 #endif // _WIN32
 
-	return true;
+	return 1;
+};
 
 void DestroyConsoleWindow()
 {
@@ -330,7 +330,7 @@ int main(int argc, char **argv)
 {
 	//CCmdLine CmdLine(argc, argv); // TODO
 	
-	if(!InitConsole())
+	if(!CreateConsoleWindow())
 		return EXIT_FAILURE;
 	
 	if(!RunServer())
