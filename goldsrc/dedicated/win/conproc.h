@@ -32,5 +32,5 @@
 #define CCOM_SET_SCR_LINES	0x5
 // Param1 : Number of lines
 
-void InitConProc(HANDLE hFile, HANDLE heventParent, HANDLE heventChild);
+void InitConProc(/*HANDLE hFile, HANDLE heventParent, HANDLE heventChild*/);
 void DeinitConProc();

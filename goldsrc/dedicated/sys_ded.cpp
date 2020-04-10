@@ -48,7 +48,7 @@ int CreateConsoleWindow()
 	//hinput = GetStdHandle(STD_INPUT_HANDLE);
 	houtput = GetStdHandle(STD_OUTPUT_HANDLE);
 
-	InitConProc (hFile, heventParent, heventChild);
+	InitConProc();
 #endif // _WIN32
 
 	return 1;

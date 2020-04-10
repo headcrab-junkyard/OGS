@@ -41,8 +41,12 @@ int CharToCode (char c);
 BOOL SetConsoleCXCY(HANDLE hStdout, int cx, int cy);
 
 
-void InitConProc (HANDLE hFile, HANDLE heventParent, HANDLE heventChild)
+void InitConProc ()
 {
+	HANDLE hFile = (HANDLE)0;
+	HANDLE heventParent = (HANDLE)0;
+	HANDLE heventChild = (HANDLE)0;
+	
 	DWORD	dwID;
 	CONSOLE_SCREEN_BUFFER_INFO	info;
 	int		wheight, wwidth;
