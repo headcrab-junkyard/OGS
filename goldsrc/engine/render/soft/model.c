@@ -38,6 +38,7 @@ byte mod_novis[MAX_MAP_LEAFS / 8];
 model_t mod_known[MAX_MOD_KNOWN];
 int mod_numknown;
 
+// TODO: not present in qw
 // values for model_t's needload
 #define NL_PRESENT 0
 #define NL_NEEDS_LOADED 1
@@ -224,7 +225,7 @@ model_t *Mod_FindName(char *name)
 		else
 			mod_numknown++;
 		strcpy(mod->name, name);
-		mod->needload = NL_NEEDS_LOADED;
+		mod->needload = NL_NEEDS_LOADED; // TODO: = true in qw
 	}
 
 	return mod;
@@ -242,7 +243,7 @@ void Mod_TouchModel(char *name)
 
 	mod = Mod_FindName(name);
 
-	if(mod->needload == NL_PRESENT)
+	if(mod->needload == NL_PRESENT) // TODO: !mod->needload in qw
 	{
 		if(mod->type == mod_alias)
 			Cache_Check(&mod->cache);
@@ -302,7 +303,7 @@ model_t *Mod_LoadModel(model_t *mod, qboolean crash)
 	//
 
 	// call the apropriate loader
-	mod->needload = NL_PRESENT;
+	mod->needload = NL_PRESENT; // TODO: = false in qw
 
 	switch(LittleLong(*(unsigned *)buf))
 	{
@@ -1155,6 +1156,25 @@ void Mod_LoadBrushModel(model_t *mod, void *buffer)
 
 	for(i = 0; i < sizeof(dheader_t) / 4; i++)
 		((int *)header)[i] = LittleLong(((int *)header)[i]);
+
+	// TODO: qw
+/*
+	mod->checksum = 0;
+	mod->checksum2 = 0;
+
+// checksum all of the map, except for entities
+	for (i = 0; i < HEADER_LUMPS; i++) {
+		if (i == LUMP_ENTITIES)
+			continue;
+		mod->checksum ^= Com_BlockChecksum(mod_base + header->lumps[i].fileofs, 
+			header->lumps[i].filelen);
+
+		if (i == LUMP_VISIBILITY || i == LUMP_LEAFS || i == LUMP_NODES)
+			continue;
+		mod->checksum2 ^= Com_BlockChecksum(mod_base + header->lumps[i].fileofs, 
+			header->lumps[i].filelen);
+	}
+*/
 
 	// load into heap
 

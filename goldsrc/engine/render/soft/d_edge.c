@@ -172,7 +172,7 @@ void D_DrawSurfaces(void)
 	vec3_t world_transformed_modelorg;
 	vec3_t local_modelorg;
 
-	currententity = &cl_entities[0];
+	currententity = &cl_entities[0]; // TODO: = &r_worldentity; in qw
 	TransformVector(modelorg, transformed_modelorg);
 	VectorCopy(transformed_modelorg, world_transformed_modelorg);
 
@@ -264,7 +264,7 @@ void D_DrawSurfaces(void)
 					// FIXME: we don't want to do this every time!
 					// TODO: speed up
 					//
-					currententity = &cl_entities[0];
+					currententity = &cl_entities[0]; // TODO: = &r_worldentity; in qw
 					VectorCopy(world_transformed_modelorg,
 					           transformed_modelorg);
 					VectorCopy(base_vpn, vpn);
@@ -311,7 +311,7 @@ void D_DrawSurfaces(void)
 					// FIXME: we don't want to do this every time!
 					// TODO: speed up
 					//
-					currententity = &cl_entities[0];
+					currententity = &cl_entities[0]; // TODO: wq
 					VectorCopy(world_transformed_modelorg,
 					           transformed_modelorg);
 					VectorCopy(base_vpn, vpn);
@@ -319,6 +319,7 @@ void D_DrawSurfaces(void)
 					VectorCopy(base_vright, vright);
 					VectorCopy(base_modelorg, modelorg);
 					R_TransformFrustum();
+					//currententity = &r_worldentity; // TODO: qw
 				}
 			}
 		}
