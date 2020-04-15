@@ -30,6 +30,7 @@ char loadname[32]; // for hunk tags
 void Mod_LoadSpriteModel(model_t *mod, void *buffer);
 void Mod_LoadBrushModel(model_t *mod, void *buffer);
 void Mod_LoadAliasModel(model_t *mod, void *buffer);
+void Mod_LoadStudioModel(model_t *mod, void *buffer);
 model_t *Mod_LoadModel(model_t *mod, qboolean crash);
 
 byte mod_novis[MAX_MAP_LEAFS / 8];
@@ -313,6 +314,10 @@ model_t *Mod_LoadModel(model_t *mod, qboolean crash)
 
 	case IDSPRITEHEADER:
 		Mod_LoadSpriteModel(mod, buf);
+		break;
+
+	case IDSTUDIOHEADER:
+		Mod_LoadStudioModel(mod, buf);
 		break;
 
 	default:
