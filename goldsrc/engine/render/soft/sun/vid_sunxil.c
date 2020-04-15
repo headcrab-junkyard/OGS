@@ -16,8 +16,9 @@
  *	You should have received a copy of the GNU General Public License
  *	along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
-// vid_sunxil.c -- uses X to setup windows and XIL to copy images (scaled as needed)
-// 		   to screen
+
+/// @file
+/// @brief uses X to setup windows and XIL to copy images (scaled as needed) to screen
 
 #define _BSD
 #define BYTE_DEFINED 1

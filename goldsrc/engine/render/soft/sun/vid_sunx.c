@@ -16,7 +16,9 @@
  *	You should have received a copy of the GNU General Public License
  *	along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
-// vid_x.c -- general x video driver
+
+/// @file
+/// @brief general x video driver
 
 #define _BSD
 
