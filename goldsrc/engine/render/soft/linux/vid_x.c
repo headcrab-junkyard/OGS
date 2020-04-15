@@ -490,7 +490,7 @@ void ResetSharedFrameBuffers()
 // the palette data will go away after the call, so it must be copied off if
 // the video driver will need it again
 
-void VID_Init(unsigned char *palette)
+void VID_Init(unsigned short *palette)
 {
 	int pnum, i;
 	XVisualInfo template;
@@ -723,12 +723,12 @@ void VID_Init(unsigned char *palette)
 	//	XSynchronize(x_disp, False);
 }
 
-void VID_ShiftPalette(unsigned char *p)
+void VID_ShiftPalette(unsigned short *p)
 {
 	VID_SetPalette(p);
 }
 
-void VID_SetPalette(unsigned char *palette)
+void VID_SetPalette(unsigned short *palette)
 {
 	int i;
 	XColor colors[256];
