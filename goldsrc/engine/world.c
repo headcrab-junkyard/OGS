@@ -798,9 +798,9 @@ void SV_ClipToLinks(areanode_t *node, moveclip_t *clip)
 			return;
 		if(clip->passedict)
 		{
-			if(PROG_TO_EDICT(touch->v.owner) == clip->passedict)
+			if(touch->v.owner == clip->passedict)
 				continue; // don't clip against own missiles
-			if(PROG_TO_EDICT(clip->passedict->v.owner) == touch)
+			if(clip->passedict->v.owner == touch)
 				continue; // don't clip against owner
 		}
 
