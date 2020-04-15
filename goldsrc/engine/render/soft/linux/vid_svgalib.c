@@ -92,10 +92,7 @@ cvar_t mouse_button_commands[3] =
   { "mouse3", "+forward" },
 };
 
-int mouse_buttons;
 int mouse_buttonstate;
-int mouse_oldbuttonstate;
-float mouse_x, mouse_y;
 float old_mouse_x, old_mouse_y;
 int mx, my;
 
@@ -824,11 +821,6 @@ void Sys_SendKeyEvents()
 	if(UseKeyboard)
 		while(keyboard_update())
 			;
-}
-
-void Force_CenterView_f()
-{
-	cl.viewangles[PITCH] = 0;
 }
 
 void mousehandler(int buttonstate, int dx, int dy)

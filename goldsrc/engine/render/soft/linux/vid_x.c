@@ -42,14 +42,12 @@
 #include "d_local.h"
 
 cvar_t _windowed_mouse = { "_windowed_mouse", "0", true };
-cvar_t m_filter = { "m_filter", "0", true };
+
 float old_windowed_mouse;
 
 qboolean mouse_avail;
 int mouse_buttons = 3;
-int mouse_oldbuttonstate;
 int mouse_buttonstate;
-float mouse_x, mouse_y;
 float old_mouse_x, old_mouse_y;
 int p_mouse_x;
 int p_mouse_y;
@@ -1254,7 +1252,6 @@ void D_EndDirectRect(int x, int y, int width, int height)
 void IN_Init()
 {
 	Cvar_RegisterVariable(&_windowed_mouse);
-	Cvar_RegisterVariable(&m_filter);
 	if(COM_CheckParm("-nomouse"))
 		return;
 	mouse_x = mouse_y = 0.0;

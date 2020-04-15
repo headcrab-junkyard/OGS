@@ -40,13 +40,9 @@
 #include "quakedef.h"
 #include "d_local.h"
 
-cvar_t m_filter = { "m_filter", "0", true };
-
 qboolean mouse_avail;
 int mouse_buttons = 3;
-int mouse_oldbuttonstate;
 int mouse_buttonstate;
-float mouse_x, mouse_y;
 float old_mouse_x, old_mouse_y;
 int p_mouse_x;
 int p_mouse_y;
@@ -1317,7 +1313,6 @@ char *Sys_ConsoleInput (void)
 
 void IN_Init(void)
 {
-	Cvar_RegisterVariable(&m_filter);
 	if(COM_CheckParm("-nomouse"))
 		return;
 	mouse_x = mouse_y = 0.0;
