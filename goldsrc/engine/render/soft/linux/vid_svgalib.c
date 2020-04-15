@@ -53,7 +53,7 @@ int num_shades = 32;
 
 struct
 {
-	char *name;
+	const char *name;
 	int num;
 } mice[] =
 {
