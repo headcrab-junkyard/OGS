@@ -1,5 +1,6 @@
 /*
  *	This file is part of OGS Engine
+ *	Copyright (C) 1996-1997 Id Software, Inc.
  *	Copyright (C) 2018 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
