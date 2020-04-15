@@ -372,7 +372,7 @@ void Mod_LoadTextures(lump_t *l)
 	{
 		loadmodel->textures = NULL;
 		return;
-	}
+	};
 	m = (dmiptexlump_t *)(mod_base + l->fileofs);
 
 	m->nummiptex = LittleLong(m->nummiptex);
@@ -388,11 +388,13 @@ void Mod_LoadTextures(lump_t *l)
 		mt = (miptex_t *)((byte *)m + m->dataofs[i]);
 		mt->width = LittleLong(mt->width);
 		mt->height = LittleLong(mt->height);
+
 		for(j = 0; j < MIPLEVELS; j++)
 			mt->offsets[j] = LittleLong(mt->offsets[j]);
 
 		if((mt->width & 15) || (mt->height & 15))
 			Sys_Error("Texture %s is not 16 aligned", mt->name);
+
 		pixels = mt->width * mt->height / 64 * 85;
 		tx = Hunk_AllocName(sizeof(texture_t) + pixels, loadname);
 		loadmodel->textures[i] = tx;
@@ -472,7 +474,7 @@ void Mod_LoadTextures(lump_t *l)
 			}
 			else
 				Sys_Error("Bad animating texture %s", tx->name);
-		}
+		};
 
 #define ANIM_CYCLE 2
 		// link them all together
@@ -487,7 +489,8 @@ void Mod_LoadTextures(lump_t *l)
 			tx2->anim_next = anims[(j + 1) % max];
 			if(altmax)
 				tx2->alternate_anims = altanims[0];
-		}
+		};
+
 		for(j = 0; j < altmax; j++)
 		{
 			tx2 = altanims[j];
@@ -499,9 +502,9 @@ void Mod_LoadTextures(lump_t *l)
 			tx2->anim_next = altanims[(j + 1) % altmax];
 			if(max)
 				tx2->alternate_anims = anims[0];
-		}
-	}
-}
+		};
+	};
+};
 
 /*
 =================
@@ -514,7 +517,8 @@ void Mod_LoadLighting(lump_t *l)
 	{
 		loadmodel->lightdata = NULL;
 		return;
-	}
+	};
+
 	loadmodel->lightdata = Hunk_AllocName(l->filelen, loadname);
 	memcpy(loadmodel->lightdata, mod_base + l->fileofs, l->filelen);
 }
@@ -1223,6 +1227,7 @@ void Mod_LoadBrushModel(model_t *mod, void *buffer)
 
 		VectorCopy(bm->maxs, mod->maxs);
 		VectorCopy(bm->mins, mod->mins);
+
 		mod->radius = RadiusFromBounds(mod->mins, mod->maxs);
 
 		mod->numleafs = bm->visleafs;
@@ -1803,8 +1808,7 @@ void Mod_LoadSpriteModel(model_t *mod, void *buffer)
 
 	version = LittleLong(pin->version);
 	if(version != SPRITE_VERSION)
-		Sys_Error("%s has wrong version number "
-		          "(%i should be %i)",
+		Sys_Error("%s has wrong version number (%i should be %i)"
 		          mod->name, version, SPRITE_VERSION);
 
 	numframes = LittleLong(pin->numframes);

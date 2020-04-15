@@ -1171,8 +1171,7 @@ void VID_Update_MT(vrect_t *rects)
 	quake_image = sched_update(quake_image);
 }
 
-XilImage
-drain_renderpipeline(XilImage old)
+XilImage drain_renderpipeline(XilImage old)
 {
 	XilImage new;
 
@@ -1213,8 +1212,7 @@ drain_renderpipeline(XilImage old)
 	return (new);
 }
 
-XilImage
-sched_update(XilImage image)
+XilImage sched_update(XilImage image)
 {
 	XilImage new;
 	XilMemoryStorage storage;
