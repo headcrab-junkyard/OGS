@@ -1767,7 +1767,7 @@ void VID_ForceLockState(int lk)
 	lockcount = lk;
 }
 
-void VID_SetPalette(unsigned char *palette)
+void VID_SetPalette(unsigned short *palette)
 {
 	INT i;
 	palette_t pal[256];
@@ -1836,7 +1836,7 @@ void VID_SetPalette(unsigned char *palette)
 	}
 }
 
-void VID_ShiftPalette(unsigned char *palette)
+void VID_ShiftPalette(unsigned short *palette)
 {
 	VID_SetPalette(palette);
 }
@@ -1994,7 +1994,7 @@ void VID_ForceMode_f()
 	}
 }
 
-void VID_Init(unsigned char *palette)
+void VID_Init(unsigned short *palette)
 {
 	int i, bestmatch, bestmatchmetric, t, dr, dg, db;
 	int basenummodes;

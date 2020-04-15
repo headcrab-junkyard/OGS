@@ -378,7 +378,7 @@ qboolean VID_FullScreen(Window win)
 	return (true);
 }
 
-void VID_Init(unsigned char *palette)
+void VID_Init(unsigned short *palette)
 {
 	int pnum, i;
 	XVisualInfo template;
@@ -713,12 +713,12 @@ VID_ResetFramebuffer_MT()
 	d_pzbuffer = malloc(PM(vid.width) * PM(vid.height) * sizeof(*d_pzbuffer));
 }
 
-void VID_ShiftPalette(unsigned char *p)
+void VID_ShiftPalette(unsigned short *p)
 {
 	VID_SetPalette(p);
 }
 
-void VID_SetPalette(unsigned char *palette)
+void VID_SetPalette(unsigned short *palette)
 {
 	int i;
 	XColor colors[256];
