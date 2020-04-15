@@ -1176,20 +1176,7 @@ void VID_DitherOff()
 	}
 }
 
-int Sys_OpenWindow()
-{
-	return 0;
-}
-
-void Sys_EraseWindow(int window)
-{
-}
-
 void Sys_DrawCircle(int window, int x, int y, int r)
-{
-}
-
-void Sys_DisplayWindow(int window)
 {
 }
 

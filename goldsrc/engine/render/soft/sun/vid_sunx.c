@@ -1248,20 +1248,7 @@ void VID_SetDefaultMode(void)
 {
 }
 
-int I_OpenWindow(void)
-{
-	return 0;
-}
-
-void I_EraseWindow(int window)
-{
-}
-
 void I_DrawCircle(int window, int x, int y, int r)
-{
-}
-
-void I_DisplayWindow(int window)
 {
 }
 
