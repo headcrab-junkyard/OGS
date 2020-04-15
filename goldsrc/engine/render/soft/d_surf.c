@@ -276,7 +276,12 @@ surfcache_t *D_CacheSurface(msurface_t *surface, int miplevel)
 	//
 	cache = surface->cachespots[miplevel];
 
-	if(cache && !cache->dlight && surface->dlightframe != r_framecount && cache->texture == r_drawsurf.texture && cache->lightadj[0] == r_drawsurf.lightadj[0] && cache->lightadj[1] == r_drawsurf.lightadj[1] && cache->lightadj[2] == r_drawsurf.lightadj[2] && cache->lightadj[3] == r_drawsurf.lightadj[3])
+	if(cache && !cache->dlight && surface->dlightframe != r_framecount
+			&& cache->texture == r_drawsurf.texture
+			&& cache->lightadj[0] == r_drawsurf.lightadj[0]
+			&& cache->lightadj[1] == r_drawsurf.lightadj[1]
+			&& cache->lightadj[2] == r_drawsurf.lightadj[2]
+			&& cache->lightadj[3] == r_drawsurf.lightadj[3])
 		return cache;
 
 	//

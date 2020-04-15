@@ -1310,8 +1310,7 @@ void *Mod_LoadAliasGroup(void *pin, int *pframeindex, int numv,
 	numframes = LittleLong(pingroup->numframes);
 
 	paliasgroup = Hunk_AllocName(sizeof(maliasgroup_t) +
-	                             (numframes - 1) * sizeof(paliasgroup->frames[0]),
-	                             loadname);
+	                             (numframes - 1) * sizeof(paliasgroup->frames[0]), loadname);
 
 	paliasgroup->numframes = numframes;
 
@@ -1748,8 +1747,7 @@ void *Mod_LoadSpriteGroup(void *pin, mspriteframe_t **ppframe)
 	numframes = LittleLong(pingroup->numframes);
 
 	pspritegroup = Hunk_AllocName(sizeof(mspritegroup_t) +
-	                              (numframes - 1) * sizeof(pspritegroup->frames[0]),
-	                              loadname);
+	                              (numframes - 1) * sizeof(pspritegroup->frames[0]), loadname);
 
 	pspritegroup->numframes = numframes;
 

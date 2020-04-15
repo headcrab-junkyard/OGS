@@ -3219,8 +3219,7 @@ void VID_MenuKey(int key)
 		if(vid_line < 0)
 		{
 			vid_line += ((vid_wmodes + (VID_ROW_SIZE - 1)) /
-			             VID_ROW_SIZE) *
-			VID_ROW_SIZE;
+			             VID_ROW_SIZE) * VID_ROW_SIZE;
 
 			while(vid_line >= vid_wmodes)
 				vid_line -= VID_ROW_SIZE;
@@ -3234,8 +3233,7 @@ void VID_MenuKey(int key)
 		if(vid_line >= vid_wmodes)
 		{
 			vid_line -= ((vid_wmodes + (VID_ROW_SIZE - 1)) /
-			             VID_ROW_SIZE) *
-			VID_ROW_SIZE;
+			             VID_ROW_SIZE) * VID_ROW_SIZE;
 
 			while(vid_line < 0)
 				vid_line += VID_ROW_SIZE;

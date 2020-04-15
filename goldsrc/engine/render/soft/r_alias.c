@@ -61,7 +61,9 @@ typedef struct
 } aedge_t;
 
 static aedge_t aedges[12] = {
-	{ 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 }, { 4, 5 }, { 5, 6 }, { 6, 7 }, { 7, 4 }, { 0, 5 }, { 1, 4 }, { 2, 7 }, { 3, 6 }
+	{ 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 },
+	{ 4, 5 }, { 5, 6 }, { 6, 7 }, { 7, 4 },
+	{ 0, 5 }, { 1, 4 }, { 2, 7 }, { 3, 6 }
 };
 
 #define NUMVERTEXNORMALS 162
@@ -466,13 +468,9 @@ void R_AliasTransformAndProjectFinalVerts(finalvert_t *fv, stvert_t *pstverts)
 		fv->v[5] = zi;
 
 		fv->v[0] = ((DotProduct(pverts->v, aliastransform[0]) +
-		             aliastransform[0][3]) *
-		            zi) +
-		aliasxcenter;
+		             aliastransform[0][3]) * zi) + aliasxcenter;
 		fv->v[1] = ((DotProduct(pverts->v, aliastransform[1]) +
-		             aliastransform[1][3]) *
-		            zi) +
-		aliasycenter;
+		             aliastransform[1][3]) * zi) + aliasycenter;
 
 		fv->v[2] = pstverts->s;
 		fv->v[3] = pstverts->t;
