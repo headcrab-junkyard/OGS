@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018, 2020 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 
 #include "GameUI/IGameConsole.h"
 
+class CGameConsoleDialog;
+
 class CGameConsole final : public IGameConsole
 {
 public:
@@ -42,4 +44,8 @@ public:
 	void DPrintf(const char *format, ...) override;
 
 	void SetParent(int /*vgui2::VPANEL*/ parent) override;
+private:
+	CGameConsoleDialog *mpConsole{nullptr};
+	
+	bool mbInitialized{false};
 };

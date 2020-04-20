@@ -21,6 +21,12 @@
 #include <cstdlib>
 #include "GameUI.hpp"
 
+IEngineVGui *gpEngineVGui{nullptr};
+
+ILocalize *gpVGuiLocalize{nullptr}:
+
+static IGameClientExports *gpGameClientExports{nullptr};
+
 EXPOSE_SINGLE_INTERFACE(CGameUI, IGameUI, GAMEUI_INTERFACE_VERSION);
 
 CGameUI::CGameUI() = default;
@@ -31,15 +37,17 @@ void CGameUI::Initialize(CreateInterfaceFn *factories, int count)
 	// TODO
 	
 	// Load localization file
-	//gpVGuiLocalize->AddFile("resource/gameui_%language%.txt", "GAME", true);
+	gpVGuiLocalize->AddFile("resource/gameui_%language%.txt", "GAME", true);
+	
+	// Load mod info
+	//ModInfo().LoadCurrentGameInfo();
 	
 	// Load localization file for kb_act.lst
-	//gpVGuiLocalize->AddFile("resource/valve_%language%.txt", "GAME", true);
+	gpVGuiLocalize->AddFile("resource/valve_%language%.txt", "GAME", true);
 	
-	/*
 	for(int i = 0; i < count; ++i)
 	{
-		mpVGUI = (vgui2::IVGUI*)*factories[i](VGUI_INTERFACE_VERSION, nullptr);
+		mpVGUI = reinterpret_cast<vgui2::IVGUI*>(*factories[i](VGUI_INTERFACE_VERSION, nullptr));
 		mpVGUISurfave = (vgui2::ISurface*)*factories[i](VGUI_SURFACE_INTERFACE_VERSION, nullptr);
 		mpFileSystem = (IFileSystem*)*factories[i](FILESYSTEM_INTERFACE_VERSION, nullptr);
 		mpEngineVGui = (IEngineVGui*)*factories[i](VENGINE_VGUI_VERSION, nullptr);
@@ -47,12 +55,15 @@ void CGameUI::Initialize(CreateInterfaceFn *factories, int count)
 		mpGameClientExports = (IGameClientExports*)*factories[i](GAMECLIENTEXPORTS_INTERFACE_VERSION, nullptr);
 	};
 	
-	if(!mpGameUIFuncs)
-		return; // Sys_Error("CGameUI::Initialize() failed to get necessary interfaces\n");
+	bool bFailed{false};
+	
+	bFailed = !mpGameUIFuncs || !gpEngineVGui;
+	
+	if(bFailed)
+		Sys_Error("CGameUI::Initialize() failed to get necessary interfaces\n");
 	
 	if(!mpGameClientExports)
 		mpGameClientExports = new CDefaultGameClientExports();
-	*/
 };
 
 void CGameUI::Start(/*cl_enginefunc_t*/ struct cl_enginefuncs_s *engineFuncs, int interfaceVersion, void /*IBaseSystem*/ *system)
@@ -81,14 +92,32 @@ int CGameUI::HasExclusiveInput()
 
 void CGameUI::RunFrame()
 {
+	// Play the startup music the first time we run frame
+	if(mnPlayGameStartupSound > 0)
+	{
+		--mnPlayGameStartupSound;
+		if(!mnPlayGameStartupSound)
+			PlayGameStartupSound();
+	};
 };
 
 void CGameUI::ConnectToServer(const char *game, int IP, int port)
 {
+	mnGameIP = IP;
+	mnGamePort = port;
+	
+	SendConnectedToGameMessage();
 };
 
 void CGameUI::DisconnectFromServer()
 {
+	mnGameIP = 0;
+	mnGamePort = 0;
+	
+	if(ghLoadingBackgroundDialog)
+		vgui2::ivgui()->PostMessage(ghLoadingBackgroundDialog, new KeyValues("DisconnectedFromGame"), nullptr);
+	
+	gVModuleLoader.PostMessageToAllModules(new KeyValues("DisconnectedFromGame"));
 };
 
 void CGameUI::HideGameUI()
@@ -103,36 +132,84 @@ bool CGameUI::IsGameUIActive()
 
 void CGameUI::LoadingStarted(const char *resourceType, const char *resourceName)
 {
+	gVModuleLoader.PostMessageToAllModules(new KeyValues("LoadingStarted"));
+	
+	ShowLoadingBackgroundDialog();
+	
+	StartProgressBar();
+	
+	mnPlayGameStartupSound = 0;
 };
 
 void CGameUI::LoadingFinished(const char *resourceType, const char *resourceName)
 {
+	StopProgressBar(false, "", "");
+	
+	gVModuleLoader.PostMessageToAllModules(new KeyValues("LoadingFinished"));
+	
+	HideLoadingBackgroundDialog();
 };
 
 void CGameUI::StartProgressBar(const char *progressType, int progressSteps)
 {
+	ghLoadingDialog->Activate();
+	
+	// TODO
 };
 
 int CGameUI::ContinueProgressBar(int progressPoint, float progressFraction)
 {
-	return 0;
+	if(!ghLoadingDialog.Get())
+		return 0;
+	
+	ghLoadingDialog->Activate();
+	return ghLoadingDialog->SetProgressPoint(progressPoint, progressFraction);
 };
 
 void CGameUI::StopProgressBar(bool bError, const char *failureReason, const char *extendedReason)
 {
+	if(!ghLoadingDialog.Get())
+		return;
+	
+	if(bError)
+	{
+		ghLoadingDialog->DisplayGenericError(failureReason, extendedReason);
+	}
+	else
+	{
+		// Close the loading dialog
+		ghLoadingDialog->Close();
+		ghLoadingDialog = nullptr;
+	};
 };
 
 int CGameUI::SetProgressBarStatusText(const char *statusText)
 {
-	return 0;
+	if(!ghLoadingDialog.Get())
+		return 0;
+	
+	if(!statusText)
+		return 0;
+	
+	if(!stricmp(statusText, msPrevStatusText))
+		return 0;
+	
+	ghLoadingDialog->SetStatusText(statusText);
+	Q_strncpy(msPrevStatusText, statusText, sizeof(msPrevStatusText));
+	return 1;
 };
 
+// NOTE: progress is in range [0...1]
 void CGameUI::SetSecondaryProgressBar(float progress)
 {
+	if(ghLoadingDialog.Get())
+		ghLoadingDialog->SetSecondaryProgress(progress);
 };
 
 void CGameUI::SetSecondaryProgressBarText(const char *statusText)
 {
+	if(ghLoadingDialog.Get())
+		ghLoadingDialog->SetSecondaryProgressText(statusText);
 };
 
 void CGameUI::ValidateCDKey(bool force, bool inConnect)
@@ -142,4 +219,14 @@ void CGameUI::ValidateCDKey(bool force, bool inConnect)
 
 void CGameUI::OnDisconnectFromServer(int eSteamLoginFailure, const char *username)
 {
+};
+
+void CGameUI::PlayGameStartupSound()
+{
+	// TODO
+};
+
+void CGameUI::SendConnectedToGameMessage()
+{
+	// TODO
 };

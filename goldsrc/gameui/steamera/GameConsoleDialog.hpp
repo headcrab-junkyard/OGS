@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018, 2020 BlackPhrase
+ * Copyright (C) 2020 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,20 +20,17 @@
 
 #pragma once
 
-#include "vgui2/controls/EditablePanel.h"
-
-class COptionsSubKeyboard : public vgui2::EditablePanel
+class CGameConsoleDialog
 {
 public:
-	COptionsSubKeyboard(vgui2::Panel *apParent);
-	~COptionsSubKeyboard();
+	void Activate();
 	
-	void OnResetData() override;
-	void OnApplyChanges() override;
-	void OnKeyCodePressed(vgui2::KeyCode anCode) override;
-	void OnThink() override;
+	void Hide();
+	
+	void Clear();
+	
+	void SetParent(vgui2::VPANEL anParent);
+	
+	bool IsVisible() const;
 private:
-	void Finish();
-	
-	void CreateKeyBindingList();
 };

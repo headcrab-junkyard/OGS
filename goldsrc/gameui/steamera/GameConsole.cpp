@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018, 2020 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,36 +19,55 @@
 /// @file
 
 #include "GameConsole.hpp"
+#include "GameConsoleDialog.hpp"
 
 EXPOSE_SINGLE_INTERFACE(CGameConsole, IGameConsole, GAMECONSOLE_INTERFACE_VERSION);
 
 CGameConsole::CGameConsole() = default;
-CGameConsole::~CGameConsole() = default;
+
+CGameConsole::~CGameConsole()
+{
+	mbInitialized = false;
+};
 
 void CGameConsole::Activate()
 {
-	// TODO
+	if(!mbInitialized)
+		return;
+	
+	//vgui2::surface()->RestrictPaintToSinglePanel(nullptr); // TODO
+	mpConsole->Activate();
 };
 
 void CGameConsole::Initialize()
 {
-	// TODO
+	mpConsole = vgui2::SETUP_PANEL(new CGameConsoleDialog());
+	
+	mbInitialized = true;
 };
 
 void CGameConsole::Hide()
 {
-	// TODO
+	if(!mbInitialized)
+		return;
+	
+	mpConsole->Hide();
 };
 
 void CGameConsole::Clear()
 {
-	// TODO
+	if(!mbInitialized)
+		return;
+	
+	mpConsole->Clear();
 };
 
 bool CGameConsole::IsConsoleVisible()
 {
-	// TODO
-	return false;
+	if(!mbInitialized)
+		return false;
+	
+	return mpConsole->IsVisible();
 };
 
 void CGameConsole::Printf(const char *format, ...)
@@ -63,5 +82,8 @@ void CGameConsole::DPrintf(const char *format, ...)
 
 void CGameConsole::SetParent(int /*vgui2::VPANEL*/ parent)
 {
-	// TODO
+	if(!mbInitialized)
+		return;
+	
+	mpConsole->SetParent(static_cast<vgui2::VPANEL>(parent));
 };

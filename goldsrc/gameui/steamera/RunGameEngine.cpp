@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018, 2020 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,22 +32,24 @@ bool CRunGameEngine::IsRunning()
 
 bool CRunGameEngine::AddTextCommand(const char *text)
 {
+	gpEngine->ClientCmd(text); // NOTE: ClientCmd_Unrestricted
 	return true;
 };
 
 bool CRunGameEngine::RunEngine(const char *gameDir, const char *commandLineParams)
 {
-	return true;
+	return false;
 };
 
 bool CRunGameEngine::IsInGame()
 {
-	return true;
+	return gpEngine->GetLevelName() && Q_strlen(gpEngine->GetLevelName()) > 0;
 };
 
 bool CRunGameEngine::GetGameInfo(char *infoBuffer, int bufferSize)
 {
-	return true;
+	// TODO: need to implement
+	return false;
 };
 
 void CRunGameEngine::SetTrackerUserID(int trackerID, const char *trackerName)
@@ -56,35 +58,61 @@ void CRunGameEngine::SetTrackerUserID(int trackerID, const char *trackerName)
 
 int CRunGameEngine::GetPlayerCount()
 {
-	return 0;
+	return gpEngine->GetMaxClients();
 };
 
 unsigned int CRunGameEngine::GetPlayerFriendsID(int playerIndex)
 {
+	player_info_t PlayerInfo{};
+	
+	if(gpEngine->GetPlayerInfo(playerIndex, &PlayerInfo))
+		return PlayerInfo.friendsID;
+	
 	return 0;
 };
 
 const char *CRunGameEngine::GetPlayerName(int friendsID)
 {
-	return "";
+	player_info_t PlayerInfo{};
+	
+	for(int i = 0; i < GetPlayerCount(); ++i)
+		if(gpEngine->GetPlayerInfo(playerIndex, &PlayerInfo))
+			if(PlayerInfo.friendsID == friendsID)
+				return PlayerInfo.name;
+	
+	return nullptr;
 };
 
 const char *CRunGameEngine::GetPlayerFriendsName(int friendsID)
 {
-	return "";
+	player_info_t PlayerInfo{};
+	
+	for(int i = 0; i < GetPlayerCount(); ++i)
+		if(gpEngine->GetPlayerInfo(playerIndex, &PlayerInfo))
+			if(PlayerInfo.friendsID == friendsID)
+				return PlayerInfo.friendsName;
+	
+	return nullptr;
 };
 
 unsigned int CRunGameEngine::GetEngineBuildNumber()
 {
-	return 0;
+	return gpEngine->GetEngineBuildNumber();
 };
 
 const char *CRunGameEngine::GetProductVersionString()
 {
-	return "";
+	return gpEngine->GetProductVersionString();
 };
 
 unsigned int CRunGameEngine::GetPlayerUserID(int friendsID)
 {
+	player_info_t PlayerInfo{};
+	
+	for(int i = 0; i < GetPlayerCount(); ++i)
+		if(gpEngine->GetPlayerInfo(playerIndex, &PlayerInfo))
+			if(PlayerInfo.friendsID == friendsID)
+				return PlayerInfo.userid;
+	
 	return 0;
 };
