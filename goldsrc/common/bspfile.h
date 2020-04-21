@@ -1,7 +1,7 @@
 /*
  *	This file is part of OGS Engine
- *	Copyright (C) 1996-1997 Id Software, Inc.
- *	Copyright (C) 2018 BlackPhrase
+ *	Copyright (C) 1996-2001 Id Software, Inc.
+ *	Copyright (C) 2018-2019 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -19,6 +19,14 @@
 
 /// @file
 
+/*
+==============================================================================
+
+  .BSP file format
+
+==============================================================================
+*/
+
 #pragma once
 
 #include "const.h"
@@ -30,7 +38,7 @@
 #define MAX_MAP_MODELS 400
 #define MAX_MAP_BRUSHES 4096
 #define MAX_MAP_ENTITIES 1024
-#define MAX_MAP_ENTSTRING 65536
+#define MAX_MAP_ENTSTRING (128 * 1024)
 
 #define MAX_MAP_PLANES 32767
 #define MAX_MAP_NODES 32767     // because negative shorts are contents
@@ -44,8 +52,8 @@
 #define MAX_MAP_SURFEDGES 512000
 #define MAX_MAP_TEXTURES 512
 #define MAX_MAP_MIPTEX 0x200000
-#define MAX_MAP_LIGHTING 0x100000
-#define MAX_MAP_VISIBILITY 0x100000
+#define MAX_MAP_LIGHTING 0x200000
+#define MAX_MAP_VISIBILITY 0x200000
 
 #define MAX_MAP_PORTALS 65536
 
