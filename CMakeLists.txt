@@ -6,7 +6,6 @@ project(OGSEngine VERSION 0.6.5)
 # Define available options
 
 option(OGS_DEV "Developer Build" OFF)
-option(OGS_DEBUG "Debug Build" OFF)
 option(OGS_USE_SDL "Use SDL2 for platform-specific functionality implementation" OFF)
 option(OGS_USE_IMGUI "Use ImGui for internal GUI system implementation" OFF)
 
@@ -43,6 +42,13 @@ set(OGS_IMGUI_PATH ${CMAKE_SOURCE_DIR}/../imgui
 	CACHE PATH
 	"Path to imgui library"
 )
+
+set(OGS_DEBUG OFF)
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+	set(OGS_DEBUG ON)
+	message(STATUS "Building in debug mode")
+endif()
 
 #####################################################################
 
