@@ -1,6 +1,6 @@
 /*
  *	This file is part of OGS Engine
- *	Copyright (C) 2016-2018 BlackPhrase
+ *	Copyright (C) 2016-2019 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -19,6 +19,10 @@
 /// @file
 
 #pragma once
+
+#include <string>
+#include <vector>
+#include <unordered_map>
 
 #include "vgui2/ILocalize.h"
 
@@ -63,6 +67,16 @@ public:
 	// THIS IS REALLY BAD SINCE OVERLOADED FUNCS ORDER IN VIRTUAL INTERFACES CAN BE DIFFERENT ON VARIOUS COMPILERS VALVE!!!!!!!!!!!!
 	void ConstructString(wchar_t *unicodeOutput, int unicodeBufferSizeInBytes, const char *tokenName, KeyValues *localizationVariables) override;
 	void ConstructString(wchar_t *unicodeOutput, int unicodeBufferSizeInBytes, StringIndex_t unlocalizedTextSymbol, KeyValues *localizationVariables) override;
+private:
+	struct LocalizationFile
+	{
+		std::string msName{""};
+		std::unordered_map<std::string, std::wstring> mTokenValueMap;
+	};
+	
+	std::vector<LocalizationFile> mvLocFiles;
+	
+	//LocalizationFile &mCurrentLocFile;
 };
 
 }; // namespace vgui2

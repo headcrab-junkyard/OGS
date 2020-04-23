@@ -27,6 +27,14 @@ EXPOSE_SINGLE_INTERFACE(CLocalize, ILocalize, VGUI_LOCALIZE_INTERFACE_VERSION)
 
 bool CLocalize::AddFile(IFileSystem *fileSystem, const char *fileName)
 {
+	if(!fileSystem)
+		return false;
+	
+	if(!fileName || !*fileName)
+		return false;
+	
+	//mvLocFiles.emplace_back(fileName);
+	
 	return false;
 };
 
@@ -36,7 +44,16 @@ void CLocalize::RemoveAll()
 
 wchar_t *CLocalize::Find(char const *tokenName)
 {
-	return nullptr;
+/*
+	if(!tokenName || !*tokenName)
+		return nullptr; // TODO: ""?
+	
+	auto It{mCurrentLocFile.mTokenValueMap.find(tokenName)};
+	if(It != mCurrentLocFile.mTokenValueMap.end())
+		return It.second.c_str();
+*/
+	
+	return nullptr; // TODO: ""?
 };
 
 int CLocalize::ConvertANSIToUnicode(const char *ansi, wchar_t *unicode, int unicodeBufferSizeInBytes)
@@ -93,12 +110,12 @@ bool CLocalize::SaveToFile(IFileSystem *fileSystem, const char *fileName)
 
 int CLocalize::GetLocalizationFileCount()
 {
-	return 0;
+	return mvLocFiles.size();
 };
 
 const char *CLocalize::GetLocalizationFileName(int index)
 {
-	return "";
+	return mvLocFiles.at(index).msName.c_str();
 };
 
 const char *CLocalize::GetFileNameByIndex(StringIndex_t index)
