@@ -173,6 +173,18 @@ void IN_ActivateMouse()
 
 		mouseactive = true;
 	};
+#else // if not WIN32
+#	ifdef GLX
+	if(!mouse_avail || !dpy || !win)
+		return;
+
+	if(!mouse_active)
+	{
+		mx = my = 0; // don't spazz
+		install_grabs();
+		mouse_active = true;
+	};
+#	endif
 #endif // _WIN32
 };
 
@@ -183,15 +195,26 @@ IN_DeactivateMouse
 */
 void IN_DeactivateMouse()
 {
+#ifdef _WIN32
 	if(mouseinitialized)
 	{
-#ifdef _WIN32
 		if(restore_spi)
 			SystemParametersInfo(SPI_SETMOUSE, 0, originalmouseparms, 0);
-#endif
 
 		mouseactive = false;
 	};
+#else // if not WIN32
+#	ifdef GLX
+	if(!mouse_avail || !dpy || !win)
+		return;
+
+	if(mouse_active)
+	{
+		uninstall_grabs();
+		mouse_active = false;
+	};
+#	endif
+#endif // _WIN32
 };
 
 /*
@@ -295,6 +318,7 @@ IN_MouseMove
 void IN_MouseMove(float frametime, usercmd_t *cmd)
 {
 	int mx, my;
+#ifdef _WIN32
 	vec3_t viewangles;
 	
 	gpEngine->GetViewAngles((float*)viewangles);
@@ -318,6 +342,18 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 	// TODO: temp
 	if(mx ||  my)
 		gpEngine->Con_DPrintf("mx=%d, my=%d\n", mx, my);
+#else
+#	ifdef SVGALIB
+	if (!UseMouse)
+		return;
+
+	// poll mouse values
+	mouse_update();
+#	elif X11
+	if (!mouse_avail)
+		return;
+#	endif
+#endif // _WIN32
 
 	if(m_filter->value)
 	{
@@ -332,6 +368,18 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 
 	old_mouse_x = mx;
 	old_mouse_y = my;
+
+#ifdef __linux__
+#	ifdef SVGALIB
+	if (!mx && !my)
+		return;
+
+	mx = my = 0; // clear for next update
+#	elif X11
+	if (!mouse_x && !mouse_y)
+		return;
+#	endif
+#endif
 
 	//if(gHUD.GetSensitivity() != 0)
 	{
