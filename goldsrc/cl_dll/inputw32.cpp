@@ -1,7 +1,7 @@
 /*
  *	This file is part of OGS Engine
  *	Copyright (C) 1996-2001 Id Software, Inc.
- *	Copyright (C) 2018-2019 BlackPhrase
+ *	Copyright (C) 2018-2020 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ typedef struct usercmd_s usercmd_t;
 int mouse_buttons;
 int mouse_oldbuttonstate;
 POINT current_pos;
-float mouse_x, mouse_y; // TODO: ints in gs
+int mouse_x, mouse_y;
 int old_mouse_x, old_mouse_y, mx_accum, my_accum;
 
 static qboolean restore_spi;
@@ -76,7 +76,8 @@ enum _ControlList
 	AxisForward,
 	AxisLook,
 	AxisSide,
-	AxisTurn
+	AxisTurn,
+	//AxisUp
 };
 
 DWORD dwAxisMap[JOY_MAX_AXES];
@@ -191,6 +192,8 @@ void IN_ActivateMouse()
 /*
 ===========
 IN_DeactivateMouse
+
+Called when the window loses focus
 ===========
 */
 void IN_DeactivateMouse()
@@ -198,6 +201,9 @@ void IN_DeactivateMouse()
 #ifdef _WIN32
 	if(mouseinitialized)
 	{
+		//if(!mouseactive)
+			//return;
+		
 		if(restore_spi)
 			SystemParametersInfo(SPI_SETMOUSE, 0, originalmouseparms, 0);
 
@@ -355,7 +361,7 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 #	endif
 #endif // _WIN32
 
-	if(m_filter->value)
+	if(m_filter && m_filter->value)
 	{
 		mouse_x = (mx + old_mouse_x) * 0.5;
 		mouse_y = (my + old_mouse_y) * 0.5;
@@ -397,6 +403,7 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 	else
 		viewangles[YAW] -= m_yaw->value * mouse_x;
 
+	//if(((in_mlook.state & 1) || freelook->value) && !(in_strafe.state & 1)) // TODO: q2 linux svgalib & x11
 	if((in_mlook.state & 1) && !(in_strafe.state & 1))
 	{
 		viewangles[PITCH] += m_pitch->value * mouse_y;
@@ -418,6 +425,8 @@ void IN_MouseMove(float frametime, usercmd_t *cmd)
 	{
 		IN_ResetMouse();
 	}
+	
+	//mx = my = 0; // TODO: linux x11
 
 	gpEngine->SetViewAngles((float*)viewangles);
 };
@@ -568,6 +577,7 @@ void IN_StartupJoystick()
 	joy_numbuttons = jc.wNumButtons;
 	joy_haspov = jc.wCaps & JOYCAPS_HASPOV;
 
+	gpEngine->Con_Printf("\njoystick detected\n\n");
 #else // if not win32 (and SDL2 support disabled, use SDL2 by default)
 #	error "Something went wrong..."
 #endif // defined(_WIN32) && !defined(OGS_USE_SDL)
@@ -580,8 +590,6 @@ void IN_StartupJoystick()
 
 	joy_avail = true;
 	joy_advancedinit = false;
-
-	Con_Printf("\njoystick detected\n\n");
 };
 
 /*
@@ -703,6 +711,8 @@ void Joy_AdvancedUpdate_f()
 /*
 ===========
 IN_Commands
+
+Process joystick buttons
 ===========
 */
 void IN_Commands()
@@ -807,10 +817,8 @@ qboolean IN_ReadJoystick()
 		// this is a hack -- there is a bug in the Logitech WingMan Warrior DirectInput Driver
 		// rather than having 32768 be the zero point, they have the zero point at 32668
 		// go figure -- anyway, now we get the full resolution out of the device
-		if(joy_wwhack1->value != 0.0)
-		{
-			ji.dwUpos += 100;
-		}
+		if(joy_wwhack1->value != 0.0) // TODO: non-q2
+			ji.dwUpos += 100; // TODO: non-q2
 		return true;
 	}
 	else
@@ -1017,10 +1025,11 @@ IN_Move
 */
 void IN_Move(float frametime, usercmd_t *cmd)
 {
-	if(/*!iMouseInUse && */ mouseactive)
+	if(/*!iMouseInUse && */ mouseactive) // TODO: non-q2
 		IN_MouseMove(frametime, cmd);
 	
-	IN_JoyMove(frametime, cmd);
+	//if(ActiveApp) // TODO: q2
+		IN_JoyMove(frametime, cmd);
 };
 
 /*
