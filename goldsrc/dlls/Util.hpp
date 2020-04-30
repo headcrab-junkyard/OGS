@@ -20,8 +20,15 @@
 
 #pragma once
 
+#include "engine.h"
+
 #define LINK_ENTITY_TO_CLASS(mapClassName, dllClassName) \
 	C_EXPORT void mapClassName(entvars_t *self){GetClassPtr((dllClassName*)self);}
+
+class CBaseEntity;
+
+using entvars_t = struct entvars_s;
+
 
 template<typename T>
 T *GetClassPtr(T *a)
@@ -29,9 +36,9 @@ T *GetClassPtr(T *a)
 	auto pEntVars{reinterpret_cast<entvars_t*>(a)};
 	
 	if(!pEntVars)
-		pEntVars = gpEngine->pfnEntVarsOfEnt(gpEngine->pfnSpawn());
+		pEntVars = gpEngine->pfnGetVarsOfEnt(gpEngine->pfnCreateEntity());
 	
-	a = reinterpret_cast<T*>(gpEngine->pfnGetEntPrivateData(gpEngine->pfnEntFromEntVars(pEntVars)));
+	a = reinterpret_cast<T*>(gpEngine->pfnPvEntPrivateData(gpEngine->pfnFindEntityByVars(pEntVars)));
 	
 	if(!a)
 	{
@@ -45,4 +52,19 @@ T *GetClassPtr(T *a)
 	};
 	
 	return a;
+};
+
+inline CBaseEntity *ToBaseEntity(edict_t *apEdict)
+{
+	auto pPrivateData{gpEngine->pfnPvEntPrivateData(apEdict)};
+	
+	if(!pPrivateData)
+		return nullptr;
+	
+	auto pBaseEntity{reinterpret_cast<CBaseEntity*>(pPrivateData)};
+	
+	if(!pBaseEntity)
+		return nullptr;
+	
+	return pBaseEntity;
 };

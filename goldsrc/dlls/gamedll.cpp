@@ -24,19 +24,7 @@
 #include "Game.hpp"
 #include "GameSetup_Default.hpp"
 
-inline CBaseEntity *ToBaseEntity(edict_t *apEdict)
 {
-	auto pPrivateData{gpEngine->pfnPvEntPrivateData(apEdict)};
-	
-	if(!pPrivateData)
-		return nullptr;
-	
-	auto pBaseEntity{reinterpret_cast<CBaseEntity*>(pPrivateData)};
-	
-	if(!pBaseEntity)
-		return nullptr;
-	
-	return pBaseEntity;
 };
 
 void GameInit()
