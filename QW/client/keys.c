@@ -184,9 +184,6 @@ qboolean	chat_team;
 char		chat_buffer[MAXCMDLINE];
 int			chat_bufferlen = 0;
 
-
-
-
 void Key_Bind_f ()
 {
 	
@@ -196,15 +193,6 @@ void Key_Bind_f ()
 		if (i != (c-1))
 			strcat (cmd, " ");
 	}
-}
-
-void Key_WriteBindings (FILE *f)
-{
-	int		i;
-
-	for (i=0 ; i<256 ; i++)
-		if (keybindings[i])
-			fprintf (f, "bind %s \"%s\"\n", Key_KeynumToString(i), keybindings[i]);
 }
 
 void Key_Init ()
@@ -310,16 +298,5 @@ void Key_Event (int key, qboolean down)
 		break;
 	default:
 		Sys_Error ("Bad key_dest");
-	}
-}
-
-void Key_ClearStates ()
-{
-	int		i;
-
-	for (i=0 ; i<256 ; i++)
-	{
-		keydown[i] = false;
-		key_repeats[i] = false;
 	}
 }

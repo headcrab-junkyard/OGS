@@ -205,10 +205,6 @@ extern	FILE		*sv_fraglogfile;
 
 //===========================================================
 
-//
-// sv_main.c
-//
-void SV_Shutdown ();
 void SV_Frame (float time);
 void SV_FinalMessage (char *message);
 

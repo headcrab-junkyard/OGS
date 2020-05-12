@@ -1,27 +1,3 @@
-/*
-Copyright (C) 1996-1997 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
-// view.c -- player eye positioning
-
-
-cvar_t	lcd_x = {"lcd_x", "0"};	// FIXME: make this work sometime...
-
 cvar_t  cl_crossx = {"cl_crossx", "0", true};
 cvar_t  cl_crossy = {"cl_crossy", "0", true};
 
@@ -104,31 +80,6 @@ float V_CalcBob (void)
 
 
 cvar_t	v_centermove = {"v_centermove", "0.15", false};
-cvar_t	v_centerspeed = {"v_centerspeed","500"};
-
-
-void V_StartPitchDrift (void)
-{
-#if 1
-	if (cl.laststop == cl.time)
-	{
-		return;		// something else is keeping it from drifting
-	}
-#endif
-	if (cl.nodrift || !cl.pitchvel)
-	{
-		cl.pitchvel = v_centerspeed.value;
-		cl.nodrift = false;
-		cl.driftmove = 0;
-	}
-}
-
-void V_StopPitchDrift (void)
-{
-	cl.laststop = cl.time;
-	cl.nodrift = true;
-	cl.pitchvel = 0;
-}
 
 /*
 ===============
@@ -264,43 +215,20 @@ void V_ParseDamage ()
 	v_dmg_time = v_kicktime.value;
 }
 
-/*
-==================
-V_BonusFlash_f
-
-When you run over an item, the server sends this command
-==================
-*/
-
-void V_SetContentsColor (int contents)
+void V_SetContentsColor(int contents)
 {
-	if (!v_contentblend.value) {
-		cl.cshifts[CSHIFT_CONTENTS] = cshift_empty;
-		return;
-	}
-
-	switch (contents)
+	switch(contents)
 	{
 	case CONTENTS_EMPTY:
 		cl.cshifts[CSHIFT_CONTENTS] = cshift_empty;
-		break;
-	case CONTENTS_LAVA:
-		cl.cshifts[CSHIFT_CONTENTS] = cshift_lava;
 		break;
 	case CONTENTS_SOLID:
 	case CONTENTS_SLIME:
 		cl.cshifts[CSHIFT_CONTENTS] = cshift_slime;
 		break;
-	default:
-		cl.cshifts[CSHIFT_CONTENTS] = cshift_water;
 	}
 }
 
-/*
-=============
-V_CalcPowerupCshift
-=============
-*/
 void V_CalcPowerupCshift ()
 {
 	if (cl.stats[STAT_ITEMS] & IT_QUAD)
@@ -335,42 +263,42 @@ void V_CalcPowerupCshift ()
 		cl.cshifts[CSHIFT_POWERUP].percent = 0;
 }
 
-#ifdef	GLQUAKE
-void V_CalcBlend (void)
+#ifdef GLQUAKE
+void V_CalcBlend()
 {
-	float	r, g, b, a, a2;
-	int		j;
+	float r, g, b, a, a2;
+	int j;
 
 	r = 0;
 	g = 0;
 	b = 0;
 	a = 0;
 
-	for (j=0 ; j<NUM_CSHIFTS ; j++)	
+	for(j = 0; j < NUM_CSHIFTS; j++)
 	{
-		if (!gl_cshiftpercent.value)
+		if(!gl_cshiftpercent.value)
 			continue;
 
 		a2 = ((cl.cshifts[j].percent * gl_cshiftpercent.value) / 100.0) / 255.0;
 
 //		a2 = (cl.cshifts[j].percent/2)/255.0;
-		if (!a2)
+		if(!a2)
 			continue;
-		a = a + a2*(1-a);
-//Con_Printf ("j:%i a:%f\n", j, a);
-		a2 = a2/a;
+		a = a + a2 * (1 - a);
+		//Con_Printf ("j:%i a:%f\n", j, a);
+		a2 = a2 / a;
 		r = r*(1-a2) + cl.cshifts[j].destcolor[0]*a2;
 		g = g*(1-a2) + cl.cshifts[j].destcolor[1]*a2;
 		b = b*(1-a2) + cl.cshifts[j].destcolor[2]*a2;
 	}
 
-	v_blend[0] = r/255.0;
-	v_blend[1] = g/255.0;
-	v_blend[2] = b/255.0;
+	v_blend[0] = r / 255.0;
+	v_blend[1] = g / 255.0;
+	v_blend[2] = b / 255.0;
 	v_blend[3] = a;
-	if (v_blend[3] > 1)
+	if(v_blend[3] > 1)
 		v_blend[3] = 1;
-	if (v_blend[3] < 0)
+	if(v_blend[3] < 0)
 		v_blend[3] = 0;
 }
 #endif

@@ -8,69 +8,6 @@ void Cbuf_Init ()
 	cmd_text.maxsize = sizeof(cmd_text_buf);
 }
 
-/*
-==============================================================================
-
-						SCRIPT COMMANDS
-
-==============================================================================
-*/
-
-void Cmd_StuffCmds_f ()
-{
-		
-// build the combined string to parse from
-	s = 0;
-	for (i=1 ; i<com_argc ; i++)
-	{
-		if (!com_argv[i])
-			continue;		// NEXTSTEP nulls out -NXHost
-		s += Q_strlen (com_argv[i]) + 1;
-	}
-	if (!s)
-		return;
-		
-	text = Z_Malloc (s+1);
-	text[0] = 0;
-	for (i=1 ; i<com_argc ; i++)
-	{
-		if (!com_argv[i])
-			continue;		// NEXTSTEP nulls out -NXHost
-		Q_strcat (text,com_argv[i]);
-		if (i != com_argc-1)
-			Q_strcat (text, " ");
-	}
-	
-// pull out the commands
-	build = Z_Malloc (s+1);
-	build[0] = 0;
-	
-	for (i=0 ; i<s-1 ; i++)
-	{
-		if (text[i] == '+')
-		{
-			i++;
-
-			for (j=i ; (text[j] != '+') && (text[j] != '-') && (text[j] != 0) ; j++)
-				;
-
-			c = text[j];
-			text[j] = 0;
-			
-			Q_strcat (build, text+i);
-			Q_strcat (build, "\n");
-			text[j] = c;
-			i = j-1;
-		}
-	}
-	
-	if (build[0])
-		Cbuf_InsertText (build);
-	
-	Z_Free (text);
-	Z_Free (build);
-}
-
 void Cmd_Exec_f ()
 {
 	if (!f)
