@@ -572,6 +572,81 @@ int MSG_GetReadCount()
 	return msg_readcount;
 }
 
+int MSG_ReadBits(int bits)
+{
+	int			value;
+	int			get;
+	qboolean	sgn;
+	int			i, nbits;
+//	FILE*	fp;
+
+	value = 0;
+
+	if ( bits < 0 )
+	{
+		bits = -bits;
+		sgn = true;
+	}
+	else
+		sgn = false;
+
+	if (msg->oob)
+	{
+		if (bits==8)
+		{
+			value = net_message.data[msg_readcount];
+			msg_readcount += 1;
+			net_message.bit += 8;
+		}
+		else if(bits == 16)
+		{
+			unsigned short *sp = (unsigned short *)&net_message.data[msg_readcount];
+			value = LittleShort(*sp);
+			msg_readcount += 2;
+			net_message.bit += 16;
+		}
+		else if (bits==32)
+		{
+			unsigned int *ip = (unsigned int *)&net_message.data[msg_readcount];
+			value = LittleLong(*ip);
+			msg_readcount += 4;
+			net_message.bit += 32;
+		}
+		else
+			Host_Error(/*ERR_DROP,*/ "can't read %d bits\n", bits); // TODO: Sys_Error?
+	}
+	else
+	{
+		nbits = 0;
+		if (bits & 7)
+		{
+			nbits = bits & 7;
+			for(i=0; i < nbits; i++)
+				value |= (Huff_getBit(net_message.data, &msg->bit)<<i);
+
+			bits -= nbits;
+		}
+		
+		if (bits)
+		{
+//			fp = fopen("c:\\netchan.bin", "a");
+			for(i=0; i < bits; i += 8)
+			{
+				Huff_offsetReceive (msgHuff.decompressor.tree, &get, net_message.data, &msg->bit);
+//				fwrite(&get, 1, 1, fp);
+				value |= (get << (i + nbits));
+			}
+//			fclose(fp);
+		}
+		msg_readcount = (net_message.bit>>3)+1;
+	}
+	if ( sgn )
+		if ( value & ( 1 << ( bits - 1 ) ) )
+			value |= -1 ^ ( ( 1 << bits ) - 1 );
+
+	return value;
+}
+
 // returns -1 and sets msg_badread if no more characters are available
 int MSG_ReadChar()
 {
