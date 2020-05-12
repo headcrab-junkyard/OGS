@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "interface.h"
+#include "tier1/interface.h"
 
 const char ENGINE_SURFACE_VERSION[] = "EngineSurface007";
 
