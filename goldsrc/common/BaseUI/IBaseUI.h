@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "public/interface.h"
+#include "tier1/interface.h"
 
 const char BASEUI_INTERFACE_VERSION[] = "BaseUI001";
 

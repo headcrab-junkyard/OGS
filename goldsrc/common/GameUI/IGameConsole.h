@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "public/interface.h"
+#include "tier1/interface.h"
 //#include <vgui/VGUI2.h>
 
 const char GAMECONSOLE_INTERFACE_VERSION[] = "GameConsole003";

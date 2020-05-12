@@ -4,7 +4,7 @@
 #pragma once
 
 //#include <vgui/VGUI.h>
-#include "public/interface.h"
+#include "tier1/interface.h"
 
 const char GAMEUI_INTERFACE_VERSION[] = "GameUI007";
 

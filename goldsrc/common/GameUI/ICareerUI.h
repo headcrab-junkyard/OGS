@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "public/interface.h"
+#include "tier1/interface.h"
 #include "CareerDefs.h"
 
 const char CAREERUI_INTERFACE_VERSION[] = "CareerUI001";

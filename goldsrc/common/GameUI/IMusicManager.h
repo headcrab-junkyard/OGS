@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "public/interface.h"
+#include "tier1/interface.h"
 
 const char MUSICMANAGER_INTERFACE_VERSION[] = "MusicManager001";
 
