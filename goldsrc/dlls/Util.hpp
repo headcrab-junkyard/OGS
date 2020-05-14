@@ -29,6 +29,7 @@ class CBaseEntity;
 
 using entvars_t = struct entvars_s;
 
+extern CGameWorld *gpGameWorld;
 
 template<typename T>
 T *GetClassPtr(T *a)
@@ -46,8 +47,11 @@ T *GetClassPtr(T *a)
 		//a = new (pEntVars) T;
 		//a->pev = pEntVars;
 		//
-		/*gpEngine->pfnEntFromEntVars(pEntVars)->pvPrivateData =*/ auto pPrivateData{gpEngine->pfnAllocEntPrivateData(gpEngine->pfnEntFromEntVars(pEntVars), sizeof(T))};
-		a = new (pPrivateData) T(self);
+		/*gpEngine->pfnFindEntityByVars(pEntVars)->pvPrivateData =*/ auto pPrivateData{gpEngine->pfnPvAllocEntPrivateData(gpEngine->pfnFindEntityByVars(pEntVars), sizeof(T))};
+		a = new (pPrivateData) T;
+		// TODO: use constructors
+		a->self = pEntVars;
+		a->mpWorld = gpGameWorld;
 		//
 	};
 	
