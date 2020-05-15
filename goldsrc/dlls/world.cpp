@@ -248,11 +248,11 @@ BODY QUE
 
 edict_t *bodyque_head;
 
-void bodyque()
+class CBodyQue : public CBaseEntity
 {
-	// just here so spawn functions don't complain after the world
-	// creates bodyques
 };
+
+LINK_ENTITY_TO_CLASS(bodyque, CBodyQue);
 
 void InitBodyQue()
 {
