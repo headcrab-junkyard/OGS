@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018-2019 BlackPhrase
+ * Copyright (C) 2018-2020 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "edict.h"
 #include "BaseEntity.hpp"
 #include "Util.hpp"
+#include "World.hpp"
 
 extern enginefuncs_t gEngFuncs;
 enginefuncs_t *gpEngine = &gEngFuncs;
@@ -45,13 +46,7 @@ World Types:
 2: base
 */
 //=======================
-class CWorldSpawn : public CBaseEntity
-{
-public:
-	void Spawn() override;
-};
-
-LINK_ENTITY_TO_CLASS(worldspawn, CWorldSpawn)
+LINK_ENTITY_TO_CLASS(worldspawn, CWorldSpawn);
 
 void CWorldSpawn::Spawn()
 {
