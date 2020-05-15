@@ -221,17 +221,8 @@ void CWorldSpawn::Spawn()
 	gpEngine->pfnLightStyle(63, "a");
 };
 
-/*
-void StartFrame()
 {
-	timelimit = cvar("timelimit") * 60;
-	fraglimit = cvar("fraglimit");
-	teamplay = cvar("teamplay");
-	deathmatch = cvar("deathmatch");
-	
-	framecount++;
 };
-*/
 
 /*
 ==============================================================================
