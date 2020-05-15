@@ -221,7 +221,10 @@ void CWorldSpawn::Spawn()
 	gpEngine->pfnLightStyle(63, "a");
 };
 
+bool CWorldSpawn::HandleKeyValue(KeyValueData *apKVData)
 {
+	// TODO
+	return false;
 };
 
 /*
