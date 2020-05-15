@@ -56,7 +56,6 @@ LINK_ENTITY_TO_CLASS(worldspawn, CWorldSpawn)
 void CWorldSpawn::Spawn()
 {
 	lastspawn = nullptr; // nullptr = world entity
-	//InitBodyQue (); // TODO
 
 // custom map attributes
 
@@ -65,6 +64,7 @@ void CWorldSpawn::Spawn()
 	
 	gpEngine->pfnCVarSetString("room_type", "0");
 
+	InitBodyQue();
 
 // the area based ambient sounds MUST be the first precache_sounds
 
