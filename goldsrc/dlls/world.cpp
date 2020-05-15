@@ -64,7 +64,7 @@ void CWorldSpawn::Spawn()
 // the area based ambient sounds MUST be the first precache_sounds
 
 // player precaches     
-	//W_Precache ();                  // get weapon precaches // TODO
+	//W_Precache(); // get weapon precaches // TODO
 
 // sounds used from C physics code
 	gpEngine->pfnPrecacheSound ("demon/dland2.wav");            // landing thud
@@ -173,7 +173,6 @@ void CWorldSpawn::Spawn()
 
 	gpEngine->pfnPrecacheModel ("models/v_light.mdl");
 	*/
-	
 
 //
 // Setup light animation tables. 'a' is total darkness, 'z' is maxbright.
