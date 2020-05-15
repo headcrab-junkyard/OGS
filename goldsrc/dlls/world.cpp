@@ -31,8 +31,7 @@ enginefuncs_t *gpEngine = &gEngFuncs;
 
 void InitBodyQue();
 
-
-//entity lastspawn;
+CBaseEntity *lastspawn;
 
 //=======================
 /*QUAKED worldspawn (0 0 0) ?
