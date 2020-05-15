@@ -61,6 +61,9 @@ void CWorldSpawn::Spawn()
 // custom map attributes
 
 	gpEngine->pfnCVarSetString("sv_gravity", "800");
+	gpEngine->pfnCVarSetString("sv_stepsize", "18");
+	
+	gpEngine->pfnCVarSetString("room_type", "0");
 
 
 // the area based ambient sounds MUST be the first precache_sounds
