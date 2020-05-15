@@ -31,21 +31,6 @@ enginefuncs_t *gpEngine = &gEngFuncs;
 
 void InitBodyQue();
 
-/*
-void main()
-{
-// these are just commands the the prog compiler to copy these files
-
-	precache_file ("default.cfg");
-
-//
-// these are all of the lumps from the cached.ls files
-//
-
-	precache_sound ("ambience/water1.wav");
-	precache_sound ("ambience/wind2.wav");
-};
-*/
 
 //entity lastspawn;
 
