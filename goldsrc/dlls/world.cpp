@@ -55,7 +55,7 @@ LINK_ENTITY_TO_CLASS(worldspawn, CWorldSpawn)
 
 void CWorldSpawn::Spawn()
 {
-	//lastspawn = world; // TODO
+	lastspawn = nullptr; // nullptr = world entity
 	//InitBodyQue (); // TODO
 
 // custom map attributes
