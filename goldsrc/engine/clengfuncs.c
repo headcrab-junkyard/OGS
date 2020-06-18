@@ -86,7 +86,28 @@ int ClientCmd(const char *szCmdString)
 
 void GetPlayerInfo(int ent_num, hud_player_info_t *pinfo)
 {
-	// TODO
+	//bi_trace();
+	
+	if(ent_num < 0 || ent_num > cl.maxclients)
+		return;
+	
+	if(!pinfo)
+		return;
+	
+	Q_strcpy(pinfo->name, cl.players[ent_num].name); // TODO: Q_strncpy
+	
+	pinfo->ping = cl.players[ent_num].ping;
+	
+	pinfo->thisplayer = 0; // TODO: ???
+	pinfo->spectator = cl.players[ent_num].spectator;
+	pinfo->packetloss = cl.players[ent_num].pl; // TODO: ???
+	
+	Q_strcpy(pinfo->model, ""); // TODO: Q_strncpy
+	
+	pinfo->topcolor = cl.players[ent_num].topcolor;
+	pinfo->bottomcolor = cl.players[ent_num].bottomcolor; 
+	
+	pinfo->m_nSteamID = 0; // TODO: userinfo?
 };
 
 void PlaySoundByName(const char *szSound, float volume)
