@@ -555,6 +555,35 @@ int Cmd_AddClientCommand(const char *cmd_name, xcommand_t function)
 	return 0; // TODO: return its id
 };
 
+
+/*
+============
+Cmd_RemoveCommand
+============
+*/
+void Cmd_RemoveCommand(const char *cmd_name)
+{
+	cmd_function_t	*cmd, **back;
+
+	back = &cmd_functions;
+	while (1)
+	{
+		cmd = *back;
+		if (!cmd)
+		{
+			Con_Printf ("Cmd_RemoveCommand: %s not added\n", cmd_name);
+			return;
+		};
+		if (!Q_strcmp (cmd_name, cmd->name))
+		{
+			*back = cmd->next;
+			Z_Free (cmd);
+			return;
+		};
+		back = &cmd->next;
+	};
+};
+
 /*
 ============
 Cmd_Exists
