@@ -74,7 +74,7 @@ void LoadClientDLL()
 		//return;
 	};
 
-	if(!LoadClientDLLClientGame()) // First check for IClientGame interface
+	//if(!LoadClientDLLClientGame()) // First check for IClientGame interface
 		if(!LoadClientDLLF()) // Then check there is an "F" export present
 			return; // TODO: per-export loading as a fallback
 	
