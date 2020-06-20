@@ -22,6 +22,10 @@
 
 #pragma once
 
+#ifndef _WIN32
+	#error "This header is for Windows platform type only!"
+#endif
+
 #pragma warning(disable : 4229) // mgraph gets this
 
 #include <windows.h>
