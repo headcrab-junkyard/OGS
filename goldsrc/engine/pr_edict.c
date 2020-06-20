@@ -523,7 +523,7 @@ void ED_ParseGlobals (char *data)
 ED_NewString
 =============
 */
-char *ED_NewString(char *string)
+char *ED_NewString(const char *string)
 {
 	char *new, *new_p;
 	int i, l;
@@ -558,7 +558,7 @@ ed should be a properly initialized empty edict.
 Used for initial level load and for savegames.
 ====================
 */
-char *ED_ParseEdict(char *data, edict_t *ent)
+const char *ED_ParseEdict(const char *data, edict_t *ent)
 {
 	//ddef_t		*key;
 	qboolean anglehack;
@@ -664,7 +664,7 @@ Used for both fresh maps and savegame loads.  A fresh map would also need
 to call ED_CallSpawnFunctions () to let the objects initialize themselves.
 ================
 */
-void ED_LoadFromFile(char *data)
+void ED_LoadFromFile(const char *data)
 {
 	edict_t *ent;
 	int inhibit;
@@ -773,7 +773,7 @@ int NUM_FOR_EDICT(edict_t *e)
 	return b;
 };
 
-void SuckOutClassname(char *data, edict_t *ent)
+void SuckOutClassname(const char *data, edict_t *ent)
 {
 	// go through all the dictionary pairs
 	while(1)
