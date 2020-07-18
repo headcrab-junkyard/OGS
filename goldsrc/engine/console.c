@@ -21,9 +21,11 @@
 #ifdef NeXT
 #include <libc.h>
 #endif
+
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
+
 #include <fcntl.h>
 #include "quakedef.h"
 

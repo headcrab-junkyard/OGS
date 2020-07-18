@@ -85,7 +85,7 @@ byte gammatable[256]; // palette is sent through this
 #ifdef GLQUAKE
 byte ramps[3][256];
 float v_blend[4]; // rgba 0.0 - 1.0
-#endif            // GLQUAKE
+#endif // GLQUAKE
 
 void BuildGammaTable(float g)
 {
@@ -114,7 +114,7 @@ void BuildGammaTable(float g)
 V_CheckGamma
 =================
 */
-qboolean V_CheckGamma(void)
+qboolean V_CheckGamma()
 {
 	static float oldgammavalue;
 
@@ -133,7 +133,7 @@ qboolean V_CheckGamma(void)
 V_ParseDamage
 ===============
 */
-void V_ParseDamage(void)
+void V_ParseDamage()
 {
 	int armor, blood;
 	vec3_t from;
@@ -204,7 +204,7 @@ V_cshift_f
 ==================
 */
 /*
-void V_cshift_f(void)
+void V_cshift_f()
 {
 	cshift_empty.destcolor[0] = atoi(Cmd_Argv(1));
 	cshift_empty.destcolor[1] = atoi(Cmd_Argv(2));
@@ -221,7 +221,7 @@ When you run over an item, the server sends this command
 ==================
 */
 /*
-void V_BonusFlash_f(void)
+void V_BonusFlash_f()
 {
 	cl.cshifts[CSHIFT_BONUS].destcolor[0] = 215;
 	cl.cshifts[CSHIFT_BONUS].destcolor[1] = 186;
@@ -261,7 +261,7 @@ void V_SetContentsColor(int contents)
 V_CalcPowerupCshift
 =============
 */
-void V_CalcPowerupCshift(void)
+void V_CalcPowerupCshift()
 {
 	if(cl.items & IT_QUAD)
 	{
@@ -301,7 +301,7 @@ V_CalcBlend
 =============
 */
 #ifdef GLQUAKE
-void V_CalcBlend(void)
+void V_CalcBlend()
 {
 	float r, g, b, a, a2;
 	int j;
@@ -346,7 +346,7 @@ V_UpdatePalette
 =============
 */
 #ifdef GLQUAKE
-void V_UpdatePalette(void)
+void V_UpdatePalette()
 {
 	int i, j;
 	qboolean new;
@@ -433,7 +433,7 @@ void V_UpdatePalette(void)
 	VID_ShiftPalette(pal);
 }
 #else  // !GLQUAKE
-void V_UpdatePalette(void)
+void V_UpdatePalette()
 {
 	int i, j;
 	qboolean new;
@@ -523,7 +523,7 @@ float angledelta(float a)
 V_BoundOffsets
 ==============
 */
-void V_BoundOffsets(void)
+void V_BoundOffsets()
 {
 	cl_entity_t *ent;
 

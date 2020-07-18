@@ -21,14 +21,15 @@
 
 #include <unistd.h>
 #include <fcntl.h>
-#include <stdlib.h>
+
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/shm.h>
 #include <sys/wait.h>
+
 #include <linux/soundcard.h>
-#include <stdio.h>
+
 #include "quakedef.h"
 
 int audio_fd;
@@ -56,7 +57,7 @@ qboolean SNDDMA_Init()
 		perror("/dev/dsp");
 		Con_Printf("Could not open /dev/dsp\n");
 		return 0;
-	}
+	};
 
 	rc = ioctl(audio_fd, SNDCTL_DSP_RESET, 0);
 	if(rc < 0)
@@ -65,7 +66,7 @@ qboolean SNDDMA_Init()
 		Con_Printf("Could not reset /dev/dsp\n");
 		close(audio_fd);
 		return 0;
-	}
+	};
 
 	if(ioctl(audio_fd, SNDCTL_DSP_GETCAPS, &caps) == -1)
 	{
@@ -73,14 +74,14 @@ qboolean SNDDMA_Init()
 		Con_Printf("Sound driver too old\n");
 		close(audio_fd);
 		return 0;
-	}
+	};
 
 	if(!(caps & DSP_CAP_TRIGGER) || !(caps & DSP_CAP_MMAP))
 	{
 		Con_Printf("Sorry but your soundcard can't do this\n");
 		close(audio_fd);
 		return 0;
-	}
+	};
 
 	if(ioctl(audio_fd, SNDCTL_DSP_GETOSPACE, &info) == -1)
 	{
@@ -88,7 +89,7 @@ qboolean SNDDMA_Init()
 		Con_Printf("Um, can't do GETOSPACE?\n");
 		close(audio_fd);
 		return 0;
-	}
+	};
 
 	shm = &sn;
 	shm->splitbuffer = 0;
@@ -107,7 +108,7 @@ qboolean SNDDMA_Init()
 			shm->samplebits = 16;
 		else if(fmt & AFMT_U8)
 			shm->samplebits = 8;
-	}
+	};
 
 	s = getenv("QUAKE_SOUND_SPEED");
 	if(s)
@@ -120,7 +121,7 @@ qboolean SNDDMA_Init()
 			if(!ioctl(audio_fd, SNDCTL_DSP_SPEED, &tryrates[i]))
 				break;
 		shm->speed = tryrates[i];
-	}
+	};
 
 	s = getenv("QUAKE_SOUND_CHANNELS");
 	if(s)
@@ -145,7 +146,7 @@ qboolean SNDDMA_Init()
 		Con_Printf("Could not mmap /dev/dsp\n");
 		close(audio_fd);
 		return 0;
-	}
+	};
 
 	tmp = 0;
 	if(shm->channels == 2)
@@ -157,7 +158,7 @@ qboolean SNDDMA_Init()
 		Con_Printf("Could not set /dev/dsp to stereo=%d", shm->channels);
 		close(audio_fd);
 		return 0;
-	}
+	};
 	if(tmp)
 		shm->channels = 2;
 	else
@@ -170,7 +171,7 @@ qboolean SNDDMA_Init()
 		Con_Printf("Could not set /dev/dsp speed to %d", shm->speed);
 		close(audio_fd);
 		return 0;
-	}
+	};
 
 	if(shm->samplebits == 16)
 	{
@@ -182,7 +183,7 @@ qboolean SNDDMA_Init()
 			Con_Printf("Could not support 16-bit data.  Try 8-bit.\n");
 			close(audio_fd);
 			return 0;
-		}
+		};
 	}
 	else if(shm->samplebits == 8)
 	{
@@ -194,7 +195,7 @@ qboolean SNDDMA_Init()
 			Con_Printf("Could not support 8-bit data.\n");
 			close(audio_fd);
 			return 0;
-		}
+		};
 	}
 	else
 	{
@@ -202,7 +203,7 @@ qboolean SNDDMA_Init()
 		Con_Printf("%d-bit sound not supported.", shm->samplebits);
 		close(audio_fd);
 		return 0;
-	}
+	};
 
 	// toggle the trigger & start her up
 
@@ -214,7 +215,7 @@ qboolean SNDDMA_Init()
 		Con_Printf("Could not toggle.\n");
 		close(audio_fd);
 		return 0;
-	}
+	};
 	tmp = PCM_ENABLE_OUTPUT;
 	rc = ioctl(audio_fd, SNDCTL_DSP_SETTRIGGER, &tmp);
 	if(rc < 0)
@@ -223,13 +224,13 @@ qboolean SNDDMA_Init()
 		Con_Printf("Could not toggle.\n");
 		close(audio_fd);
 		return 0;
-	}
+	};
 
 	shm->samplepos = 0;
 
 	snd_inited = 1;
 	return 1;
-}
+};
 
 int SNDDMA_GetDMAPos()
 {
@@ -245,13 +246,13 @@ int SNDDMA_GetDMAPos()
 		close(audio_fd);
 		snd_inited = 0;
 		return 0;
-	}
+	};
 	//	shm->samplepos = (count.bytes / (shm->samplebits / 8)) & (shm->samples-1);
 	//	fprintf(stderr, "%d    \r", count.ptr);
 	shm->samplepos = count.ptr / (shm->samplebits / 8);
 
 	return shm->samplepos;
-}
+};
 
 void SNDDMA_Shutdown()
 {
@@ -259,8 +260,8 @@ void SNDDMA_Shutdown()
 	{
 		close(audio_fd);
 		snd_inited = 0;
-	}
-}
+	};
+};
 
 /*
 ==============
@@ -271,4 +272,4 @@ Send sound to device if buffer isn't really the dma buffer
 */
 void SNDDMA_Submit()
 {
-}
+};

@@ -25,7 +25,6 @@
 #include <dinput.h>
 #include "quakedef.h"
 #include "winquake.h"
-//#include "dosisms.h"
 
 #define DINPUT_BUFFERSIZE 16
 #define iDirectInputCreate(a, b, c, d) pDirectInputCreate(a, b, c, d)
@@ -83,8 +82,6 @@ static DIDATAFORMAT df = {
 void IN_StartupJoystick();
 void Joy_AdvancedUpdate_f();
 void IN_JoyMove(usercmd_t *cmd);
-
-
 
 /*
 ===========

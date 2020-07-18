@@ -150,7 +150,6 @@ void SwapPic(qpic_t *pic)
 	pic->height = LittleLong(pic->height);
 }
 
-
 // TODO: WAD3 external textures support
 
 #define TEXWAD_MAXIMAGES 16384

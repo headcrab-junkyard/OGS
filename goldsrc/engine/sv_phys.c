@@ -51,10 +51,6 @@ cvar_t	sv_airaccelerate	 = { "sv_airaccelerate", "0.7"};
 cvar_t	sv_wateraccelerate	 = { "sv_wateraccelerate", "10"};
 cvar_t sv_nostep = { "sv_nostep", "0" };
 
-#ifdef QUAKE2
-static vec3_t vec_origin = { 0.0, 0.0, 0.0 };
-#endif
-
 #define MOVE_EPSILON 0.01
 
 void SV_Physics_Toss(edict_t *ent);

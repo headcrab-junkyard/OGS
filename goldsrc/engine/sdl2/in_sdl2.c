@@ -24,10 +24,10 @@
 
 void IN_Init()
 {
-}
+};
 
 void IN_Shutdown()
 {
-}
+};
 
 // TODO: IN_ClearStates?

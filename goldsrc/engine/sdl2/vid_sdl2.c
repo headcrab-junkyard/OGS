@@ -40,11 +40,11 @@ extern short *d_pzbuffer;
 
 void VID_SetPalette(unsigned char *palette)
 {
-}
+};
 
 void VID_ShiftPalette(unsigned char *palette)
 {
-}
+};
 
 void VID_Init(unsigned char *palette)
 {
@@ -59,15 +59,15 @@ void VID_Init(unsigned char *palette)
 
 	d_pzbuffer = zbuffer;
 	D_InitCaches(surfcache, sizeof(surfcache));
-}
+};
 
 void VID_Shutdown()
 {
-}
+};
 
 void VID_Update(vrect_t *rects)
 {
-}
+};
 
 /*
 ================
@@ -76,7 +76,7 @@ D_BeginDirectRect
 */
 void D_BeginDirectRect(int x, int y, byte *pbitmap, int width, int height)
 {
-}
+};
 
 /*
 ================
@@ -85,4 +85,4 @@ D_EndDirectRect
 */
 void D_EndDirectRect(int x, int y, int width, int height)
 {
-}
+};
