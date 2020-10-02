@@ -1,29 +1,4 @@
 /*
-Copyright (C) 1997-2001 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
-// cvar.c -- dynamic variable tracking
-
-#include "qcommon.h"
-
-cvar_t	*cvar_vars;
-
-/*
 ============
 Cvar_InfoValidate
 ============
@@ -37,53 +12,6 @@ static qboolean Cvar_InfoValidate (char *s)
 	if (strstr (s, ";"))
 		return false;
 	return true;
-}
-
-/*
-============
-Cvar_FindVar
-============
-*/
-static cvar_t *Cvar_FindVar (char *var_name)
-{
-	cvar_t	*var;
-	
-	for (var=cvar_vars ; var ; var=var->next)
-		if (!strcmp (var_name, var->name))
-			return var;
-
-	return NULL;
-}
-
-/*
-============
-Cvar_VariableValue
-============
-*/
-float Cvar_VariableValue (char *var_name)
-{
-	cvar_t	*var;
-	
-	var = Cvar_FindVar (var_name);
-	if (!var)
-		return 0;
-	return atof (var->string);
-}
-
-
-/*
-============
-Cvar_VariableString
-============
-*/
-char *Cvar_VariableString (char *var_name)
-{
-	cvar_t *var;
-	
-	var = Cvar_FindVar (var_name);
-	if (!var)
-		return "";
-	return var->string;
 }
 
 
@@ -352,34 +280,6 @@ void Cvar_GetLatchedVars (void)
 		}
 	}
 }
-
-/*
-============
-Cvar_Command
-
-Handles variable inspection and changing from the console
-============
-*/
-qboolean Cvar_Command (void)
-{
-	cvar_t			*v;
-
-// check variables
-	v = Cvar_FindVar (Cmd_Argv(0));
-	if (!v)
-		return false;
-		
-// perform a variable print or set
-	if (Cmd_Argc() == 1)
-	{
-		Com_Printf ("\"%s\" is \"%s\"\n", v->name, v->string);
-		return true;
-	}
-
-	Cvar_Set (v->name, Cmd_Argv(1));
-	return true;
-}
-
 
 /*
 ============

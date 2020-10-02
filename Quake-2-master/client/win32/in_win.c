@@ -64,33 +64,8 @@ cvar_t	*in_joystick;
 // each time.  this avoids any problems with getting back to a default usage
 // or when changing from one controller to another.  this way at least something
 // works.
-cvar_t	*joy_name;
-cvar_t	*joy_advanced;
-cvar_t	*joy_advaxisx;
-cvar_t	*joy_advaxisy;
-cvar_t	*joy_advaxisz;
-cvar_t	*joy_advaxisr;
-cvar_t	*joy_advaxisu;
-cvar_t	*joy_advaxisv;
-cvar_t	*joy_forwardthreshold;
-cvar_t	*joy_sidethreshold;
-cvar_t	*joy_pitchthreshold;
-cvar_t	*joy_yawthreshold;
-cvar_t	*joy_forwardsensitivity;
-cvar_t	*joy_sidesensitivity;
-cvar_t	*joy_pitchsensitivity;
-cvar_t	*joy_yawsensitivity;
 cvar_t	*joy_upthreshold;
 cvar_t	*joy_upsensitivity;
-
-qboolean	joy_avail, joy_advancedinit, joy_haspov;
-DWORD		joy_oldbuttonstate, joy_oldpovstate;
-
-int			joy_id;
-DWORD		joy_flags;
-DWORD		joy_numbuttons;
-
-static JOYINFOEX	ji;
 
 qboolean	in_appactive;
 
@@ -347,19 +322,8 @@ IN_Init
 void IN_Init (void)
 {
 	// mouse variables
-	m_filter				= Cvar_Get ("m_filter",					"0",		0);
     in_mouse				= Cvar_Get ("in_mouse",					"1",		CVAR_ARCHIVE);
 
-	// joystick variables
-	in_joystick				= Cvar_Get ("in_joystick",				"0",		CVAR_ARCHIVE);
-	joy_name				= Cvar_Get ("joy_name",					"joystick",	0);
-	joy_advanced			= Cvar_Get ("joy_advanced",				"0",		0);
-	joy_advaxisx			= Cvar_Get ("joy_advaxisx",				"0",		0);
-	joy_advaxisy			= Cvar_Get ("joy_advaxisy",				"0",		0);
-	joy_advaxisz			= Cvar_Get ("joy_advaxisz",				"0",		0);
-	joy_advaxisr			= Cvar_Get ("joy_advaxisr",				"0",		0);
-	joy_advaxisu			= Cvar_Get ("joy_advaxisu",				"0",		0);
-	joy_advaxisv			= Cvar_Get ("joy_advaxisv",				"0",		0);
 	joy_forwardthreshold	= Cvar_Get ("joy_forwardthreshold",		"0.15",		0);
 	joy_sidethreshold		= Cvar_Get ("joy_sidethreshold",		"0.15",		0);
 	joy_upthreshold  		= Cvar_Get ("joy_upthreshold",			"0.15",		0);
@@ -374,14 +338,6 @@ void IN_Init (void)
 	// centering
 	v_centermove			= Cvar_Get ("v_centermove",				"0.15",		0);
 	v_centerspeed			= Cvar_Get ("v_centerspeed",			"500",		0);
-
-	Cmd_AddCommand ("+mlook", IN_MLookDown);
-	Cmd_AddCommand ("-mlook", IN_MLookUp);
-
-	Cmd_AddCommand ("joy_advancedupdate", Joy_AdvancedUpdate_f);
-
-	IN_StartupMouse ();
-	IN_StartupJoystick ();
 }
 
 /*
@@ -452,19 +408,6 @@ void IN_Move (usercmd_t *cmd)
 	if (ActiveApp)
 		IN_JoyMove (cmd);
 }
-
-/*
-===================
-IN_ClearStates
-===================
-*/
-void IN_ClearStates (void)
-{
-	mx_accum = 0;
-	my_accum = 0;
-	mouse_oldbuttonstate = 0;
-}
-
 /*
 =========================================================================
 

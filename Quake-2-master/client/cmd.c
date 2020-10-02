@@ -1,41 +1,3 @@
-/*
-Copyright (C) 1997-2001 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
-// cmd.c -- Quake script command processing module
-
-#include "qcommon.h"
-
-void Cmd_ForwardToServer (void);
-
-#define	MAX_ALIAS_NAME	32
-
-typedef struct cmdalias_s
-{
-	struct cmdalias_s	*next;
-	char	name[MAX_ALIAS_NAME];
-	char	*value;
-} cmdalias_t;
-
-cmdalias_t	*cmd_alias;
-
-qboolean	cmd_wait;
-
 #define	ALIAS_LOOP_COUNT	16
 int		alias_count;		// for detecting runaway loops
 
@@ -79,28 +41,6 @@ void Cbuf_Init (void)
 {
 	SZ_Init (&cmd_text, cmd_text_buf, sizeof(cmd_text_buf));
 }
-
-/*
-============
-Cbuf_AddText
-
-Adds command text at the end of the buffer
-============
-*/
-void Cbuf_AddText (char *text)
-{
-	int		l;
-	
-	l = strlen (text);
-
-	if (cmd_text.cursize + l >= cmd_text.maxsize)
-	{
-		Com_Printf ("Cbuf_AddText: overflow\n");
-		return;
-	}
-	SZ_Write (&cmd_text, text, strlen (text));
-}
-
 
 /*
 ============
@@ -362,59 +302,6 @@ qboolean Cbuf_AddLateCommands (void)
 ==============================================================================
 */
 
-
-/*
-===============
-Cmd_Exec_f
-===============
-*/
-void Cmd_Exec_f (void)
-{
-	char	*f, *f2;
-	int		len;
-
-	if (Cmd_Argc () != 2)
-	{
-		Com_Printf ("exec <filename> : execute a script file\n");
-		return;
-	}
-
-	len = FS_LoadFile (Cmd_Argv(1), (void **)&f);
-	if (!f)
-	{
-		Com_Printf ("couldn't exec %s\n",Cmd_Argv(1));
-		return;
-	}
-	Com_Printf ("execing %s\n",Cmd_Argv(1));
-	
-	// the file doesn't have a trailing 0, so we need to copy it off
-	f2 = Z_Malloc(len+1);
-	memcpy (f2, f, len);
-	f2[len] = 0;
-
-	Cbuf_InsertText (f2);
-
-	Z_Free (f2);
-	FS_FreeFile (f);
-}
-
-
-/*
-===============
-Cmd_Echo_f
-
-Just prints the rest of the line to the console
-===============
-*/
-void Cmd_Echo_f (void)
-{
-	int		i;
-	
-	for (i=1 ; i<Cmd_Argc() ; i++)
-		Com_Printf ("%s ",Cmd_Argv(i));
-	Com_Printf ("\n");
-}
-
 /*
 ===============
 Cmd_Alias_f
@@ -476,38 +363,8 @@ void Cmd_Alias_f (void)
 	a->value = CopyString (cmd);
 }
 
-/*
-=============================================================================
-
-					COMMAND EXECUTION
-
-=============================================================================
-*/
-
-typedef struct cmd_function_s
-{
-	struct cmd_function_s	*next;
-	char					*name;
-	xcommand_t				function;
-} cmd_function_t;
-
-
-static	int			cmd_argc;
 static	char		*cmd_argv[MAX_STRING_TOKENS];
-static	char		*cmd_null_string = "";
 static	char		cmd_args[MAX_STRING_CHARS];
-
-static	cmd_function_t	*cmd_functions;		// possible commands to execute
-
-/*
-============
-Cmd_Argc
-============
-*/
-int		Cmd_Argc (void)
-{
-	return cmd_argc;
-}
 
 /*
 ============
@@ -520,19 +377,6 @@ char	*Cmd_Argv (int arg)
 		return cmd_null_string;
 	return cmd_argv[arg];	
 }
-
-/*
-============
-Cmd_Args
-
-Returns a single string containing argv(1) to argv(argc()-1)
-============
-*/
-char		*Cmd_Args (void)
-{
-	return cmd_args;
-}
-
 
 /*
 ======================
@@ -681,87 +525,6 @@ void Cmd_TokenizeString (char *text, qboolean macroExpand)
 	}
 	
 }
-
-
-/*
-============
-Cmd_AddCommand
-============
-*/
-void	Cmd_AddCommand (char *cmd_name, xcommand_t function)
-{
-	cmd_function_t	*cmd;
-	
-// fail if the command is a variable name
-	if (Cvar_VariableString(cmd_name)[0])
-	{
-		Com_Printf ("Cmd_AddCommand: %s already defined as a var\n", cmd_name);
-		return;
-	}
-	
-// fail if the command already exists
-	for (cmd=cmd_functions ; cmd ; cmd=cmd->next)
-	{
-		if (!strcmp (cmd_name, cmd->name))
-		{
-			Com_Printf ("Cmd_AddCommand: %s already defined\n", cmd_name);
-			return;
-		}
-	}
-
-	cmd = Z_Malloc (sizeof(cmd_function_t));
-	cmd->name = cmd_name;
-	cmd->function = function;
-	cmd->next = cmd_functions;
-	cmd_functions = cmd;
-}
-
-/*
-============
-Cmd_RemoveCommand
-============
-*/
-void	Cmd_RemoveCommand (char *cmd_name)
-{
-	cmd_function_t	*cmd, **back;
-
-	back = &cmd_functions;
-	while (1)
-	{
-		cmd = *back;
-		if (!cmd)
-		{
-			Com_Printf ("Cmd_RemoveCommand: %s not added\n", cmd_name);
-			return;
-		}
-		if (!strcmp (cmd_name, cmd->name))
-		{
-			*back = cmd->next;
-			Z_Free (cmd);
-			return;
-		}
-		back = &cmd->next;
-	}
-}
-
-/*
-============
-Cmd_Exists
-============
-*/
-qboolean	Cmd_Exists (char *cmd_name)
-{
-	cmd_function_t	*cmd;
-
-	for (cmd=cmd_functions ; cmd ; cmd=cmd->next)
-	{
-		if (!strcmp (cmd_name,cmd->name))
-			return true;
-	}
-
-	return false;
-}
-
 
 
 /*

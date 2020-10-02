@@ -33,22 +33,6 @@ The .pak files are just a linear collapse of a directory tree
 
 #define IDPAKHEADER		(('K'<<24)+('C'<<16)+('A'<<8)+'P')
 
-typedef struct
-{
-	char	name[56];
-	int		filepos, filelen;
-} dpackfile_t;
-
-typedef struct
-{
-	int		ident;		// == IDPAKHEADER
-	int		dirofs;
-	int		dirlen;
-} dpackheader_t;
-
-#define	MAX_FILES_IN_PACK	4096
-
-
 /*
 ========================================================================
 
@@ -167,10 +151,6 @@ typedef struct
 ========================================================================
 */
 
-#define IDSPRITEHEADER	(('2'<<24)+('S'<<16)+('D'<<8)+'I')
-		// little-endian "IDS2"
-#define SPRITE_VERSION	2
-
 typedef struct
 {
 	int		width, height;
@@ -206,21 +186,8 @@ typedef struct miptex_s
 	int			value;
 } miptex_t;
 
-
-
-/*
-==============================================================================
-
-  .BSP file format
-
-==============================================================================
-*/
-
 #define IDBSPHEADER	(('P'<<24)+('S'<<16)+('B'<<8)+'I')
 		// little-endian "IBSP"
-
-#define BSPVERSION	38
-
 
 // upper design bounds
 // leaffaces, leafbrushes, planes, and verts are still bounded by

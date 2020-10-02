@@ -49,14 +49,7 @@ cvar_t	*cl_showclamp;
 cvar_t	*cl_paused;
 cvar_t	*cl_timedemo;
 
-cvar_t	*lookspring;
-cvar_t	*lookstrafe;
 cvar_t	*sensitivity;
-
-cvar_t	*m_pitch;
-cvar_t	*m_yaw;
-cvar_t	*m_forward;
-cvar_t	*m_side;
 
 cvar_t	*cl_lightlevel;
 
@@ -256,35 +249,6 @@ void CL_Record_f ()
 
 //======================================================================
 
-/*
-===================
-Cmd_ForwardToServer
-
-adds the current command line as a clc_stringcmd to the client message.
-things like godmode, noclip, etc, are commands directed to the server,
-so when they are typed in at the console, they will need to be forwarded.
-===================
-*/
-void Cmd_ForwardToServer ()
-{
-	char	*cmd;
-
-	cmd = Cmd_Argv(0);
-	if (cls.state <= ca_connected || *cmd == '-' || *cmd == '+')
-	{
-		Com_Printf ("Unknown command \"%s\"\n", cmd);
-		return;
-	}
-
-	MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
-	SZ_Print (&cls.netchan.message, cmd);
-	if (Cmd_Argc() > 1)
-	{
-		SZ_Print (&cls.netchan.message, " ");
-		SZ_Print (&cls.netchan.message, Cmd_Args());
-	}
-}
-
 void CL_Setenv_f( void )
 {
 	int argc = Cmd_Argc();
@@ -390,26 +354,6 @@ void CL_Drop ()
 	// drop loading plaque unless this is the initial game start
 	if (cls.disable_servercount != -1)
 		SCR_EndLoadingPlaque ();	// get rid of loading plaque
-}
-
-
-/*
-=======================
-CL_SendConnectPacket
-
-We have gotten a challenge from the server, so try and
-connect.
-======================
-*/
-void CL_SendConnectPacket ()
-{
-	int		port;
-
-	port = Cvar_VariableValue ("qport");
-	userinfo_modified = false;
-
-	Netchan_OutOfBandPrint (NS_CLIENT, adr, "connect %i %i %i \"%s\"\n",
-		PROTOCOL_VERSION, port, cls.challenge, Cvar_Userinfo() );
 }
 
 void CL_CheckForResend ()
@@ -866,67 +810,6 @@ void CL_DumpPackets ()
 		Com_Printf ("dumping a packet\n");
 	}
 }
-
-/*
-=================
-CL_ReadPackets
-=================
-*/
-void CL_ReadPackets ()
-{
-	while (NET_GetPacket (NS_CLIENT, &net_from, &net_message))
-	{
-//	Com_Printf ("packet\n");
-		//
-		// remote command packet
-		//
-		if (*(int *)net_message.data == -1)
-		{
-			CL_ConnectionlessPacket ();
-			continue;
-		}
-
-		if (cls.state == ca_disconnected || cls.state == ca_connecting)
-			continue;		// dump it if not connected
-
-		if (net_message.cursize < 8)
-		{
-			Com_Printf ("%s: Runt packet\n",NET_AdrToString(net_from));
-			continue;
-		}
-
-		//
-		// packet from server
-		//
-		if (!NET_CompareAdr (net_from, cls.netchan.remote_address))
-		{
-			Com_DPrintf ("%s:sequenced packet without connection\n"
-				,NET_AdrToString(net_from));
-			continue;
-		}
-		if (!Netchan_Process(&cls.netchan, &net_message))
-			continue;		// wasn't accepted for some reason
-		CL_ParseServerMessage ();
-	}
-
-	//
-	// check timeout
-	//
-	if (cls.state >= ca_connected
-	 && cls.realtime - cls.netchan.last_received > cl_timeout->value*1000)
-	{
-		if (++cl.timeoutcount > 5)	// timeoutcount saves debugger
-		{
-			Com_Printf ("\nServer connection timed out.\n");
-			CL_Disconnect ();
-			return;
-		}
-	}
-	else
-		cl.timeoutcount = 0;
-	
-}
-
 
 //=============================================================================
 
