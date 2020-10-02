@@ -14,13 +14,19 @@ LINK_ENTITY_TO_CLASS(ammo_buckshot, CAmmoBuckshot)
 
 void CAmmoBuckshot::PostSpawn()
 {
+	// Precache()
 	gpEngine->pfnPrecacheModel("models/w_shotbox.mdl");
+	//
 	
 	SetModel("models/w_shotbox.mdl");
 };
 
 bool CAmmoBuckshot::GiveTo(CBasePlayer *apPlayer)
 {
-	apPlayer->GiveAmmo("buckshot");
-	return true;
+	if(apPlayer->GiveAmmo("buckshot"))
+	{
+		apPlayer->EmitSound(CHAN_ITEM, "items/9mmclip1.wav", 1, ATTN_NORM);
+		return true;
+	};
+	return false;
 };

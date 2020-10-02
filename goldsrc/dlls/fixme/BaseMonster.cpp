@@ -42,10 +42,9 @@ Using a monster makes it angry at the current activator
 */
 void CBaseMonster::Use(CBaseEntity *activator)
 {
-	if (self->GetEnemy())
+	if (GetEnemy() || GetHealth() <= 0)
 		return;
-	if (self->GetHealth() <= 0)
-		return;
+	
 	if (activator->GetItems() & IT_INVISIBILITY)
 		return;
 	if (activator->GetFlags() & FL_NOTARGET)
@@ -54,9 +53,9 @@ void CBaseMonster::Use(CBaseEntity *activator)
 		return;
 	
 // delay reaction so if the monster is teleported, its sound is still heard
-	self->SetEnemy(activator);
-	self->SetNextThink(gpGlobals->time + 0.1);
-	self->SetThinkCallback(FoundTarget);
+	SetEnemy(activator);
+	SetNextThink(gpGlobals->time + 0.1);
+	SetThinkCallback(FoundTarget);
 };
 
 /*
@@ -69,18 +68,15 @@ enemy as activator.
 */
 void CBaseMonster::DeathUse()
 {
-	CBaseEntity *activator;
-
 // fall to ground
-	if (self->GetFlags() & FL_FLY)
+	if (GetFlags() & FL_FLY)
 		self->flags -= FL_FLY;
 
-	if (self->GetFlags() & FL_SWIM)
+	if (GetFlags() & FL_SWIM)
 		self->flags -= FL_SWIM;
 
 	if (!self->target)
 		return;
 
-	activator = self->GetEnemy();
-	SUB_UseTargets ();
+	SUB_UseTargets (GetEnemy());
 };

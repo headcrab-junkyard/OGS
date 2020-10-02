@@ -47,6 +47,8 @@ void CBaseWeapon::ItemPreFrame()
 
 void CBaseWeapon::ItemBusyFrame()
 {
+	if(mfNextPrimaryAttackTime <= gpGlobals->time)
+		FinishReload();
 };
 
 void CBaseWeapon::ItemHolsterFrame()
@@ -55,4 +57,40 @@ void CBaseWeapon::ItemHolsterFrame()
 
 void CBaseWeapon::ItemPostFrame()
 {
+	if(mbReloading)
+		return;
+	
+	if(GetOwner()->buttons & IN_ATTACK && mfNextPrimaryAttackTime <= gpGlobals->time)
+		PrimaryAttack();
+	
+	if(GetOwner()->buttons & IN_ATTACK2 && mfNextSecondaryAttackTime <= gpGlobals->time)
+		SecondaryAttack();
+	
+	HandleFireOnEmpty();
+	
+	if(GetOwner()->buttons & IN_RELOAD)
+		Reload();
+	
+	WeaponIdle();
+};
+
+void CBaseWeapon::Holster()
+{
+	mbHolstered = true;
+};
+
+void CBaseWeapon::StartReload()
+{
+	mbReloading = true;
+	mfNextPrimaryAttackTime = gpGlobals->time + 5.0f; // TODO
+};
+
+void CBaseWeapon::FinishReload()
+{
+	mbReloading = false;
+};
+
+void CBaseWeapon::Touch(CBaseEntity *other)
+{
+	other.ammo_shells += 10;
 };

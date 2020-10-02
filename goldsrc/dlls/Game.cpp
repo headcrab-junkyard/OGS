@@ -24,18 +24,38 @@
 
 CGame *gpGame = nullptr; // TODO
 
-CGame::CGame(IGameRules *apRules, CGameWorld *apWorld) : mpRules(apRules), mpWorld(apWorld){}
+CGame::CGame(IGameRules *apRules, CGameWorld *apWorld) : mpRules(apRules), mpWorld(apWorld)
+{
+	gpGame = this;
+};
 
-CGame::~CGame() = default;
+CGame::~CGame() //= default;
+{
+	gpGame = nullptr;
+};
 
 void CGame::Init()
 {
+	//gEngFuncs.pfnPrecacheModel("models/player.mdl"); // TODO: studio models are not supported yet...
 };
 
 void CGame::Shutdown()
 {
+	// NOTE: free resources here
 };
 
 void CGame::Frame()
 {
+	if(mpRules)
+		mpRules->Think();
+
+	//
+	// cvars checked each frame
+	//
+	//timelimit = cvar("timelimit") * 60;
+	//fraglimit = cvar("fraglimit");
+	gpGlobals->teamplay = teamplay.value; // teamplay = cvar("teamplay");
+	//deathmatch = cvar("deathmatch");
+
+	framecount++;
 };

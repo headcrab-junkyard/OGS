@@ -26,4 +26,10 @@
 class CBaseMonster : public CBaseEntity
 {
 public:
+private:
+	//
+	// doors
+	//
+	float aflag;
+	float dmg; // damage done by door when hit
 };

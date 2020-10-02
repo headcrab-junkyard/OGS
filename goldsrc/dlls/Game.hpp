@@ -40,7 +40,10 @@ public:
 	
 	IGameRules *GetRules() const {return mpRules;}
 	CGameWorld *GetWorld() const {return mpWorld;}
+	CBasePlayer *GetPlayer(int anIndex) const;
 private:
 	IGameRules *mpRules{nullptr};
 	CGameWorld *mpWorld{nullptr};
+	
+	unsigned long framecount{0};
 };

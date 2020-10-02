@@ -20,7 +20,12 @@ void CAmmo9MMClip::PostSpawn()
 
 bool CAmmo9MMClip::GiveTo(CBasePlayer *apPlayer)
 {
-	return true;
+	if(apPlayer->GiveAmmo("9mm"))
+	{
+		apPlayer->EmitSound(CHAN_ITEM, "items/itempickup1.wav", 1, ATTN_NORM);
+		return true;
+	};
+	return false;
 };
 
 class CAmmo9MMBox : public CBaseAmmo
@@ -40,5 +45,10 @@ void CAmmo9MMBox::PostSpawn()
 
 bool CAmmo9MMBox::GiveTo(CBasePlayer *apPlayer)
 {
+	if(apPlayer->GiveAmmo("9mm"))
+	{
+		apPlayer->EmitSound(CHAN_ITEM, "items/itempickup1.wav", 1, ATTN_NORM);
+		return true;
+	};
 	return false;
 };

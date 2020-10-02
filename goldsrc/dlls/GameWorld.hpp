@@ -54,7 +54,10 @@ public:
 	int GetPointContents(const idVec3 &avOrigin) const;
 	
 	///
-	CBaseEntity *SpawnEntity(const char *asName, const idVec3 &avOrigin, const idVec3 &avAngles, CBaseEntity *apOwner);
+	CBaseEntity *SpawnEntity(const char *asClassName, const idVec3 &avOrigin, const idVec3 &avAngles, CBaseEntity *apOwner);
+	
+	///
+	void DestroyEntity(CBaseEntity &aEntity); // TODO: RemoveEntity? TODO: bool abImmediate = false / float afTime?
 	
 	///
 	void SetLightStyle(int anStyle, const char *asValue);
@@ -66,7 +69,10 @@ public:
 	void CreateParticleEffect(const idVec3 &origin, const idVec3 &direction, float color, float count);
 	
 	///
-	void ChangeLevel(const char *asName, const char *asStartSpot);
+	void SpawnBlood(const idVec3 &avOrigin, float afDamage);
+	
+	///
+	void ChangeLevel(const char *asName, const char *asStartSpot = "");
 	
 	///
 	CBaseEntity *FindEntityInSphere(CBaseEntity *pEntStartSearchAfter, const idVec3 &avOrigin, float afRadius) const;

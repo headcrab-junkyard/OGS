@@ -64,7 +64,7 @@ void CBaseAmmo::Touch(CBaseEntity *other)
 	if (other->GetHealth() <= 0)
 		return;
 
-	if(GiveTo(other))
+	if(GiveTo(other)) // TODO: OnPickup?
 	{
 		SetTouchCallback(nullptr);
 		SetThinkCallback(CBaseAmmo::SUB_Remove);
