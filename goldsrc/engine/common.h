@@ -116,7 +116,7 @@ int MSG_ReadShort();
 int MSG_ReadLong();
 float MSG_ReadFloat();
 char *MSG_ReadString();
-//char *MSG_ReadStringLine(); // TODO: qw
+char *MSG_ReadStringLine();
 
 float MSG_ReadCoord();
 float MSG_ReadAngle();

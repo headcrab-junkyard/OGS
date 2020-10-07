@@ -86,7 +86,7 @@ void IN_MouseEvent(int mstate);
 
 extern qboolean winsock_lib_initialized;
 
-extern cvar_t _windowed_mouse;
+extern cvar_t _windowed_mouse; // TODO: not present in qw
 
 extern int window_center_x, window_center_y;
 extern RECT window_rect;

@@ -287,7 +287,7 @@ void Key_Message(int key)
 
 	if(key == K_ENTER)
 	{
-		if(team_message)
+		if(team_message) // TODO: if (chat_team) in qw
 			Cbuf_AddText("say_team \"");
 		else
 			Cbuf_AddText("say \"");
@@ -321,6 +321,7 @@ void Key_Message(int key)
 		return;
 	}
 
+	//if (chat_bufferlen == sizeof(chat_buffer)-1) // TODO: qw
 	if(chat_bufferlen == 31)
 		return; // all full
 
@@ -755,7 +756,7 @@ void Key_ClearStates()
 	for(i = 0; i < 256; i++)
 	{
 		keydown[i] = false;
-		key_repeats[i] = 0;
+		key_repeats[i] = 0; // TODO: = false in qw
 	}
 }
 

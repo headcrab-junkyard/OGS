@@ -1,6 +1,6 @@
 /*
  *	This file is part of OGS Engine
- *	Copyright (C) 1996-1997 Id Software, Inc.
+ *	Copyright (C) 1996-2001 Id Software, Inc.
  *	Copyright (C) 2018 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
@@ -186,6 +186,7 @@ extern qboolean envmap;
 extern int currenttexture;
 extern int cnttextures[2];
 extern int particletexture;
+//extern int netgraphtexture; // netgraph texture // TODO: qw
 extern int playertextures;
 
 extern int skytexturenum; // index in cl.loadmodel, not gl texture object
@@ -203,6 +204,7 @@ extern cvar_t r_mirroralpha;
 extern cvar_t r_wateralpha;
 extern cvar_t r_dynamic;
 extern cvar_t r_novis;
+//extern cvar_t r_netgraph; // TODO: qw
 
 extern cvar_t gl_clear;
 extern cvar_t gl_cull;
@@ -215,7 +217,7 @@ extern cvar_t gl_keeptjunctions;
 extern cvar_t gl_reporttjunctions;
 extern cvar_t gl_flashblend;
 extern cvar_t gl_nocolors;
-extern cvar_t gl_doubleeyes;
+extern cvar_t gl_doubleeyes; // TODO: extern cvar_t gl_finish; in qw
 
 extern int gl_lightmap_format;
 extern int gl_solid_format;

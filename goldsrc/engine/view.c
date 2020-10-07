@@ -239,6 +239,15 @@ Underwater, lava, etc each has a color shift
 */
 void V_SetContentsColor(int contents)
 {
+	// TODO: qw
+	/*
+	if (!v_contentblend.value)
+	{
+		cl.cshifts[CSHIFT_CONTENTS] = cshift_empty;
+		return;
+	};
+	*/
+	
 	switch(contents)
 	{
 	case CONTENTS_EMPTY:
@@ -612,10 +621,26 @@ void V_SetupRefParams(ref_params_t *params)
 	params->onlyClientDraw = 0;
 };
 
+//extern vrect_t scr_vrect; // TODO: qw
 void V_RenderView()
 {
+	// TODO: qw
+	//if(cls.state != ca_active)
+		//return;
+	
 	if(con_forcedup)
 		return;
+	
+	// TODO: qw
+/*
+	//if(cl.simangles[ROLL])
+		//Sys_Error("cl.simangles[ROLL]"); // DEBUG
+
+	cl.simangles[ROLL] = 0;	// FIXME @@@ 
+
+	view_frame = &cl.frames[cls.netchan.incoming_sequence & UPDATE_MASK];
+	view_message = &view_frame->playerstate[cl.playernum];
+*/
 
 	// don't allow cheats in multiplayer
 	if(cl.maxclients > 1)
@@ -625,6 +650,8 @@ void V_RenderView()
 		Cvar_Set("scr_ofsz", "0");
 	}
 
+	//DropPunchAngle(); // TODO: qw
+	
 	V_SetupRefParams(&ref);
 	
 	ClientDLL_CalcRefdef(&ref);
@@ -675,6 +702,7 @@ void V_RenderView()
 	if(crosshair.value)
 		Draw_Character(scr_vrect.x + scr_vrect.width / 2 + cl_crossx.value,
 		               scr_vrect.y + scr_vrect.height / 2 + cl_crossy.value, '+');
+		// TODO: Draw_Crosshair(); in qw
 #endif
 }
 

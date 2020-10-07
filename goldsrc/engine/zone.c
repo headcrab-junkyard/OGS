@@ -21,7 +21,7 @@
 
 #include "quakedef.h"
 
-#define DYNAMIC_SIZE 0xc000
+#define DYNAMIC_SIZE 0xc000 // TODO: 0x20000 in qw
 
 #define ZONEID 0x1d4a11
 #define MINFRAGMENT 64

@@ -72,9 +72,7 @@ void SV_CheckAllEnts()
 		if(check->free)
 			continue;
 		if(check->v.movetype == MOVETYPE_PUSH || check->v.movetype == MOVETYPE_NONE
-#ifdef QUAKE2
-		   || check->v.movetype == MOVETYPE_FOLLOW
-#endif
+		   || check->v.movetype == MOVETYPE_FOLLOW // TODO: not present in qw
 		   || check->v.movetype == MOVETYPE_NOCLIP)
 			continue;
 
@@ -1262,7 +1260,7 @@ void SV_Physics_Toss(edict_t *ent)
 
 	if(ent->v.movetype == MOVETYPE_BOUNCE)
 		backoff = 1.5;
-	else if(ent->v.movetype == MOVETYPE_BOUNCEMISSILE)
+	else if(ent->v.movetype == MOVETYPE_BOUNCEMISSILE) // TODO: not present in qw
 		backoff = 2.0;
 	else
 		backoff = 1;
@@ -1272,11 +1270,7 @@ void SV_Physics_Toss(edict_t *ent)
 	// stop if on ground
 	if(trace.plane.normal[2] > 0.7)
 	{
-#ifdef QUAKE2
-		if(ent->v.velocity[2] < 60 || (ent->v.movetype != MOVETYPE_BOUNCE && ent->v.movetype != MOVETYPE_BOUNCEMISSILE))
-#else
-		if(ent->v.velocity[2] < 60 || ent->v.movetype != MOVETYPE_BOUNCE)
-#endif
+		if(ent->v.velocity[2] < 60 || (ent->v.movetype != MOVETYPE_BOUNCE && ent->v.movetype != MOVETYPE_BOUNCEMISSILE)) // TODO: no bouncemissile support here in qw
 		{
 			ent->v.flags = (int)ent->v.flags | FL_ONGROUND;
 			ent->v.groundentity = EDICT_TO_PROG(trace.ent);
@@ -1420,12 +1414,12 @@ void SV_Physics_Step(edict_t *ent)
 	// freefall if not onground
 	if(!((int)ent->v.flags & (FL_ONGROUND | FL_FLY | FL_SWIM)))
 	{
-		if(ent->v.velocity[2] < sv_gravity.value * -0.1)
+		if(ent->v.velocity[2] < sv_gravity.value * -0.1) // TODO: sv_gravity.value -> movevars.gravity in qw
 			hitsound = true;
 		else
 			hitsound = false;
 
-		SV_AddGravity(ent);
+		SV_AddGravity(ent); // TODO: scale = 1.0 in qw
 		SV_CheckVelocity(ent);
 		SV_FlyMove(ent, host_frametime, NULL);
 		SV_LinkEdict(ent, true);
@@ -1498,7 +1492,7 @@ void SV_Physics()
 	if(gGlobalVariables.force_retouch)
 		gGlobalVariables.force_retouch--;
 
-	sv.time += host_frametime;
+	sv.time += host_frametime; // TODO: not present in qw
 }
 
 #ifdef QUAKE2

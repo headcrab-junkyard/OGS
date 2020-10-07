@@ -81,6 +81,7 @@ float scr_con_current;
 float scr_conlines; // lines of console to display
 
 float oldscreensize, oldfov;
+//float oldsbar; // TODO: qw
 cvar_t scr_viewsize = { "viewsize", "100", true };
 cvar_t scr_fov = { "fov", "90" }; // 10 - 170
 cvar_t scr_conspeed = { "scr_conspeed", "300" };
@@ -91,7 +92,7 @@ cvar_t scr_showpause = { "showpause", "1" };
 cvar_t scr_printspeed = { "scr_printspeed", "8" };
 
 #ifdef GLQUAKE
-//cvar_t scr_allowsnap = {"scr_allowsnap", "1"}; // TODO
+//cvar_t scr_allowsnap = {"scr_allowsnap", "1"}; // TODO: outside of the conditional compilation check in qw
 cvar_t gl_triplebuffer = { "gl_triplebuffer", "1", true };
 
 extern cvar_t crosshair;
@@ -109,7 +110,7 @@ int clearconsole;
 int clearnotify;
 
 #ifdef GLQUAKE
-int sb_lines;
+int sb_lines; // TODO: outside of the conditional compilation check in qw
 #endif
 
 viddef_t vid; // global video state
@@ -444,9 +445,8 @@ void SCR_Init(void)
 	Cvar_RegisterVariable(&scr_centertime);
 	Cvar_RegisterVariable(&scr_printspeed);
 	
-	
 #ifdef GLQUAKE
-	//Cvar_RegisterVariable (&scr_allowsnap); // TODO//Cvar_RegisterVariable (&scr_allowsnap); // TODO
+	//Cvar_RegisterVariable (&scr_allowsnap); // TODO: is this glquake only? looks like not in qw
 	Cvar_RegisterVariable(&gl_triplebuffer);
 #endif
 
@@ -454,13 +454,13 @@ void SCR_Init(void)
 	// register our commands
 	//
 	Cmd_AddCommand("screenshot", SCR_ScreenShot_f);
-	//Cmd_AddCommand ("snap",SCR_RSShot_f); // TODO: GLQUAKE only
+	//Cmd_AddCommand("snap", SCR_RSShot_f); // TODO: GLQUAKE only or QW
 	Cmd_AddCommand("sizeup", SCR_SizeUp_f);
 	Cmd_AddCommand("sizedown", SCR_SizeDown_f);
 
-	//scr_ram = Draw_PicFromWad("ram");
-	//scr_net = Draw_PicFromWad("net");
-	//scr_turtle = Draw_PicFromWad("turtle");
+	//scr_ram = Draw_PicFromWad("ram"); // TODO: W_GetLumpName in qw
+	//scr_net = Draw_PicFromWad("net"); // TODO: W_GetLumpName in qw
+	//scr_turtle = Draw_PicFromWad("turtle"); // TODO: W_GetLumpName in qw
 
 	scr_initialized = true;
 }
@@ -1230,8 +1230,8 @@ keypress.
 */
 int SCR_ModalMessage(const char *text)
 {
-	if(cls.state == ca_dedicated)
-		return true;
+	if(cls.state == ca_dedicated) // TODO: non-qw
+		return true; // TODO: non-qw
 
 	scr_notifystring = text;
 
