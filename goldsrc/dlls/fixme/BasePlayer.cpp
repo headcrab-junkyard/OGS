@@ -726,26 +726,46 @@ ImpulseCommands
 */
 void CBasePlayer::HandleImpulseCommands()
 {
-	if (self.impulse >= 1 && self.impulse <= 8)
-		W_ChangeWeapon ();
-
-	if (self.impulse == 9)
-		CheatCommand ();
-	if (self.impulse == 10)
-		CycleWeaponCommand ();
-	if (self.impulse == 11)
-		ServerflagsCommand ();
-	if (self.impulse == 12)
-		CycleWeaponReverseCommand ();
+	HandleUse();
 	
-	switch(self.impulse)
+	int nImpulse{self->impulse};
+	
+	switch(self->impulse)
 	{
-	case 101:
-		//GiveAllItems(cheater);
+	case 1 ... 8:
+		W_ChangeWeapon ();
 		break;
+	case 10:
+		CycleWeaponCommand ();
+		break;
+	case 11:
+		ServerflagsCommand ();
+		break;
+	case 12:
+		CycleWeaponReverseCommand ();
+		break;
+	case 99:
+		// TODO
+		break;
+	case 100:
+		// TODO
+		break;
+	case 201:
+		// TODO
+		break;
+	default:
+		CheatCommand(nImpulse);
 	};
 
-	self.impulse = 0;
+	self->impulse = 0;
+};
+
+void CBasePlayer::HandleUse()
+{
+	if(!((self->button) & IN_USE))
+		return;
+	
+	CBaseEntity *pObject{nullptr};
 };
 
 /*
@@ -967,10 +987,10 @@ W_ChangeWeapon
 */
 void CBasePlayer::W_ChangeWeapon()
 {
-	float   it, am, fl;
+	float   fl;
 	
-	it = self.items;
-	am = 0;
+	int it = self.items;
+	int am = 0;
 	
 	if (self.impulse == 1)
 	{
@@ -1047,11 +1067,14 @@ void CBasePlayer::W_ChangeWeapon()
 CheatCommand
 ============
 */
-void CBasePlayer::CheatCommand()
+void CBasePlayer::CheatCommand(int nImpulse)
 {
 //      if (deathmatch || coop)
 		return;
 
+	switch(nImpulse)
+	{
+	case 9:
 	self.ammo_rockets = 100;
 	self.ammo_nails = 200;
 	self.ammo_shells = 100;
@@ -1071,6 +1094,11 @@ void CBasePlayer::CheatCommand()
 	self.weapon = IT_ROCKET_LAUNCHER;
 	self.impulse = 0;
 	W_SetCurrentAmmo();
+		break;
+	case 101:
+		//GiveAllItems(cheater); // TODO // BP: HAAAAAAAAAAX!
+		break;
+	};
 };
 
 /*
