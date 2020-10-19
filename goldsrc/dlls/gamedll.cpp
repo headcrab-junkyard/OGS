@@ -45,9 +45,16 @@ int EntitySpawn(edict_t *pent)
 {
 	auto pBaseEntity{ToBaseEntity(pent)};
 	
-	if(pBaseEntity)
-		pBaseEntity->Spawn();
+	if(!pBaseEntity)
+		return 0;
 	
+	if(!pBaseEntity->PreSpawn())
+	{
+		gpEngine->pfnRemoveEntity(pent);
+		return 0;
+	};
+	
+	pBaseEntity->Spawn();
 	return 1;
 };
 
