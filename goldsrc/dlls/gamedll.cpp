@@ -23,19 +23,25 @@
 #include "BaseEntity.hpp"
 #include "Game.hpp"
 #include "GameSetup_Default.hpp"
+#include "Util.hpp"
+#include "IGameRules.hpp"
 
 extern "C"
 {
 #include "pm_shared/pm_shared.h"
 };
 
+CGameWorld *gpGameWorld{nullptr};
+
 void GameInit()
 {
 	auto pGameSetup{new CGameSetup_Default()}; // TODO
 	
+	gpGameWorld = pGameSetup->CreateWorld();
+	
 	// Initialize the game (master) class
 	if(!gpGame)
-		gpGame = new CGame(pGameSetup->CreateRules(), pGameSetup->CreateWorld());
+		gpGame = new CGame(pGameSetup->CreateRules(), gpGameWorld);
 	//gEngFuncs.pfnPrecacheModel("models/player.mdl"); // TODO: studio models are not supported yet...
 	
 	gpGame->Init();
@@ -157,7 +163,7 @@ void GameShutdown()
 
 int ShouldCollide(edict_t *pent, edict_t *pother)
 {
-	return gpGame->GetRules()->ShouldCollide(ToBaseEntity(pent), ToBaseEntity(pother));
+	return gpGame->GetRules()->ShouldCollide(*ToBaseEntity(pent), *ToBaseEntity(pother));
 };
 
 void CvarValue(const edict_t *pent, const char *value)
