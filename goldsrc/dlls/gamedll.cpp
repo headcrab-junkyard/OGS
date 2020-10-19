@@ -42,7 +42,6 @@ void GameInit()
 	// Initialize the game (master) class
 	if(!gpGame)
 		gpGame = new CGame(pGameSetup->CreateRules(), gpGameWorld);
-	//gEngFuncs.pfnPrecacheModel("models/player.mdl"); // TODO: studio models are not supported yet...
 	
 	gpGame->Init();
 };
@@ -63,6 +62,9 @@ int EntitySpawn(edict_t *pent)
 	pBaseEntity->Spawn();
 	return 1;
 };
+
+// TODO: ToBaseEntity could potentially return nullptr, so we shouldn't directly operate on its return value...
+// Or, we should modify the ToBaseEntity func to accept the arg by reference
 
 void EntityThink(edict_t *pent)
 {
