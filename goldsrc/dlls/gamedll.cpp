@@ -24,7 +24,9 @@
 #include "Game.hpp"
 #include "GameSetup_Default.hpp"
 
+extern "C"
 {
+#include "pm_shared/pm_shared.h"
 };
 
 void GameInit()
@@ -91,15 +93,30 @@ int EntityRestore(edict_t *pent, SAVERESTOREDATA *pSaveRestoreData, int globalen
 
 void EntitySetAbsPos(edict_t *pent){};
 
-void SaveWriteFields(SAVERESTOREDATA *pSaveRestoreData, const char *sName, void *pBaseData, TYPEDESCRIPTION *pFields, int nFieldCount){};
+void SaveWriteFields(SAVERESTOREDATA *pSaveRestoreData, const char *sName, void *pBaseData, TYPEDESCRIPTION *pFields, int nFieldCount)
+{
+	// TODO
+};
 
-void SaveReadFields(SAVERESTOREDATA *pSaveRestoreData, const char *sName, void *pBaseData, TYPEDESCRIPTION *pFields, int nFieldCount){};
+void SaveReadFields(SAVERESTOREDATA *pSaveRestoreData, const char *sName, void *pBaseData, TYPEDESCRIPTION *pFields, int nFieldCount)
+{
+	// TODO
+};
 
-void SaveGlobalState(SAVERESTOREDATA *pSaveRestoreData){};
+void SaveGlobalState(SAVERESTOREDATA *pSaveRestoreData)
+{
+	// TODO
+};
 
-void RestoreGlobalState(SAVERESTOREDATA *pSaveRestoreData){};
+void RestoreGlobalState(SAVERESTOREDATA *pSaveRestoreData)
+{
+	// TODO
+};
 
-void ResetGlobalState(){};
+void ResetGlobalState()
+{
+	// TODO
+};
 
 void PM_Init_Game(struct playermove_s *ppmove)
 {
@@ -118,7 +135,10 @@ char PM_FindTextureType_Game(const char *name)
 
 //
 
-void OnFreeEntPrivateData(edict_t *pent){};
+void OnFreeEntPrivateData(edict_t *pent)
+{
+	// TODO
+};
 
 void GameShutdown()
 {
@@ -130,6 +150,12 @@ int ShouldCollide(edict_t *pent, edict_t *pother)
 	return gpGame->GetRules()->ShouldCollide(ToBaseEntity(pent), ToBaseEntity(pother));
 };
 
-void CvarValue(const edict_t *pent, const char *value){};
+void CvarValue(const edict_t *pent, const char *value)
+{
+	// TODO
+};
 
-void CvarValue2(const edict_t *pent, int requestid, const char *cvarname, const char *value){};
+void CvarValue2(const edict_t *pent, int requestid, const char *cvarname, const char *value)
+{
+	// TODO
+};
