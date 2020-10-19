@@ -91,7 +91,10 @@ int EntityRestore(edict_t *pent, SAVERESTOREDATA *pSaveRestoreData, int globalen
 	return 1;
 };
 
-void EntitySetAbsPos(edict_t *pent){};
+void EntitySetAbsPos(edict_t *pent)
+{
+	//ToBaseEntity(pent)->SetAbsPos(); // TODO
+};
 
 void SaveWriteFields(SAVERESTOREDATA *pSaveRestoreData, const char *sName, void *pBaseData, TYPEDESCRIPTION *pFields, int nFieldCount)
 {
