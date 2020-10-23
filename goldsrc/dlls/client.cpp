@@ -26,6 +26,9 @@
 #include "mathlib.h"
 #include "edict.h"
 #include "Game.hpp"
+#include "IGameRules.hpp"
+#include "Util.hpp"
+#include "BaseEntity.hpp"
 
 void set_suicide_frame(entvars_t *self);
 
@@ -61,7 +64,7 @@ void respawn(entvars_t *self)
 	CopyToBodyQue (self);
 	
 	// set default spawn parms
-	SetNewParms ();
+	SetNewParms (self);
 	
 	// respawn              
 	ClientPutInServer (self);
@@ -99,80 +102,41 @@ called each time a player enters a new level
 */
 void ClientPutInServer(edict_t *client)
 {
-	edict_t *spot;
-	//string s;
-
-	//client->v.classname = "player";
-	client->v.health = 100;
-	client->v.takedamage = DAMAGE_AIM;
-	client->v.solid = SOLID_SLIDEBOX;
-	client->v.movetype = MOVETYPE_WALK;
-	//client->v.show_hostile = 0;
-	client->v.max_health = 100;
-	client->v.flags = FL_CLIENT;
-	//client->v.air_finished = gpGlobals->time + 12;
-	//client->v.dmg = 2;                   // initial water damage
-/*
-	client->v.super_damage_finished = 0;
-	client->v.radsuit_finished = 0;
-	client->v.invisible_finished = 0;
-	client->v.invincible_finished = 0;
-*/
-	client->v.effects = 0;
-	//client->v.invincible_time = 0;
-
-	//DecodeLevelParms ();
+	//string_t s;
 	
-	//W_SetCurrentAmmo ();
-
-	//client->v.attack_finished = gpGlobals->time;
-	//client->v.th_pain = player_pain;
-	//client->v.th_die = PlayerDie;
+	auto pClientEnt{ToBaseEntity(client)};
 	
-	client->v.deadflag = DEAD_NO;
-// paustime is set by teleporters to keep the player from moving a while
-	//client->v.pausetime = 0;
+	pBasePlayer->Spawn();
 	
-	//spot = SelectSpawnPoint ();
+	//CBaseEntity *spot = SelectSpawnPoint();
 
-	VectorCopy(vec3_origin, client->v.origin);
-	vec3_t vAdd{};
-	vAdd[2] = 1;
-	VectorAdd(client->v.origin, vAdd, client->v.origin);
-	//client->v.origin = spot->origin + vec3_t{0, 0, 1};
-	//client->v.angles = spot->angles;
-	client->v.fixangle = 1;           // turn this way immediately
-
-// oh, this is a hack!
-	//setmodel (client, "models/eyes.mdl");
-	//modelindex_eyes = client->v.modelindex;
-
-	//setmodel (client, "models/player.mdl");
-	//modelindex_player = client->v.modelindex;
-
-	//setsize (client, VEC_HULL_MIN, VEC_HULL_MAX);
+	pClientEnt->SetOrigin(idVec3::Origin);
+	idVec3 vAdd{0.0f};
+	vAdd[2] = 1.0f;
+	pClientEnt->SetOrigin(pClientEnt->GetOrigin() + vAdd);
+	//pClientEnt->SetOrigin(spot->GetOrigin() + idVec3(0, 0, 1));
+	//pClientEnt->SetAngles(spot->GetAngles());
+	client->v.fixangle = 1; // turn this way immediately
 	
-	vec3_t view_ofs{};
+	idVec3 view_ofs{0.0f};
 	view_ofs[2] = 22;
 	VectorCopy(view_ofs, client->v.view_ofs);
 
 // Mod - Xian (May.20.97)
 // Bug where player would have velocity from their last kill
 
-	VectorCopy(vec3_origin, client->v.velocity);
+	pClientEnt->SetVelocity(idVec3::Origin);
 
 	//player_stand1 ();
 	
-	//makevectors(client->v.angles);
-	//spawn_tfog (client->v.origin + v_forward*20);
+	//makevectors(pClientEnt->GetAngles());
+	//spawn_tfog(pClientEnt->GetOrigin() + v_forward * 20);
 
 	//spawn_tdeath (client->v.origin, client->v);
 
 	// Set Rocket Jump Modifiers
-	//if (stof(infokey(world, "rj")) != 0)
-	{                
+	//if (stof(infokey(world, "rj")) != 0)           
 		//rj = stof(infokey(world, "rj"));
-	}
 
 /*
 	if (deathmatch == 4)
@@ -285,7 +249,7 @@ void PlayerPostThink(edict_t *self)
 
 void ParmsNewLevel() // TODO: SetNewParms?
 {
-	// TODO
+	// Nothing
 };
 
 void ParmsChangeLevel() // TODO: SetChangeParms?
@@ -295,7 +259,7 @@ void ParmsChangeLevel() // TODO: SetChangeParms?
 
 void StartFrame()
 {
-	// TODO
+	gpGame->Frame();
 };
 
 const char *GetGameDescription()
@@ -305,7 +269,7 @@ const char *GetGameDescription()
 
 void Sys_Error_Game(const char *error)
 {
-	// TODO
+	// Nothing
 };
 
 void PlayerCustomization(edict_t *pPlayer, customization_t *pCustom)
@@ -313,24 +277,105 @@ void PlayerCustomization(edict_t *pPlayer, customization_t *pCustom)
 	// TODO
 };
 
-void SpectatorConnect(edict_t *pent)
+// Spectator functions (unused)
+
+// Added Aug11'97 by Zoid <zoid@idsoftware.com>
+//
+// These functions are called from the server if they exist.
+// Note that Spectators only have one think since they movement code doesn't
+// track them much.  Impulse commands work as usual, but don't call
+// the regular ImpulseCommand handler in weapons.qc since Spectators don't
+// have any weapons and things can explode.
+//
+//   --- Zoid.
+
+/*
+===========
+SpectatorConnect
+
+called when a spectator connects to a server
+============
+*/
+void SpectatorConnect(edict_t *self)
 {
-	// TODO
+	// UNUSED
+/*
+	bprint (PRINT_MEDIUM, "Spectator ");
+	bprint (PRINT_MEDIUM, self->v.netname);
+	bprint (PRINT_MEDIUM, " entered the game\n");
+
+	self->v.goalentity = world; // used for impulse 1 below
+*/
 };
 
-void SpectatorDisconnect(edict_t *pent)
+/*
+===========
+SpectatorDisconnect
+
+called when a spectator disconnects from a server
+============
+*/
+void SpectatorDisconnect(edict_t *self)
 {
-	// TODO
+	// UNUSED
+/*
+	bprint (PRINT_MEDIUM, "Spectator ");
+	bprint (PRINT_MEDIUM, self->v.netname);
+	bprint (PRINT_MEDIUM, " left the game\n");
+*/
 };
 
-void SpectatorThink(edict_t *pent)
+/*
+================
+SpectatorImpulseCommand
+
+Called by SpectatorThink if the spectator entered an impulse
+================
+*/
+void SpectatorImpulseCommand(edict_t *self)
 {
-	// TODO
+/*
+	if (self->v.impulse == 1)
+	{
+		// teleport the spectator to the next spawn point
+		// note that if the spectator is tracking, this doesn't do
+		// much
+		self->v.goalentity = find(self->v.goalentity, classname, "info_player_deathmatch");
+		if (self->v.goalentity == world)
+			self->v.goalentity = find(self->v.goalentity, classname, "info_player_deathmatch");
+		if (self->v.goalentity != world)
+		{
+			setorigin(self, self->v.goalentity.origin);
+			self->v.angles = self->v.goalentity.angles;
+			self->v.fixangle = TRUE;           // turn this way immediately
+		};
+	};
+
+	self->v.impulse = 0;
+*/
 };
 
-void SetupVisibility(edict_t *pViewEntity, edict_t *pClientEnt, unsigned char **pvs, unsigned char **pas){};
+/*
+================
+SpectatorThink
 
-int AddToFullPack(struct entity_state_s *state, int e, edict_t *pent, edict_t *host_edict, int hostflags, int player, unsigned char *pSet)
+Called every frame after physics are run
+================
+*/
+void SpectatorThink(edict_t *self)
+{
+	// UNUSED
+
+	// self.origin, etc contains spectator position, so you could
+	// do some neat stuff here
+
+	if(self->v.impulse)
+		SpectatorImpulseCommand(self);
+};
+
+void SetupVisibility(edict_t *pViewEntity, edict_t *pClientEnt, byte **pvs, byte **pas){};
+
+int AddToFullPack(struct entity_state_s *state, int e, edict_t *pent, edict_t *host_edict, int hostflags, int player, byte *pSet)
 {
 	return 0;
 };
@@ -346,7 +391,7 @@ int GetWeaponData(edict_t *player, struct weapon_data_s *data)
 
 void UpdateClientData(const edict_t *pent, int sendweapons, struct clientdata_s *pcd){};
 
-void CmdStart(const edict_t *player, const struct usercmd_s *cmd, unsigned int random_seed){};
+void CmdStart(const edict_t *player, const struct usercmd_s *cmd, uint random_seed){};
 
 void CmdEnd(const edict_t *player){};
 
@@ -375,6 +420,8 @@ int AllowLagCompensation()
 /*QUAKED info_player_start (1 0 0) (-16 -16 -24) (16 16 24)
 The normal starting point for a level.
 */
-C_EXPORT void info_player_start(entvars_t *self)
+class CInfoPlayerStart : public CBaseEntity
 {
 };
+
+LINK_ENTITY_TO_CLASS(info_player_start, CInfoPlayerStart)
