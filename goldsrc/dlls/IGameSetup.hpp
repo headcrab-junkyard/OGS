@@ -20,6 +20,8 @@
 
 #pragma once
 
+// TODO: we can replace this with IoC-container
+
 struct IGameRules;
 class CGameWorld; // TODO: IGameWorld?
 

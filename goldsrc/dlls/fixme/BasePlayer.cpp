@@ -17,14 +17,6 @@
  * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file
-/// @brief player functions/definitions
-
-#include "BasePlayer.hpp"
-#include "Util.hpp"
-
-LINK_ENTITY_TO_CLASS(player, CBasePlayer)
-
 void bubble_bob();
 
 /*
@@ -266,52 +258,6 @@ void() player_rocket3   =[$rockatt3, player_rocket4  ] {self.weaponframe=3;};
 void() player_rocket4   =[$rockatt4, player_rocket5  ] {self.weaponframe=4;};
 void() player_rocket5   =[$rockatt5, player_rocket6  ] {self.weaponframe=5;};
 void() player_rocket6   =[$rockatt6, player_run  ] {self.weaponframe=6;};
-
-void CBasePlayer::Spawn()
-{
-	self->classname = "player";
-	SetMaxHealth(100);
-	SetHealth(GetMaxHealth());
-	self->takedamage = DAMAGE_AIM;
-	self->solid = SOLID_SLIDEBOX;
-	SetMoveType(MOVETYPE_WALK);
-	self->show_hostile = 0;
-	SetFlags(FL_CLIENT);
-	self->air_finished = gpGlobals->time + 12;
-	self->dmg = 2; // initial water damage
-	
-/*
-	self->super_damage_finished = 0;
-	self->radsuit_finished = 0;
-	self->invisible_finished = 0;
-	self->invincible_finished = 0;
-*/
-	SetEffects(0); // TODO: ClearEffects?
-	self->invincible_time = 0;
-	
-	DecodeLevelParms ();
-	
-	W_SetCurrentAmmo ();
-
-	self->attack_finished = gpGlobals->time;
-	self->th_pain = player_pain;
-	self->th_die = PlayerDie;
-	
-	self->deadflag = DEAD_NO;
-// paustime is set by teleporters to keep the player from moving a while
-	self->pausetime = 0;
-	
-	// oh, this is a hack!
-	SetModel("models/eyes.mdl");
-	modelindex_eyes = self->modelindex;
-
-	SetModel("models/player.mdl");
-	modelindex_player = self->modelindex;
-
-	SetSize(VEC_HULL_MIN, VEC_HULL_MAX);
-	
-	mpGame->GetRules()->OnPlayerSpawn(this);
-};
 
 void CBasePlayer::PainSound()
 {
@@ -1075,25 +1021,25 @@ void CBasePlayer::CheatCommand(int nImpulse)
 	switch(nImpulse)
 	{
 	case 9:
-	self.ammo_rockets = 100;
-	self.ammo_nails = 200;
-	self.ammo_shells = 100;
-	self.items = self.items | 
-		IT_AXE |
-		IT_SHOTGUN |
-		IT_SUPER_SHOTGUN |
-		IT_NAILGUN |
-		IT_SUPER_NAILGUN |
-		IT_GRENADE_LAUNCHER |
-		IT_ROCKET_LAUNCHER |
-		IT_KEY1 | IT_KEY2;
+		self.ammo_rockets = 100;
+		self.ammo_nails = 200;
+		self.ammo_shells = 100;
+		self.items = self.items | 
+			IT_AXE |
+			IT_SHOTGUN |
+			IT_SUPER_SHOTGUN |
+			IT_NAILGUN |
+			IT_SUPER_NAILGUN |
+			IT_GRENADE_LAUNCHER |
+			IT_ROCKET_LAUNCHER |
+			IT_KEY1 | IT_KEY2;
 
-	self.ammo_cells = 200;
-	self.items |= IT_LIGHTNING;
+		self.ammo_cells = 200;
+		self.items |= IT_LIGHTNING;
 
-	self.weapon = IT_ROCKET_LAUNCHER;
-	self.impulse = 0;
-	W_SetCurrentAmmo();
+		self.weapon = IT_ROCKET_LAUNCHER;
+		self.impulse = 0;
+		W_SetCurrentAmmo();
 		break;
 	case 101:
 		//GiveAllItems(cheater); // TODO // BP: HAAAAAAAAAAX!
@@ -1247,6 +1193,40 @@ void CBasePlayer::CycleWeaponReverseCommand()
 	};
 };
 
+bool CBasePlayer::IsFemale()
+{
+	char *info{Info_ValueForKey(self->client->pers.userinfo, "gender")};
+	if(info[0] == 'f' || info[0] == 'F')
+		return true;
+	return false;
+};
+
+/*
+==================
+LookAtKiller
+==================
+*/
+void CBasePlayer::LookAtKiller(CBaseEntity *inflictor, CBaseEntity *attacker )
+{
+	vec3_t dir;
+	idVec3 angles;
+
+	if ( attacker && attacker != self )
+		VectorSubtract( attacker->s.pos.trBase, self->s.pos.trBase, dir );
+	else if ( inflictor && inflictor != self )
+		VectorSubtract( inflictor->s.pos.trBase, self->s.pos.trBase, dir );
+	else
+	{
+		self->client->ps.stats[STAT_DEAD_YAW] = self->s.angles[YAW];
+		return;
+	};
+
+	self->client->ps.stats[STAT_DEAD_YAW] = vectoyaw( dir );
+
+	angles[YAW] = vectoyaw( dir );
+	angles[PITCH] = 0;
+	angles[ROLL] = 0;
+};
 
 void CBasePlayer::PreThink()
 {

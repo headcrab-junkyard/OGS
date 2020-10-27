@@ -15,3 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
+
+/// @file
+
+#pragma once
+
+#include "IGameRules.hpp"
+
+class CGameRules : public IGameRules
+{
+public:
+	CGameRules();
+	~CGameRules();
+	
+	bool ShouldCollide(const CBaseEntity &lhs, const CBaseEntity &rhs) const override;
+	
+	bool HandleClientConnect(CBaseEntity *apEntity, const char *asName, const char *asAdr, char sRejectReason[128]) override;
+	void HandleClientDisconnect(CBaseEntity *apEntity) override;
+};

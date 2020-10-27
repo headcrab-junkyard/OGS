@@ -145,31 +145,13 @@ void SpawnMeatSpray(vec3_t org, vec3_t vel)
 
 /*
 ================
-SpawnBlood
-================
-*/
-void SpawnBlood(vec3_t org, float damage)
-{
-	WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
-	WriteByte (MSG_MULTICAST, TE_BLOOD);
-	WriteByte (MSG_MULTICAST, 1);
-	WriteCoord (MSG_MULTICAST, org_x);
-	WriteCoord (MSG_MULTICAST, org_y);
-	WriteCoord (MSG_MULTICAST, org_z);
-	multicast (org, MULTICAST_PVS);
-};
-
-/*
-================
 spawn_touchblood
 ================
 */
 void spawn_touchblood(float damage)
 {
-	vec3_t vel;
-
-	vel = wall_velocity () * 0.2;
-	SpawnBlood (self.origin + vel*0.01, damage);
+	idVec3 vel = wall_velocity () * 0.2;
+	mpWorld->SpawnBlood (self->GetOrigin() + vel * 0.01, damage);
 };
 
 /*
@@ -184,6 +166,7 @@ Collects multiple small damages into a single damage
 
 entity  multi_ent;
 float   multi_damage;
+int multi_damage_type;
 
 vec3_t  blood_org;
 float   blood_count;
@@ -195,30 +178,33 @@ void ClearMultiDamage()
 {
 	multi_ent = world;
 	multi_damage = 0;
+	multi_damage_type = 0;
 	blood_count = 0;
 	puff_count = 0;
 };
 
-void ApplyMultiDamage()
+void ApplyMultiDamage(CBaseEntity *apInflictor, CBaseEntity *apAttacker)
 {
 	if (!multi_ent)
 		return;
-	T_Damage (multi_ent, self, self, multi_damage);
+	multi_ent->TakeDamage (apInflictor, apAttacker, multi_damage, multi_damage_type);
 };
 
-void AddMultiDamage(entity hit, float damage)
+void AddMultiDamage(CBaseEntity *hit, float damage, int anDmgType)
 {
 	if (!hit)
 		return;
 	
+	multi_damage_type |= anDmgType;
+	
 	if (hit != multi_ent)
 	{
-		ApplyMultiDamage ();
-		multi_damage = damage;
+		ApplyMultiDamage();
+		multi_damage = 0;
 		multi_ent = hit;
 	}
 	else
-		multi_damage = multi_damage + damage;
+		multi_damage += damage;
 };
 
 void Multi_Finish()
@@ -342,46 +328,27 @@ void CMissile::Touch(CBaseEntity *other)
 	remove(self);
 };
 
-
-
 /*
 ================
 W_FireRocket
 ================
 */
-void W_FireRocket()
+void CWeaponRocketLauncher::PrimaryAttack()
 {
 	if (deathmatch != 4)
-		self.currentammo = self.ammo_rockets = self.ammo_rockets - 1;
+		GetOwner()->currentammo = GetOwner()->ammo_rockets = GetOwner()->ammo_rockets - 1;
 	
 	self->EmitSound (CHAN_WEAPON, "weapons/sgun1.wav", 1, ATTN_NORM);
 
 	msg_entity = self;
-	WriteByte (MSG_ONE, SVC_SMALLKICK);
+	gpEngine->pfnWriteByte (MSG_ONE, SVC_SMALLKICK);
 
-	newmis = spawn ();
-	newmis.owner = self;
-	newmis.movetype = MOVETYPE_FLYMISSILE;
-	newmis.solid = SOLID_BBOX;
-		
-// set newmis speed     
-
-	makevectors (self.v_angle);
-	newmis.velocity = aim(self, 1000);
-	newmis.velocity = newmis.velocity * 1000;
-	newmis.angles = vectoangles(newmis.velocity);
+	newmis = mpWorld->SpawnEntity("rocket", self->GetOrigin() + v_forward * 8 + idVec3(0, 0, 16), nullptr, self);
 	
-	newmis.touch = T_MissileTouch;
-	newmis.voided = 0;
-	
-// set newmis duration
-	newmis.nextthink = time + 5;
-	newmis.think = SUB_Remove;
-	newmis.classname = "rocket";
-
-	setmodel (newmis, "models/missile.mdl");
-	setsize (newmis, '0 0 0', '0 0 0');             
-	setorigin (newmis, self.origin + v_forward*8 + '0 0 16');
+	makevectors(self->v_angle);
+	newmis->SetVelocity(aim(self, 1000));
+	newmis->SetVelocity(newmis->GetVelocity() * 1000);
+	newmis->SetAngles(vectoangles(newmis->GetVelocity()));
 };
 
 /*

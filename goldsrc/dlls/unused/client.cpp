@@ -18,40 +18,25 @@ float   modelindex_eyes, modelindex_player;
 =============================================================================
 */
 
-string nextmap;
-
-float   intermission_running;
-float   intermission_exittime;
-
-/*QUAKED info_intermission (1 0.5 0.5) (-16 -16 -16) (16 16 16)
-This is the camera point for the intermission.
-Use mangle instead of angle, so you can set pitch or roll as well as yaw.  'pitch roll yaw'
-*/
-C_EXPORT void info_intermission(entvars_t *self)
-{
-	self->v.angles = self->v.mangle;      // so C can get at it
-};
-
 void SetChangeParms(edict_t *self)
 {
-	if (self->GetHealth() <= 0)
+	if(self->GetHealth() <= 0)
 	{
-		SetNewParms (self);
+		SetNewParms(self);
 		return;
-	}
+	};
  
-// remove items
-	self->v.items = self->v.items - (self->v.items & 
-	(IT_KEY1 | IT_KEY2 | IT_INVISIBILITY | IT_INVULNERABILITY | IT_SUIT | IT_QUAD) );
+	// remove items
+	self->v.items = self->v.items - (self->v.items & (IT_KEY1 | IT_KEY2 | IT_INVISIBILITY | IT_INVULNERABILITY | IT_SUIT | IT_QUAD) );
 	
-// cap super health
+	// cap super health
 	if (self->GetHealth() > 100)
-		self->v.health = 100;
+		self->SetHealth(100);
 	if (self->GetHealth() < 50)
-		self->v.health = 50;
+		self->SetHealth(50);
 	gpGlobals->parm1 = self->v.items;
 	gpGlobals->parm2 = self->GetHealth();
-	gpGlobals->parm3 = self->v.armorvalue;
+	gpGlobals->parm3 = self->GetArmorValue();
 	if (self->v.ammo_shells < 25)
 		gpGlobals->parm4 = 25;
 	else
@@ -78,10 +63,10 @@ void SetNewParms()
 
 void DecodeLevelParms(edict_t *self)
 {
-	if (serverflags)
+	if(serverflags)
 	{
-		if (world->GetModel() == "maps/start.bsp")
-			SetNewParms ();         // take away all stuff on starting new episode
+		if(world->GetModel() == "maps/start.bsp")
+			SetNewParms(); // take away all stuff on starting new episode
 	};
 	
 	self->v.items = parm1;
@@ -102,51 +87,47 @@ FindIntermission
 Returns the entity to view from
 ============
 */
-entity FindIntermission()
+CBaseEntity *FindIntermission()
 {
-	entity spot;
-	float cyc;
-
-// look for info_intermission first
-	spot = find (world, classname, "info_intermission");
-	if (spot)
-	{       // pick a random one
-		cyc = random() * 4;
-		while (cyc > 1)
+	// look for info_intermission first
+	CBaseEntity *spot{mpWorld->FindEntityByString(world, "classname", "info_intermission")};
+	if(spot)
+	{
+		// pick a random one
+		float cyc{random() * 4};
+		while(cyc > 1)
 		{
-			spot = find (spot, classname, "info_intermission");
-			if (!spot)
-				spot = find (spot, classname, "info_intermission");
-			cyc = cyc - 1;
-		}
+			spot = mpWorld->FindEntityByString(spot, "classname", "info_intermission");
+			if(!spot)
+				spot = mpWorld->FindEntityByString(spot, "classname", "info_intermission");
+			--cyc;
+		};
 		return spot;
-	}
+	};
 
-// then look for the start position
-	spot = find (world, classname, "info_player_start");
-	if (spot)
+	// then look for the start position
+	spot = mpWorld->FindEntityByString(world, "classname", "info_player_start");
+	if(spot)
 		return spot;
 	
-	objerror ("FindIntermission: no spot");
+	objerror("FindIntermission: no spot");
+	//return nullptr;
 };
 
 void GotoNextMap()
 {
-	string newmap;
-
-//ZOID: 12-13-96, samelevel is overloaded, only 1 works for same level
-
+	//ZOID: 12-13-96, samelevel is overloaded, only 1 works for same level
 	//if (cvar("samelevel") == 1)     // if samelevel is set, stay on same level
-		//changelevel (gpGlobals->mapname);
+		//mpWorld->ChangeLevel(gpGlobals->mapname);
 	//else
 	{
 		// configurable map lists, see if the current map exists as a
 		// serverinfo/localinfo var
-		newmap = infokey(world, gpGlobals->mapname);
+		const char *newmap = gpEngine->pfnInfoKeyValue(gpEngine->pfnGetInfoBuffer(world), gpGlobals->mapname);
 		if (newmap != "")
-			changelevel (newmap);
+			mpWorld->ChangeLevel(newmap);
 		else
-			changelevel (nextmap);
+			mpWorld->ChangeLevel(nextmap);
 	}
 };
 
@@ -162,95 +143,10 @@ void CBasePlayer::IntermissionThink()
 	if (gpGlobals->time < intermission_exittime)
 		return;
 
-	if (!self->v.button0 && !self->v.button1 && !self->v.button2)
+	if (!self->button & IN_ATTACK && !self->button & IN_ATTACK2 && !self->button & IN_JUMP)
 		return;
 	
 	GotoNextMap ();
-};
-
-/*
-============
-execute_changelevel
-
-The global "nextmap" has been set previously.
-Take the players to the intermission spot
-============
-*/
-void execute_changelevel()
-{
-	entity    pos;
-
-	intermission_running = 1;
-	
-// enforce a wait time before allowing changelevel
-	intermission_exittime = gpGlobals->time + 5;
-
-	pos = FindIntermission ();
-
-// play intermission music
-	WriteByte (MSG_ALL, SVC_CDTRACK);
-	WriteByte (MSG_ALL, 3);
-
-	WriteByte (MSG_ALL, SVC_INTERMISSION);
-	WriteCoord (MSG_ALL, pos.origin_x);
-	WriteCoord (MSG_ALL, pos.origin_y);
-	WriteCoord (MSG_ALL, pos.origin_z);
-	WriteAngle (MSG_ALL, pos.mangle_x);
-	WriteAngle (MSG_ALL, pos.mangle_y);
-	WriteAngle (MSG_ALL, pos.mangle_z);
-	
-	other = find (world, classname, "player");
-	while (other != world)
-	{
-		other->v.takedamage = DAMAGE_NO;
-		other->v.solid = SOLID_NOT;
-		other->SetMoveType(MOVETYPE_NONE);
-		other->SetModelIndex(0);
-		other = find (other, classname, "player");
-	};
-};
-
-void changelevel_touch()
-{
-	entity    pos;
-
-	if (other->GetClassName() != "player")
-		return;
-
-// if "noexit" is set, blow up the player trying to leave
-//ZOID, 12-13-96, noexit isn't supported in QW.  Overload samelevel
-//      if ((cvar("noexit") == 1) || ((cvar("noexit") == 2) && (mapname != "start")))
-	if ((cvar("samelevel") == 2) || ((cvar("samelevel") == 3) && (mapname != "start")))
-	{
-		T_Damage (other, self, self, 50000);
-		return;
-	}
-
-	bprint (PRINT_HIGH, other->v.netname);
-	bprint (PRINT_HIGH," exited the level\n");
-	
-	nextmap = self->v.map;
-
-	SUB_UseTargets ();
-
-	self->v.touch = SUB_Null;
-
-// we can't move people right now, because touch functions are called
-// in the middle of C movement code, so set a think time to do it
-	self->SetThinkCallback(execute_changelevel);
-	self->SetNextThink(gpGlobals->time + 0.1);
-};
-
-/*QUAKED trigger_changelevel (0.5 0.5 0.5) ? NO_INTERMISSION
-When the player touches this, he gets sent to the map listed in the "map" variable.  Unless the NO_INTERMISSION flag is set, the view will go to the info_intermission spot and display stats.
-*/
-C_EXPORT void trigger_changelevel(entvars_t *self)
-{
-	if (!self->map)
-		objerror ("chagnelevel trigger doesn't have map");
-	
-	InitTrigger ();
-	self->SetTouchCallback(changelevel_touch);
 };
 
 /*
@@ -261,7 +157,7 @@ C_EXPORT void trigger_changelevel(entvars_t *self)
 =============================================================================
 */
 
-bool CheckSpawnPoint(vec3_t v)
+bool CheckSpawnPoint(const idVec3 &v)
 {
 	return false;
 };
@@ -273,19 +169,13 @@ SelectSpawnPoint
 Returns the entity to spawn at
 ============
 */
-entity SelectSpawnPoint()
+CBaseEntity *SelectSpawnPoint()
 {
-	entity spot, newspot, thing;
-	float   numspots, totalspots;
-	float   rnum, pcount;
-	float   rs;
-	entity spots;
-
-	numspots = 0;
-	totalspots = 0;
+	int   numspots = 0, totalspots = 0;
+	CBaseEntity *world = ToBaseEntity(gpWorld->GetEntity(0));
 
 // testinfo_player_start is only found in regioned levels
-	spot = find (world, classname, "testplayerstart");
+	CBaseEntity *spot = gpWorld->FindEntityByString(world, "classname", "testplayerstart");
 	if (spot)
 		return spot;
 		
@@ -293,38 +183,39 @@ entity SelectSpawnPoint()
 
 // ok, find all spots that don't have players nearby
 
-	spots = world;
-	spot = find (world, classname, "info_player_deathmatch");       
+	CBaseEntity *spots = world;
+	spot = gpWorld->FindEntityByString(world, "classname", "info_player_deathmatch");       
 	while (spot)
 	{
 		totalspots++;
 
-		thing=findradius(spot->GetOrigin(), 84);
-		pcount=0;               
+		CBaseEntity *thing = nullptr;
+		thing = gpWorld->FindEntityInSphere(thing, spot->GetOrigin(), 84);
+		int pcount=0;               
 		while (thing)
 		{
 			if (thing->GetClassName() == "player")
 				pcount++;                      
-			thing=thing->v.chain;      
+			thing=gpWorld->FindEntityInSphere(thing, spot->GetOrigin(), 84);
 		}
 		if (pcount == 0) {
-			spot->v.goalentity = spots;
+			spot->SetGoal(spots);
 			spots = spot;
 			numspots++;
 		}
 
 		// Get the next spot in the chain
-		spot = find (spot, classname, "info_player_deathmatch");                
+		spot = gpWorld->FindEntityByString(spot, "classname", "info_player_deathmatch");                
 	}
 	totalspots--;
 	if (!numspots) {
 		// ack, they are all full, just pick one at random
 //		bprint (PRINT_HIGH, "Ackk! All spots are full. Selecting random spawn spot\n");
 		totalspots = rint((random() * totalspots));
-		spot = find (world, classname, "info_player_deathmatch");       
+		spot = gpWorld->FindEntityByString(world, "classname", "info_player_deathmatch");       
 		while (totalspots > 0) {
-			totalspots = totalspots - 1;
-			spot = find (spot, classname, "info_player_deathmatch");
+			totalspots--;
+			spot = gpWorld->FindEntityByString(spot, "classname", "info_player_deathmatch");
 		}
 		return spot;
 	}
@@ -333,14 +224,14 @@ entity SelectSpawnPoint()
 
 	// Generate a random number between 1 and numspots
 
-	numspots = numspots - 1;
+	numspots--;
 	
 	numspots = rint((random() * numspots ) );
 
 	spot = spots;
 	while (numspots > 0) {
 		spot = spot->GetGoalEntity();
-		numspots = numspots - 1;
+		numspots--;
 	}
 	return spot;
 
@@ -356,12 +247,12 @@ ValidateUser
 
 ============
 */
-float ValidateUser(entity e)
+float ValidateUser(edict_t *e)
 {
 /*
-	local string    s;
-	local string    userclan;
-	local float     rank, rankmin, rankmax;
+	string_t    s;
+	string_t    userclan;
+	float     rank, rankmin, rankmax;
 
 //
 // if the server has set "clan1" and "clan2", then it
@@ -414,22 +305,23 @@ float ValidateUser(entity e)
 =============================================================================
 */
 
-
-
-
 /*QUAKED info_player_deathmatch (1 0 1) (-16 -16 -24) (16 16 24)
 potential spawning position for deathmatch games
 */
-C_EXPORT void info_player_deathmatch(entvars_t *self)
+class CInfoPlayerDeathmatch : public CBaseEntity
 {
 };
+
+LINK_ENTITY_TO_CLASS(info_player_deathmatch, CInfoPlayerDeathmatch)
 
 /*QUAKED info_player_coop (1 0 1) (-16 -16 -24) (16 16 24)
 potential spawning position for coop games
 */
-C_EXPORT void info_player_coop(entvars_t *self)
+class CInfoPlayerCoop : public CBaseEntity
 {
 };
+
+LINK_ENTITY_TO_CLASS(info_player_coop, CInfoPlayerCoop)
 
 /*
 ===============================================================================
@@ -444,15 +336,15 @@ go to the next level for deathmatch
 */
 void NextLevel()
 {
-	entity o;
-	string newmap;
+	edict_t *o;
+	string_t newmap;
 
 	if (nextmap != "")
 		return; // already done
 
 	if (gpGlobals->mapname == "start")
 	{
-		o = gpEngine->pfnSpawn();
+		o = gpEngine->pfnCreateEntity();
 		o->v.map = gpGlobals->mapname;
 	}
 	else
@@ -460,18 +352,19 @@ void NextLevel()
 		// find a trigger changelevel
 		o = find(world, classname, "trigger_changelevel");
 		if (!o || gpGlobals->mapname == "start")
-		{       // go back to same map if no trigger_changelevel
-			o = spawn();
+		{
+			// go back to same map if no trigger_changelevel
+			o = gpEngine->pfnCreateEntity();
 			o->v.map = gpGlobals->mapname;
 		};
 	};
 
 	nextmap = o->v.map;
 
-	if (o->v.nextthink < gpGlobals->time)
+	if (o->GetNextThink() < gpGlobals->time)
 	{
-		o->v.think = execute_changelevel;
-		o->v.nextthink = gpGlobals->time + 0.1;
+		o->SetThinkCallback(execute_changelevel);
+		o->SetNextThink(gpGlobals->time + 0.1);
 	};
 };
 
@@ -483,7 +376,7 @@ Exit deathmatch games upon conditions
 ============
 */
 void CheckRules(CBasePlayer *self)
-{       
+{
 	if (timelimit && gpGlobals->time >= timelimit)
 		NextLevel ();
 	
