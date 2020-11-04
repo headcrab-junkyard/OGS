@@ -109,52 +109,52 @@ void player_run();
 
 void()  player_stand1 =[        $axstnd1,       player_stand1   ]
 {
-	self.weaponframe=0;
-	if (self.velocity_x || self.velocity_y)
+	self->weaponframe=0;
+	if (self->velocity_x || self->velocity_y)
 	{
-		self.walkframe=0;
+		self->walkframe=0;
 		player_run();
 		return;
 	}
 
-	if (self.weapon == IT_AXE)
+	if (self->weapon == IT_AXE)
 	{
-		if (self.walkframe >= 12)
-			self.walkframe = 0;
-		self.frame = $axstnd1 + self.walkframe;
+		if (self->walkframe >= 12)
+			self->walkframe = 0;
+		self->frame = $axstnd1 + self->walkframe;
 	}
 	else
 	{
-		if (self.walkframe >= 5)
-			self.walkframe = 0;
-		self.frame = $stand1 + self.walkframe;
+		if (self->walkframe >= 5)
+			self->walkframe = 0;
+		self->frame = $stand1 + self->walkframe;
 	}
-	self.walkframe = self.walkframe + 1;    
+	self->walkframe = self->walkframe + 1;    
 };
 
 void()  player_run =[   $rockrun1,      player_run      ]
 {
-	self.weaponframe=0;
-	if (!self.velocity_x && !self.velocity_y)
+	self->weaponframe=0;
+	if (!self->velocity_x && !self->velocity_y)
 	{
-		self.walkframe=0;
+		self->walkframe=0;
 		player_stand1();
 		return;
 	}
 
-	if (self.weapon == IT_AXE)
+	if (self->weapon == IT_AXE)
 	{
-		if (self.walkframe == 6)
-			self.walkframe = 0;
-		self.frame = $axrun1 + self.walkframe;
+		if (self->walkframe == 6)
+			self->walkframe = 0;
+		self->frame = $axrun1 + self->walkframe;
 	}
 	else
 	{
-		if (self.walkframe == 6)
-			self.walkframe = 0;
-		self.frame = self.frame + self.walkframe;
+		if (self->walkframe == 6)
+			self->walkframe = 0;
+		self->frame = self->frame + self->walkframe;
 	}
-	self.walkframe = self.walkframe + 1;
+	self->walkframe = self->walkframe + 1;
 };
 
 void muzzleflash()
@@ -164,32 +164,32 @@ void muzzleflash()
 	multicast (self->GetOrigin(), MULTICAST_PVS);
 };
 
-void()  player_shot1 =  [$shotatt1, player_shot2        ] {self.weaponframe=1;muzzleflash();};
-void()  player_shot2 =  [$shotatt2, player_shot3        ] {self.weaponframe=2;};
-void()  player_shot3 =  [$shotatt3, player_shot4        ] {self.weaponframe=3;};
-void()  player_shot4 =  [$shotatt4, player_shot5        ] {self.weaponframe=4;};
-void()  player_shot5 =  [$shotatt5, player_shot6        ] {self.weaponframe=5;};
-void()  player_shot6 =  [$shotatt6, player_run  ] {self.weaponframe=6;};
+void()  player_shot1 =  [$shotatt1, player_shot2        ] {self->weaponframe=1;muzzleflash();};
+void()  player_shot2 =  [$shotatt2, player_shot3        ] {self->weaponframe=2;};
+void()  player_shot3 =  [$shotatt3, player_shot4        ] {self->weaponframe=3;};
+void()  player_shot4 =  [$shotatt4, player_shot5        ] {self->weaponframe=4;};
+void()  player_shot5 =  [$shotatt5, player_shot6        ] {self->weaponframe=5;};
+void()  player_shot6 =  [$shotatt6, player_run  ] {self->weaponframe=6;};
 
-void()  player_axe1 =   [$axatt1, player_axe2   ] {self.weaponframe=1;};
-void()  player_axe2 =   [$axatt2, player_axe3   ] {self.weaponframe=2;};
-void()  player_axe3 =   [$axatt3, player_axe4   ] {self.weaponframe=3;W_FireAxe();};
-void()  player_axe4 =   [$axatt4, player_run    ] {self.weaponframe=4;};
+void()  player_axe1 =   [$axatt1, player_axe2   ] {self->weaponframe=1;};
+void()  player_axe2 =   [$axatt2, player_axe3   ] {self->weaponframe=2;};
+void()  player_axe3 =   [$axatt3, player_axe4   ] {self->weaponframe=3;W_FireAxe();};
+void()  player_axe4 =   [$axatt4, player_run    ] {self->weaponframe=4;};
 
-void()  player_axeb1 =  [$axattb1, player_axeb2 ] {self.weaponframe=5;};
-void()  player_axeb2 =  [$axattb2, player_axeb3 ] {self.weaponframe=6;};
-void()  player_axeb3 =  [$axattb3, player_axeb4 ] {self.weaponframe=7;W_FireAxe();};
-void()  player_axeb4 =  [$axattb4, player_run   ] {self.weaponframe=8;};
+void()  player_axeb1 =  [$axattb1, player_axeb2 ] {self->weaponframe=5;};
+void()  player_axeb2 =  [$axattb2, player_axeb3 ] {self->weaponframe=6;};
+void()  player_axeb3 =  [$axattb3, player_axeb4 ] {self->weaponframe=7;W_FireAxe();};
+void()  player_axeb4 =  [$axattb4, player_run   ] {self->weaponframe=8;};
 
-void()  player_axec1 =  [$axattc1, player_axec2 ] {self.weaponframe=1;};
-void()  player_axec2 =  [$axattc2, player_axec3 ] {self.weaponframe=2;};
-void()  player_axec3 =  [$axattc3, player_axec4 ] {self.weaponframe=3;W_FireAxe();};
-void()  player_axec4 =  [$axattc4, player_run   ] {self.weaponframe=4;};
+void()  player_axec1 =  [$axattc1, player_axec2 ] {self->weaponframe=1;};
+void()  player_axec2 =  [$axattc2, player_axec3 ] {self->weaponframe=2;};
+void()  player_axec3 =  [$axattc3, player_axec4 ] {self->weaponframe=3;W_FireAxe();};
+void()  player_axec4 =  [$axattc4, player_run   ] {self->weaponframe=4;};
 
-void()  player_axed1 =  [$axattd1, player_axed2 ] {self.weaponframe=5;};
-void()  player_axed2 =  [$axattd2, player_axed3 ] {self.weaponframe=6;};
-void()  player_axed3 =  [$axattd3, player_axed4 ] {self.weaponframe=7;W_FireAxe();};
-void()  player_axed4 =  [$axattd4, player_run   ] {self.weaponframe=8;};
+void()  player_axed1 =  [$axattd1, player_axed2 ] {self->weaponframe=5;};
+void()  player_axed2 =  [$axattd2, player_axed3 ] {self->weaponframe=6;};
+void()  player_axed3 =  [$axattd3, player_axed4 ] {self->weaponframe=7;W_FireAxe();};
+void()  player_axed4 =  [$axattd4, player_run   ] {self->weaponframe=8;};
 
 //============================================================================
 
@@ -197,27 +197,27 @@ void() player_nail1   =[$nailatt1, player_nail2  ]
 {
 	muzzleflash();
 
-	if (!self.button0 || intermission_running || self.impulse)
+	if (!self->button0 || intermission_running || self->impulse)
 		{player_run ();return;}
-	self.weaponframe = self.weaponframe + 1;
-	if (self.weaponframe == 9)
-		self.weaponframe = 1;
+	self->weaponframe = self->weaponframe + 1;
+	if (self->weaponframe == 9)
+		self->weaponframe = 1;
 	SuperDamageSound();
 	W_FireSpikes (4);
-	self.attack_finished = time + 0.2;
+	self->attack_finished = time + 0.2;
 };
 void() player_nail2   =[$nailatt2, player_nail1  ]
 {
 	muzzleflash();
 
-	if (!self.button0 || intermission_running || self.impulse)
+	if (!self->button0 || intermission_running || self->impulse)
 		{player_run ();return;}
-	self.weaponframe = self.weaponframe + 1;
-	if (self.weaponframe == 9)
-		self.weaponframe = 1;
+	self->weaponframe = self->weaponframe + 1;
+	if (self->weaponframe == 9)
+		self->weaponframe = 1;
 	SuperDamageSound();
 	W_FireSpikes (-4);
-	self.attack_finished = time + 0.2;
+	self->attack_finished = time + 0.2;
 };
 
 //============================================================================
@@ -226,38 +226,38 @@ void() player_light1   =[$light1, player_light2  ]
 {
 	muzzleflash();
 
-	if (!self.button0 || intermission_running)
+	if (!self->button0 || intermission_running)
 		{player_run ();return;}
-	self.weaponframe = self.weaponframe + 1;
-	if (self.weaponframe == 5)
-		self.weaponframe = 1;
+	self->weaponframe = self->weaponframe + 1;
+	if (self->weaponframe == 5)
+		self->weaponframe = 1;
 	SuperDamageSound();
 	W_FireLightning();
-	self.attack_finished = time + 0.2;
+	self->attack_finished = time + 0.2;
 };
 void() player_light2   =[$light2, player_light1  ]
 {
 	muzzleflash();
 
-	if (!self.button0 || intermission_running)
+	if (!self->button0 || intermission_running)
 		{player_run ();return;}
-	self.weaponframe = self.weaponframe + 1;
-	if (self.weaponframe == 5)
-		self.weaponframe = 1;
+	self->weaponframe = self->weaponframe + 1;
+	if (self->weaponframe == 5)
+		self->weaponframe = 1;
 	SuperDamageSound();
 	W_FireLightning();
-	self.attack_finished = time + 0.2;
+	self->attack_finished = time + 0.2;
 };
 
 //============================================================================
 
-void() player_rocket1   =[$rockatt1, player_rocket2  ] {self.weaponframe=1;
+void() player_rocket1   =[$rockatt1, player_rocket2  ] {self->weaponframe=1;
 	muzzleflash();};
-void() player_rocket2   =[$rockatt2, player_rocket3  ] {self.weaponframe=2;};
-void() player_rocket3   =[$rockatt3, player_rocket4  ] {self.weaponframe=3;};
-void() player_rocket4   =[$rockatt4, player_rocket5  ] {self.weaponframe=4;};
-void() player_rocket5   =[$rockatt5, player_rocket6  ] {self.weaponframe=5;};
-void() player_rocket6   =[$rockatt6, player_run  ] {self.weaponframe=6;};
+void() player_rocket2   =[$rockatt2, player_rocket3  ] {self->weaponframe=2;};
+void() player_rocket3   =[$rockatt3, player_rocket4  ] {self->weaponframe=3;};
+void() player_rocket4   =[$rockatt4, player_rocket5  ] {self->weaponframe=4;};
+void() player_rocket5   =[$rockatt5, player_rocket6  ] {self->weaponframe=5;};
+void() player_rocket6   =[$rockatt6, player_run  ] {self->weaponframe=6;};
 
 void CBasePlayer::PainSound()
 {
@@ -339,14 +339,14 @@ void CBasePlayer::PainSound()
 	return;
 };
 
-void()  player_pain1 =  [       $pain1, player_pain2    ] {PainSound();self.weaponframe=0;};
+void()  player_pain1 =  [       $pain1, player_pain2    ] {PainSound();self->weaponframe=0;};
 void()  player_pain2 =  [       $pain2, player_pain3    ] {};
 void()  player_pain3 =  [       $pain3, player_pain4    ] {};
 void()  player_pain4 =  [       $pain4, player_pain5    ] {};
 void()  player_pain5 =  [       $pain5, player_pain6    ] {};
 void()  player_pain6 =  [       $pain6, player_run      ] {};
 
-void()  player_axpain1 =        [       $axpain1,       player_axpain2  ] {PainSound();self.weaponframe=0;};
+void()  player_axpain1 =        [       $axpain1,       player_axpain2  ] {PainSound();self->weaponframe=0;};
 void()  player_axpain2 =        [       $axpain2,       player_axpain3  ] {};
 void()  player_axpain3 =        [       $axpain3,       player_axpain4  ] {};
 void()  player_axpain4 =        [       $axpain4,       player_axpain5  ] {};
@@ -362,27 +362,26 @@ void player_die_ax1();
 
 void DeathBubblesSpawn()
 {
-	entity bubble;
-	
-	if (self->GetOwner()->GetWaterLevel() != 3)
+	if(self->GetOwner()->GetWaterLevel() != 3)
 		return;
 	
-	bubble = gpEngine->pfnSpawn();
+	auto bubble = gpEngine->pfnSpawn();
 	bubble->SetModel("sprites/s_bubble.spr");
 	bubble->SetOrigin(self->GetOwner()->GetOrigin() + '0 0 24');
-	bubble.movetype = MOVETYPE_NOCLIP;
-	bubble.solid = SOLID_NOT;
-	bubble.velocity = '0 0 15';
-	bubble.nextthink = time + 0.5;
-	bubble.think = bubble_bob;
-	bubble.classname = "bubble";
-	bubble.frame = 0;
-	bubble.cnt = 0;
+	bubble->SetMoveType(MOVETYPE_NOCLIP);
+	bubble->SetSolidity(SOLID_NOT);
+	bubble->SetVelocity(0.0f, 0.0f, 15.0f);
+	bubble->SetNextThink(gpGlobals->time + 0.5);
+	bubble->SetThinkCallback(bubble_bob);
+	bubble->SetClassName("bubble");
+	bubble->frame = 0;
+	bubble->cnt = 0;
 	bubble->SetSize('-8 -8 -8', '8 8 8');
-	self.nextthink = time + 0.1;
-	self.think = DeathBubblesSpawn;
-	self.air_finished = self.air_finished + 1;
-	if (self.air_finished >= self.bubble_count)
+	
+	self->SetNextThink(gpGlobals->time + 0.1);
+	self->SetThinkCallback(DeathBubblesSpawn);
+	self->air_finished += 1;
+	if (self->air_finished >= self->bubble_count)
 		remove(self);
 };
 
@@ -392,7 +391,7 @@ void CBasePlayer::DeathBubbles(float num_bubbles)
 
 	bubble_spawner->SetOrigin(GetOrigin());
 	bubble_spawner->SetMoveType(MOVETYPE_NONE);
-	bubble_spawner->solid = SOLID_NOT;
+	bubble_spawner->SetSolidity(SOLID_NOT);
 
 	bubble_spawner->SetNextThink(gpGlobals->time + 0.1);
 	bubble_spawner->SetThinkCallback(DeathBubblesSpawn);
@@ -460,7 +459,7 @@ void CBasePlayer::ThrowGib(string gibname, float dm)
 	
 	pnew->SetVelocity(VelocityForDamage(dm));
 	pnew->SetMoveType(MOVETYPE_BOUNCE);
-	pnew->solid = SOLID_NOT;
+	pnew->SetSolidity(SOLID_NOT);
 	pnew->avelocity_x = random()*600;
 	pnew->avelocity_y = random()*600;
 	pnew->avelocity_z = random()*600;
@@ -478,12 +477,12 @@ void CBasePlayer::ThrowHead(string gibname, float dm)
 	self->SetNextThink(-1);
 	self->SetMoveType(MOVETYPE_BOUNCE);
 	self->takedamage = DAMAGE_NO;
-	self->solid = SOLID_NOT;
+	self->SetSolidity(SOLID_NOT);
 	self->view_ofs = '0 0 8';
-	self->SetSize('-16 -16 0', '16 16 56');
+	self->SetSize(idVec3(-16.0f, -16.0f, 0.0f), idVec3(16.0f, 16.0f, 56.0f));
 	self->SetVelocity(VelocityForDamage(dm));
-	self->origin_z = self.origin_z - 24;
-	self->flags = self.flags - (self.flags & FL_ONGROUND);
+	self->GetOrigin().z -= 24;
+	self->flags = self->GetFlags() - (self->GetFlags() & FL_ONGROUND);
 	self->avelocity = crandom() * '0 600 0';
 };
 
@@ -521,7 +520,7 @@ void set_suicide_frame(entvars_t *self)
 		return; // already gibbed
 	
 	self->frame = $deatha11;
-	self->solid = SOLID_NOT;
+	self->SetSolidity(SOLID_NOT);
 	self->SetMoveType(MOVETYPE_TOSS);
 	self->deadflag = DEAD_DEAD;
 	self->SetNextThink(-1);
@@ -597,34 +596,32 @@ void()  player_die_ax9  =       [       $axdeth9,       player_die_ax9  ] {Playe
 
 void CBasePlayer::PlayerDeathThink()
 {
-	float             forward;
-
-	if ((self->GetFlags() & FL_ONGROUND))
+	if(GetFlags() & FL_ONGROUND)
 	{
-		forward = vlen (self->GetVelocity());
-		forward = forward - 20;
-		if (forward <= 0)
-			self->v.velocity = '0 0 0';
+		float forward = vlen(GetVelocity());
+		forward -= 20.0f;
+		if(forward <= 0.0f)
+			SetVelocity(0.0f, 0.0f, 0.0f);
 		else    
-			self->v.velocity = forward * normalize(self->GetVelocity());
-	}
+			SetVelocity(forward * normalize(GetVelocity()));
+	};
 
 	// wait for all buttons released
-	if (self->v.deadflag == DEAD_DEAD)
+	if (self->deadflag == DEAD_DEAD)
 	{
-		if (self->v.button2 || self->v.button1 || self->v.button0)
+		if (self->button2 || self->button1 || self->button0)
 			return;
-		self->v.deadflag = DEAD_RESPAWNABLE;
+		self->deadflag = DEAD_RESPAWNABLE;
 		return;
 	};
 
 	// wait for any button down
-	if (!self->v.button2 && !self->v.button1 && !self->v.button0)
+	if (!self->button2 && !self->button1 && !self->button0)
 		return;
 
-	self->v.button0 = 0;
-	self->v.button1 = 0;
-	self->v.button2 = 0;
+	self->button0 = 0;
+	self->button1 = 0;
+	self->button2 = 0;
 	
 	respawn(self);
 };
@@ -639,9 +636,9 @@ void CBasePlayer::PlayerJump()
 	if (GetWaterLevel() >= 2)
 	{
 		// play swiming sound
-		if (self->v.swim_flag < gpGlobals->time)
+		if (self->swim_flag < gpGlobals->time)
 		{
-			self->v.swim_flag = gpGlobals->time + 1;
+			self->swim_flag = gpGlobals->time + 1;
 			if (random() < 0.5)
 				EmitSound(CHAN_BODY, "misc/water1.wav", 1, ATTN_NORM);
 			else
@@ -651,14 +648,14 @@ void CBasePlayer::PlayerJump()
 		return;
 	};
 
-	if (!(self->GetFlags() & FL_ONGROUND))
+	if (!(GetFlags() & FL_ONGROUND))
 		return;
 
-	if ( !(self->GetFlags() & FL_JUMPRELEASED) )
+	if ( !(GetFlags() & FL_JUMPRELEASED) )
 		return;         // don't pogo stick
 
-	self->v.flags = self->GetFlags() - (self->v.flags & FL_JUMPRELEASED);       
-	self->v.button2 = 0;
+	self->flags = self->GetFlags() - (self->flags & FL_JUMPRELEASED);       
+	self->button2 = 0;
 
 	// player jumping sound
 	EmitSound(CHAN_BODY, "player/plyrjmp8.wav", 1, ATTN_NORM);
@@ -735,11 +732,11 @@ Plays sound if needed
 */
 void CBasePlayer::SuperDamageSound()
 {
-	if (self.super_damage_finished > gpGlobals->time)
+	if (self->super_damage_finished > gpGlobals->time)
 	{
-		if (self.super_sound < gpGlobals->time)
+		if (self->super_sound < gpGlobals->time)
 		{
-			self.super_sound = gpGlobals->time + 1;
+			self->super_sound = gpGlobals->time + 1;
 			EmitSound (CHAN_BODY, "items/damage3.wav", 1, ATTN_NORM);
 		};
 	};
@@ -763,13 +760,13 @@ Called every frame so impulse events can be handled as well as possible
 */
 void CBasePlayer::W_WeaponFrame()
 {
-	if (gpGlobals->time < self.attack_finished)
+	if (gpGlobals->time < self->attack_finished)
 		return;
 
 	HandleImpulseCommands ();
 	
 	// check for attack
-	if (self.button0)
+	if (self->button0)
 	{
 		SuperDamageSound ();
 		W_Attack ();
@@ -780,69 +777,69 @@ void CBasePlayer::W_SetCurrentAmmo()
 {
 	player_run ();          // get out of any weapon firing states
 
-	self.items = self.items - ( self.items & (IT_SHELLS | IT_NAILS | IT_ROCKETS | IT_CELLS) );
+	self->items = self->items - ( self->items & (IT_SHELLS | IT_NAILS | IT_ROCKETS | IT_CELLS) );
 	
-	if (self.weapon == IT_AXE)
+	if (self->weapon == IT_AXE)
 	{
-		self.currentammo = 0;
-		self.weaponmodel = "models/v_axe.mdl";
-		self.weaponframe = 0;
+		self->currentammo = 0;
+		self->weaponmodel = "models/v_axe.mdl";
+		self->weaponframe = 0;
 	}
-	else if (self.weapon == IT_SHOTGUN)
+	else if (self->weapon == IT_SHOTGUN)
 	{
-		self.currentammo = self.ammo_shells;
-		self.weaponmodel = "models/v_shot.mdl";
-		self.weaponframe = 0;
-		self.items = self.items | IT_SHELLS;
+		self->currentammo = self->ammo_shells;
+		self->weaponmodel = "models/v_shot.mdl";
+		self->weaponframe = 0;
+		self->items |= IT_SHELLS;
 	}
-	else if (self.weapon == IT_SUPER_SHOTGUN)
+	else if (self->weapon == IT_SUPER_SHOTGUN)
 	{
-		self.currentammo = self.ammo_shells;
-		self.weaponmodel = "models/v_shot2.mdl";
-		self.weaponframe = 0;
-		self.items = self.items | IT_SHELLS;
+		self->currentammo = self->ammo_shells;
+		self->weaponmodel = "models/v_shot2.mdl";
+		self->weaponframe = 0;
+		self->items |= IT_SHELLS;
 	}
-	else if (self.weapon == IT_NAILGUN)
+	else if (self->weapon == IT_NAILGUN)
 	{
-		self.currentammo = self.ammo_nails;
-		self.weaponmodel = "models/v_nail.mdl";
-		self.weaponframe = 0;
-		self.items = self.items | IT_NAILS;
+		self->currentammo = self->ammo_nails;
+		self->weaponmodel = "models/v_nail.mdl";
+		self->weaponframe = 0;
+		self->items |= IT_NAILS;
 	}
-	else if (self.weapon == IT_SUPER_NAILGUN)
+	else if (self->weapon == IT_SUPER_NAILGUN)
 	{
-		self.currentammo = self.ammo_nails;
-		self.weaponmodel = "models/v_nail2.mdl";
-		self.weaponframe = 0;
-		self.items = self.items | IT_NAILS;
+		self->currentammo = self->ammo_nails;
+		self->weaponmodel = "models/v_nail2.mdl";
+		self->weaponframe = 0;
+		self->items |= IT_NAILS;
 	}
-	else if (self.weapon == IT_GRENADE_LAUNCHER)
+	else if (self->weapon == IT_GRENADE_LAUNCHER)
 	{
-		self.currentammo = self.ammo_rockets;
-		self.weaponmodel = "models/v_rock.mdl";
-		self.weaponframe = 0;
-		self.items = self.items | IT_ROCKETS;
+		self->currentammo = self->ammo_rockets;
+		self->weaponmodel = "models/v_rock.mdl";
+		self->weaponframe = 0;
+		self->items |= IT_ROCKETS;
 	}
-	else if (self.weapon == IT_ROCKET_LAUNCHER)
+	else if (self->weapon == IT_ROCKET_LAUNCHER)
 	{
-		self.currentammo = self.ammo_rockets;
-		self.weaponmodel = "models/v_rock2.mdl";
-		self.weaponframe = 0;
-		self.items = self.items | IT_ROCKETS;
+		self->currentammo = self->ammo_rockets;
+		self->weaponmodel = "models/v_rock2.mdl";
+		self->weaponframe = 0;
+		self->items |= IT_ROCKETS;
 	}
-	else if (self.weapon == IT_LIGHTNING)
+	else if (self->weapon == IT_LIGHTNING)
 	{
-		self.currentammo = self.ammo_cells;
-		self.weaponmodel = "models/v_light.mdl";
-		self.weaponframe = 0;
-		self.items = self.items | IT_CELLS;
+		self->currentammo = self->ammo_cells;
+		self->weaponmodel = "models/v_light.mdl";
+		self->weaponframe = 0;
+		self->items |= IT_CELLS;
 	}
 	else
 	{
-		self.currentammo = 0;
-		self.weaponmodel = "";
-		self.weaponframe = 0;
-	}
+		self->currentammo = 0;
+		self->weaponmodel = "";
+		self->weaponframe = 0;
+	};
 };
 
 /*
@@ -868,12 +865,12 @@ void CBasePlayer::W_Attack()
 	if (!W_CheckNoAmmo ())
 		return;
 
-	makevectors     (self.v_angle);                 // calculate forward angle for velocity
-	self.show_hostile = gpGlobals->time + 1;   // wake monsters up
+	makevectors     (self->v_angle);                 // calculate forward angle for velocity
+	self->show_hostile = gpGlobals->time + 1;   // wake monsters up
 
-	if (self.weapon == IT_AXE)
+	if (self->weapon == IT_AXE)
 	{
-		self.attack_finished = gpGlobals->time + 0.5;
+		self->attack_finished = gpGlobals->time + 0.5;
 		EmitSound(CHAN_WEAPON, "weapons/ax1.wav", 1, ATTN_NORM);
 		r = random();
 		if (r < 0.25)
@@ -885,41 +882,41 @@ void CBasePlayer::W_Attack()
 		else
 			player_axed1 ();
 	}
-	else if (self.weapon == IT_SHOTGUN)
+	else if (self->weapon == IT_SHOTGUN)
 	{
 		player_shot1 ();
-		self.attack_finished = gpGlobals->time + 0.5;
+		self->attack_finished = gpGlobals->time + 0.5;
 		W_FireShotgun ();
 	}
-	else if (self.weapon == IT_SUPER_SHOTGUN)
+	else if (self->weapon == IT_SUPER_SHOTGUN)
 	{
 		player_shot1 ();
-		self.attack_finished = gpGlobals->time + 0.7;
+		self->attack_finished = gpGlobals->time + 0.7;
 		W_FireSuperShotgun ();
 	}
-	else if (self.weapon == IT_NAILGUN)
+	else if (self->weapon == IT_NAILGUN)
 	{
 		player_nail1 ();
 	}
-	else if (self.weapon == IT_SUPER_NAILGUN)
+	else if (self->weapon == IT_SUPER_NAILGUN)
 	{
 		player_nail1 ();
 	}
-	else if (self.weapon == IT_GRENADE_LAUNCHER)
+	else if (self->weapon == IT_GRENADE_LAUNCHER)
 	{
 		player_rocket1();
-		self.attack_finished = gpGlobals->time + 0.6;
+		self->attack_finished = gpGlobals->time + 0.6;
 		W_FireGrenade();
 	}
-	else if (self.weapon == IT_ROCKET_LAUNCHER)
+	else if (self->weapon == IT_ROCKET_LAUNCHER)
 	{
 		player_rocket1();
-		self.attack_finished = gpGlobals->time + 0.8;
+		self->attack_finished = gpGlobals->time + 0.8;
 		W_FireRocket();
 	}
-	else if (self.weapon == IT_LIGHTNING)
+	else if (self->weapon == IT_LIGHTNING)
 	{
-		self.attack_finished = gpGlobals->time + 0.1;
+		self->attack_finished = gpGlobals->time + 0.1;
 		EmitSound(CHAN_AUTO, "weapons/lstart.wav", 1, ATTN_NORM);
 		player_light1();
 	};
@@ -935,59 +932,59 @@ void CBasePlayer::W_ChangeWeapon()
 {
 	float   fl;
 	
-	int it = self.items;
+	int it = self->items;
 	int am = 0;
 	
-	if (self.impulse == 1)
+	if (self->impulse == 1)
 	{
 		fl = IT_AXE;
 	}
-	else if (self.impulse == 2)
+	else if (self->impulse == 2)
 	{
 		fl = IT_SHOTGUN;
-		if (self.ammo_shells < 1)
+		if (self->ammo_shells < 1)
 			am = 1;
 	}
-	else if (self.impulse == 3)
+	else if (self->impulse == 3)
 	{
 		fl = IT_SUPER_SHOTGUN;
-		if (self.ammo_shells < 2)
+		if (self->ammo_shells < 2)
 			am = 1;
 	}               
-	else if (self.impulse == 4)
+	else if (self->impulse == 4)
 	{
 		fl = IT_NAILGUN;
-		if (self.ammo_nails < 1)
+		if (self->ammo_nails < 1)
 			am = 1;
 	}
-	else if (self.impulse == 5)
+	else if (self->impulse == 5)
 	{
 		fl = IT_SUPER_NAILGUN;
-		if (self.ammo_nails < 2)
+		if (self->ammo_nails < 2)
 			am = 1;
 	}
-	else if (self.impulse == 6)
+	else if (self->impulse == 6)
 	{
 		fl = IT_GRENADE_LAUNCHER;
-		if (self.ammo_rockets < 1)
+		if (self->ammo_rockets < 1)
 			am = 1;
 	}
-	else if (self.impulse == 7)
+	else if (self->impulse == 7)
 	{
 		fl = IT_ROCKET_LAUNCHER;
-		if (self.ammo_rockets < 1)
+		if (self->ammo_rockets < 1)
 			am = 1;
 	}
-	else if (self.impulse == 8)
+	else if (self->impulse == 8)
 	{
 		fl = IT_LIGHTNING;
-		if (self.ammo_cells < 1)
+		if (self->ammo_cells < 1)
 			am = 1;
 	};
 
-	self.impulse = 0;
+	self->impulse = 0;
 	
-	if (!(self.items & fl))
+	if (!(self->items & fl))
 	{
 		// don't have the weapon or the ammo
 		sprint(self, PRINT_HIGH, "no weapon.\n");
@@ -1004,7 +1001,7 @@ void CBasePlayer::W_ChangeWeapon()
 	//
 	// set weapon, set ammo
 	//
-	self.weapon = fl;               
+	self->weapon = fl;               
 	W_SetCurrentAmmo();
 };
 
@@ -1021,10 +1018,10 @@ void CBasePlayer::CheatCommand(int nImpulse)
 	switch(nImpulse)
 	{
 	case 9:
-		self.ammo_rockets = 100;
-		self.ammo_nails = 200;
-		self.ammo_shells = 100;
-		self.items = self.items | 
+		self->ammo_rockets = 100;
+		self->ammo_nails = 200;
+		self->ammo_shells = 100;
+		self->items = self->items | 
 			IT_AXE |
 			IT_SHOTGUN |
 			IT_SUPER_SHOTGUN |
@@ -1034,11 +1031,11 @@ void CBasePlayer::CheatCommand(int nImpulse)
 			IT_ROCKET_LAUNCHER |
 			IT_KEY1 | IT_KEY2;
 
-		self.ammo_cells = 200;
-		self.items |= IT_LIGHTNING;
+		self->ammo_cells = 200;
+		self->items |= IT_LIGHTNING;
 
-		self.weapon = IT_ROCKET_LAUNCHER;
-		self.impulse = 0;
+		self->weapon = IT_ROCKET_LAUNCHER;
+		self->impulse = 0;
 		W_SetCurrentAmmo();
 		break;
 	case 101:
@@ -1058,61 +1055,61 @@ void CBasePlayer::CycleWeaponCommand()
 {
 	float   it, am;
 	
-	it = self.items;
-	self.impulse = 0;
+	it = self->items;
+	self->impulse = 0;
 
 	while (1)
 	{
 		am = 0;
 
-		if (self.weapon == IT_LIGHTNING)
+		if (self->weapon == IT_LIGHTNING)
 		{
-			self.weapon = IT_AXE;
+			self->weapon = IT_AXE;
 		}
-		else if (self.weapon == IT_AXE)
+		else if (self->weapon == IT_AXE)
 		{
-			self.weapon = IT_SHOTGUN;
-			if (self.ammo_shells < 1)
+			self->weapon = IT_SHOTGUN;
+			if (self->ammo_shells < 1)
 				am = 1;
 		}
-		else if (self.weapon == IT_SHOTGUN)
+		else if (self->weapon == IT_SHOTGUN)
 		{
-			self.weapon = IT_SUPER_SHOTGUN;
-			if (self.ammo_shells < 2)
+			self->weapon = IT_SUPER_SHOTGUN;
+			if (self->ammo_shells < 2)
 				am = 1;
 		}               
-		else if (self.weapon == IT_SUPER_SHOTGUN)
+		else if (self->weapon == IT_SUPER_SHOTGUN)
 		{
-			self.weapon = IT_NAILGUN;
-			if (self.ammo_nails < 1)
+			self->weapon = IT_NAILGUN;
+			if (self->ammo_nails < 1)
 				am = 1;
 		}
-		else if (self.weapon == IT_NAILGUN)
+		else if (self->weapon == IT_NAILGUN)
 		{
-			self.weapon = IT_SUPER_NAILGUN;
-			if (self.ammo_nails < 2)
+			self->weapon = IT_SUPER_NAILGUN;
+			if (self->ammo_nails < 2)
 				am = 1;
 		}
-		else if (self.weapon == IT_SUPER_NAILGUN)
+		else if (self->weapon == IT_SUPER_NAILGUN)
 		{
-			self.weapon = IT_GRENADE_LAUNCHER;
-			if (self.ammo_rockets < 1)
+			self->weapon = IT_GRENADE_LAUNCHER;
+			if (self->ammo_rockets < 1)
 				am = 1;
 		}
-		else if (self.weapon == IT_GRENADE_LAUNCHER)
+		else if (self->weapon == IT_GRENADE_LAUNCHER)
 		{
-			self.weapon = IT_ROCKET_LAUNCHER;
-			if (self.ammo_rockets < 1)
+			self->weapon = IT_ROCKET_LAUNCHER;
+			if (self->ammo_rockets < 1)
 				am = 1;
 		}
-		else if (self.weapon == IT_ROCKET_LAUNCHER)
+		else if (self->weapon == IT_ROCKET_LAUNCHER)
 		{
-			self.weapon = IT_LIGHTNING;
-			if (self.ammo_cells < 1)
+			self->weapon = IT_LIGHTNING;
+			if (self->ammo_cells < 1)
 				am = 1;
 		}
 	
-		if ( (self.items & self.weapon) && am == 0)
+		if ( (self->items & self->weapon) && am == 0)
 		{
 			W_SetCurrentAmmo ();
 			return;
@@ -1131,61 +1128,61 @@ void CBasePlayer::CycleWeaponReverseCommand()
 {
 	float   it, am;
 	
-	it = self.items;
-	self.impulse = 0;
+	it = self->items;
+	self->impulse = 0;
 
 	while (1)
 	{
 		am = 0;
 
-		if (self.weapon == IT_LIGHTNING)
+		if (self->weapon == IT_LIGHTNING)
 		{
-			self.weapon = IT_ROCKET_LAUNCHER;
-			if (self.ammo_rockets < 1)
+			self->weapon = IT_ROCKET_LAUNCHER;
+			if (self->ammo_rockets < 1)
 				am = 1;
 		}
-		else if (self.weapon == IT_ROCKET_LAUNCHER)
+		else if (self->weapon == IT_ROCKET_LAUNCHER)
 		{
-			self.weapon = IT_GRENADE_LAUNCHER;
-			if (self.ammo_rockets < 1)
+			self->weapon = IT_GRENADE_LAUNCHER;
+			if (self->ammo_rockets < 1)
 				am = 1;
 		}
-		else if (self.weapon == IT_GRENADE_LAUNCHER)
+		else if (self->weapon == IT_GRENADE_LAUNCHER)
 		{
-			self.weapon = IT_SUPER_NAILGUN;
-			if (self.ammo_nails < 2)
+			self->weapon = IT_SUPER_NAILGUN;
+			if (self->ammo_nails < 2)
 				am = 1;
 		}
-		else if (self.weapon == IT_SUPER_NAILGUN)
+		else if (self->weapon == IT_SUPER_NAILGUN)
 		{
-			self.weapon = IT_NAILGUN;
-			if (self.ammo_nails < 1)
+			self->weapon = IT_NAILGUN;
+			if (self->ammo_nails < 1)
 				am = 1;
 		}
-		else if (self.weapon == IT_NAILGUN)
+		else if (self->weapon == IT_NAILGUN)
 		{
-			self.weapon = IT_SUPER_SHOTGUN;
-			if (self.ammo_shells < 2)
+			self->weapon = IT_SUPER_SHOTGUN;
+			if (self->ammo_shells < 2)
 				am = 1;
 		}               
-		else if (self.weapon == IT_SUPER_SHOTGUN)
+		else if (self->weapon == IT_SUPER_SHOTGUN)
 		{
-			self.weapon = IT_SHOTGUN;
-			if (self.ammo_shells < 1)
+			self->weapon = IT_SHOTGUN;
+			if (self->ammo_shells < 1)
 				am = 1;
 		}
-		else if (self.weapon == IT_SHOTGUN)
+		else if (self->weapon == IT_SHOTGUN)
 		{
-			self.weapon = IT_AXE;
+			self->weapon = IT_AXE;
 		}
-		else if (self.weapon == IT_AXE)
+		else if (self->weapon == IT_AXE)
 		{
-			self.weapon = IT_LIGHTNING;
-			if (self.ammo_cells < 1)
+			self->weapon = IT_LIGHTNING;
+			if (self->ammo_cells < 1)
 				am = 1;
 		}
 	
-		if ( (it & self.weapon) && am == 0)
+		if ( (it & self->weapon) && am == 0)
 		{
 			W_SetCurrentAmmo ();
 			return;
