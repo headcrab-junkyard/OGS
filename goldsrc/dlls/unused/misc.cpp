@@ -54,12 +54,36 @@ C_EXPORT void info_notnull(entvars_t *self)
 
 const float START_OFF = 1;
 
-class CLight : public CBaseEntity
+class CLight : public CPointEntity
 {
 public:
+	bool PreSpawn() const override;
 	void Spawn() override;
 	
 	void Use(CBaseEntity *other) override;
+};
+
+bool CLight::PreSpawn()
+{
+	if(!self->targetname)
+	{
+		// inert light
+		return false;
+	};
+	
+	return true;
+};
+
+void CLight::Spawn()
+{
+	if(self->style >= 32)
+	{
+		SetUseCallback(CLight::Use);
+		if (self->spawnflags & START_OFF)
+			gpEngine->SetLightStyle(self->style, "a");
+		else
+			gpEngine->SetLightStyle(self->style, "m");
+	};
 };
 
 void CLight::Use(CBaseEntity *other)
@@ -82,24 +106,27 @@ Default light value is 300
 Default style is 0
 If targeted, it will toggle between on or off.
 */
-LINK_ENTITY_TO_CLASS(light, CLight)
+LINK_ENTITY_TO_CLASS(light, CLight);
 
-void CLight::Spawn()
+class CLightFluoro : public CLight
 {
-	if (!self.targetname)
-	{       // inert light
-		remove(self);
-		return;
+public:
+	void Spawn() override;
+};
+
+void CLightFluoro::Spawn()
+{
+	if (self->style >= 32)
+	{
+		SetUseCallback(CLight::Use);
+		if (self->spawnflags & START_OFF)
+			gpEngine->SetLightStyle(self->style, "a");
+		else
+			gpEngine->SetLightStyle(self->style, "m");
 	};
 	
-	if (self.style >= 32)
-	{
-		self.use = light_use;
-		if (self.spawnflags & START_OFF)
-			lightstyle(self.style, "a");
-		else
-			lightstyle(self.style, "m");
-	};
+	gpEngine->pfnPrecacheSound ("ambience/fl_hum1.wav");
+	gpEngine->pfnEmitAmbientSound (GetOrigin(), "ambience/fl_hum1.wav", 0.5, ATTN_STATIC);
 };
 
 /*QUAKED light_fluoro (0 1 0) (-8 -8 -8) (8 8 8) START_OFF
@@ -109,20 +136,7 @@ Default style is 0
 If targeted, it will toggle between on or off.
 Makes steady fluorescent humming sound
 */
-C_EXPORT void light_fluoro(entvars_t *self)
-{
-	if (self.style >= 32)
-	{
-		self.use = light_use;
-		if (self.spawnflags & START_OFF)
-			lightstyle(self.style, "a");
-		else
-			lightstyle(self.style, "m");
-	};
-	
-	gpEngine->pfnPrecacheSound ("ambience/fl_hum1.wav");
-	gpEngine->pfnEmitAmbientSound (self.origin, "ambience/fl_hum1.wav", 0.5, ATTN_STATIC);
-};
+LINK_ENTITY_TO_CLASS(light_fluoro, CLightFluoro);
 
 /*QUAKED light_fluorospark (0 1 0) (-8 -8 -8) (8 8 8)
 Non-displayed light.
@@ -211,117 +225,147 @@ C_EXPORT void light_flame_small_white(entvars_t *self)
 /*QUAKED misc_fireball (0 .5 .8) (-8 -8 -8) (8 8 8)
 Lava Balls
 */
-
-void fire_fly();
 void fire_touch();
 
-C_EXPORT void misc_fireball(entvars_t *self)
+class CFireBall : public CBaseEntity
 {
-	gpEngine->pfnPrecacheModel ("models/lavaball.mdl");
-	self.classname = "fireball";
-	self.nextthink = time + (random() * 5);
-	self.think = fire_fly;
-	if (!self.speed)
-		self.speed == 1000;
-};
-
-void fire_fly()
-{
-	entity    fireball;
-
-	fireball = spawn();
-	fireball.solid = SOLID_TRIGGER;
-	fireball.movetype = MOVETYPE_TOSS;
-	fireball.velocity = '0 0 1000';
-	fireball.velocity_x = (random() * 100) - 50;
-	fireball.velocity_y = (random() * 100) - 50;
-	fireball.velocity_z = self.speed + (random() * 200);
-	fireball.classname = "fireball";
-	gpEngine->pfnSetModel (fireball, "models/lavaball.mdl");
-	gpEngine->pfnSetSize (fireball, '0 0 0', '0 0 0');
-	setorigin (fireball, self.origin);
-	fireball.nextthink = time + 5;
-	fireball.think = SUB_Remove;
-	fireball.touch = fire_touch;
+public:
+	void Spawn() override;
 	
-	self.nextthink = time + (random() * 5) + 3;
-	self.think = fire_fly;
+	void Touch(CBaseEntity *apOther) override;
+	
+	void Fly();
 };
 
-
-void fire_touch()
+void CFireBall::Spawn()
 {
-	T_Damage (other, self, self, 20);
+	gpEngine->pfnPrecacheModel("models/lavaball.mdl");
+	
+	SetClassName("fireball");
+	SetNextThink(gpGlobals->time + (random() * 5));
+	SetThinkCallback(CFireBall::Fly);
+	
+	if(!self->speed)
+		self->speed == 1000;
+};
+
+void CFireBall::Touch()
+{
+	other->TakeDamage(self, self, 20);
 	remove(self);
 };
 
-//============================================================================
-
-
-void barrel_explode()
+void CFireBall::Fly()
 {
-	self.takedamage = DAMAGE_NO;
-	self.classname = "explo_box";
-	// did say self.owner
-	T_RadiusDamage (self, self, 160, world, "");
-	WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
-	WriteByte (MSG_MULTICAST, TE_EXPLOSION);
-	WriteCoord (MSG_MULTICAST, self.origin_x);
-	WriteCoord (MSG_MULTICAST, self.origin_y);
-	WriteCoord (MSG_MULTICAST, self.origin_z+32);
-	multicast (self.origin, MULTICAST_PHS);
-	remove (self);
+	auto *fireball = gpEngine->pfnSpawn();
+	fireball->SetSolidity(SOLID_TRIGGER);
+	fireball->SetMoveType(MOVETYPE_TOSS);
+	fireball->SetVelocity(idVec3(0.0f, 0.0f, 1000.0f));
+	fireball->velocity_x = (random() * 100) - 50;
+	fireball->velocity_y = (random() * 100) - 50;
+	fireball->velocity_z = this->GetSpeed() + (random() * 200);
+	fireball->SetClassName("fireball");
+	
+	fireball->SetModel("models/lavaball.mdl");
+	fireball->SetSize(idVec3(0.0f, 0.0f, 0.0f), idVec3(0.0f, 0.0f, 0.0f));
+	
+	fireball->SetOrigin(this->GetOrigin());
+	fireball->SetNextThink(gpGlobals->time + 5);
+	fireball->SetThinkCallback(SUB_Remove);
+	fireball->SetTouchCallback(CFireBall::Touch);
+	
+	self->SetNextThink(gpGlobals->time + (random() * 5) + 3);
+	self->SetThinkCallback(CFireBall::Fly);
 };
 
+LINK_ENTITY_TO_CLASS(misc_fireball, CFireBall);
 
+//============================================================================
 
 /*QUAKED misc_explobox (0 .5 .8) (0 0 0) (32 32 64)
 TESTING THING
 */
-
-void misc_explobox()
+class CExploBox : public CBaseEntity
 {
-	float     oldz;
+public:
+	void Spawn() override;
 	
-	self.solid = SOLID_BBOX;
-	self.movetype = MOVETYPE_NONE;
-	gpEngine->pfnPrecacheModel ("maps/b_explob.bsp");
-	gpEngine->pfnSetModel (self, "maps/b_explob.bsp");
-	gpEngine->pfnSetSize (self, '0 0 0', '32 32 64');
-	gpEngine->pfnPrecacheSound ("weapons/r_exp3.wav");
-	self.health = 20;
-	self.th_die = barrel_explode;
-	self.takedamage = DAMAGE_AIM;
-
-	self.origin_z = self.origin_z + 2;
-	oldz = self.origin_z;
-	droptofloor();
-	if (oldz - self.origin_z > 250)
-	{
-		dprint ("item fell out of level at ");
-		dprint (vtos(self.origin));
-		dprint ("\n");
-		remove(self);
-	}
+	void Explode();
 };
+
+void CExploBox::Spawn()
+{
+	SetSolidity(SOLID_BBOX);
+	SetMoveType(MOVETYPE_NONE);
+	
+	gpEngine->pfnPrecacheModel("maps/b_explob.bsp");
+	gpEngine->pfnPrecacheSound("weapons/r_exp3.wav");
+	
+	SetModel("maps/b_explob.bsp");
+	SetSize('0 0 0', '32 32 64');
+	
+	SetHealth(20);
+	self->th_die = barrel_explode;
+	self->takedamage = DAMAGE_AIM;
+
+	self->origin_z = GetOrigin().z + 2;
+	float oldz = GetOrigin().z;
+	
+	DropToFloor();
+	
+	if(oldz - GetOrigin().z > 250)
+	{
+		gpEngine->dprint("item fell out of level at ");
+		gpEngine->dprint(vtos(GetOrigin()));
+		gpEngine->dprint("\n");
+		gpEngine->pfnRemove(self);
+	};
+};
+
+void CExploBox::Explode()
+{
+	self->takedamage = DAMAGE_NO;
+	SetClassName("explo_box");
+	
+	// did say self->owner
+	T_RadiusDamage(self, self, 160, world, "");
+	
+	gpEngine->WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
+	gpEngine->WriteByte (MSG_MULTICAST, TE_EXPLOSION);
+	gpEngine->WriteCoord (MSG_MULTICAST, self.origin_x);
+	gpEngine->WriteCoord (MSG_MULTICAST, self.origin_y);
+	gpEngine->WriteCoord (MSG_MULTICAST, self.origin_z+32);
+	
+	gpEngine->pfnMulticast(self->GetOrigin(), MULTICAST_PHS);
+	
+	gpEngine->pfnRemove(self);
+};
+
+LINK_ENTITY_TO_CLASS(misc_explobox, CExploBox);
 
 /*QUAKED misc_explobox2 (0 .5 .8) (0 0 0) (32 32 64)
 Smaller exploding box, REGISTERED ONLY
 */
-
-void misc_explobox2()
+class CExploBox2 : public CExploBox
 {
-	float     oldz;
+public:
+	void Spawn() override;
+};
+
+void CExploBox2::Spawn()
+{
+	float oldz;
 	
-	self.solid = SOLID_BBOX;
-	self.movetype = MOVETYPE_NONE;
+	SetSolidity(SOLID_BBOX);
+	SetMoveType(MOVETYPE_NONE);
 	
 	gpEngine->pfnPrecacheModel ("maps/b_exbox2.bsp");
-	gpEngine->pfnSetModel (self, "maps/b_exbox2.bsp");
-	gpEngine->pfnSetSize (self, '0 0 0', '32 32 32');
 	gpEngine->pfnPrecacheSound ("weapons/r_exp3.wav");
 	
-	self.health = 20;
+	SetModel("maps/b_exbox2.bsp");
+	SetSize('0 0 0', '32 32 32');
+	
+	SetHealth(20);
 	self.th_die = barrel_explode;
 	self.takedamage = DAMAGE_AIM;
 
@@ -338,32 +382,32 @@ void misc_explobox2()
 	};
 };
 
+LINK_ENTITY_TO_CLASS(misc_explobox2, CExploBox2);
+
 //============================================================================
 
 const float SPAWNFLAG_SUPERSPIKE      = 1;
 const float SPAWNFLAG_LASER = 2;
 
-void Laser_Touch()
+void Laser_Touch(CBaseEntity *other)
 {
-	vector org;
-	
-	if (other == self.owner)
-		return;         // don't explode on owner
+	if (other == self->GetOwner())
+		return; // don't explode on owner
 
-	if (pointcontents(self.origin) == CONTENT_SKY)
+	if (pointcontents(self->GetOrigin()) == CONTENT_SKY)
 	{
 		remove(self);
 		return;
-	}
+	};
 	
-	gpEngine->pfnEmitSound (self, CHAN_WEAPON, "enforcer/enfstop.wav", 1, ATTN_STATIC);
-	org = self.origin - 8*normalize(self.velocity);
+	self->EmitSound(CHAN_WEAPON, "enforcer/enfstop.wav", 1, ATTN_STATIC);
+	idVec3 org = self->GetOrigin() - 8 * normalize(self->GetVelocity());
 
-	if (other.health)
+	if(other->GetHealth())
 	{
-		SpawnBlood (org, 15);
-		other.deathtype = "laser";
-		T_Damage (other, self, self.owner, 15);
+		SpawnBlood(org, 15);
+		other->deathtype = "laser";
+		other->TakeDamage(self, self->GetOwner(), 15);
 	}
 	else
 	{
@@ -381,10 +425,10 @@ void Laser_Touch()
 
 void LaunchLaser(vec3_t org, vec3_t vec)
 {
-	vec3_t vec;
+	idVec3 vec;
 	
-	if (self->classname == "monster_enforcer")
-		sound (self, CHAN_WEAPON, "enforcer/enfire.wav", 1, ATTN_NORM);
+	if (self->GetClassName() == "monster_enforcer")
+		self->EmitSound(CHAN_WEAPON, "enforcer/enfire.wav", 1, ATTN_NORM);
 
 	vec = normalize(vec);
 	
@@ -482,7 +526,6 @@ void bubble_bob();
 
 testing air bubbles
 */
-
 C_EXPORT void air_bubbles(entvars_t *self)
 {
 	gpEngine->pfnRemove (self);
@@ -490,11 +533,9 @@ C_EXPORT void air_bubbles(entvars_t *self)
 
 void make_bubbles()
 {
-	entity    bubble;
-
-	bubble = gpEngine->pfnSpawn();
-	gpEngine->pfnSetModel (bubble, "sprites/s_bubble.spr");
-	setorigin (bubble, self.origin);
+	auto bubble = gpEngine->pfnSpawn();
+	bubble->SetModel("sprites/s_bubble.spr");
+	bubble->SetOrigin(self->GetOrigin());
 	bubble.movetype = MOVETYPE_NOCLIP;
 	bubble.solid = SOLID_NOT;
 	bubble.velocity = '0 0 15';
@@ -593,9 +634,10 @@ void bubble_bob()
 
 Just for the debugging level.  Don't use
 */
-C_EXPORT void viewthing(entvars_t *self)
+class CViewthing : public CBaseEntity
 {
-	CViewthing::Spawn();
+public:
+	void Spawn() override;
 };
 
 void CViewthing::Spawn()
@@ -606,6 +648,8 @@ void CViewthing::Spawn()
 	gpEngine->pfnPrecacheModel("models/player.mdl");
 	SetModel("models/player.mdl");
 };
+
+LINK_ENTITY_TO_CLASS(viewthing, CViewthing);
 
 /*
 ==============================================================================
@@ -626,11 +670,9 @@ public:
 	void Use(CBaseEntity *other) override;
 };
 
-LINK_ENTITY_TO_CLASS(func_wall, CFuncWall)
-
 void CFuncWall::Spawn()
 {
-	self->angles = '0 0 0';
+	SetAngles('0 0 0');
 	SetMoveType(MOVETYPE_PUSH); // so it doesn't get pushed by anything
 	SetSolidity(SOLID_BSP);
 	SetUseCallback(CFuncWall::Use);
@@ -644,19 +686,29 @@ void CFuncWall::Use(CBaseEntity *other)
 	self->frame = 1 - self->frame;
 };
 
+LINK_ENTITY_TO_CLASS(func_wall, CFuncWall);
+
 /*QUAKED func_illusionary (0 .5 .8) ?
 A simple entity that looks solid but lets you walk through it.
 */
-C_EXPORT void func_illusionary(entvars_t *self)
+class CFuncIllusionary : public CBaseEntity
 {
-	self->SetAngles('0 0 0');
-	self->SetMoveType(MOVETYPE_NONE);
-	self->SetSolid(SOLID_NOT);
-	
-	self->SetModel (self->GetModel());
-	
-	gpEngine->pfnMakeStatic (this);
+public:
+	void Spawn() override;
 };
+
+void CFuncIllusionary::Spawn()
+{
+	SetAngles(idVec3(0.0f, 0.0f, 0.0f));
+	SetMoveType(MOVETYPE_NONE);
+	SetSolidity(SOLID_NOT);
+	
+	SetModel(self->GetModel());
+	
+	gpEngine->pfnMakeStatic(this);
+};
+
+LINK_ENTITY_TO_CLASS(func_illusionary, CFuncIllusionary);
 
 //============================================================================
 
@@ -665,7 +717,7 @@ C_EXPORT void func_illusionary(entvars_t *self)
 void ambient_suck_wind()
 {
 	gpEngine->pfnPrecacheSound ("ambience/suck1.wav");
-	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/suck1.wav", 1, ATTN_STATIC);
+	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/suck1.wav", 1, ATTN_STATIC, PITCH_NORM);
 };
 
 /*QUAKED ambient_drone (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
@@ -673,7 +725,7 @@ void ambient_suck_wind()
 void ambient_drone()
 {
 	gpEngine->pfnPrecacheSound ("ambience/drone6.wav");
-	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/drone6.wav", 0.5, ATTN_STATIC);
+	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/drone6.wav", 0.5, ATTN_STATIC, PITCH_NORM);
 };
 
 /*QUAKED ambient_flouro_buzz (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
@@ -681,7 +733,7 @@ void ambient_drone()
 void ambient_flouro_buzz()
 {
 	gpEngine->pfnPrecacheSound ("ambience/buzz1.wav");
-	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/buzz1.wav", 1, ATTN_STATIC);
+	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/buzz1.wav", 1, ATTN_STATIC, PITCH_NORM);
 };
 
 /*QUAKED ambient_drip (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
@@ -689,7 +741,7 @@ void ambient_flouro_buzz()
 void ambient_drip()
 {
 	gpEngine->pfnPrecacheSound ("ambience/drip1.wav");
-	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/drip1.wav", 0.5, ATTN_STATIC);
+	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/drip1.wav", 0.5, ATTN_STATIC, PITCH_NORM);
 };
 
 /*QUAKED ambient_comp_hum (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
@@ -697,7 +749,7 @@ void ambient_drip()
 void ambient_comp_hum()
 {
 	gpEngine->pfnPrecacheSound ("ambience/comp1.wav");
-	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/comp1.wav", 1, ATTN_STATIC);
+	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/comp1.wav", 1, ATTN_STATIC, PITCH_NORM);
 };
 
 /*QUAKED ambient_thunder (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
@@ -705,7 +757,7 @@ void ambient_comp_hum()
 void ambient_thunder()
 {
 	gpEngine->pfnPrecacheSound ("ambience/thunder1.wav");
-	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/thunder1.wav", 0.5, ATTN_STATIC);
+	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/thunder1.wav", 0.5, ATTN_STATIC, PITCH_NORM);
 };
 
 /*QUAKED ambient_light_buzz (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
@@ -713,24 +765,40 @@ void ambient_thunder()
 void ambient_light_buzz()
 {
 	gpEngine->pfnPrecacheSound ("ambience/fl_hum1.wav");
-	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/fl_hum1.wav", 0.5, ATTN_STATIC);
+	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/fl_hum1.wav", 0.5, ATTN_STATIC, PITCH_NORM);
 };
 
 /*QUAKED ambient_swamp1 (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
 */
-void ambient_swamp1()
+class CAmbientSwamp : public CBaseEntity
 {
-	gpEngine->pfnPrecacheSound ("ambience/swamp1.wav");
-	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/swamp1.wav", 0.5, ATTN_STATIC);
+public:
+	void Spawn() override;
 };
+
+void CAmbientSwamp::Spawn()
+{
+	gpEngine->pfnPrecacheSound("ambience/swamp1.wav");
+	gpEngine->pfnAmbientSound(GetOrigin(), "ambience/swamp1.wav", 0.5, ATTN_STATIC, PITCH_NORM);
+};
+
+LINK_ENTITY_TO_CLASS(ambient_swamp1, CAmbientSwamp);
 
 /*QUAKED ambient_swamp2 (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
 */
-void ambient_swamp2()
+class CAmbientSwamp2 : public CBaseEntity
 {
-	gpEngine->pfnPrecacheSound ("ambience/swamp2.wav");
-	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/swamp2.wav", 0.5, ATTN_STATIC);
+public:
+	void Spawn() override;
 };
+
+void CAmbientSwamp2::Spawn()
+{
+	gpEngine->pfnPrecacheSound("ambience/swamp2.wav");
+	gpEngine->pfnAmbientSound(GetOrigin(), "ambience/swamp2.wav", 0.5, ATTN_STATIC, PITCH_NORM);
+};
+
+LINK_ENTITY_TO_CLASS(ambient_swamp2, CAmbientSwamp2);
 
 //============================================================================
 
@@ -763,17 +831,17 @@ void CNoiseMaker::Think()
 {
 	SetNextThink(gpGlobals->time + 0.5);
 	
-	EmitSound(1, "enforcer/enfire.wav", 1, ATTN_NORM);
-	EmitSound(2, "enforcer/enfstop.wav", 1, ATTN_NORM);
-	EmitSound(3, "enforcer/sight1.wav", 1, ATTN_NORM);
-	EmitSound(4, "enforcer/sight2.wav", 1, ATTN_NORM);
-	EmitSound(5, "enforcer/sight3.wav", 1, ATTN_NORM);
-	EmitSound(6, "enforcer/sight4.wav", 1, ATTN_NORM);
-	EmitSound(7, "enforcer/pain1.wav", 1, ATTN_NORM);
+	EmitSound(1, "enforcer/enfire.wav", 1, ATTN_NORM, PITCH_NORM);
+	EmitSound(2, "enforcer/enfstop.wav", 1, ATTN_NORM, PITCH_NORM);
+	EmitSound(3, "enforcer/sight1.wav", 1, ATTN_NORM, PITCH_NORM);
+	EmitSound(4, "enforcer/sight2.wav", 1, ATTN_NORM, PITCH_NORM);
+	EmitSound(5, "enforcer/sight3.wav", 1, ATTN_NORM, PITCH_NORM);
+	EmitSound(6, "enforcer/sight4.wav", 1, ATTN_NORM, PITCH_NORM);
+	EmitSound(7, "enforcer/pain1.wav", 1, ATTN_NORM, PITCH_NORM);
 };
 
 /*QUAKED misc_noisemaker (1 0.5 0) (-10 -10 -10) (10 10 10)
 
 For optimzation testing, starts a lot of sounds.
 */
-LINK_ENTITY_TO_CLASS(misc_noisemaker, CNoiseMaker)
+LINK_ENTITY_TO_CLASS(misc_noisemaker, CNoiseMaker);
