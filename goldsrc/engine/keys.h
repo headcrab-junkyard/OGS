@@ -31,10 +31,13 @@ typedef enum { key_game,
 extern keydest_t key_dest;
 extern char *keybindings[256];
 extern int key_repeats[256];
-extern int key_count; // incremented every key event
-extern int key_lastpress;
 
-// TODO: qw
+extern int key_count; // incremented every key event // TODO: non-q2
+extern int key_lastpress; // TODO: non-q2
+
+//extern int anykeydown; // TODO: q2
+
+// TODO: qw + q2
 /*
 extern char chat_buffer[];
 extern int chat_bufferlen;

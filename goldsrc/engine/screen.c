@@ -457,6 +457,9 @@ void SCR_Init(void)
 	//Cmd_AddCommand("snap", SCR_RSShot_f); // TODO: GLQUAKE only or QW
 	Cmd_AddCommand("sizeup", SCR_SizeUp_f);
 	Cmd_AddCommand("sizedown", SCR_SizeDown_f);
+	//Cmd_AddCommand("timerefresh", SCR_TimeRefresh_f); // TODO: q2
+	//Cmd_AddCommand("loading", SCR_Loading_f); // TODO: q2
+	//Cmd_AddCommand("sky", SCR_Sky_f); // TODO: q2
 
 	//scr_ram = Draw_PicFromWad("ram"); // TODO: W_GetLumpName in qw
 	//scr_net = Draw_PicFromWad("net"); // TODO: W_GetLumpName in qw
@@ -561,12 +564,20 @@ void SCR_DrawPause(void)
 	if(!scr_showpause.value) // turn off for screenshots
 		return;
 
-	if(!cl.paused)
+	if(!cl.paused) // TODO: !cl_paused->value (cvar) in q2
 		return;
 
+	//
 	pic = Draw_CachePic("gfx/pause.lmp");
 	Draw_Pic((vid.width - pic->width) / 2,
 	         (vid.height - 48 - pic->height) / 2, pic);
+	//
+	// TODO: q2
+	// int w, h;
+	//
+	//re.DrawGetPicSize (&w, &h, "pause");
+	//re.DrawPic ((viddef.width-w)/2, viddef.height/2 + 8, "pause");
+	//
 }
 
 /*
@@ -581,9 +592,18 @@ void SCR_DrawLoading(void)
 	if(!scr_drawloading)
 		return;
 
+	//
 	pic = Draw_CachePic("gfx/loading.lmp");
 	Draw_Pic((vid.width - pic->width) / 2,
 	         (vid.height - 48 - pic->height) / 2, pic);
+	//
+	// TODO: q2
+	//int w, h;
+
+	//scr_draw_loading = false;
+	//re.DrawGetPicSize (&w, &h, "loading");
+	//re.DrawPic ((viddef.width-w)/2, (viddef.height-h)/2, "loading");
+	//
 }
 
 //=============================================================================

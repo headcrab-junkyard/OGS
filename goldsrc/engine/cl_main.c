@@ -196,14 +196,18 @@ void CL_SendConnectPacket()
 
 	connect_time = realtime + t2 - t1; // for retransmit requests
 
-	cls.qport = Cvar_VariableValue("qport");
-
+	cls.qport = Cvar_VariableValue("qport"); // TODO: int port (local) in q2
+	//userinfo_modified = false; // TODO: q2
+	
 	Info_SetValueForStarKey(cls.userinfo, "*ip", NET_AdrToString(adr), MAX_INFO_STRING);
 
 	//	Con_Printf ("Connecting to %s...\n", cls.servername);
 	sprintf(data, "%c%c%c%cconnect %i %i %i \"%s\"\n",
 	        255, 255, 255, 255, PROTOCOL_VERSION, cls.qport, cls.challenge, cls.userinfo);
 	NET_SendPacket(NS_CLIENT, strlen(data), data, adr);
+	// TODO: q2
+	//Netchan_OutOfBandPrint (NS_CLIENT, adr, "connect %i %i %i \"%s\"\n",
+		//PROTOCOL_VERSION, port, cls.challenge, Cvar_Userinfo() );
 };
 
 /*
@@ -840,24 +844,24 @@ void CL_ConnectionlessPacket()
 
 	if(c == S2C_CONNECTION)
 	{
-		Con_Printf("connection\n");
+		Con_Printf("connection\n"); // TODO: non-q2
 
-		if(cls.state >= ca_connected)
+		if(cls.state >= ca_connected) // TODO: == in q2
 		{
-			if(!cls.demoplayback)
+			if(!cls.demoplayback) // TODO: non-q2
 				Con_Printf("Dup connect received.  Ignored.\n");
 			return;
 		};
 
 		Netchan_Setup(NS_CLIENT, &cls.netchan, net_from, cls.qport);
 		
-		MSG_WriteByte(&cls.netchan.message, clc_stringcmd);
+		MSG_WriteByte(&cls.netchan.message, clc_stringcmd); // TODO: WriteChar in q2
 		MSG_WriteString(&cls.netchan.message, "new");
 		
 		cls.state = ca_connected;
-		Con_Printf("Connected.\n");
+		Con_Printf("Connected.\n"); // TODO: non-q2
 		
-		allowremotecmd = false; // localid required now for remote cmds
+		allowremotecmd = false; // localid required now for remote cmds // TODO: non-q2
 		return;
 	};
 
@@ -921,7 +925,7 @@ void CL_ConnectionlessPacket()
 	// print command from somewhere
 	if(c == A2C_PRINT)
 	{
-		Con_Printf("print\n");
+		Con_Printf("print\n"); // TODO: non-q2
 
 		s = MSG_ReadString();
 		Con_Print(s);
@@ -943,15 +947,23 @@ void CL_ConnectionlessPacket()
 		data[5] = 0;
 
 		NET_SendPacket(NS_CLIENT, 6, &data, net_from);
+		//
+		// TODO: q2
+		//Netchan_OutOfBandPrint (NS_CLIENT, net_from, "ack");
+		//
 		return;
 	};
 
 	if(c == S2C_CHALLENGE)
 	{
-		Con_Printf("challenge\n");
+		Con_Printf("challenge\n"); // TODO: non-q2
 
+		//
 		s = MSG_ReadString();
 		cls.challenge = atoi(s);
+		//
+		//cls.challenge = atoi(Cmd_Argv(1)); // TODO: q2
+		//
 		CL_SendConnectPacket();
 		return;
 	};
@@ -971,7 +983,7 @@ void CL_ConnectionlessPacket()
 	if(ClientDLL_ConnectionlessPacket(&net_from, s, NULL, NULL)) // TODO
 		return;
 
-	Con_Printf("unknown:  %c\n", c);
+	Con_Printf("unknown:  %c\n", c); // TODO: "Unknown command.\n" in q2
 };
 
 /*
@@ -1021,6 +1033,7 @@ CL_ReadPackets
 void CL_ReadPackets ()
 {
 //	while (NET_GetPacket ())
+	//while (NET_GetPacket (NS_CLIENT, &net_from, &net_message)) // TODO: q2
 	while (CL_GetMessage())
 	{
 		//
@@ -1031,6 +1044,10 @@ void CL_ReadPackets ()
 			CL_ConnectionlessPacket ();
 			continue;
 		};
+		
+		// TODO: q2
+		//if(cls.state == ca_disconnected || cls.state == ca_connecting)
+			//continue; // dump it if not connected
 
 		if (net_message.cursize < 8)
 		{
@@ -1041,7 +1058,7 @@ void CL_ReadPackets ()
 		//
 		// packet from server
 		//
-		if (!cls.demoplayback && !NET_CompareAdr (net_from, cls.netchan.remote_address))
+		if (!cls.demoplayback && !NET_CompareAdr (net_from, cls.netchan.remote_address)) // TODO: q2 doesn't check for demo playback
 		{
 			Con_DPrintf ("%s:sequenced packet without connection\n", NET_AdrToString(net_from));
 			continue;
@@ -1052,6 +1069,7 @@ void CL_ReadPackets ()
 		
 		CL_ParseServerMessage ();
 
+		// TODO: non-q2
 //		if (cls.demoplayback && cls.state >= ca_active && !CL_DemoBehind())
 //			return;
 	};
@@ -1059,12 +1077,17 @@ void CL_ReadPackets ()
 	//
 	// check timeout
 	//
-	if (cls.state >= ca_connected && realtime - cls.netchan.last_received > cl_timeout.value)
+	if (cls.state >= ca_connected && realtime - cls.netchan.last_received > cl_timeout.value) // TODO: cls.realtime in q2; timeout value is multiplied by 1000 in q2 (secs->msecs)
 	{
-		Con_Printf ("\nServer connection timed out.\n");
-		CL_Disconnect ();
-		return;
-	};	
+		//if (++cl.timeoutcount > 5)	// timeoutcount saves debugger // TODO: q2
+		{
+			Con_Printf ("\nServer connection timed out.\n");
+			CL_Disconnect ();
+			return;
+		};
+	}
+	//else // TODO: q2
+		//cl.timeoutcount = 0; // TODO: q2
 };
 
 /*

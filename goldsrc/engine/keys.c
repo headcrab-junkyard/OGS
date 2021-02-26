@@ -634,6 +634,11 @@ void Key_Event(int key, qboolean down)
 		Con_ToggleConsole_f();
 		return;
 	};
+	
+	// any key during the attract mode will bring up the menu
+	//if (cl.attractloop && cls.key_dest != key_menu) // TODO: q2
+		//key = K_ESCAPE;
+	
 	//
 	// handle escape specialy, so the user can never unbind it
 	//

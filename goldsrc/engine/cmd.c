@@ -680,6 +680,19 @@ Cmd_ForwardToServer
 Sends the entire command line over to the server
 ===================
 */
+
+// TODO: q2
+/*
+===================
+Cmd_ForwardToServer
+
+adds the current command line as a clc_stringcmd to the client message.
+things like godmode, noclip, etc, are commands directed to the server,
+so when they are typed in at the console, they will need to be forwarded.
+===================
+*/
+//
+
 void Cmd_ForwardToServer()
 {
 	if(cls.state != ca_connected)
@@ -701,6 +714,27 @@ void Cmd_ForwardToServer()
 		SZ_Print(&cls.netchan.message, Cmd_Args());
 	else
 		SZ_Print(&cls.netchan.message, "\n");
+	
+	// TODO: q2
+	/*
+	char	*cmd;
+
+	cmd = Cmd_Argv(0);
+	
+	if (cls.state <= ca_connected || *cmd == '-' || *cmd == '+')
+	{
+		Com_Printf ("Unknown command \"%s\"\n", cmd);
+		return;
+	}
+
+	MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
+	SZ_Print (&cls.netchan.message, cmd);
+	if (Cmd_Argc() > 1)
+	{
+		SZ_Print (&cls.netchan.message, " ");
+		SZ_Print (&cls.netchan.message, Cmd_Args());
+	}
+	*/
 }
 
 /*
