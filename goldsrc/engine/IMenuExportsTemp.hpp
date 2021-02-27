@@ -3,7 +3,7 @@
 #pragma once
 
 #include "const.h"
-#include "interface.h"
+#include "tier1/interface.h"
 
 const char OGS_MENUEXPORTS_INTERFACE_VERSION[] = "OGSMenuExports000";
 

@@ -23,7 +23,7 @@
 #include "engine_launcher_api.h"
 #include "engine_hlds_api.h"
 #include "igameuifuncs.h"
-#include "idedicatedexports.h"
+#include "dedicated/idedicatedexports.h"
 #include "iengine.h"
 #include "igame.h"
 

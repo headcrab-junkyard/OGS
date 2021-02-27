@@ -1,6 +1,6 @@
 /// @file
 
-#include "interface.h"
+#include "tier1/interface.h"
 
 extern "C"
 {
