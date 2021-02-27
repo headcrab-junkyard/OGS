@@ -40,7 +40,7 @@ endif()
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(OGS_USE_SDL)
-	target_include_directories(${PROJECT_NAME} PRIVATE ${SDL2_INCLUDE_DIR})
+	target_include_directories(${PROJECT_NAME} PRIVATE ${SDL2_INCLUDE_DIRS})
 endif()
 
 if(OGS_USE_IMGUI)
@@ -70,6 +70,10 @@ if(WIN32)
 	# NOTE: looks like wsock32 is loaded dynamically
 	# ws2_32
 	target_link_libraries(${PROJECT_NAME} wsock32 winmm dxguid)
+endif()
+
+if(OGS_USE_SDL)
+	target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES})
 endif()
 
 if(NOT OGS_DEDICATED)
