@@ -33,7 +33,7 @@ target_sources(${PROJECT_NAME}
 
 if(OGS_USE_IMGUI)
 	target_sources(${PROJECT_NAME}
-		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui_impl_opengl2.cpp
+		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui_impl_qgl.cpp
 	)
 endif()
 
