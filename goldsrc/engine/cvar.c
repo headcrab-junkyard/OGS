@@ -258,6 +258,11 @@ cvar_t *Cvar_RegisterClientVariable(const char *name, const char *value, int fla
 	return Cvar_AddVariable(name, value, flags /*| FCVAR_CLIENT*/); // TODO
 };
 
+cvar_t *Cvar_RegisterGameVariable(const char *name, const char *value, int flags)
+{
+	return Cvar_AddVariable(name, value, flags | FCVAR_EXTDLL);
+};
+
 /*
 ============
 Cvar_Command
