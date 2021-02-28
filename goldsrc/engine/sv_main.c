@@ -2077,7 +2077,7 @@ void SV_WriteClientdataToMessage(edict_t *ent, sizebuf_t *msg)
 	//
 	if(ent->v.dmg_take || ent->v.dmg_save)
 	{
-		other = PROG_TO_EDICT(ent->v.dmg_inflictor);
+		other = ent->v.dmg_inflictor;
 		MSG_WriteByte(msg, svc_damage);
 		MSG_WriteByte(msg, ent->v.dmg_save);
 		MSG_WriteByte(msg, ent->v.dmg_take);

@@ -124,10 +124,10 @@ qboolean SV_movestep(edict_t *ent, vec3_t move, qboolean relink)
 		for(i = 0; i < 2; i++)
 		{
 			VectorAdd(ent->v.origin, move, neworg);
-			enemy = PROG_TO_EDICT(ent->v.enemy);
+			enemy = ent->v.enemy;
 			if(i == 0 && enemy != sv.edicts)
 			{
-				dz = ent->v.origin[2] - PROG_TO_EDICT(ent->v.enemy)->v.origin[2];
+				dz = ent->v.origin[2] - ent->v.enemy->v.origin[2];
 				if(dz > 40)
 					neworg[2] -= 8;
 				if(dz < 30)
@@ -399,10 +399,10 @@ void SV_MoveToGoal(edict_t *ent, float dist)
 
 // if the next step hits the enemy, return immediately
 #ifdef QUAKE2
-	enemy = PROG_TO_EDICT(ent->v.enemy);
+	enemy = ent->v.enemy;
 	if(enemy != sv.edicts && SV_CloseEnough(ent, enemy, dist))
 #else
-	if(PROG_TO_EDICT(ent->v.enemy) != sv.edicts && SV_CloseEnough(ent, goal, dist))
+	if(ent->v.enemy != sv.edicts && SV_CloseEnough(ent, goal, dist))
 #endif
 		return;
 
