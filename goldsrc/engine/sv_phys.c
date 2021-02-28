@@ -452,7 +452,7 @@ void SV_PushMove(edict_t *pusher, float movetime)
 			continue;
 
 		// if the entity is standing on the pusher, it will definately be moved
-		if(!(((int)check->v.flags & FL_ONGROUND) && PROG_TO_EDICT(check->v.groundentity) == pusher))
+		if(!(((int)check->v.flags & FL_ONGROUND) && check->v.groundentity == pusher))
 		{
 			if(check->v.absmin[0] >= maxs[0] || check->v.absmin[1] >= maxs[1] || check->v.absmin[2] >= maxs[2] || check->v.absmax[0] <= mins[0] || check->v.absmax[1] <= mins[1] || check->v.absmax[2] <= mins[2])
 				continue;
@@ -564,7 +564,7 @@ void SV_PushRotate(edict_t *pusher, float movetime)
 			continue;
 
 		// if the entity is standing on the pusher, it will definately be moved
-		if(!(((int)check->v.flags & FL_ONGROUND) && PROG_TO_EDICT(check->v.groundentity) == pusher))
+		if(!(((int)check->v.flags & FL_ONGROUND) && check->v.groundentity == pusher))
 		{
 			if(check->v.absmin[0] >= pusher->v.absmax[0] || check->v.absmin[1] >= pusher->v.absmax[1] || check->v.absmin[2] >= pusher->v.absmax[2] || check->v.absmax[0] <= pusher->v.absmin[0] || check->v.absmax[1] <= pusher->v.absmin[1] || check->v.absmax[2] <= pusher->v.absmin[2])
 				continue;
@@ -1111,7 +1111,7 @@ void SV_Physics_Follow(edict_t *ent)
 {
 	// regular thinking
 	SV_RunThink(ent);
-	VectorAdd(PROG_TO_EDICT(ent->v.aiment)->v.origin, ent->v.v_angle, ent->v.origin);
+	VectorAdd(ent->v.aiment->v.origin, ent->v.v_angle, ent->v.origin);
 	SV_LinkEdict(ent, true);
 }
 
@@ -1203,7 +1203,7 @@ void SV_Physics_Toss(edict_t *ent)
 #ifdef QUAKE2
 	edict_t *groundentity;
 
-	groundentity = PROG_TO_EDICT(ent->v.groundentity);
+	groundentity = ent->v.groundentity;
 	if((int)groundentity->v.flags & FL_CONVEYOR)
 		VectorScale(groundentity->v.movedir, groundentity->v.speed, ent->v.basevelocity);
 	else
@@ -1313,7 +1313,7 @@ void SV_Physics_Step(edict_t *ent)
 	float friction;
 	edict_t *groundentity;
 
-	groundentity = PROG_TO_EDICT(ent->v.groundentity);
+	groundentity = ent->v.groundentity;
 	if((int)groundentity->v.flags & FL_CONVEYOR)
 		VectorScale(groundentity->v.movedir, groundentity->v.speed, ent->v.basevelocity);
 	else
