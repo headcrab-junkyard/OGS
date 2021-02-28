@@ -528,7 +528,7 @@ char *ED_NewString(const char *string)
 	char *new, *new_p;
 	int i, l;
 
-	l = strlen(string) + 1;
+	l = Q_strlen(string) + 1;
 	new = (char*)Hunk_Alloc(l);
 	new_p = new;
 
