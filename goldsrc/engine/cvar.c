@@ -255,7 +255,7 @@ cvar_t *Cvar_AddVariable(const char *name, const char *value, int flags)
 
 cvar_t *Cvar_RegisterClientVariable(const char *name, const char *value, int flags)
 {
-	return Cvar_AddVariable(name, value, flags /*| FCVAR_CLIENT*/); // TODO
+	return Cvar_AddVariable(name, value, flags | FCVAR_CLIENTDLL);
 };
 
 cvar_t *Cvar_RegisterGameVariable(const char *name, const char *value, int flags)

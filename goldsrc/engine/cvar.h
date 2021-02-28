@@ -61,6 +61,7 @@ void Cvar_RegisterVariable(cvar_t *variable);
 // registers a cvar that already has the name, string, and optionally the
 // archive elements set.
 
+cvar_t *Cvar_RegisterClientVariable(const char *name, const char *value, int flags);
 
 cvar_t *Cvar_RegisterGameVariable(const char *name, const char *value, int flags);
 
