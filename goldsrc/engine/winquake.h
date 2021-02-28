@@ -31,7 +31,8 @@
 #include <windows.h>
 #define WM_MOUSEWHEEL 0x020A
 
-#ifndef SERVERONLY
+#ifndef SWDS
+
 #include <ddraw.h>
 #include <dsound.h>
 #ifndef GLQUAKE
@@ -39,10 +40,12 @@
 #endif
 #endif
 
+#endif // SWDS
+
 extern HINSTANCE global_hInstance;
 extern int global_nCmdShow;
 
-#ifndef SERVERONLY
+#ifndef SWDS
 
 extern LPDIRECTDRAW lpDD;
 extern qboolean DDActive;
@@ -59,7 +62,7 @@ extern DWORD gSndBufSize;
 void VID_LockBuffer();
 void VID_UnlockBuffer();
 
-#endif
+#endif // SWDS
 
 typedef enum { MS_WINDOWED,
 	           MS_FULLSCREEN,
