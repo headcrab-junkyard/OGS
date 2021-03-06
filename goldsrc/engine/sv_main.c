@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018, 2020 BlackPhrase
+ * Copyright (C) 2018, 2020-2021 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -251,7 +251,7 @@ void SV_New_f ()
 	host_client->connection_started = realtime;
 
 	// send the info about the new client to all connected clients
-//	SV_FullClientUpdate (host_client, &sv.reliable_datagram);
+	SV_FullClientUpdate(host_client, &sv.reliable_datagram);
 //	host_client->sendinfo = true;
 
 //NOTE:  This doesn't go through ClientReliableWrite since it's before the user
@@ -1907,6 +1907,77 @@ byte *SV_FatPVS(vec3_t org)
 }
 
 //=============================================================================
+
+
+/*
+===================
+SV_FullClientUpdate
+
+Writes all update values to a sizebuf
+===================
+*/
+void SV_FullClientUpdate(client_t *client, sizebuf_t *buf)
+{
+	//for(i = 0, client = svs.clients; i < svs.maxclients; i++, client++)
+	//{
+		//if(!client->active)
+			//continue;
+	//}
+	
+	char info[MAX_INFO_STRING];
+
+	int i = client - svs.clients;
+
+	//Sys_Printf("SV_FullClientUpdate:  Updated frags for client %d\n", i);
+
+/*
+	MSG_WriteByte(buf, svc_updatefrags);
+	MSG_WriteByte(buf, i);
+	MSG_WriteShort(buf, client->old_frags);
+*/
+
+	MSG_WriteByte(buf, svc_pings);
+	MSG_WriteByte(buf, i);
+	MSG_WriteShort(buf, SV_CalcPing(client));
+	MSG_WriteByte(buf, client->lossage);
+
+/*	
+	MSG_WriteByte(buf, svc_updateentertime);
+	MSG_WriteByte(buf, i);
+	MSG_WriteFloat(buf, realtime - client->connection_started);
+*/
+
+	Q_strcpy(info, client->userinfo);
+	Info_RemovePrefixedKeys(info, '_');	// server passwords, etc
+
+	MSG_WriteByte(buf, svc_updateuserinfo);
+	MSG_WriteByte(buf, i);
+	MSG_WriteLong(buf, client->userid);
+	MSG_WriteString(buf, info);
+	
+	byte unusedcdkey[16];
+	MSG_WriteBuf(buf, sizeof(unusedcdkey), unusedcdkey);
+}
+
+/*
+===================
+SV_FullClientUpdateToClient
+
+Writes all update values to a client's reliable stream
+===================
+*/
+void SV_FullClientUpdateToClient(client_t *client, client_t *cl)
+{
+	// TODO
+	//ClientReliableCheckBlock(cl, 24 + Q_strlen(client->userinfo));
+	//if(cl->num_backbuf)
+	//{
+		//SV_FullClientUpdate(client, &cl->backbuf);
+		//ClientReliable_FinishWrite(cl);
+	//}
+	//else
+		SV_FullClientUpdate(client, &cl->netchan.message);
+}
 
 /*
 =============

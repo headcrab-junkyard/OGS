@@ -1,7 +1,7 @@
 /*
  *	This file is part of OGS Engine
  *	Copyright (C) 1996-2001 Id Software, Inc.
- *	Copyright (C) 2018-2020 BlackPhrase
+ *	Copyright (C) 2018-2021 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -384,17 +384,8 @@ void SV_DropClient(client_t *drop, qboolean crash, char *fmt, ...)
 
 	memset(drop->userinfo, 0, sizeof(drop->userinfo));
 
-	// send notification to all clients
-	int i;
-	client_t *client;
-	for(i = 0, client = svs.clients; i < svs.maxclients; i++, client++)
-	{
-		if(!client->active)
-			continue;
-		MSG_WriteByte(&client->netchan.message, svc_updateuserinfo);
-		MSG_WriteByte(&client->netchan.message, drop - svs.clients);
-		// TODO
-	}
+	// send notification to all remaining clients
+	SV_FullClientUpdate(drop, &sv.reliable_datagram);
 }
 
 /*
