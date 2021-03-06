@@ -1908,6 +1908,42 @@ byte *SV_FatPVS(vec3_t org)
 
 //=============================================================================
 
+qboolean SV_ShouldUpdatePing(client_t *cl)
+{
+	// TODO
+	
+	return true;
+};
+
+/*
+===================
+SV_CalcPing
+
+===================
+*/
+int SV_CalcPing (client_t *cl)
+{
+	float ping = 0.0f;
+	int i;
+	int count = 0;
+	register client_frame_t *frame;
+
+	for (frame = cl->frames, i=0 ; i<UPDATE_BACKUP ; i++, frame++)
+	{
+		if (frame->ping_time > 0)
+		{
+			ping += frame->ping_time;
+			count++;
+		};
+	};
+	
+	if (!count)
+		return 9999;
+	
+	ping /= count;
+
+	return ping * 1000;
+}
 
 /*
 ===================
