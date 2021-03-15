@@ -115,14 +115,18 @@ Sends an out-of-band datagram
 void Netchan_OutOfBand(int net_socket, netadr_t adr, int length, byte *data)
 {
 	sizebuf_t send;
-	byte send_buf[MAX_MSGLEN + PACKET_HEADER];
+	byte send_buf[MAX_MSGLEN + PACKET_HEADER]; // TODO: MAX_MSGLEN in q2
 
 	// write the packet header
+	//
 	send.data = send_buf;
 	send.maxsize = sizeof(send_buf);
 	send.cursize = 0;
-	//TODO: SZ_Init
-
+	//
+	// TODO: q2
+	//SZ_Init(&send, send_buf, sizeof(send_buf));
+	//
+	
 	MSG_WriteLong(&send, -1); // -1 sequence means out of band
 	SZ_Write(&send, data, length);
 
@@ -144,7 +148,7 @@ Sends a text message in an out-of-band datagram
 void Netchan_OutOfBandPrint(int net_socket, netadr_t adr, const char *format, ...)
 {
 	va_list argptr;
-	static char string[8192]; // ??? why static?
+	static char string[8192]; // ??? why static? // TODO: MAX_MSGLEN - 4 in q2
 
 	va_start(argptr, format);
 	vsprintf(string, format, argptr);

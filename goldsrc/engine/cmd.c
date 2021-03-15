@@ -287,6 +287,13 @@ void Cmd_Exec_f()
 	// FIXME: is this safe freeing the hunk here???
 	mark = Hunk_LowMark();
 	f = (char *)COM_LoadHunkFile(Cmd_Argv(1));
+	//
+	// TODO: q2
+	/*
+	int len = FS_LoadFile (Cmd_Argv(1), (void **)&f);
+	*/
+	//
+	
 	if(!f)
 	{
 		Con_Printf("couldn't exec %s\n", Cmd_Argv(1));
@@ -294,8 +301,25 @@ void Cmd_Exec_f()
 	}
 	Con_Printf("execing %s\n", Cmd_Argv(1));
 
-	Cbuf_InsertText(f);
+	// TODO: q2
+	/*
+	// the file doesn't have a trailing 0, so we need to copy it off
+	char *f2 = Z_Malloc(len+1);
+	memcpy (f2, f, len);
+	f2[len] = 0;
+	*/
+	
+	Cbuf_InsertText(f); // TODO: f2 in q2
+	
+	//
 	Hunk_FreeToLowMark(mark);
+	//
+	// TODO: q2
+	/*
+	Z_Free(f2);
+	FS_FreeFile(f);
+	*/
+	//
 }
 
 /*
@@ -524,9 +548,11 @@ void Cmd_AddCommand(/*const*/ char *cmd_name, xcommand_t function)
 {
 	cmd_function_t *cmd;
 
+	// TODO: non-q2, probably because Z_Malloc used instead of Hunk_Alloc
 	if(host_initialized) // because hunk allocation would get stomped
 		Sys_Error("Cmd_AddCommand after host_initialized");
-
+	//
+	
 	// fail if the command is a variable name
 	if(Cvar_VariableString(cmd_name)[0])
 	{
@@ -544,7 +570,7 @@ void Cmd_AddCommand(/*const*/ char *cmd_name, xcommand_t function)
 		}
 	}
 
-	cmd = Hunk_Alloc(sizeof(cmd_function_t));
+	cmd = Hunk_Alloc(sizeof(cmd_function_t)); // TODO: Z_Malloc in q2s
 	cmd->name = cmd_name;
 	cmd->function = function;
 	cmd->next = cmd_functions;

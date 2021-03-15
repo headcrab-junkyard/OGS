@@ -751,13 +751,13 @@ void SV_ReadPackets()
 {
 	int i;
 	client_t *cl;
-	qboolean good;
+	qboolean good; // TODO: not present in q2
 	int qport;
 
 	good = false;
 	while(NET_GetPacket(NS_SERVER, &net_from, &net_message))
 	{
-		if(SV_FilterPacket())
+		if(SV_FilterPacket()) // TODO: not present in q2
 		{
 			SV_SendBan(); // tell them we aren't listening...
 			continue;
@@ -780,7 +780,7 @@ void SV_ReadPackets()
 		// check for packets from connected clients
 		for(i = 0, cl = svs.clients; i < svs.maxclients; i++, cl++)
 		{
-			if(!cl->connected) // TODO: cl->state == cs_free in qw
+			if(!cl->connected) // TODO: cl->state == cs_free in qw/q2
 				continue;
 			if(!NET_CompareBaseAdr(net_from, cl->netchan.remote_address))
 				continue;
