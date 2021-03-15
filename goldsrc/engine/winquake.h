@@ -35,9 +35,9 @@
 
 #include <ddraw.h>
 #include <dsound.h>
+
 #ifndef GLQUAKE
-#include <mgraph.h>
-#endif
+	#include <mgraph.h>
 #endif
 
 #endif // SWDS
@@ -107,22 +107,16 @@ void S_UnblockSound();
 
 void VID_SetDefaultMode();
 
-int(PASCAL FAR *pWSAStartup)(WORD wVersionRequired, LPWSADATA lpWSAData);
-int(PASCAL FAR *pWSACleanup)();
-int(PASCAL FAR *pWSAGetLastError)();
-SOCKET(PASCAL FAR *psocket)
-(int af, int type, int protocol);
-int(PASCAL FAR *pioctlsocket)(SOCKET s, long cmd, u_long FAR *argp);
-int(PASCAL FAR *psetsockopt)(SOCKET s, int level, int optname,
-                             const char FAR *optval, int optlen);
-int(PASCAL FAR *precvfrom)(SOCKET s, char FAR *buf, int len, int flags,
-                           struct sockaddr FAR *from, int FAR *fromlen);
-int(PASCAL FAR *psendto)(SOCKET s, const char FAR *buf, int len, int flags,
-                         const struct sockaddr FAR *to, int tolen);
-int(PASCAL FAR *pclosesocket)(SOCKET s);
-int(PASCAL FAR *pgethostname)(char FAR *name, int namelen);
+int (PASCAL FAR *pWSAStartup)(WORD wVersionRequired, LPWSADATA lpWSAData);
+int (PASCAL FAR *pWSACleanup)();
+int (PASCAL FAR *pWSAGetLastError)();
+SOCKET (PASCAL FAR *psocket)(int af, int type, int protocol);
+int (PASCAL FAR *pioctlsocket)(SOCKET s, long cmd, u_long FAR *argp);
+int (PASCAL FAR *psetsockopt)(SOCKET s, int level, int optname, const char FAR *optval, int optlen);
+int (PASCAL FAR *precvfrom)(SOCKET s, char FAR *buf, int len, int flags, struct sockaddr FAR *from, int FAR *fromlen);
+int (PASCAL FAR *psendto)(SOCKET s, const char FAR *buf, int len, int flags, const struct sockaddr FAR *to, int tolen);
+int (PASCAL FAR *pclosesocket)(SOCKET s);
+int (PASCAL FAR *pgethostname)(char FAR *name, int namelen);
 struct hostent FAR *(PASCAL FAR *pgethostbyname)(const char FAR *name);
-struct hostent FAR *(PASCAL FAR *pgethostbyaddr)(const char FAR *addr,
-                                                 int len, int type);
-int(PASCAL FAR *pgetsockname)(SOCKET s, struct sockaddr FAR *name,
-                              int FAR *namelen);
+struct hostent FAR *(PASCAL FAR *pgethostbyaddr)(const char FAR *addr, int len, int type);
+int (PASCAL FAR *pgetsockname)(SOCKET s, struct sockaddr FAR *name, int FAR *namelen);

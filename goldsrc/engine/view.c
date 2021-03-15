@@ -33,7 +33,10 @@ when crossing a water boudnary.
 
 */
 
-cvar_t lcd_x = { "lcd_x", "0" };
+/// @file
+/// @brief player eye positioning
+
+cvar_t lcd_x = { "lcd_x", "0" }; // FIXME: make this work sometime...
 cvar_t lcd_yaw = { "lcd_yaw", "0" };
 
 cvar_t cl_rollspeed = { "cl_rollspeed", "200" };
@@ -358,7 +361,7 @@ V_UpdatePalette
 void V_UpdatePalette()
 {
 	int i, j;
-	qboolean new;
+	qboolean bnew;
 	byte *basepal, *newpal;
 	byte pal[768];
 	float r, g, b, a;
@@ -367,19 +370,19 @@ void V_UpdatePalette()
 
 	V_CalcPowerupCshift();
 
-	new = false;
+	bnew = false;
 
 	for(i = 0; i < NUM_CSHIFTS; i++)
 	{
 		if(cl.cshifts[i].percent != cl.prev_cshifts[i].percent)
 		{
-			new = true;
+			bnew = true;
 			cl.prev_cshifts[i].percent = cl.cshifts[i].percent;
 		}
 		for(j = 0; j < 3; j++)
 			if(cl.cshifts[i].destcolor[j] != cl.prev_cshifts[i].destcolor[j])
 			{
-				new = true;
+				bnew = true;
 				cl.prev_cshifts[i].destcolor[j] = cl.cshifts[i].destcolor[j];
 			}
 	}
@@ -395,10 +398,12 @@ void V_UpdatePalette()
 		cl.cshifts[CSHIFT_BONUS].percent = 0;
 
 	force = V_CheckGamma();
-	if(!new && !force)
+	if(!bnew && !force)
 		return;
 
 	V_CalcBlend();
+
+	//Con_Printf("b: %4.2f %4.2f %4.2f %4.6f\n", v_blend[0],	v_blend[1],	v_blend[2],	v_blend[3]);
 
 	a = v_blend[3];
 	r = 255 * v_blend[0] * a;
@@ -445,7 +450,7 @@ void V_UpdatePalette()
 void V_UpdatePalette()
 {
 	int i, j;
-	qboolean new;
+	qboolean bnew;
 	byte *basepal, *newpal;
 	byte pal[768];
 	int r, g, b;
@@ -453,19 +458,19 @@ void V_UpdatePalette()
 
 	V_CalcPowerupCshift();
 
-	new = false;
+	bnew = false;
 
 	for(i = 0; i < NUM_CSHIFTS; i++)
 	{
 		if(cl.cshifts[i].percent != cl.prev_cshifts[i].percent)
 		{
-			new = true;
+			bnew = true;
 			cl.prev_cshifts[i].percent = cl.cshifts[i].percent;
 		}
 		for(j = 0; j < 3; j++)
 			if(cl.cshifts[i].destcolor[j] != cl.prev_cshifts[i].destcolor[j])
 			{
-				new = true;
+				bnew = true;
 				cl.prev_cshifts[i].destcolor[j] = cl.cshifts[i].destcolor[j];
 			}
 	}
@@ -481,7 +486,7 @@ void V_UpdatePalette()
 		cl.cshifts[CSHIFT_BONUS].percent = 0;
 
 	force = V_CheckGamma();
-	if(!new && !force)
+	if(!bnew && !force)
 		return;
 
 	basepal = host_basepal;

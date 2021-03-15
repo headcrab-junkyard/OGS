@@ -105,7 +105,7 @@ void R_PushDlights();
 //void R_InitParticles ();
 //void R_ClearParticles ();
 //void R_DrawParticles ();
-//void R_DrawWaterSurfaces ();
+void R_DrawWaterSurfaces ();
 
 //
 // surface cache related

@@ -152,8 +152,8 @@ int PM_PointContents(vec3_t p, int *truecontents)
 			num = node->children[0];
 	}
 	
-	///if(truecontents)
-		// TODO
+	//if(truecontents)
+		// TODO: if truecontents is not set to nullptr, set its value to true contents type
 
 	return num;
 }

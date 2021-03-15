@@ -597,6 +597,8 @@ void Key_Event(int key, qboolean down)
 {
 	char *kb;
 	char cmd[1024];
+	
+	//	Con_Printf ("%i : %i\n", key, down); //@@@
 
 	keydown[key] = down;
 

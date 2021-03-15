@@ -1,7 +1,7 @@
 /*
  *	This file is part of OGS Engine
  *	Copyright (C) 1996-1997 Id Software, Inc.
- *	Copyright (C) 2018-2019 BlackPhrase
+ *	Copyright (C) 2018-2019, 2021 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -16,7 +16,9 @@
  *	You should have received a copy of the GNU General Public License
  *	along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
-// world.c -- world query functions
+
+/// @file
+/// @brief world query functions
 
 #include "quakedef.h"
 

@@ -109,11 +109,23 @@
 //
 // server to client
 //
+// unused legacy Quake protocol entries
 /*
 #define	svc_updatestat		3	// [byte] [long]
 #define	svc_updatename		13	// [byte] [string]
 #define	svc_updatefrags		14	// [byte] [short]
-#define	svc_updatecolors	17	// [byte] [byte]	
+#define	svc_updatecolors	17	// [byte] [byte]
+#define	svc_updateping		36		// [byte] [short]
+#define	svc_updateentertime	37		// [byte] [float]
+
+#define	svc_updatestatlong	38		// [byte] [long]		
+
+#define svc_sellscreen		33
+
+#define	svc_smallkick		34		// set client punchangle to 2
+#define	svc_bigkick			35		// set client punchangle to 4
+
+#define	svc_muzzleflash		39		// [short] entity
 */
 
 // PROTOCOL 48
@@ -132,26 +144,26 @@ enum
 	svc_setangle = 10,   // [angle3] set the view angle to this absolute value
 	svc_serverinfo = 11, // [long] version [string] signon string [string]..[0]model cache [string]...[0]sounds cache
 	svc_lightstyle = 12, // [byte] [string]
-	svc_updateuserinfo = 13,
+	svc_updateuserinfo = 13, // [byte] slot [long] uid [string] userinfo
 	svc_deltadescription = 14,
 	svc_clientdata = 15, // <shortbits + data>
 	svc_stopsound = 16,  // <see code>
 	svc_pings = 17,
 	svc_particle = 18, // [vec3] <variable>
-	svc_damage = 19,
+	svc_damage = 19, // UNUSED
 	svc_spawnstatic = 20,
 	svc_event_reliable = 21,
 	svc_spawnbaseline = 22,
-	svc_tempentity = 23,
+	svc_tempentity = 23, // variable
 	svc_setpause = 24,    // [byte] on / off
 	svc_signonnum = 25,   // [byte]  used for the signon sequence
 	svc_centerprint = 26, // [string] to put in center of the screen
-	svc_killedmonster = 27,
-	svc_foundsecret = 28,
-	svc_spawnstaticsound = 29, // [coord3] [byte] samp [byte] vol [byte] aten
-	svc_intermission = 30,     // [string] music
-	svc_finale = 31,           // [string] music [string] text
-	svc_cdtrack = 32,          // [byte] track [byte] looptrack
+	svc_killedmonster = 27, // UNUSED
+	svc_foundsecret = 28, // UNUSED
+	svc_spawnstaticsound = 29, // [coord3] [byte] samp [byte] vol [byte] aten pitch
+	svc_intermission = 30,     // [string] music (TODO: revisit)
+	svc_finale = 31,           // [string] music [string] text (TODO: revisit)
+	svc_cdtrack = 32,          // [byte] track [byte] looptrack (TODO: revisit)
 	svc_restore = 33,
 	svc_cutscene = 34,
 	svc_weaponanim = 35,
@@ -159,8 +171,8 @@ enum
 	svc_roomtype = 37,
 	svc_addangle = 38,
 	svc_newusermsg = 39,
-	svc_packetentities = 40,
-	svc_deltapacketentities = 41,
+	svc_packetentities = 40, // [...]
+	svc_deltapacketentities = 41, // [...]
 	svc_choke = 42,
 	svc_resourcelist = 43,
 	svc_newmovevars = 44,
@@ -177,7 +189,9 @@ enum
 	svc_timescale = 55,
 	svc_resourcelocation = 56,
 	svc_sendcvarvalue = 57,
-	svc_sendcvarvalue2 = 58
+	svc_sendcvarvalue2 = 58,
+	
+	svc_sizeof
 };
 
 //
@@ -196,7 +210,9 @@ enum
 	clc_voicedata,
 	clc_hltv,
 	clc_cvarvalue,
-	clc_cvarvalue2
+	clc_cvarvalue2,
+	
+	clc_sizeof
 };
 
 #define DEFAULT_SOUND_PACKET_VOLUME 255
