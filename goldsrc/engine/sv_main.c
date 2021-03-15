@@ -44,6 +44,12 @@ cvar_t sv_filterban = { "sv_filterban", "1" };
 
 cvar_t sv_timeout = { "sv_timeout", "60" }; // seconds without any message
 
+cvar_t sv_password = {"sv_password", ""};	// password for entering the game
+
+cvar_t sv_allow_download = {"sv_allow_download", "1"};
+
+cvar_t sv_allow_upload = {"sv_allow_upload", "1"};
+
 //cvar_t pausable	= {"pausable", "1"}; // TODO: already defined in host
 
 //============================================================================
@@ -628,6 +634,12 @@ void SV_Init()
 	Cvar_RegisterVariable(&sv_filterban);
 	
 	Cvar_RegisterVariable(&sv_nostep); // TODO: not present in GS
+	
+	Cvar_RegisterVariable(&sv_password);
+	
+	Cvar_RegisterVariable(&sv_allow_download);
+	
+	Cvar_RegisterVariable(&sv_allow_upload);
 	
 	//Cvar_RegisterVariable(&pausable); // TODO: already defined in host
 
