@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018-2020 BlackPhrase
+ * Copyright (C) 2018-2021 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -119,8 +119,9 @@ void VID_UnlockBuffer();
 //
 #define MAX_EDICTS 600 // FIXME: ouch! ouch! ouch! // TODO: 768 in qw
 #define MAX_LIGHTSTYLES 64
-#define MAX_MODELS 256 // these are sent over the net as bytes
-#define MAX_SOUNDS 256 // so they cannot be blindly increased
+#define MAX_MODELS 512 // these are sent over the net as bytes
+#define MAX_SOUNDS 512 // so they cannot be blindly increased
+
 
 #define SAVEGAME_COMMENT_LENGTH 39
 
