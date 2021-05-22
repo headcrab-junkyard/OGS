@@ -117,7 +117,7 @@ void VID_UnlockBuffer();
 //
 // per-level limits
 //
-#define MAX_EDICTS 600 // FIXME: ouch! ouch! ouch! // TODO: 768 in qw
+#define MAX_EDICTS 900 // FIXME: ouch! ouch! ouch!
 #define MAX_LIGHTSTYLES 64
 #define MAX_MODELS 512 // these are sent over the net as bytes
 #define MAX_SOUNDS 512 // so they cannot be blindly increased
