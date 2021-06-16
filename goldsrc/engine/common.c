@@ -653,6 +653,11 @@ int MSG_ReadBits(int bits)
 	return value;
 }
 
+int MSG_ReadOneBit()
+{
+	return MSG_ReadBits(1);
+};
+
 // returns -1 and sets msg_badread if no more characters are available
 int MSG_ReadChar()
 {
