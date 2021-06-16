@@ -44,10 +44,10 @@ int build_number()
 
 	for(m = 0; m < 11; m++)
 	{
-		if(_strnicmp(&date[0], mon[m], 3) == 0)
+		if(_strnicmp(&date[0], mon[m], 3) == 0) // TODO: Q_strncasecmp
 			break;
 		d += mond[m];
-	}
+	};
 
 	d += atoi(&date[4]) - 1;
 

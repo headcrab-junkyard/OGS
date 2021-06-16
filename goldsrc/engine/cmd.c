@@ -276,7 +276,6 @@ Cmd_Exec_f
 void Cmd_Exec_f()
 {
 	char *f;
-	int mark;
 
 	if(Cmd_Argc() != 2)
 	{
@@ -284,8 +283,9 @@ void Cmd_Exec_f()
 		return;
 	}
 
+	//
 	// FIXME: is this safe freeing the hunk here???
-	mark = Hunk_LowMark();
+	int mark = Hunk_LowMark();
 	f = (char *)COM_LoadHunkFile(Cmd_Argv(1));
 	//
 	// TODO: q2
@@ -420,7 +420,7 @@ void Cmd_Alias_f()
 typedef struct cmd_function_s
 {
 	struct cmd_function_s *next;
-	char *name;
+	const char *name;
 	xcommand_t function;
 } cmd_function_t;
 
@@ -428,14 +428,14 @@ typedef struct cmd_function_s
 
 static int cmd_argc;
 static char *cmd_argv[MAX_ARGS];
-static char *cmd_null_string = "";
-static const char *cmd_args = NULL;
+static const char *cmd_null_string = "";
+static char *cmd_args = NULL;
 
 cmd_source_t cmd_source;
 
 static cmd_function_t *cmd_functions; // possible commands to execute
 
-void Cmd_List_f(); // TODO
+void Cmd_List_f();
 
 /*
 ============
@@ -451,7 +451,11 @@ void Cmd_Init()
 	Cmd_AddCommand("exec", Cmd_Exec_f);
 	Cmd_AddCommand("echo", Cmd_Echo_f);
 	Cmd_AddCommand("alias", Cmd_Alias_f);
-	Cmd_AddCommand("cmd", Cmd_ForwardToServer);
+
+#ifndef SWDS
+	Cmd_AddCommand("cmd", Cmd_ForwardToServer); // TODO: Cmd_ForwardToServer_f in qw
+#endif
+
 	Cmd_AddCommand("wait", Cmd_Wait_f);
 	Cmd_AddCommand("cmdlist", Cmd_List_f); // TODO
 }

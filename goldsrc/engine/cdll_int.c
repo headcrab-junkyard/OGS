@@ -67,7 +67,7 @@ void LoadClientDLL()
 	snprintf(sClientDLLPath, sizeof(sClientDLLPath) - 1, "%s/cl_dlls/client", com_gamedir);
 	
 	gpClientDLL = FS_LoadLibrary(sClientDLLPath);
-
+	
 	if(!gpClientDLL)
 	{
 		Sys_Error("could not load library %s", sClientDLLPath);
@@ -83,7 +83,7 @@ void LoadClientDLL()
 };
 
 void ClientDLL_Init()
-{
+{	
 	LoadClientDLL();
 	
 	// TODO
