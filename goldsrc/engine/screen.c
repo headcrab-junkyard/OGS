@@ -1,7 +1,7 @@
 /*
  *	This file is part of OGS Engine
  *	Copyright (C) 1996-2001 Id Software, Inc.
- *	Copyright (C) 2018-2020 BlackPhrase
+ *	Copyright (C) 2018-2021 BlackPhrase
  *
  *	OGS Engine is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -82,7 +82,7 @@ float scr_conlines; // lines of console to display
 
 float oldscreensize, oldfov;
 //float oldsbar; // TODO: qw
-cvar_t scr_viewsize = { "viewsize", "100", true };
+cvar_t scr_viewsize = { "viewsize", "120", true };
 cvar_t scr_fov = { "fov", "90" }; // 10 - 170
 cvar_t scr_conspeed = { "scr_conspeed", "300" };
 cvar_t scr_centertime = { "scr_centertime", "2" };
