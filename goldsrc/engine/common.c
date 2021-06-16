@@ -708,6 +708,23 @@ int MSG_ReadShort()
 	return c;
 }
 
+int MSG_ReadWord()
+{
+	int c;
+
+	if(msg_readcount + 3 > net_message.cursize)
+	{
+		msg_badread = true;
+		return -1;
+	}
+
+	c = (int)(net_message.data[msg_readcount] + (net_message.data[msg_readcount + 1] << 8) + (net_message.data[msg_readcount + 2] << 16));
+
+	msg_readcount += 3;
+
+	return c;
+}
+
 int MSG_ReadLong()
 {
 	int c;

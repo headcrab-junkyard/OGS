@@ -115,6 +115,7 @@ int MSG_ReadOneBit();
 int MSG_ReadChar();
 int MSG_ReadByte();
 int MSG_ReadShort();
+int MSG_ReadWord();
 int MSG_ReadLong();
 float MSG_ReadFloat();
 char *MSG_ReadString();
