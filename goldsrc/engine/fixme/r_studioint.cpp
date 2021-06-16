@@ -21,6 +21,12 @@
 
 #include "quakedef.h"
 #include "r_studioint.h"
+#include "studio.h"
+
+int gnForceFaceFlags{0};
+studiohdr_t *gpStudioHdr{nullptr};
+model_t *gpRenderModel{nullptr};
+int gnRenderMode{0};
 
 struct model_s *R_GetModelByIndex(int index)
 {
@@ -36,8 +42,7 @@ struct cl_entity_s *R_GetCurrentEntity()
 
 struct player_info_s *R_PlayerInfo(int index)
 {
-	// TODO
-	return nullptr;
+	return &cl.players[index];
 };
 
 struct entity_state_s *R_GetPlayerState(int index)
@@ -48,7 +53,7 @@ struct entity_state_s *R_GetPlayerState(int index)
 
 struct cl_entity_s *R_GetViewEntity()
 {
-	return cl.viewent;
+	return &cl.viewent;
 };
 
 void R_GetTimes(int *framecount, double *current, double *old)
@@ -58,22 +63,22 @@ void R_GetTimes(int *framecount, double *current, double *old)
 
 struct cvar_s *R_GetCvar(const char *name)
 {
-	return Cvar_Find(name);
+	return Cvar_FindVar(name);
 };
 
 void R_GetViewInfo(float *origin, float *upv, float *rightv, float *vpnv)
 {
 	if(origin)
-		*origin = r_origin;
+		VectorCopy(r_origin, origin);
 	
 	if(upv)
-		*upv = vup;
+		VectorCopy(vup, upv);
 	
 	if(rightv)
-		*rightv = vright;
+		VectorCopy(vright, rightv);
 	
 	if(vpnv)
-		*vpnv = vpn;
+		VectorCopy(vpn, vpnv);
 };
 
 struct model_s *R_GetChromeSprite()
@@ -169,7 +174,8 @@ void R_StudioSetupSkin(void *pTextureHeader, int index)
 
 void R_StudioSetRemapColors(int top, int bottom)
 {
-	// TODO
+	cl.players[cl.playernum].topcolor = top;
+	cl.players[cl.playernum].bottomcolor = bottom;
 };
 
 struct model_s *R_SetupPlayerModel(int index)
@@ -185,47 +191,52 @@ void R_StudioClientEvents()
 
 int R_GetForceFaceFlags()
 {
-	// TODO
-	return 0;
+	return gnForceFaceFlags;
 };
 
 void R_SetForceFaceFlags(int flags)
 {
-	// TODO
+	gnForceFaceFlags = flags;
 };
 
 void R_StudioSetHeader(void *pHeader)
 {
-	// TODO
+	gpStudioHdr = reinterpret_cast<studiohdr_t*>(pHeader);
 };
 
 void R_SetRenderModel(struct model_s *pModel)
 {
-	// TODO
+	gpRenderModel = pModel;
 };
 
 void R_SetupRenderer(int nRenderMode)
 {
-	// TODO
+	gnRenderMode = nRenderMode;
 };
 
 void R_RestoreRenderer()
 {
 	// TODO
+	
+	gnRenderMode = 0;
 };
 
-void R_SetChromeOrigin()
+void R_SetChromeOrigin() // TODO: no args?
 {
 	// TODO
 };
 
 int R_IsHardware()
 {
-	// TODO: it depends
+#ifdef GLQUAKE // TODO
 	return true;
+#else
+	return false;
+#endif
 };
 
 // TODO: move this
+// TODO: should these be set to nullptr or implemented as stubs?
 
 void R_GL_StudioDrawShadow()
 {
