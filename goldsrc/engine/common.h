@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-2005 Id Software, Inc.
- * Copyright (C) 2018-2020 BlackPhrase
+ * Copyright (C) 2018-2021 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -103,6 +103,7 @@ void MSG_WriteCoord(sizebuf_t *sb, float f);
 void MSG_WriteAngle(sizebuf_t *sb, float f);
 //void MSG_WriteAngle16(sizebuf_t *sb, float f); // TODO: qw
 //void MSG_WriteDeltaUsercmd(sizebuf_t *sb, struct usercmd_s *from, struct usercmd_s *cmd); // TODO: qw
+void MSG_WriteBuf(sizebuf_t *buf, const void *data, int length);
 
 // TODO: not present in qw??
 extern int msg_readcount;

@@ -555,6 +555,12 @@ void MSG_WriteAngle(sizebuf_t *sb, float f)
 	MSG_WriteByte(sb, ((int)f * 256 / 360) & 255);
 }
 
+void MSG_WriteBuf(sizebuf_t *buf, const void *data, int length)
+{
+	for(int i = 0; i < length; i++)
+		MSG_WriteByte(buf, ((byte *)data)[i]);
+}
+
 //
 // reading functions
 //
