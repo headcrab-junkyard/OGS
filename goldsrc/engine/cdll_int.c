@@ -97,6 +97,8 @@ void ClientDLL_Shutdown()
 	if(cl_funcs.pfnShutdown)
 		cl_funcs.pfnShutdown();
 	
+	Q_memset(&cl_funcs, 0, sizeof(cl_funcs));
+	
 	UnloadClientDLL();
 };
 
