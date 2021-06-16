@@ -46,6 +46,7 @@ void LoadGameUIModule()
 {
 	UnloadGameUIModule();
 
+	// Allow EVOL to load gameui modules from the current game dir
 #ifdef OGS_EVOL
 	gpGameUILib = Sys_LoadModule(va("%s/cl_dlls/gameui", com_gamedir));
 
@@ -70,7 +71,7 @@ void LoadGameUIModule()
 	if(!gpGameUI || !gpGameConsole) //|| !gpCareerUI)
 		return;
 	
-	// TODO: hacky way to temporary support legacy menu code
+	// TODO: hacky way to temporarily support legacy menu code
 	fnM_Keydown = (pfnM_Keydown)Sys_GetExport(gpGameUILib, "M_Keydown");
 	fnM_Draw = (pfnM_Draw)Sys_GetExport(gpGameUILib, "M_Draw");
 };
@@ -101,11 +102,6 @@ void CBaseUI::Initialize(CreateInterfaceFn *factories, int count)
 		vgui::IPanel *pPanel = (vgui::IPanel *)fnVGUI2CreateInterface(VGUI_PANEL_INTERFACE_VERSION, NULL);
 
 		KeyCode_InitKeyTranslationTable();
-		Panel_InstallHook(pPanel);
-		Surface_InstallHook(pSurface);
-		SchemeManager_InstallHook(pSchemeManager);
-		Input_InstallHook(pInput);
-		KeyValuesSystem_InstallHook(pKeyValuesSystem);
 
 		vgui::VGui_LoadEngineInterfaces(fnVGUI2CreateInterface, fnEngineCreateInterface);
 	};
@@ -165,7 +161,7 @@ int CBaseUI::Key_Event(int down, int keynum, const char *pszCurrentBinding)
 
 void CBaseUI::CallEngineSurfaceProc(void *hwnd, unsigned int msg, unsigned int wparam, long lparam)
 {
-	// TODO
+	// TODO: IEngineSurafce::WndProc?
 };
 
 void CBaseUI::Paint(int x, int y, int right, int bottom)
@@ -175,17 +171,22 @@ void CBaseUI::Paint(int x, int y, int right, int bottom)
 
 void CBaseUI::HideGameUI()
 {
-	gpGameUI->HideGameUI();
+	if(gpGameUI)
+		gpGameUI->HideGameUI();
 };
 
 void CBaseUI::ActivateGameUI()
 {
-	gpGameUI->ActivateGameUI();
+	if(gpGameUI)
+		gpGameUI->ActivateGameUI();
 };
 
 bool CBaseUI::IsGameUIVisible()
 {
-	return gpGameUI->IsGameUIActive();
+	if(gpGameUI)
+		return gpGameUI->IsGameUIActive();
+	
+	return false;
 };
 
 void CBaseUI::HideConsole()
