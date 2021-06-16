@@ -596,7 +596,7 @@ int MSG_ReadBits(int bits)
 	else
 		sgn = false;
 
-	if (msg->oob)
+	if (net_message.oob)
 	{
 		if (bits==8)
 		{
@@ -628,7 +628,7 @@ int MSG_ReadBits(int bits)
 		{
 			nbits = bits & 7;
 			for(i=0; i < nbits; i++)
-				value |= (Huff_getBit(net_message.data, &msg->bit)<<i);
+				value |= (Huff_getBit(net_message.data, &net_message.bit)<<i);
 
 			bits -= nbits;
 		}
@@ -638,7 +638,7 @@ int MSG_ReadBits(int bits)
 //			fp = fopen("c:\\netchan.bin", "a");
 			for(i=0; i < bits; i += 8)
 			{
-				Huff_offsetReceive (msgHuff.decompressor.tree, &get, net_message.data, &msg->bit);
+				Huff_offsetReceive (msgHuff.decompressor.tree, &get, net_message.data, &net_message.bit);
 //				fwrite(&get, 1, 1, fp);
 				value |= (get << (i + nbits));
 			}
