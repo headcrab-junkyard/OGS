@@ -545,10 +545,12 @@ void SCR_DrawFPS (void)
 		lastframetime = t;
 	}
 
-	sprintf(st, "%3d FPS", lastfps);
-	x = vid.width - strlen(st) * 8 - 8;
-	y = vid.height - sb_lines - 8;
-//	Draw_TileClear(x, y, strlen(st) * 8, 8);
+	sprintf(st, "%3d fps", lastfps);
+	x = Q_strlen(st) + 8;
+	y = 8;
+	//x = vid.width - Q_strlen(st) * 8 - 8;
+	//y = vid.height - sb_lines - 8;
+//	Draw_TileClear(x, y, Q_strlen(st) * 8, 8);
 	Draw_String(x, y, st);
 }
 
@@ -1511,7 +1513,6 @@ void SCR_UpdateScreen(void)
 
 		SCR_DrawRam();
 		SCR_DrawNet();
-		//SCR_DrawFPS (); // TODO
 		SCR_DrawTurtle();
 		SCR_DrawPause();
 		SCR_CheckDrawCenterString();
@@ -1520,6 +1521,8 @@ void SCR_UpdateScreen(void)
 		M_Draw();
 	}
 
+	SCR_DrawFPS();
+	
 #ifndef GLQUAKE
 	D_DisableBackBufferAccess(); // for adapters that can't stay mapped in
 	                             //  for linear writes all the time
