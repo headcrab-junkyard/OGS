@@ -208,6 +208,8 @@ void Host_InitLocal()
 {
 	Host_InitCommands();
 
+	Cvar_RegisterVariable(&hostname);
+
 	Cvar_RegisterVariable(&host_framerate);
 	Cvar_RegisterVariable(&host_speeds);
 	Cvar_RegisterVariable(&host_profile);
