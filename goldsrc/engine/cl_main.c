@@ -301,6 +301,29 @@ void CL_FullServerinfo_f()
 		};
 	};
 };
+
+void CL_Messages_f()
+{
+	Con_Printf("-------- Message Load ---------\n");
+	Con_Printf("User messages:  %d:%fK\n", 0, 0.00); // TODO
+	Con_Printf("------ End:  %d Total----\n", 0); // TODO
+};
+
+void CL_SoundFade_f()
+{
+	// TODO
+};
+
+void IN_VoiceRecordDown()
+{
+	// TODO
+};
+
+void IN_VoiceRecordUp()
+{
+	// TODO
+};
+
 /*
 =======================
 CL_SendConnectPacket
@@ -1375,4 +1398,10 @@ void CL_Init()
 	Cmd_AddCommand("fullinfo", CL_FullInfo_f);
 	Cmd_AddCommand("fullserverinfo", CL_FullServerinfo_f);
 	
+	Cmd_AddCommand("cl_messages", CL_Messages_f);
+	
+	Cmd_AddCommand("soundfade", CL_SoundFade_f);
+	
+	Cmd_AddCommand("+voicerecord", IN_VoiceRecordDown);
+	Cmd_AddCommand("-voicerecord", IN_VoiceRecordUp);
 };
