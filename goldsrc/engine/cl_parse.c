@@ -22,12 +22,12 @@
 
 #include "quakedef.h"
 
-const char *svc_strings[] = // TODO
+const char *svc_strings[] =
 {
   "svc_bad",
   "svc_nop",
   "svc_disconnect",
-  "svc_updatestat",
+  "svc_event",
   "svc_version",   // [long] server version
   "svc_setview",   // [short] entity number
   "svc_sound",     // <see code>
@@ -42,19 +42,19 @@ const char *svc_strings[] = // TODO
 	                  // [string]..[0]model cache [string]...[0]sounds cache
 	                  // [string]..[0]item cache
   "svc_lightstyle",   // [byte] [string]
-  "svc_updatename",   // [byte] [string]
-  "svc_updatefrags",  // [byte] [short]
+  "svc_updateuserinfo",   // [byte] [string]
+  "svc_deltadescription",
   "svc_clientdata",   // <shortbits + data>
   "svc_stopsound",    // <see code>
-  "svc_updatecolors", // [byte] [byte]
+  "svc_pings",
   "svc_particle",     // [vec3] <variable>
   "svc_damage",       // [byte] impact [byte] blood [vec3] from
 
   "svc_spawnstatic",
-  "OBSOLETE svc_spawnbinary",
+  "svc_event_reliable",
   "svc_spawnbaseline",
 
-  "svc_temp_entity", // <variable>
+  "svc_tempentity", // <variable>
   "svc_setpause",
   "svc_signonnum",
   "svc_centerprint",
@@ -64,8 +64,34 @@ const char *svc_strings[] = // TODO
   "svc_intermission",
   "svc_finale",  // [string] music [string] text
   "svc_cdtrack", // [byte] track [byte] looptrack
-  "svc_sellscreen",
-  "svc_cutscene"
+  "svc_restore",
+  "svc_cutscene",
+  "svc_weaponanim",
+  "svc_decalname",
+  "svc_roomtype",
+  "svc_addangle",
+  "svc_newusermsg",
+  "svc_packetentities",
+  "svc_deltapacketentities",
+  "svc_choke",
+  "svc_resourcelist",
+  "svc_newmovevars",
+  "svc_resourcerequest",
+  "svc_customization",
+  "svc_crosshairangle",
+  "svc_soundfade",
+  "svc_filetxferfailed",
+  "svc_hltv",
+  "svc_director",
+  "svc_voiceinit",
+  "svc_voicedata",
+  "svc_sendextrainfo",
+  "svc_timescale",
+  "svc_resourcelocation",
+  "svc_sendcvarvalue",
+  "svc_sendcvarvalue2",
+  
+  //NULL
 };
 
 //=============================================================================
