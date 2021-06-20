@@ -588,6 +588,12 @@ int Cmd_AddClientCommand(const char *cmd_name, xcommand_t function)
 	return 0; // TODO: return its id
 };
 
+int Cmd_AddGameCommand(const char *cmd_name, xcommand_t function)
+{
+	Cmd_AddCommand(cmd_name, function);
+	// TODO: mark the command as server-side
+	return 0; // TODO: return its id
+};
 
 /*
 ============
