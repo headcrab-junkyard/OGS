@@ -231,6 +231,9 @@ void Host_InitLocal()
 	Host_FindMaxClients();
 
 	host_time = 1.0; // so a think at time 0 won't get called
+	
+	if(COM_CheckParm("-developer"))
+		Cvar_SetValue("developer", 1);
 }
 
 /*
