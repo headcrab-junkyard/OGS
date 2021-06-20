@@ -66,6 +66,25 @@ extern void M_Menu_Main_f();
 
 /*
 ================
+Con_Debug_f
+================
+*/
+void Con_Debug_f()
+{
+	if(con_debuglog)
+	{
+		con_debuglog = true;
+		Con_Printf("condebug enabled");
+	}
+	else
+	{
+		Con_Printf("condebug disabled");
+		con_debuglog = false;
+	};
+};
+
+/*
+================
 Con_ToggleConsole_f
 ================
 */
@@ -300,6 +319,7 @@ void Con_Init()
 	//
 	Cvar_RegisterVariable(&con_notifytime);
 
+	Cmd_AddCommand("condebug", Con_Debug_f);
 	Cmd_AddCommand("toggleconsole", Con_ToggleConsole_f);
 	Cmd_AddCommand("messagemode", Con_MessageMode_f);
 	Cmd_AddCommand("messagemode2", Con_MessageMode2_f);
