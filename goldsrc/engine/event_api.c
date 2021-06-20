@@ -26,12 +26,18 @@
 void EV_PlaySound(int nEnt, float *vOrigin, int nChannel, const char *sSample,
 				float fVolume, float fAttenuation, int nFlags, int nPitch)
 {
-	// TODO: S_StartDynamicSound(nEnt, nChannel, vOrigin, sSample, fVolume, fAttenuation, nFlags, nPitch);
+	if(!sSample || !*sSample)
+		return;
+	
+	// TODO: handle nFlags
+	
+	S_StartDynamicSound(nEnt, nChannel, S_FindName(sSample), vOrigin, fVolume, fAttenuation, nPitch);
 };
 
 void EV_StopSound(int nEnt, int nChannel, const char *sSample)
 {
-	// TODO
+	// TODO: handle sSample
+	S_StopSound(nEnt, nChannel);
 };
 
 int EV_FindModelIndex(const char *sName)
@@ -47,13 +53,16 @@ int EV_IsLocal(int nPlayerNum)
 
 int EV_LocalPlayerDucking()
 {
-	// TODO
+	// TODO: ducking during the current event?
 	return 0;
 };
 
 void EV_LocalPlayerViewheight(float *vOrigin)
 {
 	// TODO
+	
+	if(vOrigin)
+		VectorCopy(vOrigin, vec3_origin);
 };
 
 void EV_LocalPlayerBounds(int nHullType, float *vMins, float *vMaxs)
