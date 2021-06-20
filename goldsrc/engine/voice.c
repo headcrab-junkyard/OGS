@@ -51,3 +51,8 @@ void Voice_RegisterCvars()
 	Cvar_RegisterVariable(&voice_showchannels);
 	Cvar_RegisterVariable(&voice_showincoming);
 };
+
+void Voice_RecordStart()
+{
+	// TODO
+};

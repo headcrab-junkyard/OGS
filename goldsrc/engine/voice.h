@@ -6,3 +6,5 @@ void Voice_Init();
 void Voice_Shutdown();
 
 void Voice_RegisterCvars();
+
+void Voice_RecordStart();
