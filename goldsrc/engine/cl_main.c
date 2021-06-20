@@ -162,6 +162,146 @@ void CL_Connect_f()
 };
 
 /*
+====================
+CL_Users_f
+
+Dump userids for all current players
+====================
+*/
+void CL_Users_f()
+{
+	int c = 0;
+	
+	Con_Printf("userid frags name\n");
+	Con_Printf("------ ----- ----\n");
+	
+	for (int i=0 ; i<MAX_CLIENTS ; i++)
+	{
+		if (cl.players[i].name[0])
+		{
+			Con_Printf ("%6i %4i %s\n", cl.players[i].userid, cl.players[i].frags, cl.players[i].name);
+			c++;
+		};
+	};
+
+	Con_Printf ("%i total users\n", c);
+};
+
+/*
+==================
+CL_SetInfo_f
+
+Allow clients to change userinfo
+==================
+*/
+void CL_SetInfo_f()
+{
+	if (Cmd_Argc() == 1)
+	{
+		Info_Print (cls.userinfo);
+		return;
+	};
+	
+	if (Cmd_Argc() != 3)
+	{
+		Con_Printf ("usage: setinfo [ <key> <value> ]\n");
+		return;
+	};
+	
+	// TODO
+	//if (!stricmp(Cmd_Argv(1), pmodel_name) || !strcmp(Cmd_Argv(1), emodel_name))
+		//return;
+
+	Info_SetValueForKey (cls.userinfo, Cmd_Argv(1), Cmd_Argv(2), MAX_INFO_STRING);
+	if (cls.state >= ca_connected)
+		Cmd_ForwardToServer ();
+};
+
+/*
+==================
+CL_FullInfo_f
+
+Allow clients to change userinfo
+==================
+*/
+void CL_FullInfo_f()
+{
+	char	key[512];
+	char	value[512];
+	char	*o;
+	char	*s;
+
+	if (Cmd_Argc() != 2)
+	{
+		Con_Printf ("fullinfo <complete info string>\n");
+		return;
+	};
+
+	s = Cmd_Argv(1);
+	if (*s == '\\')
+		s++;
+	while (*s)
+	{
+		o = key;
+		while (*s && *s != '\\')
+			*o++ = *s++;
+		*o = 0;
+
+		if (!*s)
+		{
+			Con_Printf ("MISSING VALUE\n");
+			return;
+		};
+
+		o = value;
+		s++;
+		while (*s && *s != '\\')
+			*o++ = *s++;
+		*o = 0;
+
+		if (*s)
+			s++;
+
+		// TODO
+		//if (!stricmp(key, pmodel_name) || !stricmp(key, emodel_name))
+			//continue;
+
+		Info_SetValueForKey (cls.userinfo, key, value, MAX_INFO_STRING);
+	};
+};
+
+/*
+==================
+CL_FullServerinfo_f
+
+Sent by server when serverinfo changes
+==================
+*/
+void CL_FullServerinfo_f()
+{
+	if(Cmd_Argc() != 2)
+	{
+		Con_Printf("usage: fullserverinfo <complete info string>\n");
+		return;
+	};
+
+	Q_strcpy(cl.serverinfo, Cmd_Argv(1));
+
+	char *p;
+	
+	if((p = Info_ValueForKey(cl.serverinfo, "*vesion")) && *p)
+	{
+		float v = Q_atof(p);
+		if(v)
+		{
+			// TODO
+			//if(!server_version)
+				//Con_Printf("Version %1.2f Server\n", v);
+			//server_version = v;
+		};
+	};
+};
+/*
 =======================
 CL_SendConnectPacket
 
@@ -1228,4 +1368,11 @@ void CL_Init()
 
 	Cmd_AddCommand("playdemo", CL_PlayDemo_f);
 	Cmd_AddCommand("timedemo", CL_TimeDemo_f);
+	
+	Cmd_AddCommand("users", CL_Users_f);
+	
+	Cmd_AddCommand("setinfo", CL_SetInfo_f);
+	Cmd_AddCommand("fullinfo", CL_FullInfo_f);
+	Cmd_AddCommand("fullserverinfo", CL_FullServerinfo_f);
+	
 };
