@@ -51,6 +51,8 @@ cvar_t	sv_airaccelerate	 = { "sv_airaccelerate", "0.7"};
 cvar_t	sv_wateraccelerate	 = { "sv_wateraccelerate", "10"};
 cvar_t sv_nostep = { "sv_nostep", "0" };
 
+extern cvar_t sv_stepsize;
+
 #define MOVE_EPSILON 0.01
 
 void SV_Physics_Toss(edict_t *ent);
@@ -959,8 +961,8 @@ void SV_WalkMove(edict_t *ent)
 
 	VectorCopy(vec3_origin, upmove);
 	VectorCopy(vec3_origin, downmove);
-	upmove[2] = STEPSIZE;
-	downmove[2] = -STEPSIZE + oldvel[2] * host_frametime;
+	upmove[2] = sv_stepsize.value;
+	downmove[2] = -sv_stepsize.value + oldvel[2] * host_frametime;
 
 	// move up
 	SV_PushEntity(ent, upmove); // FIXME: don't link?

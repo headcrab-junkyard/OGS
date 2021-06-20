@@ -24,6 +24,9 @@
 
 #define MAX_IPFILTERS 1024
 
+
+extern cvar_t sv_stepsize;
+
 typedef struct
 {
 	unsigned mask;
@@ -642,7 +645,9 @@ void SV_Init()
 	Cvar_RegisterVariable(&sv_allow_upload);
 	
 	//Cvar_RegisterVariable(&pausable); // TODO: already defined in host
-
+	
+	Cvar_RegisterVariable(&sv_stepsize);
+	
 	for(i = 0; i < MAX_MODELS; i++)
 		sprintf(localmodels[i], "*%i", i);
 };
