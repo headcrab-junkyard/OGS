@@ -1350,7 +1350,8 @@ void CL_Init()
 	//Cvar_RegisterVariable (&cl_warncmd);
 
 	Cvar_RegisterVariable(&cl_shownet);
-
+	Cvar_RegisterVariable(&show_fps);
+	
 	//Cvar_RegisterVariable (&cl_sbar);
 	//Cvar_RegisterVariable (&cl_hudswap);
 	//Cvar_RegisterVariable (&cl_maxfps);
@@ -1372,6 +1373,7 @@ void CL_Init()
 	// info mirrors
 	//
 	Cvar_RegisterVariable(&name);
+	Cvar_RegisterVariable(&model);
 	Cvar_RegisterVariable(&password);
 	Cvar_RegisterVariable(&spectator);
 	Cvar_RegisterVariable(&skin);
