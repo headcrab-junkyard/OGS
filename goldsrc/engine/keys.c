@@ -769,6 +769,10 @@ void Key_ClearStates()
 
 const char *Key_LookupBinding(const char *asBinding)
 {
-	// TODO
-	return "";
+	for(int i = 0; i < 256; ++i) // TODO: arraysize
+		if(keybindings[i] && *keybindings[i])
+			if(!Q_strcmp(keybindings[i], asBinding))
+				return Key_KeynumToString(i);
+	
+	return ""; // TODO
 };
