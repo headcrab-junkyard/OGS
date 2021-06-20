@@ -25,7 +25,7 @@
 edict_t *sv_player;
 
 extern cvar_t sv_friction;
-cvar_t sv_edgefriction = { "edgefriction", "2" };
+cvar_t sv_edgefriction = { "edgefriction", "2", FCVAR_SERVER };
 extern cvar_t sv_stopspeed;
 
 extern playermove_t svpmove;

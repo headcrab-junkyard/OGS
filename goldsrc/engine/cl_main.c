@@ -30,8 +30,7 @@
 // references them even when on a unix system.
 
 cvar_t cl_name = { "_cl_name", "player", FCVAR_ARCHIVE }; // TODO: this should be removed
-
-cvar_t cl_timeout = { "cl_timeout", "60" };
+cvar_t cl_timeout = { "cl_timeout", "60", FCVAR_ARCHIVE };
 
 cvar_t cl_shownet = { "cl_shownet", "0" }; // can be 0, 1, or 2
 cvar_t cl_nolerp = { "cl_nolerp", "0" };
@@ -49,7 +48,7 @@ cvar_t cl_solid_players = { "cl_solid_players", "1" };
 
 cvar_t localid = { "localid", "" };
 
-cvar_t show_fps = {"cl_showfps", "0"}; // set for running times
+cvar_t show_fps = {"cl_showfps", "0", FCVAR_ARCHIVE}; // set for running times
 int fps_count; // TODO: used by gl_screen
 
 //

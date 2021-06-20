@@ -47,7 +47,7 @@ cvar_t sv_filterban = { "sv_filterban", "1" };
 
 cvar_t sv_timeout = { "sv_timeout", "60" }; // seconds without any message
 
-cvar_t sv_password = {"sv_password", ""};	// password for entering the game
+cvar_t sv_password = {"sv_password", "", FCVAR_SERVER};	// password for entering the game
 
 cvar_t sv_allow_download = {"sv_allow_download", "1"};
 
