@@ -112,6 +112,29 @@ void Con_ToggleConsole_f()
 
 /*
 ================
+Con_HideConsole_f
+================
+*/
+void Con_HideConsole_f()
+{
+	if(key_dest == key_console)
+	{
+		if(cls.state == ca_connected)
+		{
+			key_dest = key_game;
+			key_lines[edit_line][1] = 0; // clear any typing
+			key_linepos = 1;
+		}
+		else
+			Cbuf_AddText("menu_main"); //M_Menu_Main_f(); // TODO
+	};
+	
+	SCR_EndLoadingPlaque();
+	Q_memset(con_times, 0, sizeof(con_times));
+};
+
+/*
+================
 Con_Clear_f
 ================
 */
@@ -321,6 +344,7 @@ void Con_Init()
 
 	Cmd_AddCommand("condebug", Con_Debug_f);
 	Cmd_AddCommand("toggleconsole", Con_ToggleConsole_f);
+	Cmd_AddCommand("hideconsole", Con_HideConsole_f);
 	Cmd_AddCommand("messagemode", Con_MessageMode_f);
 	Cmd_AddCommand("messagemode2", Con_MessageMode2_f);
 	Cmd_AddCommand("clear", Con_Clear_f);
