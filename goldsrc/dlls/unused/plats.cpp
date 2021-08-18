@@ -135,7 +135,7 @@ void CPlatform::outside_touch(CBaseEntity *other)
 		
 //dprint ("plat_outside_touch\n");
 	self = self->enemy;
-	if (self->v.state == STATE_TOP)
+	if (self->state == STATE_TOP)
 		go_down();
 };
 
@@ -150,7 +150,7 @@ void CPlatform::crush(CBaseEntity *other)
 {
 //dprint ("plat_crush\n");
 
-	other->v.deathtype = "squish";
+	other->deathtype = "squish";
 	other->TakeDamage(self, self, 1);
 	
 	if (self->state == STATE_UP)
@@ -185,6 +185,11 @@ Set "sounds" to one of the following:
 
 C_EXPORT void func_plat(entvars_t *self)
 {
+	CFuncPlat::Spawn();
+};
+
+void CFuncPlat::Spawn()
+{
 // TODO: unused by q2
 	if (!self->v.t_length)
 		self->v.t_length = 80;
@@ -195,60 +200,60 @@ C_EXPORT void func_plat(entvars_t *self)
 		self->v.sounds = 2;
 // FIX THIS TO LOAD A GENERIC PLAT SOUND
 
-	if (self->v.sounds == 1)
+	if (self->sounds == 1)
 	{
 		pEngine->pfnPrecacheSound ("plats/plat1.wav");
 		pEngine->pfnPrecacheSound ("plats/plat2.wav");
-		self->v.noise = "plats/plat1.wav";
-		self->v.noise1 = "plats/plat2.wav";
+		self->noise = "plats/plat1.wav";
+		self->noise1 = "plats/plat2.wav";
 	};
 
-	if (self->v.sounds == 2)
+	if (self->sounds == 2)
 	{
 		pEngine->pfnPrecacheSound ("plats/medplat1.wav");
 		pEngine->pfnPrecacheSound ("plats/medplat2.wav");
-		self->v.noise = "plats/medplat1.wav";
-		self->v.noise1 = "plats/medplat2.wav";
+		self->noise = "plats/medplat1.wav";
+		self->noise1 = "plats/medplat2.wav";
 	};
 // end unused by q2
 
-	self->v.mangle = self->v.angles; // TODO: remove?
-	self->v.angles = '0 0 0'; // VectorClear
+	self->mangle = self->v.angles; // TODO: remove?
+	self->angles = '0 0 0'; // VectorClear
 
-	this->SetClassName("plat"); // TODO: should we do this here?
-	this->SetSolidity(SOLID_BSP);
-	this->SetMoveType(MOVETYPE_PUSH);
+	SetClassName("plat"); // TODO: should we do this here?
+	SetSolidity(SOLID_BSP);
+	SetMoveType(MOVETYPE_PUSH);
 	
-	this->SetOrigin(this->GetOrigin()); // TODO: q2 doesn't do that
-	this->SetModel(this->GetModel());
-	this->SetSize(this->GetSize().mins , this->GetSize().maxs); // TODO: q2 doesn't do that
+	SetOrigin(GetOrigin()); // TODO: q2 doesn't do that
+	SetModel(GetModel());
+	SetSize(GetSize().mins , GetSize().maxs); // TODO: q2 doesn't do that
 
-	this->SetBlockedCallback(CPlatform::crush); // TODO: plat_blocked in q2
+	SetBlockedCallback(CPlatform::crush); // TODO: plat_blocked in q2
 	
 	if (!self->speed)
 		self->speed = 150;
 
 // pos1 is the top position, pos2 is the bottom
-	self->pos1 = self->origin;
-	self->pos2 = self->origin;
-	if (self->v.height)
-		self->v.pos2_z = self->v.origin_z - self->v.height;
+	self->pos1 = GetOrigin();
+	self->pos2 = GetOrigin();
+	if (self->height)
+		self->pos2_z = self->v.origin_z - self->v.height;
 	else
-		self->v.pos2_z = self->v.origin_z - self->v.size_z + 8;
+		self->pos2_z = self->v.origin_z - self->v.size_z + 8;
 
-	this->SetUseCallback(CPlatform::trigger_use); // TODO: Use_Plat in q2
+	SetUseCallback(CPlatform::trigger_use); // TODO: Use_Plat in q2
 
 	plat_spawn_inside_trigger (self);	// the "start moving" trigger	
 
 	if (self->targetname)
 	{
-		self->state = STATE_UP; // TODO: self->moveinfo.state in q2
-		this->SetUseCallback(CPlatform::Use); // TODO: not present in q2
+		self->SetState(STATE_UP); // TODO: self->moveinfo.state in q2
+		SetUseCallback(CPlatform::Use); // TODO: not present in q2
 	}
 	else
 	{
-		this->SetOrigin(self->v.pos2);
-		self->state = STATE_BOTTOM; // TODO: self->moveinfo.state in q2
+		SetOrigin(self->v.pos2);
+		self->SetState(STATE_BOTTOM); // TODO: self->moveinfo.state in q2
 	};
 };
 
@@ -257,7 +262,7 @@ C_EXPORT void func_plat(entvars_t *self)
 void train_next();
 void func_train_find();
 
-class CTrain : public CEntity
+class CTrain : public CBaseEntity
 {
 public:
 	CTrain();
@@ -278,7 +283,7 @@ void CTrain::Blocked(edict_t *other)
 		return;
 	self->v.attack_finished = time + 0.5;
 	other->v.deathtype = "squish";
-	T_Damage (other, self, self, self->v.dmg);
+	other->TakeDamage(self, self, self->v.dmg);
 };
 
 void CTrain::Use()
@@ -293,12 +298,12 @@ void CTrain::Wait()
 	if (self->v.wait)
 	{
 		self->SetNextThink(self->v.ltime + self->v.wait);
-		pEngine->pfnEmitSound(self, CHAN_NO_PHS_ADD+CHAN_VOICE, self->v.noise, 1, ATTN_NORM);
+		EmitSound(CHAN_NO_PHS_ADD+CHAN_VOICE, self->v.noise, 1, ATTN_NORM);
 	}
 	else
-		self->SetNextThink(self->v.ltime + 0.1);
+		SetNextThink(self->v.ltime + 0.1);
 	
-	self->SetThinkCallback(train_next);
+	SetThinkCallback(train_next);
 };
 
 void train_next()
@@ -342,7 +347,12 @@ sounds
 1) ratchet metal
 
 */
-void func_train()
+C_EXPORT void func_train(entvars_t *self)
+{
+	CFuncTrain::Spawn();
+};
+
+void CFuncTrain::Spawn()
 {	
 	if (!self.speed)
 		self.speed = 100;
@@ -357,7 +367,7 @@ void func_train()
 		pEngine->precache_sound ("misc/null.wav");
 		self.noise1 = ("misc/null.wav");
 		pEngine->precache_sound ("misc/null.wav");
-	}
+	};
 
 	if (self.sounds == 1)
 	{
@@ -365,7 +375,7 @@ void func_train()
 		precache_sound ("plats/train2.wav");
 		self.noise1 = ("plats/train1.wav");
 		precache_sound ("plats/train1.wav");
-	}
+	};
 
 	self.cnt = 1;
 	self.solid = SOLID_BSP;

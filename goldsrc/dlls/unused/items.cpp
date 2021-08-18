@@ -32,15 +32,13 @@ void W_SetCurrentAmmo();
 BE .8 .3 .4 IN COLOR */
 
 
-void SUB_regen(entvars_t *self)
+void CBaseEntity::SUB_regen()
 {
 	self.model = self.mdl;          // restore original model
 	self.solid = SOLID_TRIGGER;     // allow it to be touched again
 	gpEngine->pfnEmitSound (self, CHAN_VOICE, "items/itembk2.wav", 1, ATTN_NORM);    // play respawn sound
 	gpEngine->pfnSetOrigin (self, self.origin);
 };
-
-
 
 /*QUAKED noclass (0 0 0) (-8 -8 -8) (8 8 8)
 prints a warning message when spawned
@@ -53,36 +51,33 @@ void noclass(entvars_t *self)
 	remove (self);
 };
 
-void q_touch()
+void CQuadBarrel::Touch(CBaseEntity *other)
 {
-	entity    stemp;
-	float     best;
-	string    s;
-
-	if (other.classname != "player")
+	if(other->GetClassName() != "player")
 		return;
-	if (other.health <= 0)
+	if(other->GetHealth() <= 0)
 		return;
 
-	self.mdl = self.model;
+	self->mdl = self->model;
 
-	gpEngine->pfnEmitSound (other, CHAN_VOICE, self.noise, 1, ATTN_NORM);
-	stuffcmd (other, "bf\n");
-	self.solid = SOLID_NOT;
-	other.items = other.items | IT_QUAD;
-	self.model = string_null;
-		if (deathmatch == 4)
-		{
-			other.armortype = 0;
-			other.armorvalue = 0 * 0.01;
-			other.ammo_cells = 0;
-		}
+	other->EmitSound(CHAN_VOICE, self->noise, 1, ATTN_NORM, PITCH_NORM);
+	stuffcmd(other, "bf\n");
+	SetSolidity(SOLID_NOT);
+	other->items |= IT_QUAD;
+	SetModel(string_null);
+	
+	if(deathmatch == 4)
+	{
+		other->armortype = 0;
+		other->armorvalue = 0 * 0.01;
+		other->ammo_cells = 0;
+	};
 
-// do the apropriate action
-	other.super_time = 1;
-	other.super_damage_finished = self.cnt;
+	// do the apropriate action
+	other->super_time = 1;
+	other->super_damage_finished = self->cnt;
 
-	s=ftos(rint(other.super_damage_finished - time));
+	string s=ftos(rint(other.super_damage_finished - time));
 
 	bprint (PRINT_LOW, other.netname);
 	if (deathmatch == 4)
@@ -96,34 +91,31 @@ void q_touch()
 	SUB_UseTargets();                               // fire all targets / killtargets
 };
 
-
-void DropQuad(float timeleft)
+void CBasePlayer::DropQuad(float timeleft)
 {
-	entity    item;
-
-	item = spawn();
-	item.origin = self.origin;
+	auto item = gpEngine->pfnSpawn();
+	item->SetOrigin(GetOrigin());
 	
-	item.velocity_z = 300;
-	item.velocity_x = -100 + (random() * 200);
-	item.velocity_y = -100 + (random() * 200);
+	item->velocity_z = 300;
+	item->velocity_x = -100 + (random() * 200);
+	item->velocity_y = -100 + (random() * 200);
 	
-	item.flags = FL_ITEM;
-	item.solid = SOLID_TRIGGER;
-	item.movetype = MOVETYPE_TOSS;
-	item.noise = "items/damage.wav";
-	setmodel (item, "models/quaddama.mdl");
-	setsize (item, '-16 -16 -24', '16 16 32');
-	item.cnt = time + timeleft;
-	item.touch = q_touch;
-	item.nextthink = time + timeleft;    // remove it with the time left on it
-	item.think = SUB_Remove;
+	item->SetFlags(FL_ITEM);
+	item->SetSolidity(SOLID_TRIGGER);
+	item->SetMoveType(MOVETYPE_TOSS);
+	item->noise = "items/damage.wav";
+	
+	item->SetModel("models/quaddama.mdl");
+	item->SetSize('-16 -16 -24', '16 16 32');
+	
+	item->cnt = gpGlobals->time + timeleft;
+	item->SetTouchCallback(CQuadBarrel::Touch);
+	item->SetNextThink(gpGlobals->time + timeleft); // remove it with the time left on it
+	item->SetThinkCallback(SUB_Remove);
 };
 
-void r_touch()
+void CRing::Touch(CBaseEntity *other)
 {
-	entity    stemp;
-	float     best;
 	string    s;
 
 	if (other.classname != "player")
@@ -153,12 +145,9 @@ void r_touch()
 	SUB_UseTargets();                               // fire all targets / killtargets
 };
 
-
-void DropRing(float timeleft)
+void CBasePlayer::DropRing(float timeleft)
 {
-	entity    item;
-
-	item = spawn();
+	auto item = gpEngine->pfnSpawn();
 	item.origin = self.origin;
 	
 	item.velocity_z = 300;
@@ -172,7 +161,7 @@ void DropRing(float timeleft)
 	setmodel (item, "models/invisibl.mdl");
 	setsize (item, '-16 -16 -24', '16 16 32');
 	item.cnt = time + timeleft;
-	item.touch = r_touch;
+	item.touch = CRing::Touch;
 	item.nextthink = time + timeleft;    // remove after 30 seconds
 	item.think = SUB_Remove;
 };
@@ -184,9 +173,9 @@ PlaceItem
 plants the object on the floor
 ============
 */
-void PlaceItem()
+void CBaseItem::PlaceItem()
 {
-	float     oldz;
+	float oldz;
 
 	self.mdl = self.model;          // so it can be restored on respawn
 	self.flags = FL_ITEM;           // make extra wide
@@ -202,7 +191,7 @@ void PlaceItem()
 		dprint ("\n");
 		remove(self);
 		return;
-	}
+	};
 };
 
 /*
@@ -212,10 +201,10 @@ StartItem
 Sets the clipping size and plants the object on the floor
 ============
 */
-void StartItem()
+void CBaseItem::StartItem()
 {
-	self.nextthink = time + 0.2;    // items start after other solids
-	self.think = PlaceItem;
+	SetNextThink(gpGlobals->time + 0.2); // items start after other solids
+	SetThinkCallback(CBaseItem::PlaceItem);
 };
 
 /*
@@ -226,9 +215,36 @@ ARMOR
 ===============================================================================
 */
 
-void armor_touch(entvars_t *self, entvars_t *other)
+/*QUAKED item_armor1 (0 .5 .8) (-16 -16 0) (16 16 32)
+*/
+class CArmor : public CBaseItem
 {
-	float   type, value, bit;
+public:
+	void Spawn() override;
+	
+	void Touch(CBaseEntity *other) override;
+	
+	bool HandleKeyValue(const std::string &asKey, const std::string &asValue) override;
+private:
+	float mfValue{0.0f};
+};
+
+void CArmor::Spawn()
+{
+	SetTouchCallback(CArmor::Touch);
+	
+	gpEngine->pfnPrecacheModel("models/armor.mdl");
+	SetModel("models/armor.mdl");
+	
+	self->skin = 0;
+	SetSize('-16 -16 0', '16 16 56');
+	
+	StartItem();
+};
+
+void CArmor::Touch(CBaseEntity *other)
+{
+	float   type, bit;
 	
 	if (other.health <= 0)
 		return;
@@ -242,26 +258,23 @@ void armor_touch(entvars_t *self, entvars_t *other)
 	if (self.classname == "item_armor1")
 	{
 		type = 0.3;
-		value = 100;
 		bit = IT_ARMOR1;
 	}
 	if (self.classname == "item_armor2")
 	{
 		type = 0.6;
-		value = 150;
 		bit = IT_ARMOR2;
 	}
 	if (self.classname == "item_armorInv")
 	{
 		type = 0.8;
-		value = 200;
 		bit = IT_ARMOR3;
 	}
-	if (other.armortype*other.armorvalue >= type*value)
+	if (other.armortype*other.armorvalue >= type*mfValue)
 		return;
 		
 	other.armortype = type;
-	other.armorvalue = value;
+	other.armorvalue = mfValue;
 	other.items = other.items - (other.items & (IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3)) + bit;
 
 	self.solid = SOLID_NOT;
@@ -279,45 +292,23 @@ void armor_touch(entvars_t *self, entvars_t *other)
 	SUB_UseTargets();                               // fire all targets / killtargets
 };
 
-
-/*QUAKED item_armor1 (0 .5 .8) (-16 -16 0) (16 16 32)
-*/
-
-void item_armor1(entvars_t *self)
+bool CArmor::HandleKeyValue(const std::string &asKey, const std::string &asValue)
 {
-	self.touch = armor_touch;
-	gpEngine->pfnPrecacheModel ("models/armor.mdl");
-	gpEngine->pfnSetModel (self, "models/armor.mdl");
-	self.skin = 0;
-	gpEngine->pfnSetSize (self, '-16 -16 0', '16 16 56');
-	StartItem ();
+	if(asKey == "skin")
+	{
+		self->skin = std::stoi(asValue);
+		return true;
+	}
+	else if(asKey == "value")
+	{
+		mfValue = std::stof(asValue);
+		return true;
+	};
+	
+	return CBaseEntity::HandleKeyValue(asKey, asValue);
 };
 
-/*QUAKED item_armor2 (0 .5 .8) (-16 -16 0) (16 16 32)
-*/
-
-void item_armor2()
-{
-	self.touch = armor_touch;
-	precache_model ("models/armor.mdl");
-	setmodel (self, "models/armor.mdl");
-	self.skin = 1;
-	setsize (self, '-16 -16 0', '16 16 56');
-	StartItem ();
-};
-
-/*QUAKED item_armorInv (0 .5 .8) (-16 -16 0) (16 16 32)
-*/
-
-void item_armorInv()
-{
-	self.touch = armor_touch;
-	precache_model ("models/armor.mdl");
-	setmodel (self, "models/armor.mdl");
-	self.skin = 2;
-	setsize (self, '-16 -16 0', '16 16 56');
-	StartItem ();
-};
+LINK_ENTITY_TO_CLASS(item_armor, CArmor);
 
 /*
 ===============================================================================
@@ -338,7 +329,6 @@ void bound_other_ammo()
 	if (other.ammo_cells > 100)
 		other.ammo_cells = 100;         
 };
-
 
 float RankForWeapon(float w)
 {
@@ -385,13 +375,11 @@ Deathmatch weapon change rules for picking up a weapon
 */
 void Deathmatch_Weapon(float old, float fnew)
 {
-	float or, nr;
-
-// change self.weapon if desired
-	or = RankForWeapon (self.weapon);
-	nr = RankForWeapon (fnew);
-	if ( nr < or )
-		self.weapon = fnew;
+	// change self.weapon if desired
+	float oldrank = RankForWeapon(self->weapon);
+	float newrank = RankForWeapon(fnew);
+	if(newrank < oldrank)
+		self->weapon = fnew;
 };
 
 /*
@@ -401,7 +389,7 @@ weapon_touch
 */
 float W_BestWeapon();
 
-void weapon_touch()
+void weapon_touch(CBaseEntity *other)
 {
 	float   hadammo, best, fnew, old;
 	entity  stemp;
@@ -534,71 +522,99 @@ void weapon_touch()
 
 /*QUAKED weapon_supershotgun (0 .5 .8) (-16 -16 0) (16 16 32)
 */
-
-void weapon_supershotgun()
+class CWeaponSuperShotgun : public CBaseItem
 {
-	if (deathmatch <= 3)
-	{
-		precache_model ("models/g_shot.mdl");
-		setmodel (self, "models/g_shot.mdl");
-		self.weapon = IT_SUPER_SHOTGUN;
-		self.netname = "Double-barrelled Shotgun";
-		self.touch = weapon_touch;
-		setsize (self, '-16 -16 0', '16 16 56');
-		StartItem ();
-	}
+public:
+	void Spawn() override;
 };
+
+void CWeaponSuperShotgun::Spawn()
+{
+	if(deathmatch <= 3)
+	{
+		gpEngine->pfnPrecacheModel("models/g_shot.mdl");
+		SetModel("models/g_shot.mdl");
+		self->weapon = IT_SUPER_SHOTGUN;
+		self->netname = "Double-barrelled Shotgun";
+		SetTouchCallback(weapon_touch);
+		SetSize('-16 -16 0', '16 16 56');
+		StartItem();
+	};
+};
+
+LINK_ENTITY_TO_CLASS(weapon_supershotgun, CWeaponSuperShotgun);
 
 /*QUAKED weapon_nailgun (0 .5 .8) (-16 -16 0) (16 16 32)
 */
-
-void weapon_nailgun()
+class CWeaponNailGun : public CBaseItem
 {
-	if (deathmatch <= 3)
-	{
-		precache_model ("models/g_nail.mdl");
-		setmodel (self, "models/g_nail.mdl");
-		self.weapon = IT_NAILGUN;
-		self.netname = "nailgun";
-		self.touch = weapon_touch;
-		setsize (self, '-16 -16 0', '16 16 56');
-		StartItem ();
-	}
+public:
+	void Spawn() override;
 };
+
+void CWeaponNailGun::Spawn()
+{
+	if(deathmatch <= 3)
+	{
+		gpEngine->pfnPrecacheModel("models/g_nail.mdl");
+		SetModel("models/g_nail.mdl");
+		self->weapon = IT_NAILGUN;
+		self->netname = "nailgun";
+		SetTouchCallback(weapon_touch);
+		SetSize('-16 -16 0', '16 16 56');
+		StartItem();
+	};
+};
+
+LINK_ENTITY_TO_CLASS(weapon_nailgun, CWeaponNailGun);
 
 /*QUAKED weapon_supernailgun (0 .5 .8) (-16 -16 0) (16 16 32)
 */
-
-void weapon_supernailgun()
+class CWeaponSuperNailGun : public CBaseWeapon
 {
-	if (deathmatch <= 3)
-	{
-		precache_model ("models/g_nail2.mdl");
-		setmodel (self, "models/g_nail2.mdl");
-		self.weapon = IT_SUPER_NAILGUN;
-		self.netname = "Super Nailgun";
-		self.touch = weapon_touch;
-		setsize (self, '-16 -16 0', '16 16 56');
-		StartItem ();
-	}
+public:
+	void Spawn() override;
 };
+
+void CWeaponSuperNailGun::Spawn()
+{
+	if(deathmatch <= 3)
+	{
+		gpEngine->pfnPrecacheModel("models/g_nail2.mdl");
+		SetModel("models/g_nail2.mdl");
+		self->weapon = IT_SUPER_NAILGUN;
+		self->netname = "Super Nailgun";
+		SetTouchCallback(weapon_touch);
+		SetSize('-16 -16 0', '16 16 56');
+		StartItem();
+	};
+};
+
+LINK_ENTITY_TO_CLASS(weapon_supernailgun, CWeaponSuperNailGun);
 
 /*QUAKED weapon_grenadelauncher (0 .5 .8) (-16 -16 0) (16 16 32)
 */
-
-void weapon_grenadelauncher()
+class CWeaponGrenadeLauncher : public CBaseWeapon
 {
-	if (deathmatch <= 3)
-	{
-		precache_model ("models/g_rock.mdl");
-		setmodel (self, "models/g_rock.mdl");
-		self.weapon = 3;
-		self.netname = "Grenade Launcher";
-		self.touch = weapon_touch;
-		setsize (self, '-16 -16 0', '16 16 56');
-		StartItem ();
-	}
+public:
+	void Spawn() override;
 };
+
+void CWeaponGrenadeLauncher::Spawn()
+{
+	if(deathmatch <= 3)
+	{
+		gpEngine->pfnPrecacheModel("models/g_rock.mdl");
+		SetModel("models/g_rock.mdl");
+		self->weapon = 3;
+		self->netname = "Grenade Launcher";
+		SetTouchCallback(weapon_touch);
+		SetSize('-16 -16 0', '16 16 56');
+		StartItem();
+	};
+};
+
+LINK_ENTITY_TO_CLASS(weapon_grenadelauncher, CWeaponGrenadeLauncher);
 
 /*QUAKED weapon_rocketlauncher (0 .5 .8) (-16 -16 0) (16 16 32)
 */
@@ -728,25 +744,25 @@ KEYS
 ===============================================================================
 */
 
-void key_touch()
+void CKey::Touch(CBaseEntity *other)
 {
 	entity    stemp;
 	float             best;
 
-	if (other.classname != "player")
+	if(other->GetClassName() != "player")
 		return;
 	
-	if (other.health <= 0)
+	if(other->GetHealth() <= 0)
 		return;
 	
-	if (other.items & self.items)
+	if(other->items & self->items)
 		return;
 
 	sprint (other, PRINT_LOW, "You got the ");
 	sprint (other, PRINT_LOW, self.netname);
 	sprint (other,PRINT_LOW, "\n");
 
-	sound (other, CHAN_ITEM, self.noise, 1, ATTN_NORM);
+	other->EmitSound(CHAN_ITEM, self.noise, 1, ATTN_NORM, PITCH_NORM);
 	stuffcmd (other, "bf\n");
 	other.items = other.items | self.items;
 
@@ -872,7 +888,7 @@ END OF LEVEL RUNES
 ===============================================================================
 */
 
-void sigil_touch()
+void CSigil::touch(CBaseEntity *other)
 {
 	entity    stemp;
 	float             best;
@@ -945,7 +961,7 @@ POWERUPS
 ===============================================================================
 */
 
-void CPowerUp::Touch()
+void CPowerUp::Touch(CBaseEntity *other)
 {
 	entity    stemp;
 	float             best;
@@ -1039,50 +1055,68 @@ void item_artifact_invulnerability()
 /*QUAKED item_artifact_envirosuit (0 .5 .8) (-16 -16 -24) (16 16 32)
 Player takes no damage from water or slime for 30 seconds
 */
-void item_artifact_envirosuit()
+class CItemEnviroSuit : public CPickupItem
 {
-	self.touch = powerup_touch;
-
-	gpEngine->pfnPrecacheModel ("models/suit.mdl");
-	gpEngine->pfnPrecacheSound ("items/suit.wav");
-	gpEngine->pfnPrecacheSound ("items/suit2.wav");
+public:
+	void Spawn() override;
 	
-	self.noise = "items/suit.wav";
-	
-	gpEngine->pfnSetModel (self, "models/suit.mdl");
-	
-	self.netname = "Biosuit";
-	self.items = IT_SUIT;
-	
-	setsize (self, '-16 -16 -24', '16 16 32');
-	
-	StartItem ();
+	void Touch(CBaseEntity *other) override;
 };
 
+void CItemEnviroSuit::Spawn()
+{
+	SetTouchCallback(powerup_touch);
+
+	gpEngine->pfnPrecacheModel("models/suit.mdl");
+	gpEngine->pfnPrecacheSound("items/suit.wav");
+	gpEngine->pfnPrecacheSound("items/suit2.wav");
+	
+	self->noise = "items/suit.wav";
+	
+	SetModel("models/suit.mdl");
+	
+	self->netname = "Biosuit";
+	self->items = IT_SUIT;
+	
+	SetSize('-16 -16 -24', '16 16 32');
+	
+	StartItem();
+};
+
+LINK_ENTITY_TO_CLASS(item_artifact_envirosuit, CItemEnviroSuit);
 
 /*QUAKED item_artifact_invisibility (0 .5 .8) (-16 -16 -24) (16 16 32)
 Player is invisible for 30 seconds
 */
-void item_artifact_invisibility()
+class CItemInvisibility : public CPickupItem
 {
-	self.touch = powerup_touch;
-
-	gpEngine->pfnPrecacheModel ("models/invisibl.mdl");
-	gpEngine->pfnPrecacheSound ("items/inv1.wav");
-	gpEngine->pfnPrecacheSound ("items/inv2.wav");
-	gpEngine->pfnPrecacheSound ("items/inv3.wav");
+public:
+	void Spawn() override;
 	
-	self.noise = "items/inv1.wav";
-	
-	gpEngine->pfnSetModel (self, "models/invisibl.mdl");
-	
-	self.netname = "Ring of Shadows";
-	self.items = IT_INVISIBILITY;
-	
-	setsize (self, '-16 -16 -24', '16 16 32');
-	StartItem ();
+	void Touch(CBaseEntity *other) override;
 };
 
+void CItemInvisibility::Spawn()
+{
+	SetTouchCallback(powerup_touch);
+
+	gpEngine->pfnPrecacheModel("models/invisibl.mdl");
+	gpEngine->pfnPrecacheSound("items/inv1.wav");
+	gpEngine->pfnPrecacheSound("items/inv2.wav");
+	gpEngine->pfnPrecacheSound("items/inv3.wav");
+	
+	self->noise = "items/inv1.wav";
+	
+	SetModel("models/invisibl.mdl");
+	
+	self->netname = "Ring of Shadows";
+	self->items = IT_INVISIBILITY;
+	
+	SetSize('-16 -16 -24', '16 16 32');
+	StartItem();
+};
+
+LINK_ENTITY_TO_CLASS(item_artifact_invisibility, CItemInvisibility);
 
 /*QUAKED item_artifact_super_damage (0 .5 .8) (-16 -16 -24) (16 16 32)
 The next attack from the player will do 4x damage

@@ -39,59 +39,6 @@ void trigger_reactivate()
 const float	SPAWNFLAG_NOMESSAGE = 1;
 const float	SPAWNFLAG_NOTOUCH = 1;
 
-// the wait time has passed, so set back up for another activation
-void multi_wait()
-{
-	if (self->GetMaxHealth())
-	{
-		self->SetHealth(self->GetMaxHealth());
-		self->SetDamageable(DAMAGE_YES);
-		self->SetSolidity(SOLID_BBOX);
-	};
-};
-
-// the trigger was just touched/killed/used
-// self.enemy should be set to the activator so it can be held through a delay
-// so wait for the delay time before firing
-void multi_trigger()
-{
-	// already been triggered
-	if (self->GetNextThink() > gpGlobals->time)
-		return;
-
-	if (self->GetClassName() == "trigger_secret")
-	{
-		if (self->GetEnemy()->GetClassName() != "player")
-			return;
-		found_secrets++;
-		WriteByte (MSG_ALL, SVC_FOUNDSECRET);
-	};
-
-	if (self.noise)
-		self->EmitSound (CHAN_VOICE, self.noise, 1, ATTN_NORM);
-
-	// don't trigger again until reset
-	self->SetDamageable(DAMAGE_NO);
-
-	activator = self->GetEnemy();
-	
-	SUB_UseTargets();
-
-	if (self.wait > 0)	
-	{
-		self->SetThinkCallback(multi_wait);
-		self->SetNextThink(gpGlobals->time + self.wait);
-	}
-	else
-	{
-		// we can't just remove (self) here, because this is a touch function
-		// called wheil C code is looping through area links...
-		self->SetTouchCallback(SUB_Null);
-		self->SetNextThink(gpGlobals->time + 0.1);
-		self->SetThinkCallback(SUB_Remove);
-	};
-};
-
 void multi_killed()
 {
 	self->SetEnemy(damage_attacker);
@@ -102,23 +49,6 @@ void multi_use()
 {
 	self.enemy = activator;
 	multi_trigger();
-};
-
-void multi_touch(CBaseEntity *other)
-{
-	if (other->GetClassName() != "player")
-		return;
-	
-// if the trigger has an angles field, check player's facing direction
-	if (self.movedir != '0 0 0')
-	{
-		makevectors (other.angles);
-		if (v_forward * self.movedir < 0)
-			return;		// not facing the right way
-	};
-	
-	self.enemy = other;
-	multi_trigger ();
 };
 
 /*QUAKED trigger_multiple (.5 .5 .5) ? notouch
@@ -242,39 +172,6 @@ void trigger_secret()
 
 //=============================================================================
 
-
-void counter_use()
-{
-	string junk;
-
-	self.count = self.count - 1;
-	if (self.count < 0)
-		return;
-	
-	if (self.count != 0)
-	{
-		if (activator.classname == "player"
-		&& (self.spawnflags & SPAWNFLAG_NOMESSAGE) == 0)
-		{
-			if (self.count >= 4)
-				centerprint (activator, "There are more to go...");
-			else if (self.count == 3)
-				centerprint (activator, "Only 3 more to go...");
-			else if (self.count == 2)
-				centerprint (activator, "Only 2 more to go...");
-			else
-				centerprint (activator, "Only 1 more to go...");
-		}
-		return;
-	}
-	
-	if (activator.classname == "player"
-	&& (self.spawnflags & SPAWNFLAG_NOMESSAGE) == 0)
-		centerprint(activator, "Sequence completed!");
-	self.enemy = activator;
-	multi_trigger ();
-};
-
 /*QUAKED trigger_counter (.5 .5 .5) ? nomessage
 Acts as an intermediary for an action that takes multiple inputs.
 
@@ -389,60 +286,6 @@ void spawn_tdeath(const idVec3 &org, CBaseEntity *death_owner)
 	force_retouch = 2; // make sure even still objects get hit
 };
 
-void teleport_touch()
-{
-	edict_t t;
-	idVec3 org;
-
-	if (self.targetname)
-		if (self.nextthink < time)
-			return;		// not fired yet
-
-	if (self.spawnflags & PLAYER_ONLY)
-		if (other.classname != "player")
-			return;
-
-	// only teleport living creatures
-	if (other.health <= 0 || other.solid != SOLID_SLIDEBOX)
-		return;
-
-	SUB_UseTargets ();
-
-	// put a tfog where the player was
-	spawn_tfog (other.origin);
-
-	t = find (world, targetname, self.target);
-	if (!t)
-		objerror ("couldn't find target");
-		
-// spawn a tfog flash in front of the destination
-	makevectors (t.mangle);
-	org = t.origin + 32 * v_forward;
-
-	spawn_tfog (org);
-	spawn_tdeath(t.origin, other);
-
-// move the player and lock him down for a little while
-	if (!other.health)
-	{
-		other.origin = t.origin;
-		other.velocity = (v_forward * other.velocity_x) + (v_forward * other.velocity_y);
-		return;
-	}
-
-	setorigin (other, t.origin);
-	other.angles = t.mangle;
-	if (other.classname == "player")
-	{
-		other.fixangle = 1;		// turn this way immediately
-		other.teleport_time = time + 0.7;
-		if (other.flags & FL_ONGROUND)
-			other.flags = other.flags - FL_ONGROUND;
-		other.velocity = v_forward * 300;
-	}
-	other.flags = other.flags - other.flags & FL_ONGROUND;
-};
-
 /*QUAKED info_teleport_destination (.5 .5 .5) (-8 -8 -8) (8 8 32)
 This is the destination marker for a teleporter.  It should have a "targetname" field with the same value as a teleporter's "target" field.
 */
@@ -554,19 +397,6 @@ void hurt_on()
 {
 	self.solid = SOLID_TRIGGER;
 	self.nextthink = -1;
-};
-
-void hurt_touch()
-{
-	if (other.takedamage)
-	{
-		self.solid = SOLID_NOT;
-		T_Damage (other, self, self, self.dmg);
-		self.think = hurt_on;
-		self.nextthink = time + 1;
-	}
-
-	return;
 };
 
 /*QUAKED trigger_hurt (.5 .5 .5) ?

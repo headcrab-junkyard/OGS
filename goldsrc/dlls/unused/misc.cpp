@@ -41,73 +41,28 @@ void CInfoNull::Spawn()
 	gpEngine->pfnRemoveEntity(self);
 };
 
-LINK_ENTITY_TO_CLASS(info_null, CInfoNull)
+LINK_ENTITY_TO_CLASS(info_null, CInfoNull);
 
 /*QUAKED info_notnull (0 0.5 0) (-4 -4 -4) (4 4 4)
 Used as a positional target for lightning.
 */
-C_EXPORT void info_notnull(entvars_t *self)
+class CInfoNotNull : public CBaseEntity
 {
+public:
+	void Spawn() override {}
 };
+
+LINK_ENTITY_TO_CLASS(info_notnull, CInfoNotNull);
 
 //============================================================================
 
-const float START_OFF = 1;
-
-class CLight : public CPointEntity
-{
-public:
-	bool PreSpawn() const override;
-	void Spawn() override;
-	
-	void Use(CBaseEntity *other) override;
-};
-
-bool CLight::PreSpawn()
-{
-	if(!self->targetname)
-	{
-		// inert light
-		return false;
-	};
-	
-	return true;
-};
-
-void CLight::Spawn()
-{
-	if(self->style >= 32)
-	{
-		SetUseCallback(CLight::Use);
-		if (self->spawnflags & START_OFF)
-			gpEngine->SetLightStyle(self->style, "a");
-		else
-			gpEngine->SetLightStyle(self->style, "m");
-	};
-};
-
-void CLight::Use(CBaseEntity *other)
-{
-	if(self->spawnflags & START_OFF)
-	{
-		gpEngine->SetLightStyle(self->style, "m");
-		self->spawnflags = self->spawnflags - START_OFF;
-	}
-	else
-	{
-		gpEngine->SetLightStyle(self->style, "a");
-		self->spawnflags = self->spawnflags + START_OFF;
-	};
-};
-
-/*QUAKED light (0 1 0) (-8 -8 -8) (8 8 8) START_OFF
+/*QUAKED light_fluoro (0 1 0) (-8 -8 -8) (8 8 8) START_OFF
 Non-displayed light.
 Default light value is 300
 Default style is 0
 If targeted, it will toggle between on or off.
+Makes steady fluorescent humming sound
 */
-LINK_ENTITY_TO_CLASS(light, CLight);
-
 class CLightFluoro : public CLight
 {
 public:
@@ -129,13 +84,6 @@ void CLightFluoro::Spawn()
 	gpEngine->pfnEmitAmbientSound (GetOrigin(), "ambience/fl_hum1.wav", 0.5, ATTN_STATIC);
 };
 
-/*QUAKED light_fluoro (0 1 0) (-8 -8 -8) (8 8 8) START_OFF
-Non-displayed light.
-Default light value is 300
-Default style is 0
-If targeted, it will toggle between on or off.
-Makes steady fluorescent humming sound
-*/
 LINK_ENTITY_TO_CLASS(light_fluoro, CLightFluoro);
 
 /*QUAKED light_fluorospark (0 1 0) (-8 -8 -8) (8 8 8)
@@ -172,19 +120,6 @@ void FireAmbient()
 	gpEngine->pfnEmitAmbientSound (self.origin, "ambience/fire1.wav", 0.5, ATTN_STATIC);
 };
 
-/*QUAKED light_torch_small_walltorch (0 .5 0) (-10 -10 -20) (10 10 20)
-Short wall torch
-Default light value is 200
-Default style is 0
-*/
-C_EXPORT void light_torch_small_walltorch(entvars_t *self)
-{
-	gpEngine->pfnPrecacheModel ("models/flame.mdl");
-	gpEngine->pfnSetModel (self, "models/flame.mdl");
-	FireAmbient ();
-	makestatic (self);
-};
-
 /*QUAKED light_flame_large_yellow (0 1 0) (-10 -10 -12) (12 12 18)
 Large yellow flame ball
 */
@@ -208,25 +143,12 @@ C_EXPORT void light_flame_small_yellow(entvars_t *self)
 	makestatic (self);
 };
 
-/*QUAKED light_flame_small_white (0 1 0) (-10 -10 -40) (10 10 40) START_OFF
-Small white flame ball
-*/
-C_EXPORT void light_flame_small_white(entvars_t *self)
-{
-	gpEngine->pfnPrecacheModel ("models/flame2.mdl");
-	gpEngine->pfnSetModel (self, "models/flame2.mdl");
-	FireAmbient ();
-	makestatic (self);
-};
-
 //============================================================================
 
 
 /*QUAKED misc_fireball (0 .5 .8) (-8 -8 -8) (8 8 8)
 Lava Balls
 */
-void fire_touch();
-
 class CFireBall : public CBaseEntity
 {
 public:
@@ -252,7 +174,7 @@ void CFireBall::Spawn()
 void CFireBall::Touch()
 {
 	other->TakeDamage(self, self, 20);
-	remove(self);
+	gpEngine->pfnRemove(self);
 };
 
 void CFireBall::Fly()
@@ -302,7 +224,7 @@ void CExploBox::Spawn()
 	gpEngine->pfnPrecacheSound("weapons/r_exp3.wav");
 	
 	SetModel("maps/b_explob.bsp");
-	SetSize('0 0 0', '32 32 64');
+	SetSize(idVec3::Origin, idVec3(32.0f, 32.0f, 64.0f));
 	
 	SetHealth(20);
 	self->th_die = barrel_explode;
@@ -354,31 +276,30 @@ public:
 
 void CExploBox2::Spawn()
 {
-	float oldz;
-	
 	SetSolidity(SOLID_BBOX);
 	SetMoveType(MOVETYPE_NONE);
 	
-	gpEngine->pfnPrecacheModel ("maps/b_exbox2.bsp");
-	gpEngine->pfnPrecacheSound ("weapons/r_exp3.wav");
+	gpEngine->pfnPrecacheModel("maps/b_exbox2.bsp");
+	gpEngine->pfnPrecacheSound("weapons/r_exp3.wav");
 	
 	SetModel("maps/b_exbox2.bsp");
-	SetSize('0 0 0', '32 32 32');
+	SetSize(idVec3::Origin, '32 32 32');
 	
 	SetHealth(20);
-	self.th_die = barrel_explode;
-	self.takedamage = DAMAGE_AIM;
+	self->th_die = barrel_explode;
+	self->takedamage = DAMAGE_AIM;
 
-	self.origin_z = self.origin_z + 2;
-	oldz = self.origin_z;
-	droptofloor();
+	self->origin_z = self->GetOrigin().z + 2;
+	float oldz = self->GetOrigin().z;
 	
-	if (oldz - self.origin_z > 250)
+	DropToFloor();
+	
+	if(oldz - self->GetOrigin().z > 250)
 	{
-		dprint ("item fell out of level at ");
-		dprint (vtos(self.origin));
-		dprint ("\n");
-		remove(self);
+		dprint("item fell out of level at ");
+		dprint(vtos(self->GetOrigin()));
+		dprint("\n");
+		gpEngine->pfnRemove(self);
 	};
 };
 
@@ -386,22 +307,22 @@ LINK_ENTITY_TO_CLASS(misc_explobox2, CExploBox2);
 
 //============================================================================
 
-const float SPAWNFLAG_SUPERSPIKE      = 1;
+const float SPAWNFLAG_SUPERSPIKE = 1;
 const float SPAWNFLAG_LASER = 2;
 
-void Laser_Touch(CBaseEntity *other)
+void CSpikeShooter::Laser_Touch(CBaseEntity *other)
 {
-	if (other == self->GetOwner())
+	if(other == self->GetOwner())
 		return; // don't explode on owner
 
-	if (pointcontents(self->GetOrigin()) == CONTENT_SKY)
+	if(pointcontents(GetOrigin()) == CONTENT_SKY)
 	{
-		remove(self);
+		gpEngine->pfnRemove(self);
 		return;
 	};
 	
-	self->EmitSound(CHAN_WEAPON, "enforcer/enfstop.wav", 1, ATTN_STATIC);
-	idVec3 org = self->GetOrigin() - 8 * normalize(self->GetVelocity());
+	EmitSound(CHAN_WEAPON, "enforcer/enfstop.wav", 1, ATTN_STATIC, PITCH_NORM);
+	idVec3 org = GetOrigin() - 8 * normalize(GetVelocity());
 
 	if(other->GetHealth())
 	{
@@ -420,96 +341,116 @@ void Laser_Touch(CBaseEntity *other)
 		multicast (org, MULTICAST_PVS);
 	};
 	
-	remove(self);   
+	gpEngine->pfnRemove(self);   
 };
 
-void LaunchLaser(vec3_t org, vec3_t vec)
+void CSpikeShooter::LaunchLaser(const idVec3 &org, const idVec3 &aVec)
 {
-	idVec3 vec;
-	
-	if (self->GetClassName() == "monster_enforcer")
-		self->EmitSound(CHAN_WEAPON, "enforcer/enfire.wav", 1, ATTN_NORM);
+	if(GetClassName() == "monster_enforcer")
+		EmitSound(CHAN_WEAPON, "enforcer/enfire.wav", 1, ATTN_NORM);
 
-	vec = normalize(vec);
+	idVec3 vec = normalize(aVec);
 	
 	newmis = gpEngine->pfnSpawn();
-	newmis->owner = self;
-	newmis->movetype = MOVETYPE_FLY;
-	newmis->solid = SOLID_BBOX;
-	newmis->effects = EF_DIMLIGHT;
+	newmis->SetOwner(self);
+	newmis->SetMoveType(MOVETYPE_FLY);
+	newmis->SetSolidity(SOLID_BBOX);
+	newmis->SetEffects(EF_DIMLIGHT);
 
-	gpEngine->pfnSetModel (newmis, "models/laser.mdl");
-	gpEngine->pfnSetSize (newmis, '0 0 0', '0 0 0');             
+	newmis->SetModel("models/laser.mdl");
+	newmis->SetSize(idVec3::Origin, idVec3::Origin);             
 
-	gpEngine->pfnSetOrigin (newmis, org);
+	newmis->SetOrigin(org);
 
-	newmis->velocity = vec * 600;
-	newmis->angles = vectoangles(newmis->velocity);
+	newmis->SetVelocity(vec * 600);
+	newmis->SetAngles(vectoangles(newmis->GetVelocity()));
 
-	newmis->nextthink = gpGlobals->time + 5;
-	newmis->think = SUB_Remove;
-	newmis->touch = Laser_Touch;
-};
-
-void spikeshooter_use()
-{
-	if (self->spawnflags & SPAWNFLAG_LASER)
-	{
-		self->EmitSound (CHAN_VOICE, "enforcer/enfire.wav", 1, ATTN_NORM);
-		LaunchLaser (self->GetOrigin(), self->GetMoveDir());
-	}
-	else
-	{
-		self->EmitSound (self, CHAN_VOICE, "weapons/spike2.wav", 1, ATTN_NORM);
-		launch_spike (self->GetOrigin(), self->GetMoveDir());
-		newmis->SetVelocity(self->GetMoveDir() * 500);
-		if (self->spawnflags & SPAWNFLAG_SUPERSPIKE)
-			newmis->SetTouchCallback(superspike_touch);
-	};
-};
-
-void shooter_think()
-{
-	spikeshooter_use ();
-	self->SetNextThink(gpGlobals->time + self->wait);
-	newmis->SetVelocity(self->GetMoveDir() * 500);
+	newmis->SetNextThink(gpGlobals->time + 5);
+	newmis->SetThinkCallback(SUB_Remove);
+	newmis->SetTouchCallback(Laser_Touch);
 };
 
 /*QUAKED trap_spikeshooter (0 .5 .8) (-8 -8 -8) (8 8 8) superspike laser
 When triggered, fires a spike in the direction set in QuakeEd.
 Laser is only for REGISTERED.
 */
-
-void trap_spikeshooter()
+class CSpikeShooter : public CBaseEntity
 {
-	SetMovedir ();
-	self->SetUseCallback(spikeshooter_use);
-	if (self->spawnflags & SPAWNFLAG_LASER)
-	{
-		gpEngine->pfnPrecacheModel ("models/laser.mdl");
-		
-		gpEngine->pfnPrecacheSound ("enforcer/enfire.wav");
-		gpEngine->pfnPrecacheSound ("enforcer/enfstop.wav");
-	}
-	else
-		gpEngine->pfnPrecacheSound ("weapons/spike2.wav");
+public:
+	void Spawn() override;
+	
+	void Use();
 };
 
+void CSpikeShooter::Spawn()
+{
+	SetMovedir();
+	
+	SetUseCallback(CSpikeShooter::Use);
+	
+	if(self->spawnflags & SPAWNFLAG_LASER)
+	{
+		gpEngine->pfnPrecacheModel("models/laser.mdl");
+		
+		gpEngine->pfnPrecacheSound("enforcer/enfire.wav");
+		gpEngine->pfnPrecacheSound("enforcer/enfstop.wav");
+	}
+	else
+		gpEngine->pfnPrecacheSound("weapons/spike2.wav");
+};
+
+void CSpikeShooter::Use()
+{
+	if(self->spawnflags & SPAWNFLAG_LASER)
+	{
+		EmitSound(CHAN_VOICE, "enforcer/enfire.wav", 1, ATTN_NORM, PITCH_NORM);
+		LaunchLaser(GetOrigin(), GetMoveDir());
+	}
+	else
+	{
+		EmitSound(CHAN_VOICE, "weapons/spike2.wav", 1, ATTN_NORM, PITCH_NORM);
+		launch_spike(GetOrigin(), GetMoveDir());
+		newmis->SetVelocity(GetMoveDir() * 500);
+		if (self->spawnflags & SPAWNFLAG_SUPERSPIKE)
+			newmis->SetTouchCallback(superspike_touch);
+	};
+};
+
+LINK_ENTITY_TO_CLASS(trap_spikeshooter, CSpikeShooter);
 
 /*QUAKED trap_shooter (0 .5 .8) (-8 -8 -8) (8 8 8) superspike laser
 Continuously fires spikes.
 "wait" time between spike (1.0 default)
 "nextthink" delay before firing first spike, so multiple shooters can be stagered.
 */
-C_EXPORT void trap_shooter(entvars_t *self)
+class CShooter : public CSpikeShooter
 {
-	trap_spikeshooter ();
+public:
+	void Spawn() override;
 	
-	if (self->wait == 0)
-		self->wait = 1;
-	self->nextthink = self->nextthink + self->wait + self->ltime;
-	self->think = shooter_think;
+	void Think() override;
 };
+
+void CShooter::Spawn()
+{
+	CSpikeShooter::Spawn();
+	
+	if(self->wait == 0)
+		self->wait = 1;
+	
+	SetNextThink(GetNextThink() + self->wait + self->ltime);
+	SetThinkCallback(CShooter::Think);
+};
+
+void CShooter::Think()
+{
+	CSpikeShooter::Use();
+	
+	SetNextThink(gpGlobals->time + self->wait);
+	newmis->SetVelocity(GetMoveDir() * 500);
+};
+
+LINK_ENTITY_TO_CLASS(trap_shooter, CShooter);
 
 /*
 ===============================================================================
@@ -526,9 +467,15 @@ void bubble_bob();
 
 testing air bubbles
 */
-C_EXPORT void air_bubbles(entvars_t *self)
+class CAirBubbles : public CBaseEntity
 {
-	gpEngine->pfnRemove (self);
+public:
+	void Spawn() override;
+};
+
+void CAirBubbles::Spawn()
+{
+	gpEngine->pfnRemove(self);
 };
 
 void make_bubbles()
@@ -554,11 +501,10 @@ void make_bubbles()
 
 void bubble_split()
 {
-	entity    bubble;
-	bubble = gpEngine->pfnSpawn();
+	auto bubble = gpEngine->pfnSpawn();
 	
-	gpEngine->pfnSetModel (bubble, "sprites/s_bubble.spr");
-	setorigin (bubble, self.origin);
+	bubble->SetModel("sprites/s_bubble.spr");
+	bubble->SetOrigin(self->GetOrigin());
 	
 	bubble.movetype = MOVETYPE_NOCLIP;
 	bubble.solid = SOLID_NOT;
@@ -570,13 +516,13 @@ void bubble_split()
 	bubble.frame = 1;
 	bubble.cnt = 10;
 	
-	gpEngine->pfnSetSize (bubble, '-8 -8 -8', '8 8 8');
+	bubble->SetSize('-8 -8 -8', '8 8 8');
 	
 	self.frame = 1;
 	self.cnt = 10;
 	
-	if (self.waterlevel != 3)
-		remove (self);
+	if(self.waterlevel != 3)
+		gpEngine->pfnRemove(self);
 };
 
 void bubble_remove()
@@ -659,149 +605,50 @@ SIMPLE BMODELS
 ==============================================================================
 */
 
-/*QUAKED func_wall (0 .5 .8) ?
-This is just a solid wall if not inhibitted
-*/
-class CFuncWall : public CBaseEntity
-{
-public:
-	void Spawn() override;
-	
-	void Use(CBaseEntity *other) override;
-};
-
-void CFuncWall::Spawn()
-{
-	SetAngles('0 0 0');
-	SetMoveType(MOVETYPE_PUSH); // so it doesn't get pushed by anything
-	SetSolidity(SOLID_BSP);
-	SetUseCallback(CFuncWall::Use);
-	
-	SetModel(GetModel());
-};
-
-void CFuncWall::Use(CBaseEntity *other)
-{
-	// change to alternate textures
-	self->frame = 1 - self->frame;
-};
-
-LINK_ENTITY_TO_CLASS(func_wall, CFuncWall);
-
-/*QUAKED func_illusionary (0 .5 .8) ?
-A simple entity that looks solid but lets you walk through it.
-*/
-class CFuncIllusionary : public CBaseEntity
-{
-public:
-	void Spawn() override;
-};
-
-void CFuncIllusionary::Spawn()
-{
-	SetAngles(idVec3(0.0f, 0.0f, 0.0f));
-	SetMoveType(MOVETYPE_NONE);
-	SetSolidity(SOLID_NOT);
-	
-	SetModel(self->GetModel());
-	
-	gpEngine->pfnMakeStatic(this);
-};
-
-LINK_ENTITY_TO_CLASS(func_illusionary, CFuncIllusionary);
-
-//============================================================================
-
-/*QUAKED ambient_suck_wind (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
-*/
-void ambient_suck_wind()
-{
-	gpEngine->pfnPrecacheSound ("ambience/suck1.wav");
-	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/suck1.wav", 1, ATTN_STATIC, PITCH_NORM);
-};
-
-/*QUAKED ambient_drone (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
-*/
-void ambient_drone()
-{
-	gpEngine->pfnPrecacheSound ("ambience/drone6.wav");
-	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/drone6.wav", 0.5, ATTN_STATIC, PITCH_NORM);
-};
-
-/*QUAKED ambient_flouro_buzz (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
-*/
-void ambient_flouro_buzz()
-{
-	gpEngine->pfnPrecacheSound ("ambience/buzz1.wav");
-	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/buzz1.wav", 1, ATTN_STATIC, PITCH_NORM);
-};
-
-/*QUAKED ambient_drip (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
-*/
-void ambient_drip()
-{
-	gpEngine->pfnPrecacheSound ("ambience/drip1.wav");
-	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/drip1.wav", 0.5, ATTN_STATIC, PITCH_NORM);
-};
-
-/*QUAKED ambient_comp_hum (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
-*/
-void ambient_comp_hum()
-{
-	gpEngine->pfnPrecacheSound ("ambience/comp1.wav");
-	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/comp1.wav", 1, ATTN_STATIC, PITCH_NORM);
-};
-
-/*QUAKED ambient_thunder (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
-*/
-void ambient_thunder()
-{
-	gpEngine->pfnPrecacheSound ("ambience/thunder1.wav");
-	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/thunder1.wav", 0.5, ATTN_STATIC, PITCH_NORM);
-};
-
-/*QUAKED ambient_light_buzz (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
-*/
-void ambient_light_buzz()
-{
-	gpEngine->pfnPrecacheSound ("ambience/fl_hum1.wav");
-	gpEngine->pfnAmbientSound (self->GetOrigin(), "ambience/fl_hum1.wav", 0.5, ATTN_STATIC, PITCH_NORM);
-};
-
-/*QUAKED ambient_swamp1 (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
-*/
-class CAmbientSwamp : public CBaseEntity
-{
-public:
-	void Spawn() override;
-};
-
-void CAmbientSwamp::Spawn()
-{
-	gpEngine->pfnPrecacheSound("ambience/swamp1.wav");
-	gpEngine->pfnAmbientSound(GetOrigin(), "ambience/swamp1.wav", 0.5, ATTN_STATIC, PITCH_NORM);
-};
-
-LINK_ENTITY_TO_CLASS(ambient_swamp1, CAmbientSwamp);
-
 /*QUAKED ambient_swamp2 (0.3 0.1 0.6) (-10 -10 -8) (10 10 8)
 */
-class CAmbientSwamp2 : public CBaseEntity
+class CAmbientGeneric : public CBaseEntity
 {
 public:
 	void Spawn() override;
+	
+	bool HandleKeyValue(const std::string &asKey, const std::string &asValue) override;
+private:
+	std::string msSample{""};
+	
+	float mfVolume{0.0f};
 };
 
-void CAmbientSwamp2::Spawn()
+void CAmbientGeneric::Spawn()
 {
-	gpEngine->pfnPrecacheSound("ambience/swamp2.wav");
-	gpEngine->pfnAmbientSound(GetOrigin(), "ambience/swamp2.wav", 0.5, ATTN_STATIC, PITCH_NORM);
+	gpEngine->pfnPrecacheSound(msSample.c_str());
+	gpEngine->pfnAmbientSound(GetOrigin(), msSample.c_str(), mfVolume, ATTN_STATIC, PITCH_NORM);
 };
 
-LINK_ENTITY_TO_CLASS(ambient_swamp2, CAmbientSwamp2);
+bool CAmbientGeneric::HandleKeyValue(const std::string &asKey, const std::string &asValue)
+{
+	if(asKey == "sample")
+	{
+		msSample = asValue;
+		return true;
+	}
+	else if(asKey == "volume")
+	{
+		mfVolume = std::stof(asValue);
+		return true;
+	};
+	
+	return CBaseEntity::HandleKeyValue(asKey, asValue);
+};
+
+LINK_ENTITY_TO_CLASS(ambient_generic, CAmbientGeneric);
 
 //============================================================================
 
+/*QUAKED misc_noisemaker (1 0.5 0) (-10 -10 -10) (10 10 10)
+
+For optimzation testing, starts a lot of sounds.
+*/
 class CNoiseMaker : public CBaseEntity
 {
 public:
@@ -840,8 +687,4 @@ void CNoiseMaker::Think()
 	EmitSound(7, "enforcer/pain1.wav", 1, ATTN_NORM, PITCH_NORM);
 };
 
-/*QUAKED misc_noisemaker (1 0.5 0) (-10 -10 -10) (10 10 10)
-
-For optimzation testing, starts a lot of sounds.
-*/
 LINK_ENTITY_TO_CLASS(misc_noisemaker, CNoiseMaker);
