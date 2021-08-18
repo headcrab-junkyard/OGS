@@ -25,7 +25,49 @@
 class CBaseCharacter : public CBaseEntity
 {
 public:
+	void Spawn() override;
+	
+	virtual void Think() override {}
+	
 	void TakeDamage(float afAmount, CBaseEntity *weapon, CBaseEntity *attacker) override;
+	
+	void StartWeaponAnim(int anim);
+	void ContinueWeaponAnim(int anim);
+	
+	void BeginWeaponReload(int weapon);
+	void FinishWeaponReload();
+	
+	void BeginWeaponChange(int oldweapon, int newweapon, bool reload);
+	void FinishWeaponChange();
+	
+	void Move(float afAmount); ///< afAmount = [-1.0f; 1.0f]
+	void Strafe(float afDir); ///< afDir = [-1.0f; 1.0f]
+	
+	void Run();
+	void Walk();
+	void Crouch();
+	void StandUp();
+	bool Jump();
+	
+	void ClearMovement();
+	
+	bool IsRunning() const;
+	bool IsCrouching() const;
+	bool IsJumping() const;
+	
+	void PrimaryAttack();
+	void SecondaryAttack();
+	
+	void Reload();
+	
+	CBaseWeapon *GetActiveWeapon() const;
+	
+	virtual void OnEvent(GameEventType aeType, CBaseEntity *apEntity = nullptr, CBaseEntity *apOther = nullptr){}
+	
+	bool IsPlayerFacingMe(CBasePlayer *apPlayer) const;
+	bool IsPlayerLookingAtMe(CBasePlayer *apPlayer) const;
+	
+	bool IsEnemy(CBaseEntity *apEntity) const;
 private:
 	void DropQuad();
 	void DropRing();
