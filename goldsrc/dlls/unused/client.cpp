@@ -305,24 +305,6 @@ float ValidateUser(edict_t *e)
 =============================================================================
 */
 
-/*QUAKED info_player_deathmatch (1 0 1) (-16 -16 -24) (16 16 24)
-potential spawning position for deathmatch games
-*/
-class CInfoPlayerDeathmatch : public CBaseEntity
-{
-};
-
-LINK_ENTITY_TO_CLASS(info_player_deathmatch, CInfoPlayerDeathmatch)
-
-/*QUAKED info_player_coop (1 0 1) (-16 -16 -24) (16 16 24)
-potential spawning position for coop games
-*/
-class CInfoPlayerCoop : public CBaseEntity
-{
-};
-
-LINK_ENTITY_TO_CLASS(info_player_coop, CInfoPlayerCoop)
-
 /*
 ===============================================================================
 
