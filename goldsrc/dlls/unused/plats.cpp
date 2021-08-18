@@ -29,35 +29,42 @@
 
 #include "GameEntity.hpp"
 
-class CPlatform
+class CFuncPlat : public CBaseEntity
 {
 public:
-	void center_touch();
-	void outside_touch();
+	void Spawn() override;
 	
-	void trigger_use();
+	void Use(CBaseEntity *apActivator, CBaseEntity *apCaller, UseType aeUseType, float afValue);
 	
-	void go_up();
-	void go_down();
+	void center_touch(CBaseEntity *apOther);
+	void outside_touch(CBaseEntity *apOther);
+	
+	void trigger_use(CBaseEntity *apUser);
+	
+	void GoUp();
+	void GoDown();
 	
 	void crush();
+	
+	void HitTop();
+	void HitBottom();
 };
 
 const float PLAT_LOW_TRIGGER = 1;
 
 void plat_spawn_inside_trigger()
 {
-	entity	trigger;
-	vector	tmin, tmax;
+	CBaseEntity *trigger;
+	idVec3 tmin, tmax;
 
 //
 // middle trigger
 //	
-	trigger = spawn();
-	trigger->v.touch = plat_center_touch;
-	trigger->v.movetype = MOVETYPE_NONE;
-	trigger->v.solid = SOLID_TRIGGER;
-	trigger->v.enemy = self;
+	trigger = gpEngine->pfnSpawn();
+	trigger->SetTouchCallback(plat_center_touch);
+	trigger->SetMoveType(MOVETYPE_NONE);
+	trigger->SetSolidity(SOLID_TRIGGER);
+	trigger->SetEnemy(self);
 	
 	tmin = self->v.mins + '25 25 0';
 	tmax = self->v.maxs - '25 25 -8';
@@ -82,47 +89,49 @@ void plat_spawn_inside_trigger()
 	pEngine->pfnSetSize(trigger, tmin, tmax);
 };
 
-void CPlatform::hit_top()
+void CFuncPlat::HitTop()
 {
-	pEngine->pfnEmitSound(self, CHAN_NO_PHS_ADD + CHAN_VOICE, self->noise1, 1, ATTN_NORM);
+	EmitSound(CHAN_NO_PHS_ADD + CHAN_VOICE, self->noise1, 1, ATTN_NORM);
 	self->state = STATE_TOP;
-	self->think = go_down;
-	self->nextthink = self->ltime + 3;
+	SetThinkCallback(CFuncPlat::GoDown);
+	SetNextThink(self->ltime + 3);
 };
 
-void CPlatform::hit_bottom()
+void CFuncPlat::HitBottom()
 {
-	pEngine->pfnEmitSound(self, CHAN_NO_PHS_ADD + CHAN_VOICE, self->noise1, 1, ATTN_NORM);
+	EmitSound(CHAN_NO_PHS_ADD + CHAN_VOICE, self->noise1, 1, ATTN_NORM);
 	self->state = STATE_BOTTOM;
 };
 
-void CPlatform::go_down()
+void CFuncPlat::GoDown()
 {
-	pEngine->pfnEmitSound(self, CHAN_VOICE, self->noise, 1, ATTN_NORM);
+	EmitSound(CHAN_VOICE, self->noise, 1, ATTN_NORM);
 	self->state = STATE_DOWN;
-	SUB_CalcMove (self->pos2, self->speed, hit_bottom);
+	SetMoveDoneCallback(CFuncPlat::HitBottom);
+	LinearMove(self->pos2, self->speed);
 };
 
-void CPlatform::go_up()
+void CPlatform::GoUp()
 {
-	pEngine->pfnEmitSound(self, CHAN_VOICE, self->noise, 1, ATTN_NORM);
+	EmitSound(CHAN_VOICE, self->noise, 1, ATTN_NORM);
 	self->state = STATE_UP;
-	SUB_CalcMove (self->pos1, self->speed, hit_top);
+	SetMoveDoneCallback(CFuncPlat::HitTop);
+	LinearMove(self->pos1, self->speed);
 };
 
-void CPlatform::center_touch(edict_t *other)
+void CPlatform::center_touch(CBaseEntity *other)
 {
-	if (other->v.classname != "player")
+	if (other->GetClassName() != "player")
 		return;
 		
-	if (other->v.health <= 0)
+	if (other->GetHealth() <= 0)
 		return;
 
-	self = self->enemy;
+	self = self->GetEnemy();
 	if (self->state == STATE_BOTTOM)
-		go_up ();
+		go_up();
 	else if (self->state == STATE_TOP)
-		self->nextthink = self->ltime + 1;	// delay going down
+		SetNextThink(self->ltime + 1); // delay going down
 };
 
 void CPlatform::outside_touch(CBaseEntity *other)
@@ -161,12 +170,19 @@ void CPlatform::crush(CBaseEntity *other)
 		objerror("plat_crush: bad self.state\n");
 };
 
-void CPlatform::Use()
+void CFuncPlat::Use(CBaseEntity *apActivator, CBaseEntity *apCaller, UseType aeUseType, float afValue)
 {
-	self->use = SUB_Null;
-	if (self->state != STATE_UP)
-		objerror ("plat_use: not in up state");
-	go_down();
+	if(IsTogglePlat())
+	{
+		// TODO
+	}
+	else
+	{
+		SetUseCallback(SUB_Null);
+		if(self->state != STATE_UP)
+			objerror ("plat_use: not in up state");
+		GoDown();
+	};
 };
 
 /*QUAKED func_plat (0 .5 .8) ? PLAT_LOW_TRIGGER
