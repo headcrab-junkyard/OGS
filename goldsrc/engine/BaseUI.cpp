@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2017-2019 BlackPhrase
+ * Copyright (C) 2017-2019, 2021 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,17 +46,16 @@ void LoadGameUIModule()
 {
 	UnloadGameUIModule();
 
-	// Allow EVOL to load gameui modules from the current game dir
-#ifdef OGS_EVOL
+	// Try to load the gameui module from the current game dir (if it's present)
 	gpGameUILib = Sys_LoadModule(va("%s/cl_dlls/gameui", com_gamedir));
 
+	// Load the default module otherwise
 	if(!gpGameUILib)
-#endif
 	{
-		gpGameUILib = Sys_LoadModule("valve/cl_dlls/gameui");
+		gpGameUILib = Sys_LoadModule(GAMENAME "/cl_dlls/gameui");
 
 		if(!gpGameUILib)
-			return;
+			return; // TODO: error
 	};
 
 	auto fnGameUIFactory{ Sys_GetFactory(gpGameUILib) };
