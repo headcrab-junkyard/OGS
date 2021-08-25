@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018, 2020 BlackPhrase
+ * Copyright (C) 2018, 2020-2021 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,13 +17,17 @@
  */
 
 /// @file
+/// @brief Keyboard details, part of options dialog
 
 #pragma once
 
-#include "vgui2/controls/EditablePanel.h"
+#include <vgui2/controls/EditablePanel.h>
+
+class VControlsListPanel;
 
 class COptionsSubKeyboard : public vgui2::EditablePanel
 {
+	DECLARE_CLASS_SIMPLE(COptionsSubKeyboard, vgui2::EditablePanel);
 public:
 	COptionsSubKeyboard(vgui2::Panel *apParent);
 	~COptionsSubKeyboard();
@@ -33,7 +37,17 @@ public:
 	void OnKeyCodePressed(vgui2::KeyCode anCode) override;
 	void OnThink() override;
 private:
-	void Finish();
+	void Finish(ButtonCode_t aeCode);
 	
 	void CreateKeyBindingList();
+	
+	void OpenKeyboardAdvancedDialog();
+	
+	/*virtual*/ void OnKeyCodeTypes(vgui::KeyCode aeCode);
+private:
+	CUtlVector<ButtonCode_t> mvKeysToUnbind;
+	
+	VControlsListPanel *mpKeyBindList{nullptr};
+	
+	int mnSplitScreenUser{0};
 };

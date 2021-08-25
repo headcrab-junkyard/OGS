@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018, 2020 BlackPhrase
+ * Copyright (C) 2018, 2020-2021 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,13 +17,26 @@
  */
 
 /// @file
+/// @brief Mouse Details, Part of OptionsDialog
 
 #pragma once
 
-#include "vgui2/controls/PropertyPage.h"
+#include <vgui/controls/PropertyPage.h>
 
-class COptionsSubMouse : public vgui2::PropertyPage
+class CCvarNegateCheckButton;
+//class CKeyToggleCheckButton;
+class CCvarToggleCheckButton;
+class CCvarSlider;
+
+namespace vgui
 {
+	class Label;
+	class Panel;
+};
+
+class COptionsSubMouse : public vgui::PropertyPage
+{
+	DECLARE_CLASS_SIMPLE(COptionsSubMouse, vgui2::PropertyPage);
 public:
 	COptionsSubMouse(vgui2::Panel *apParent);
 	~COptionsSubMouse();
@@ -33,4 +46,30 @@ public:
 protected:
 	void ApplySchemeSettings(vgui2::IScheme *apScheme);
 private:
+	void UpdateSensitivityLabel();
+	void UpdateJoystickPanels();
+private:
+	MESSAGE_FUNC_PTR(OnControlModified, "ControlModified", panel);
+	MESSAGE_FUNC_PTR(OnTextChanged, "TextChanged", panel);
+	MESSAGE_FUNC_PTR(OnCheckButtonChecked, "CheckButtonChecked", panel)
+	{
+		OnControlModified(panel);
+	};
+private:
+	CCvarNegateCheckButton *mpReverseMouseCheckButton;
+	
+	CCvarToggleCheckButton *mpMouseFilterCheckButton;
+	CCvarToggleCheckButton *mpJoystickCheckButton;
+	CCvarToggleCheckButton *mpJoystickSouthpawCheckButton;
+	CCvarToggleCheckButton *mpQuickInfoCheckButton;
+	CCvarToggleCheckButton *mpReverseJoystickCheckButton;
+	
+	CCvarSlider *mpMouseSensitivitySlider;
+	vgui::TextEntry *mpMouseSensitivityLabel;
+	
+	CCvarSlider *mpJoyYawSensitivitySlider;
+	vgui::Label *mpJoyYawSensitivityPreLabel;
+	
+	CCvarSlider *mpJoyPitchSensitivitySlider;
+	vgui::Label *mpJoyPitchSensitivityPreLabel;
 };

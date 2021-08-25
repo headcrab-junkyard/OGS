@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2020 BlackPhrase
+ * Copyright (C) 2020-2021 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,20 +17,36 @@
  */
 
 /// @file
+/// @brief Game/dev console dialog
 
 #pragma once
 
-class CGameConsoleDialog
+#include <vgui_controls/ConsoleDialog.h>
+
+class CGameConsoleDialog : public vgui::CConsoleDialog
 {
+	DECLARE_CLASS_SIMPLE(CGameConsoleDialog, vgui::CConsoleDialog);
 public:
-	void Activate();
+	CGameConsoleDialog();
 	
-	void Hide();
+	//void Activate();
 	
-	void Clear();
+	//void Hide();
 	
-	void SetParent(vgui2::VPANEL anParent);
+	//void Clear();
 	
-	bool IsVisible() const;
+	//void SetParent(vgui2::VPANEL anParent);
+	
+	//bool IsVisible() const;
 private:
+	/// Submits a command
+	MESSAGE_FUNC(OnClosedByHittingTilde, "ClosedByHittingTilde");
+	
+	/// Submits a command
+	MESSAGE_FUNC_CHARPTR(OnCommandSubmitted, "CommandSubmitted", asCmd);
+	
+	/*virtual*/ void OnKeyCodeTyped(vgui::KeyCode aeCode) override;
+	
+	/// Generic VGUI command handler
+	/*virtual*/ void OnCommand(const char *asCmd) override;
 };

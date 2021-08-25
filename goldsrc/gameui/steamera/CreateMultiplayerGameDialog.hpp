@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018, 2021 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,12 +17,31 @@
  */
 
 /// @file
+/// @brief dialog for launching a listen server
 
 #pragma once
 
-class CCreateMultiplayerGameDialog
+#include <vgui_controls/PropertyDialog.h>
+
+class CCreateMultiplayerGameServerPage;
+class CCreateMultiplayerGameGameplayPage;
+class CCreateMultiplayerGameBotPage;
+
+class CCreateMultiplayerGameDialog : public vgui::PropertyDialog
 {
+	DECLARE_CLASS_SIMPLE(CCreateMultiplayerGameDialog, vgui::PropertyDialog);
 public:
-	CCreateMultiplayerGameDialog();
+	CCreateMultiplayerGameDialog(vgui::Panel *apParent);
 	~CCreateMultiplayerGameDialog();
+protected:
+	/*virtual*/ bool OnOK(bool abApplyOnly);
+private:
+	CCreateMultiplayerGameServerPage *mpServerPage{nullptr};
+	CCreateMultiplayerGameGameplayPage *mpGameplayPage{nullptr};
+	CCreateMultiplayerGameBotPage *mpBotPage{nullptr};
+	
+	// For loading/saving the game config
+	KeyValues *mpSavedData{nullptr};
+	
+	bool mbBotsEnabled{false};
 };

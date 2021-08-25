@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018, 2021 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,12 +17,32 @@
  */
 
 /// @file
+/// @brief server options page of the create game server dialog
 
 #pragma once
 
-class CCreateMultiplayerGameServerPage
+#include <vgui_controls/PropertyPage.h>
+
+class CCreateMultiplayerGameServerPage : public vgui::PropertyPage
 {
+	DECLARE_CLASS_SIMPLE(CCreateMultiplayerGameServerPage, vgui::PropertyPage);
 public:
 	CCreateMultiplayerGameServerPage();
 	~CCreateMultiplayerGameServerPage();
+	
+	void SetMap(const char *asName);
+	
+	bool IsRandomMapSelected() const;
+	
+	const char *GetMapName() const;
+	
+	// (CS) Bots
+	void EnableBots(KeyValues *apData);
+	int GetBotQuota() const;
+	bool GetBotsEnabled() const;
+protected:
+private:
+	void LoadMapList();
+	void LoadMaps(const char *asPathID);
+private:
 };

@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018, 2021 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,5 +20,62 @@
 
 #include "OptionsSubAudio.hpp"
 
-COptionsSubAudio::COptionsSubAudio() = default;
+COptionsSubAudio::COptionsSubAudio(vgui::Panel *apParent)
+	: vgui::PropertyPage(apParent, nullptr)
+{
+	mpSFXSlider = ;
+	mpMusicSlider = ;
+	
+	mpCloseCaptionCombo = ;
+	
+	mpSoundQualityCombo = ;
+	
+	mpSpeakerSetupCombo = ;
+	
+	mpSpokenLanguageCombo = new vgui::ComboBox();
+	
+	LoadControlSettings();
+};
+
 COptionsSubAudio::~COptionsSubAudio() = default;
+
+void COptionsSubAudio::OnResetData()
+{
+	mbRequireRestart = false;
+	
+	mpSFXSlider->Reset();
+	mpMusicSlider->Reset();
+	
+	// Reset the combo boxes
+	
+	
+};
+
+void COptionsSubAudio::OnApplyChanges()
+{
+	mpSFXSlider->ApplyChanges();
+	mpMusicSlider->ApplyChanges();
+};
+
+void COptionsSubAudio::OnCommand(const char *asCmd)
+{
+};
+
+bool COptionsSubAudio::RequiresRestart() const
+{
+	// Nothing in audio required a restart right now
+	return false;
+};
+
+void COptionsSubAudio::OnControlModified()
+{
+	PostActionSignal(new KeyValues("ApplyButtonEnable"));
+};
+
+void COptionsSubAudio::RunTestSpeakers()
+{
+};
+
+void COptionsSubAudio::OpenThirdPartySoundCreditsDialog()
+{
+};
