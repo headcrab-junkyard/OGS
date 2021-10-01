@@ -31,6 +31,12 @@ set(OGS_SDK_PATH ${CMAKE_SOURCE_DIR}/../ogs-sdk/goldsrc
 	"Path to engine SDK"
 )
 
+# Set path to VGUI2
+set(OGS_VGUI2_PATH ${CMAKE_SOURCE_DIR}/../vgui2-reimp
+	CACHE PATH
+	"Path to VGUI2 library"
+)
+
 # Set path to CEF
 #set(CEF_ROOT ${CMAKE_SOURCE_DIR}/../cef_binary/latest
 #	CACHE PATH
@@ -92,6 +98,9 @@ endif()
 
 # Add engine sdk directory
 add_subdirectory(${OGS_SDK_PATH} ${CMAKE_BINARY_DIR}/sdk)
+
+# Add VGUI2 directory
+add_subdirectory(${OGS_VGUI2_PATH} ${CMAKE_BINARY_DIR}/vgui2)
 
 # Add engine root directory
 add_subdirectory(goldsrc)
