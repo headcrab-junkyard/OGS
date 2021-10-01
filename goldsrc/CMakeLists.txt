@@ -26,11 +26,10 @@ include_directories(
 add_subdirectory(optional)
 
 add_subdirectory(filesystem)
+add_subdirectory(voice) # TODO: isn't it client-side only?
 add_subdirectory(engine)
 
 # If not building as dedicated server then build these modules too
 if(NOT OGS_DEDICATED)
 	add_subdirectory(vgui2)
-	
-	add_subdirectory(gameui)
 endif()
