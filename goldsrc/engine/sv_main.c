@@ -55,6 +55,14 @@ cvar_t sv_allow_upload = {"sv_allow_upload", "1"};
 
 //cvar_t pausable	= {"pausable", "1"}; // TODO: already defined in host
 
+cvar_t sv_cheats = {"sv_cheats", "0", FCVAR_SERVER};
+
+cvar_t sv_minrate = {"sv_minrate", "0", FCVAR_SERVER};
+cvar_t sv_maxrate = {"sv_maxrate", "0", FCVAR_SERVER};
+
+cvar_t sv_minupdaterate = {"sv_minupdaterate", "10"};
+cvar_t sv_maxupdaterate = {"sv_maxupdaterate", "30"};
+
 //============================================================================
 
 void SV_WriteSpawn(client_t *client)
@@ -647,6 +655,16 @@ void SV_Init()
 	//Cvar_RegisterVariable(&pausable); // TODO: already defined in host
 	
 	Cvar_RegisterVariable(&sv_stepsize);
+	
+	Cvar_RegisterVariable(&sv_cheats);
+	
+	// TODO: unused
+	Cvar_RegisterVariable(&sv_minrate);
+	Cvar_RegisterVariable(&sv_maxrate);
+	
+	// TODO: unused
+	Cvar_RegisterVariable(&sv_minupdaterate);
+	Cvar_RegisterVariable(&sv_maxupdaterate);
 	
 	for(i = 0; i < MAX_MODELS; i++)
 		sprintf(localmodels[i], "*%i", i);
