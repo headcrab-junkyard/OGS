@@ -451,20 +451,17 @@ void M_ToggleMenu_f()
 		{
 			M_Menu_Main_f();
 			return;
-		}
+		};
 		gpMenuExports->SetKeyDest(key_game);
 		m_state = m_none;
 		return;
-	}
+	};
+	
 	if(gpMenuExports->GetKeyDest() == key_console)
-	{
 		gpMenuExports->Con_ToggleConsole_f();
-	}
 	else
-	{
 		M_Menu_Main_f();
-	}
-}
+};
 
 //=============================================================================
 /* MAIN MENU */
