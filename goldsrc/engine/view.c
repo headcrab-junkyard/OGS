@@ -46,15 +46,6 @@ cvar_t v_kicktime = { "v_kicktime", "0.5", false };
 cvar_t v_kickroll = { "v_kickroll", "0.6", false };
 cvar_t v_kickpitch = { "v_kickpitch", "0.6", false };
 
-cvar_t v_iyaw_cycle = { "v_iyaw_cycle", "2", false };
-cvar_t v_iroll_cycle = { "v_iroll_cycle", "0.5", false };
-cvar_t v_ipitch_cycle = { "v_ipitch_cycle", "1", false };
-cvar_t v_iyaw_level = { "v_iyaw_level", "0.3", false };
-cvar_t v_iroll_level = { "v_iroll_level", "0.1", false };
-cvar_t v_ipitch_level = { "v_ipitch_level", "0.3", false };
-
-cvar_t v_idlescale = { "v_idlescale", "0", false };
-
 cvar_t crosshair = { "crosshair", "0", true };
 cvar_t cl_crossx = { "cl_crossx", "0", false };
 cvar_t cl_crossy = { "cl_crossy", "0", false };
@@ -721,16 +712,8 @@ V_Init
 void V_Init()
 {
 	Cvar_RegisterVariable(&lcd_x);
-	Cvar_RegisterVariable(&lcd_yaw);	
+	Cvar_RegisterVariable(&lcd_yaw);
 
-	Cvar_RegisterVariable(&v_iyaw_cycle);
-	Cvar_RegisterVariable(&v_iroll_cycle);
-	Cvar_RegisterVariable(&v_ipitch_cycle);
-	Cvar_RegisterVariable(&v_iyaw_level);
-	Cvar_RegisterVariable(&v_iroll_level);
-	Cvar_RegisterVariable(&v_ipitch_level);
-
-	Cvar_RegisterVariable(&v_idlescale);
 	Cvar_RegisterVariable(&crosshair);
 	Cvar_RegisterVariable(&cl_crossx);
 	Cvar_RegisterVariable(&cl_crossy);
