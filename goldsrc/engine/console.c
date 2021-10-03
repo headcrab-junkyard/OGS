@@ -30,6 +30,8 @@
 #include <fcntl.h>
 #include "quakedef.h"
 
+#include "con_nprint.h"
+
 int con_linewidth;
 
 float con_cursorspeed = 4;
@@ -554,11 +556,29 @@ void Con_DPrintf(const char *fmt, ...)
 void Con_NPrintf(int anPos, const char *fmt, ...)
 {
 	// TODO
+	
+	va_list argptr;
+	char msg[MAXPRINTMSG];
+
+	va_start(argptr, fmt);
+	vsprintf(msg, fmt, argptr);
+	va_end(argptr);
+
+	Con_Printf("%s", msg);
 };
 
 void Con_NXPrintf(struct con_nprint_s *apInfo, const char *fmt, ...)
 {
 	// TODO
+	
+	va_list argptr;
+	char msg[MAXPRINTMSG];
+
+	va_start(argptr, fmt);
+	vsprintf(msg, fmt, argptr);
+	va_end(argptr);
+
+	Con_Printf("%s", msg);
 };
 
 /*
