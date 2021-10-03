@@ -24,32 +24,34 @@
 #define MAX_EVENTS 1024
 
 
-typedef struct event_s
+typedef struct eventqueentry_s
 {
-	unsigned short id;
-	const char *name;
 	event_args_t args;
-	float delay;
-	//pfnEventHook fnHook;
-} event_t;
+	unsigned short id;
+	float firetime;
+	int flags;
+} eventqueentry_t; // TODO: temp name
 
-event_t gEventQue[MAX_EVENTS];
+eventqueentry_t gEventQue[MAX_EVENTS];
 
-void CL_QueEvent(event_args_t *apArgs, float delay)
+void CL_QueueEvent(int flags, int index, float delay, event_args_t *apArgs) // TODO
 {
 	static int nLast = 0;
 	
 	if(nLast >= MAX_EVENTS)
 		return;
 	
-	gEventQue[nLast].args.flags = apArgs->flags;
+	gEventQue[nLast].id = index;
+	gEventQue[nLast].flags = flags;
+	
+	gEventQue[nLast].args.flags = apArgs->flags; // TODO: hm...
 	gEventQue[nLast].args.entindex = apArgs->entindex;
 	
 	VectorCopy(apArgs->origin, gEventQue[nLast].args.origin);
 	VectorCopy(apArgs->angles, gEventQue[nLast].args.angles);
 	VectorCopy(apArgs->velocity, gEventQue[nLast].args.velocity);
 	
-	gEventQue[nLast].args.ducking = apArgs->ducking;
+	gEventQue[nLast].args.ducking = apArgs->ducking; // TODO
 	
 	gEventQue[nLast].args.fparam1 = apArgs->fparam1;
 	gEventQue[nLast].args.fparam2 = apArgs->fparam2;
@@ -60,9 +62,14 @@ void CL_QueEvent(event_args_t *apArgs, float delay)
 	gEventQue[nLast].args.bparam1 = apArgs->bparam1;
 	gEventQue[nLast].args.bparam2 = apArgs->bparam2;
 	
-	gEventQue[nLast].delay = delay;
+	gEventQue[nLast].firetime = realtime + delay;
 	
-	nLast++;
+	++nLast;
+};
+
+void MSG_ReadEventArgs(event_args_t *args)
+{
+	// TODO
 };
 
 void CL_ParseEvent()
@@ -103,10 +110,14 @@ void CL_FireEvents()
 {
 	// TODO
 	
-	//for(int i = 0; i < MAX_EVENTS; i++)
+	for(int i = 0; i < MAX_EVENTS; i++)
 	{
-		//gEventQue[i]
+		//Con_Printf("CL_FireEvents: Unknown event %d:%s", gEventQue[i].id, currentevent.name); // TODO: Where to get these from?
+
+		if(gEventQue[i].firetime > realtime)
+			continue;
 		
-		//Con_Printf("CL_FireEvents: Unknown event %d:%s", currentevent.id, currentevent.name);
+		if(cl.event_precache[gEventQue[i].id]->fnHook)
+			cl.event_precache[gEventQue[i].id]->fnHook(&gEventQue[i].args);
 	};
 };
