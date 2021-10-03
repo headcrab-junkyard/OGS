@@ -33,11 +33,14 @@ typedef struct sizebuf_s
 {
 	qboolean allowoverflow; // if false, do a Sys_Error
 	qboolean overflowed;    // set to true if the buffer size failed
+	qboolean oob;           // set to true if the buffer size failed (with allowoverflow set)
 	//const char *name; // TODO
 	//int flags; // TODO
 	byte *data;
 	int maxsize;
 	int cursize;
+	//int readcount;
+	int bit;				// for bitwise reads and writes
 } sizebuf_t;
 
 void SZ_Alloc(sizebuf_t *buf, int startsize); // TODO: not present in qw
