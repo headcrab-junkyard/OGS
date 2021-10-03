@@ -44,7 +44,7 @@ void IN_Accumulate()
 	//if(!dinput) // TODO: not present in qw
 	{
 		ClientDLL_IN_Accumulate();
-	}
+	};
 }
 
 /*

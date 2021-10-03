@@ -36,7 +36,7 @@ unsigned short d_8to16table[256];
 unsigned d_8to24table[256];
 
 // TODO: instead of d_local include
-short *d_pzbuffer;
+extern short *d_pzbuffer;
 
 void VID_SetPalette(unsigned char *palette)
 {

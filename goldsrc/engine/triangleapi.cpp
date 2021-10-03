@@ -26,6 +26,8 @@
 void Tri_RenderMode(int nMode)
 {
 #ifdef GLQUAKE
+#else
+	// TODO
 #endif
 };
 
@@ -33,6 +35,8 @@ void Tri_Begin(int nPrimitiveCode)
 {
 #ifdef GLQUAKE
 	qglBegin(nPrimitiveCode);
+#else
+	// TODO
 #endif
 };
 
@@ -40,6 +44,8 @@ void Tri_End()
 {
 #ifdef GLQUAKE
 	qglEnd();
+#else
+	// TODO
 #endif
 };
 
@@ -47,6 +53,8 @@ void Tri_Color4f(float r, float g, float b, float a)
 {
 #ifdef GLQUAKE
 	qglColor4f(r, g, b, a);
+#else
+	// TODO
 #endif
 };
 
@@ -54,6 +62,8 @@ void Tri_Color4ub(unsigned char r, unsigned char g, unsigned char b, unsigned ch
 {
 #ifdef GLQUAKE
 	qglColor4ub(r, g, b, a);
+#else
+	// TODO
 #endif
 };
 
@@ -61,6 +71,8 @@ void Tri_TexCoord2f(float u, float v)
 {
 #ifdef GLQUAKE
 	qglTexCoord2f(u, v);
+#else
+	// TODO
 #endif
 };
 
@@ -68,6 +80,8 @@ void Tri_Vertex3fv(float *vWorldPoint)
 {
 #ifdef GLQUAKE
 	qglVertex3fv(vWorldPoint);
+#else
+	// TODO
 #endif
 };
 
@@ -75,18 +89,26 @@ void Tri_Vertex3f(float x, float y, float z)
 {
 #ifdef GLQUAKE
 	qglVertex3f(x, y, z);
+#else
+	// TODO
 #endif
 };
 
 void Tri_Brightness(float fBrightness)
 {
+#ifdef GLQUAKE
 	// TODO
+#else
+	// TODO
+#endif
 };
 
 void Tri_CullFace(TRICULLSTYLE eStyle)
 {
 #ifdef GLQUAKE
 	qglCullFace(eStyle);
+#else
+	// TODO
 #endif
 };
 
@@ -149,6 +171,8 @@ void Tri_Color4fRendermode(float r, float g, float b, float a, int nRenderMode)
 #ifdef GLQUAKE
 	Tri_RenderMode(nRenderMode);
 	Tri_Color4f(r, g, b, a);
+#else
+	// TODO
 #endif
 };
 
@@ -157,6 +181,8 @@ void Tri_FogParams(float fDensity, int nFogSkyBox)
 #ifdef GLQUAKE
 	qglFogf(GL_FOG_DENSITY, fDensity);
 	// TODO: nFogSkyBox
+#else
+	// TODO
 #endif
 };
 

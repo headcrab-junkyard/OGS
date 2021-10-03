@@ -40,11 +40,17 @@ void DELTA_Load(const char *filename)
 
 void DELTA_SetField(struct delta_s *pFields, const char *fieldname)
 {
+	if(!pFields)
+		return;
+	
 	// TODO
 };
 
 void DELTA_UnsetField(struct delta_s *pFields, const char *fieldname)
 {
+	if(!pFields)
+		return;
+	
 	// TODO
 };
 
@@ -55,6 +61,9 @@ void DELTA_AddEncoder(char *name, void (*conditionalencode)(struct delta_s *pFie
 
 int DELTA_FindFieldIndex(struct delta_s *pFields, const char *fieldname)
 {
+	if(!pFields)
+		return;
+	
 	// TODO
 	
 	//("DELTA_FindFieldIndex:  Warning, couldn't find %s", fieldname);
@@ -64,17 +73,23 @@ int DELTA_FindFieldIndex(struct delta_s *pFields, const char *fieldname)
 
 void DELTA_SetFieldByIndex(struct delta_s *pFields, int fieldNumber)
 {
+	if(!pFields)
+		return;
+	
 	// TODO
 };
 
 void DELTA_UnsetFieldByIndex(struct delta_s *pFields, int fieldNumber)
 {
+	if(!pFields)
+		return;
+	
 	// TODO
 };
 
 void DELTA_ParseField(const char *fieldname)
 {
-	if(!fieldname)
+	if(!fieldname || !*fieldname)
 		Sys_Error("DELTA_ParseField:  Expecting fieldname");
 	
 	// TODO

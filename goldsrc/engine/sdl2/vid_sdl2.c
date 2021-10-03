@@ -38,15 +38,15 @@ unsigned d_8to24table[256];
 // TODO: instead of d_local include
 extern short *d_pzbuffer;
 
-void VID_SetPalette(unsigned char *palette)
+void VID_SetPalette(unsigned short *palette)
 {
 };
 
-void VID_ShiftPalette(unsigned char *palette)
+void VID_ShiftPalette(unsigned short *palette)
 {
 };
 
-void VID_Init(unsigned char *palette)
+void VID_Init(unsigned short *palette)
 {
 	vid.maxwarpwidth = vid.width = vid.conwidth = BASEWIDTH;
 	vid.maxwarpheight = vid.height = vid.conheight = BASEHEIGHT;

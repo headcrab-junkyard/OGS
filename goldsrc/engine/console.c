@@ -16,7 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
-// console.c
+
+/// @file
 
 #ifdef NeXT
 #include <libc.h>
@@ -99,16 +100,14 @@ void Con_ToggleConsole_f()
 			key_linepos = 1;
 		}
 		else
-		{
 			Cbuf_AddText("menu_main"); //M_Menu_Main_f(); // TODO
-		}
 	}
 	else
 		key_dest = key_console;
 
 	SCR_EndLoadingPlaque();
 	Q_memset(con_times, 0, sizeof(con_times));
-}
+};
 
 /*
 ================

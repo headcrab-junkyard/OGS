@@ -214,7 +214,7 @@ qboolean Netchan_CanReliable(netchan_t *chan)
 	return Netchan_CanPacket(chan); // TODO: return true in q2
 }
 
-#ifdef SERVERONLY
+#ifdef SWDS
 qboolean ServerPaused();
 #endif
 
@@ -293,10 +293,10 @@ void Netchan_Transmit(netchan_t *chan, int length, byte *data)
 	chan->outgoing_size[i] = send.cursize;
 	chan->outgoing_time[i] = realtime;
 
-	//#ifndef SERVERONLY
+//#ifndef SWDS
 	//zoid, no input in demo playback mode
 	//if (!cls.demoplayback)
-	//#endif
+//#endif
 	NET_SendPacket(chan->sock, send.cursize, send.data, chan->remote_address);
 
 	if(chan->cleartime < realtime)
@@ -304,7 +304,7 @@ void Netchan_Transmit(netchan_t *chan, int length, byte *data)
 	else
 		chan->cleartime += send.cursize * chan->rate;
 
-#ifdef SERVERONLY
+#ifdef SWDS
 	if(ServerPaused())
 		chan->cleartime = realtime;
 #endif

@@ -18,7 +18,7 @@
  */
 
 /// @file
-/// @brief for systems without a mouse
+/// @brief sdl2 input impl
 
 #include "quakedef.h"
 

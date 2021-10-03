@@ -34,7 +34,7 @@ typedef struct vrect_s
 	struct vrect_s *pnext; // TODO: non-q2
 } vrect_t;
 
-typedef struct
+typedef struct viddef_s
 {
 //
 	pixel_t *buffer;            // invisible buffer
@@ -82,7 +82,7 @@ void VID_Init(unsigned short *palette); // TODO: no palette in args in q2
 // the palette data will go away after the call, so it must be copied off if
 // the video driver will need it again
 
-void VID_Shutdown();
+void VID_Shutdown(); // TODO: unused in gs?
 // Called at shutdown
 
 //void VID_Update(vrect_t *rects); // TODO: non-q2 // TODO: unused in gs?
@@ -107,3 +107,7 @@ void VID_HandlePause(qboolean pause); // TODO: non-q2 // TODO: unused in gs?
 #ifdef GLQUAKE
 qboolean VID_Is8bit(); // TODO: non-q2 // TODO: unused in gs?
 #endif
+
+void VID_WriteBuffer(); // TODO
+
+void VID_FlipScreen(); // TODO

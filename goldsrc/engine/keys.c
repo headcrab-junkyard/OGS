@@ -17,6 +17,8 @@
  * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
 */
 
+/// @file
+
 #include "quakedef.h"
 
 /*
@@ -172,7 +174,7 @@ void Key_Console(int key)
 			SCR_UpdateScreen(); // force an update, because the command may take some time
 		
 		return;
-	}
+	};
 
 	if(key == K_TAB)
 	{ // command completion
@@ -187,15 +189,15 @@ void Key_Console(int key)
 			key_linepos++;
 			key_lines[edit_line][key_linepos] = 0;
 			return;
-		}
-	}
+		};
+	};
 
 	if(key == K_BACKSPACE || key == K_LEFTARROW)
 	{
 		if(key_linepos > 1)
 			key_linepos--;
 		return;
-	}
+	};
 
 	if(key == K_UPARROW)
 	{
@@ -211,7 +213,7 @@ void Key_Console(int key)
 		Q_strcpy(key_lines[edit_line], key_lines[history_line]);
 		key_linepos = Q_strlen(key_lines[edit_line]);
 		return;
-	}
+	};
 
 	if(key == K_DOWNARROW)
 	{
@@ -233,9 +235,9 @@ void Key_Console(int key)
 		{
 			Q_strcpy(key_lines[edit_line], key_lines[history_line]);
 			key_linepos = Q_strlen(key_lines[edit_line]);
-		}
+		};
 		return;
-	}
+	};
 
 	if(key == K_PGUP || key == K_MWHEELUP)
 	{
@@ -243,7 +245,7 @@ void Key_Console(int key)
 		if(con_backscroll > con_totallines - (vid.height >> 3) - 1)
 			con_backscroll = con_totallines - (vid.height >> 3) - 1;
 		return;
-	}
+	};
 
 	if(key == K_PGDN || key == K_MWHEELDOWN)
 	{
@@ -251,19 +253,19 @@ void Key_Console(int key)
 		if(con_backscroll < 0)
 			con_backscroll = 0;
 		return;
-	}
+	};
 
 	if(key == K_HOME)
 	{
 		con_backscroll = con_totallines - (vid.height >> 3) - 1;
 		return;
-	}
+	};
 
 	if(key == K_END)
 	{
 		con_backscroll = 0;
 		return;
-	}
+	};
 
 	if(key < 32 || key > 127)
 		return; // non printable
@@ -273,8 +275,8 @@ void Key_Console(int key)
 		key_lines[edit_line][key_linepos] = key;
 		key_linepos++;
 		key_lines[edit_line][key_linepos] = 0;
-	}
-}
+	};
+};
 
 //============================================================================
 
@@ -298,7 +300,7 @@ void Key_Message(int key)
 		chat_bufferlen = 0;
 		chat_buffer[0] = 0;
 		return;
-	}
+	};
 
 	if(key == K_ESCAPE)
 	{
@@ -306,7 +308,7 @@ void Key_Message(int key)
 		chat_bufferlen = 0;
 		chat_buffer[0] = 0;
 		return;
-	}
+	};
 
 	if(key < 32 || key > 127)
 		return; // non printable
@@ -317,9 +319,9 @@ void Key_Message(int key)
 		{
 			chat_bufferlen--;
 			chat_buffer[chat_bufferlen] = 0;
-		}
+		};
 		return;
-	}
+	};
 
 	//if (chat_bufferlen == sizeof(chat_buffer)-1) // TODO: qw
 	if(chat_bufferlen == 31)
@@ -327,7 +329,7 @@ void Key_Message(int key)
 
 	chat_buffer[chat_bufferlen++] = key;
 	chat_buffer[chat_bufferlen] = 0;
-}
+};
 
 //============================================================================
 
@@ -353,9 +355,9 @@ int Key_StringToKeynum(const char *str)
 	{
 		if(!Q_strcasecmp(str, kn->name))
 			return kn->keynum;
-	}
+	};
 	return -1;
-}
+};
 
 /*
 ===================
@@ -378,14 +380,14 @@ const char *Key_KeynumToString(int keynum)
 		tinystr[0] = keynum;
 		tinystr[1] = 0;
 		return tinystr;
-	}
+	};
 
 	for(kn = keynames; kn->name; kn++)
 		if(keynum == kn->keynum)
 			return kn->name;
 
 	return "<UNKNOWN KEYNUM>";
-}
+};
 
 /*
 ===================
@@ -405,7 +407,7 @@ void Key_SetBinding(int keynum, const char *binding)
 	{
 		Z_Free(keybindings[keynum]);
 		keybindings[keynum] = NULL;
-	}
+	};
 
 	// allocate memory for new binding
 	l = Q_strlen(binding);
@@ -413,7 +415,7 @@ void Key_SetBinding(int keynum, const char *binding)
 	Q_strcpy(new, binding);
 	new[l] = 0;
 	keybindings[keynum] = new;
-}
+};
 
 /*
 ===================
@@ -428,17 +430,17 @@ void Key_Unbind_f()
 	{
 		Con_Printf("unbind <key> : remove commands from a key\n");
 		return;
-	}
+	};
 
 	b = Key_StringToKeynum(Cmd_Argv(1));
 	if(b == -1)
 	{
 		Con_Printf("\"%s\" isn't a valid key\n", Cmd_Argv(1));
 		return;
-	}
+	};
 
 	Key_SetBinding(b, "");
-}
+};
 
 void Key_Unbindall_f()
 {
@@ -447,7 +449,7 @@ void Key_Unbindall_f()
 	for(i = 0; i < 256; i++)
 		if(keybindings[i])
 			Key_SetBinding(i, "");
-}
+};
 
 /*
 ===================
@@ -465,13 +467,13 @@ void Key_Bind_f()
 	{
 		Con_Printf("bind <key> [command] : attach a command to a key\n");
 		return;
-	}
+	};
 	b = Key_StringToKeynum(Cmd_Argv(1));
 	if(b == -1)
 	{
 		Con_Printf("\"%s\" isn't a valid key\n", Cmd_Argv(1));
 		return;
-	}
+	};
 
 	if(c == 2)
 	{
@@ -480,7 +482,7 @@ void Key_Bind_f()
 		else
 			Con_Printf("\"%s\" is not bound\n", Cmd_Argv(1));
 		return;
-	}
+	};
 
 	// copy the rest of the command line
 	cmd[0] = 0; // start out with a null string
@@ -489,10 +491,10 @@ void Key_Bind_f()
 		if(i > 2)
 			strcat(cmd, " ");
 		strcat(cmd, Cmd_Argv(i));
-	}
+	};
 
 	Key_SetBinding(b, cmd);
-}
+};
 
 /*
 ============
@@ -524,7 +526,7 @@ void Key_Init()
 	{
 		key_lines[i][0] = ']';
 		key_lines[i][1] = 0;
-	}
+	};
 	key_linepos = 1;
 
 	//
@@ -583,7 +585,7 @@ void Key_Init()
 	Cmd_AddCommand("bind", Key_Bind_f);
 	Cmd_AddCommand("unbind", Key_Unbind_f);
 	Cmd_AddCommand("unbindall", Key_Unbindall_f);
-}
+};
 
 /*
 ===================
@@ -607,23 +609,20 @@ void Key_Event(int key, qboolean down)
 
 	key_lastpress = key;
 	key_count++;
+	
 	if(key_count <= 0)
-	{
 		return; // just catching keys for Con_NotifyBox
-	}
 
 	// update auto-repeat status
 	if(down)
 	{
 		key_repeats[key]++;
 		if(key != K_BACKSPACE && key != K_PAUSE && key_repeats[key] > 1)
-		{
 			return; // ignore most autorepeats
-		}
 
 		if(key >= 200 && !keybindings[key])
 			Con_Printf("%s is unbound, hit F4 to set.\n", Key_KeynumToString(key));
-	}
+	};
 
 	if(key == K_SHIFT)
 		shift_down = down;
@@ -662,9 +661,9 @@ void Key_Event(int key, qboolean down)
 			break;
 		default:
 			Sys_Error("Bad key_dest");
-		}
+		};
 		return;
-	}
+	};
 
 	//
 	// key up events only generate commands if the game key binding is
@@ -680,7 +679,8 @@ void Key_Event(int key, qboolean down)
 		{
 			sprintf(cmd, "-%s %i\n", kb + 1, key);
 			Cbuf_AddText(cmd);
-		}
+		};
+		
 		if(keyshift[key] != key)
 		{
 			kb = keybindings[keyshift[key]];
@@ -688,10 +688,10 @@ void Key_Event(int key, qboolean down)
 			{
 				sprintf(cmd, "-%s %i\n", kb + 1, key);
 				Cbuf_AddText(cmd);
-			}
-		}
+			};
+		};
 		return;
-	}
+	};
 
 	//
 	// during demo playback, most keys bring up the main menu
@@ -700,7 +700,7 @@ void Key_Event(int key, qboolean down)
 	{
 		M_ToggleMenu_f();
 		return;
-	}
+	};
 
 	//
 	// if not a consolekey, send to the interpreter no matter what mode is
@@ -719,10 +719,10 @@ void Key_Event(int key, qboolean down)
 			{
 				Cbuf_AddText(kb);
 				Cbuf_AddText("\n");
-			}
-		}
+			};
+		};
 		return;
-	}
+	};
 
 	if(!down)
 		return; // other systems only care about key down events
@@ -745,11 +745,11 @@ void Key_Event(int key, qboolean down)
 		break;
 	default:
 		Sys_Error("Bad key_dest");
-	}
+	};
 
 	if(!ClientDLL_Key_Event(down, key, keybindings[key]))
 		return; // TODO
-}
+};
 
 /*
 ===================
@@ -764,8 +764,8 @@ void Key_ClearStates()
 	{
 		keydown[i] = false;
 		key_repeats[i] = 0; // TODO: = false in qw
-	}
-}
+	};
+};
 
 const char *Key_LookupBinding(const char *asBinding)
 {
