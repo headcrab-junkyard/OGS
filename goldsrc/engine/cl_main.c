@@ -322,6 +322,28 @@ void IN_VoiceRecordUp()
 };
 
 /*
+==================
+CL_Interp_f
+==================
+*/
+void CL_Interp_f()
+{
+	// TODO
+	static qboolean enabled = false;
+	
+	if(enabled)
+	{
+		enabled = false;
+		Con_Printf("Frame Interpolation OFF");
+	}
+	else
+	{
+		enabled = true;
+		Con_Printf("Frame Interpolation ON");
+	};
+};
+
+/*
 =======================
 CL_SendConnectPacket
 
@@ -1402,4 +1424,6 @@ void CL_Init()
 	
 	Cmd_AddCommand("+voicerecord", IN_VoiceRecordDown);
 	Cmd_AddCommand("-voicerecord", IN_VoiceRecordUp);
+	
+	Cmd_AddCommand("interp", CL_Interp_f);
 };
