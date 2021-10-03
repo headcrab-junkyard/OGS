@@ -21,13 +21,10 @@
 #include "quakedef.h"
 #include "usermsg.h"
 
-#define MAX_USERMSGS 128 // TODO: ???
-
 typedef struct usermsg_s
 {
-	int index;
 	int size; ///< Byte size of message, or -1 for variable sized
-	const char *name;
+	char name[16]; // BP: looks like only 16 chars are allowed
 	pfnUserMsgHook mfnHook; ///< Client only dispatch function for message
 } usermsg_t;
 
@@ -35,63 +32,73 @@ typedef struct usermsg_s
 
 // SERVER ONLY
 
-usermsg_t gSvUserMsgs[MAX_USERMSGS];
-int num_svusermsgs = 0;
-
-int gnLastIndex = 64; // Start counting from 64
-
-int RegUserMsg(const char *szMsgName, int size)
+void SV_BroadcastNewUserMsg(int nIndex, int nSize, const char *sName)
 {
-	// Check if already registered
-	for(int i = 0; i < MAX_USERMSGS; i++)
-		if(!strcmp(gSvUserMsgs[num_svusermsgs].name, szMsgName))
-			return 0;
+	client_t *pClient = svs.clients;
 	
-	if(num_svusermsgs >= MAX_USERMSGS)
+	for(int i = 0; i < svs.maxclients; ++i, ++pClient)
+	{
+		if(!pClient->active)
+			continue;
+		
+		MSG_WriteByte(&pClient->netchan.message, svc_newusermsg);
+		MSG_WriteByte(&pClient->netchan.message, nIndex);
+		MSG_WriteByte(&pClient->netchan.message, nSize);
+		MSG_WriteString(&pClient->netchan.message, sName);
+	};
+};
+
+int SV_RegUserMsg(const char *szMsgName, int size)
+{
+	static int gnLastIndex = 64; // Start counting from 64 // TODO: why?
+
+	// Check if already registered
+	for(int i = 0; i < MAX_USERMSGS; ++i)
+		if(!Q_strcmp(sv.usermsgs[gnLastIndex]->name, szMsgName))
+			return i;
+	
+	if(gnLastIndex >= MAX_USERMSGS)
 		return 0;
 	
-	gSvUserMsgs[num_svusermsgs].index = gnLastIndex;
-	//strcpy(gSvUserMsgs[num_svusermsgs].name, szMsgName);
-	gSvUserMsgs[num_svusermsgs].name = szMsgName;
-	gSvUserMsgs[num_svusermsgs].size = size;
+	strncpy(sv.usermsgs[gnLastIndex]->name, szMsgName, sizeof(sv.usermsgs[gnLastIndex]->name) - 1);
+	sv.usermsgs[gnLastIndex]->size = size;
 	
-	num_svusermsgs++;
+	SV_BroadcastNewUserMsg(gnLastIndex, size, szMsgName);
 	
 	return gnLastIndex++;
 };
 
 // CLIENT ONLY
 
-usermsg_t gClUserMsgs[MAX_USERMSGS];
-int num_clusermsgs = 0;
-
-void RegClUserMsg(int index, int size, const char *szMsgName)
+void CL_RegUserMsg(int index, int size, const char *szMsgName)
 {
+	static int gnLastIndex = 64; // TODO: Start counting from 64 because user messages are using the same functions 
+								 // as standard protocol entries, so we should register them right after the last 
+								 // entry of the standard protocol to prevent them to overlap each other
+	
 	// Check if already registered
 	for(int i = 0; i < MAX_USERMSGS; i++)
-		if(!strcmp(gClUserMsgs[num_clusermsgs].name, szMsgName))
+		if(!Q_strcmp(cl.messages[gnLastIndex]->name, szMsgName))
 			return;
 	
-	if(num_clusermsgs >= MAX_USERMSGS)
+	if(gnLastIndex >= MAX_USERMSGS)
 		return;
 	
-	gClUserMsgs[num_clusermsgs].index = index;
-	//strcpy(gClUserMsgs[num_clusermsgs].name, szMsgName);
-	gClUserMsgs[num_clusermsgs].name = szMsgName;
-	gClUserMsgs[num_clusermsgs].size = size;
+	Q_strcpy(cl.messages[gnLastIndex]->name, szMsgName);
+	cl.messages[gnLastIndex]->size = size;
 	
-	num_clusermsgs++;
+	gnLastIndex++;
 };
 
-int HookUserMsg(const char *szMsgName, pfnUserMsgHook afnHook)
+int pfnHookUserMsg(const char *szMsgName, pfnUserMsgHook afnHook)
 {
 	for(int i = 0; i < MAX_USERMSGS; i++)
-		if(!Q_strcmp(gClUserMsgs[i].name, szMsgName))
+		if(!Q_strcmp(cl.messages[i]->name, szMsgName))
 		{
-			if(gClUserMsgs[i].mfnHook)
+			if(cl.messages[i]->mfnHook)
 				return 0; // TODO: already hooked
 			
-			gClUserMsgs[i].mfnHook = afnHook;
+			cl.messages[i]->mfnHook = afnHook;
 			return 1;
 		};
 	
@@ -100,11 +107,11 @@ int HookUserMsg(const char *szMsgName, pfnUserMsgHook afnHook)
 
 void DispatchUserMsg(int id)
 {
-	if(!gClUserMsgs[id].mfnHook)
-		Sys_Error("UserMsg: No pfn %s %d", gClUserMsgs[id].name, id);
+	if(!cl.messages[id]->mfnHook)
+		Sys_Error("UserMsg: No pfn %s %d", cl.messages[id]->name, id);
 	
 	if(id < 0 || id > MAX_USERMSGS)
 		Sys_Error("DispatchUserMsg:  Illegal User Msg %d", id);
 	
-	gClUserMsgs[id].mfnHook(gClUserMsgs[id].name, net_message.cursize, net_message.data);
+	cl.messages[id]->mfnHook(cl.messages[id]->name, net_message.cursize, net_message.data);
 };

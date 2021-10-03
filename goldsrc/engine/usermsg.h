@@ -23,7 +23,7 @@
 /// Client dispatch function
 typedef int (*pfnUserMsgHook)(const char *sName, int nSize, void *pBuf);
 
-int RegUserMsg(const char *name, int size);
+int SV_RegUserMsg(const char *name, int size);
 
-int HookUserMsg(const char *name, pfnUserMsgHook afnHook);
+int pfnHookUserMsg(const char *name, pfnUserMsgHook afnHook);
 void DispatchUserMsg(int id);
