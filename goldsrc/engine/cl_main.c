@@ -29,14 +29,12 @@
 // we need to declare some mouse variables here, because the menu system
 // references them even when on a unix system.
 
-cvar_t cl_name = { "_cl_name", "player", FCVAR_ARCHIVE }; // TODO: this should be removed
 cvar_t cl_timeout = { "cl_timeout", "60", FCVAR_ARCHIVE };
 
 cvar_t cl_shownet = { "cl_shownet", "0" }; // can be 0, 1, or 2
 cvar_t cl_nolerp = { "cl_nolerp", "0" };
 
 /*
-cvar_t	cl_sbar		= {"cl_sbar", "0", true};
 cvar_t	cl_hudswap	= {"cl_hudswap", "0", true};
 cvar_t	cl_maxfps	= {"fps_max", "0", true};
 */
@@ -1344,8 +1342,7 @@ void CL_Init()
 	//
 	// register our commands
 	//
-	Cvar_RegisterVariable(&cl_name);
-
+	
 	//Cvar_RegisterVariable (&cl_warncmd);
 
 	Cvar_RegisterVariable(&cl_shownet);
