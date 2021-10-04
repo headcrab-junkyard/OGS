@@ -54,9 +54,38 @@ void DELTA_UnsetField(struct delta_s *pFields, const char *fieldname)
 	// TODO
 };
 
+typedef void (*fnEncoderCallback)(struct delta_s *pFields);
+
+typedef struct encoder_s
+{
+	const char *name;
+	fnEncoderCallback callback;
+	struct encoder_s *pNext;
+} encoder_t;
+
+encoder_t *gpEncoderListHead = NULL;
+
 void DELTA_AddEncoder(char *name, void (*conditionalencode)(struct delta_s *pFields, const byte *from, const byte *to))
 {
-	// TODO
+	if(!name || !*name)
+		return;
+	
+	//if(!conditionalencode)
+		//return;
+	
+	encoder_t *pEncoderList = gpEncoderListHead;
+	
+	while(pEncoderList->pNext)
+		pEncoderList = pEncoderList->pNext;
+	
+	encoder_t *pEncoder = (encoder_t*)malloc(sizeof(encoder_t)); // TODO
+	Q_memset(pEncoder, 0, sizeof(encoder_t));
+	
+	pEncoder->name = name;
+	pEncoder->callback = conditionalencode;
+	pEncoder->pNext = NULL;
+	
+	pEncoderList->pNext = pEncoder;
 };
 
 int DELTA_FindFieldIndex(struct delta_s *pFields, const char *fieldname)
