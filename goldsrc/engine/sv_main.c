@@ -49,9 +49,9 @@ cvar_t sv_timeout = { "sv_timeout", "60" }; // seconds without any message
 
 cvar_t sv_password = {"sv_password", "", FCVAR_SERVER};	// password for entering the game
 
-cvar_t sv_allow_download = {"sv_allow_download", "1"};
+cvar_t sv_allow_download = {"sv_allowdownload", "1"};
 
-cvar_t sv_allow_upload = {"sv_allow_upload", "1"};
+cvar_t sv_allow_upload = {"sv_allowupload", "1", FCVAR_SERVER};
 
 //cvar_t pausable	= {"pausable", "1"}; // TODO: already defined in host
 
@@ -245,10 +245,12 @@ void SV_Spawn_f() // TODO: was Host_Spawn_f
 	SV_WriteClientdataToMessage(sv_player, &host_client->netchan.message);
 	
 	MSG_WriteByte(&host_client->netchan.message, svc_signonnum);
-	MSG_WriteByte(&host_client->netchan.message, 2); // TODO: looks like this should be 1
+	MSG_WriteByte(&host_client->netchan.message, 1);
 	//host_client->sendsignon = true;
 	
 	// TODO: svc_voiceinit
+	
+	MSG_WriteByte(&host_client->netchan.message, -1);
 };
 
 /*
@@ -264,12 +266,12 @@ void SV_New_f ()
 	if (host_client->spawned)
 		return;
 
-	host_client->connected = true;
+	host_client->connected = true; // TODO
 	host_client->connection_started = realtime;
 
 	// send the info about the new client to all connected clients
 	SV_FullClientUpdate(host_client, &sv.reliable_datagram);
-//	host_client->sendinfo = true;
+	//host_client->sendinfo = true;
 
 //NOTE:  This doesn't go through ClientReliableWrite since it's before the user
 //spawns.  These functions are written to not overflow
@@ -1487,7 +1489,7 @@ void SV_SendServerinfo(client_t *client)
 		gamedir = com_gamedir;
 	
 	MSG_WriteByte(&client->netchan.message, svc_print);
-	sprintf(message, "%c\\BUILD %d SERVER (%i CRC)", 2, build_number(), 0 /*pr_crc*/);
+	sprintf(message, "BUILD %d SERVER (%i CRC)\nServer # %d\n", build_number(), 0 /*pr_crc*/, svs.spawncount);
 	MSG_WriteString(&client->netchan.message, message);
 	
 	MSG_WriteByte(&client->netchan.message, svc_serverinfo);
@@ -1523,7 +1525,7 @@ void SV_SendServerinfo(client_t *client)
 	//sprintf(message, pr_strings + sv.edicts->v.message);
 	//MSG_WriteString(&client->netchan.message, message);
 
-	MSG_WriteString (&client->netchan.message, ""); // TODO: mapcycle
+	MSG_WriteString (&client->netchan.message, " "); // TODO: mapcycle
 	
 	MSG_WriteByte(&client->netchan.message, 0);
 	
@@ -1532,6 +1534,7 @@ void SV_SendServerinfo(client_t *client)
 	//SV_SendDeltaDescription(client); // TODO
 	
 	// send the movevars
+	//SV_SendMoveVars(client); // TODO
 	MSG_WriteByte(&client->netchan.message, svc_newmovevars);
 	MSG_WriteFloat(&client->netchan.message, movevars.gravity);
 	MSG_WriteFloat(&client->netchan.message, movevars.stopspeed);
@@ -1558,7 +1561,7 @@ void SV_SendServerinfo(client_t *client)
 	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.skyvecx*/);
 	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.skyvecy*/);
 	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.skyvecz*/);
-	MSG_WriteString(&client->netchan.message, "" /*movevars.skyname*/);
+	MSG_WriteString(&client->netchan.message, "2desert" /*movevars.skyname*/);
 
 	//for(s = sv.model_precache + 1; *s; s++)
 		//MSG_WriteString(&client->netchan.message, *s);
@@ -1602,8 +1605,8 @@ void SV_SendExtraServerinfo(client_t *client)
 {
 	MSG_WriteByte(&client->netchan.message, svc_sendextrainfo);
 	
-	MSG_WriteString(&client->netchan.message, ""); // fallback dir
-	MSG_WriteByte(&client->netchan.message, 0 /*sv_cheats.value*/); // cheats state // TODO
+	MSG_WriteString(&client->netchan.message, " "); // fallback dir
+	MSG_WriteByte(&client->netchan.message, sv_cheats.value); // cheats state
 };
 
 /*
@@ -2027,7 +2030,7 @@ void SV_FullClientUpdate(client_t *client, sizebuf_t *buf)
 	MSG_WriteString(buf, info);
 	
 	byte unusedcdkey[16];
-	MSG_WriteBuf(buf, sizeof(unusedcdkey), unusedcdkey);
+	MSG_WriteBuf(buf, unusedcdkey, sizeof(unusedcdkey));
 }
 
 /*
@@ -2059,10 +2062,8 @@ SV_WriteEntitiesToClient
 void SV_WriteEntitiesToClient(edict_t *clent, sizebuf_t *msg)
 {
 	int e, i;
-	int bits;
 	byte *pvs;
 	vec3_t org;
-	float miss;
 	edict_t *ent;
 
 	// find the client's PVS
@@ -2080,7 +2081,7 @@ void SV_WriteEntitiesToClient(edict_t *clent, sizebuf_t *msg)
 #endif
 
 		// ignore if not touching a PV leaf
-		if(ent != clent) // clent is ALLWAYS sent
+		if(ent != clent) // clent is ALWAYS sent
 		{
 			// ignore ents without visible models
 			if(!ent->v.modelindex || !pr_strings[ent->v.model])
@@ -2101,8 +2102,10 @@ void SV_WriteEntitiesToClient(edict_t *clent, sizebuf_t *msg)
 		}
 
 		// send an update
-		bits = 0;
+		int bits = 0;
 
+		float miss;
+		
 		for(i = 0; i < 3; i++)
 		{
 			miss = ent->v.origin[i] - ent->baseline.origin[i];
@@ -2255,7 +2258,7 @@ void SV_WriteClientdataToMessage(edict_t *ent, sizebuf_t *msg)
 	// stuff the sigil bits into the high bits of items for sbar, or else
 	// mix in items2
 	//#ifdef QUAKE2
-	items = (int)ent->v.items;
+	//items = (int)ent->v.items;
 	/*
 #else
 	val = GetEdictFieldValue(ent, "items2");
@@ -2283,13 +2286,13 @@ void SV_WriteClientdataToMessage(edict_t *ent, sizebuf_t *msg)
 			bits |= (SU_VELOCITY1 << i);
 	}
 
-	if(ent->v.weaponframe)
-		bits |= SU_WEAPONFRAME;
+	//if(ent->v.weaponframe)
+		//bits |= SU_WEAPONFRAME;
 
 	if(ent->v.armorvalue)
 		bits |= SU_ARMOR;
 
-	//	if (ent->v.weapon)
+	//if(ent->v.weapon)
 	bits |= SU_WEAPON;
 
 	// send the data
@@ -2312,21 +2315,23 @@ void SV_WriteClientdataToMessage(edict_t *ent, sizebuf_t *msg)
 	}
 
 	// [always sent]	if (bits & SU_ITEMS)
-	MSG_WriteLong(msg, items);
+	//MSG_WriteLong(msg, items);
 
-	if(bits & SU_WEAPONFRAME)
-		MSG_WriteByte(msg, ent->v.weaponframe);
+	//if(bits & SU_WEAPONFRAME)
+		//MSG_WriteByte(msg, ent->v.weaponframe);
 	if(bits & SU_ARMOR)
 		MSG_WriteByte(msg, ent->v.armorvalue);
 	if(bits & SU_WEAPON)
 		MSG_WriteByte(msg, SV_ModelIndex(pr_strings + ent->v.weaponmodel));
 
 	MSG_WriteShort(msg, ent->v.health);
+/*
 	MSG_WriteByte(msg, ent->v.currentammo);
 	MSG_WriteByte(msg, ent->v.ammo_shells);
 	MSG_WriteByte(msg, ent->v.ammo_nails);
 	MSG_WriteByte(msg, ent->v.ammo_rockets);
 	MSG_WriteByte(msg, ent->v.ammo_cells);
+*/
 
 	// TODO
 	//if(standard_quake)
@@ -2494,7 +2499,7 @@ void SV_UserinfoChanged (client_t *cl)
 	int		i;
 
 	// call prog code to allow overrides
-	gEntityInterface.pfnClientUserinfoChanged (cl->edict, cl->userinfo);
+	gEntityInterface.pfnClientUserInfoChanged (cl->edict, cl->userinfo);
 	
 	// name for C code
 	strncpy (cl->name, Info_ValueForKey (cl->userinfo, "name"), sizeof(cl->name)-1);
