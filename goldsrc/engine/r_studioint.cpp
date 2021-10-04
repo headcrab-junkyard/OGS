@@ -58,7 +58,14 @@ struct cl_entity_s *R_GetViewEntity()
 
 void R_GetTimes(int *framecount, double *current, double *old)
 {
-	// TODO
+	if(framecount)
+		*framecount = host_framecount;
+	
+	if(current)
+		*current = 0.0; // TODO
+	
+	if(old)
+		*old = 0.0; // TODO
 };
 
 struct cvar_s *R_GetCvar(const char *name)
@@ -174,8 +181,8 @@ void R_StudioSetupSkin(void *pTextureHeader, int index)
 
 void R_StudioSetRemapColors(int top, int bottom)
 {
-	cl.players[cl.playernum].topcolor = top;
-	cl.players[cl.playernum].bottomcolor = bottom;
+	cl.players[cl.playernum].topcolor = top; // TODO: u sure?
+	cl.players[cl.playernum].bottomcolor = bottom; // TODO: u sure?
 };
 
 struct model_s *R_SetupPlayerModel(int index)
@@ -218,7 +225,7 @@ void R_RestoreRenderer()
 {
 	// TODO
 	
-	gnRenderMode = 0;
+	gnRenderMode = 0; // TODO: -1?
 };
 
 void R_SetChromeOrigin() // TODO: no args?
@@ -240,12 +247,16 @@ int R_IsHardware()
 
 void R_GL_StudioDrawShadow()
 {
+#ifdef GLQUAKE
 	// TODO
+#endif
 };
 
 void R_GL_SetRenderMode(int mode)
 {
+#ifdef GLQUAKE
 	// TODO
+#endif
 };
 
 void R_StudioSetRenderamt(int nRenderamt)
