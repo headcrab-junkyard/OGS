@@ -1054,6 +1054,22 @@ void NET_Sleep(int msec)
 	timeout.tv_sec = msec/1000;
 	timeout.tv_usec = (msec%1000)*1000;
 	select(i+1, &fdset, NULL, NULL, &timeout);
+#elif __linux__
+	struct timeval timeout;
+	fd_set	fdset;
+	extern cvar_t *dedicated;
+	extern qboolean stdin_active;
+
+	if (!ip_sockets[NS_SERVER] || (dedicated && !dedicated->value))
+		return; // we're not a server, just run full speed
+
+	FD_ZERO(&fdset);
+	if (stdin_active)
+		FD_SET(0, &fdset); // stdin is processed too
+	FD_SET(ip_sockets[NS_SERVER], &fdset); // network socket
+	timeout.tv_sec = msec/1000;
+	timeout.tv_usec = (msec%1000)*1000;
+	select(ip_sockets[NS_SERVER]+1, &fdset, NULL, NULL, &timeout);
 #endif // _WIN32
 }
 */
@@ -1180,5 +1196,10 @@ char *NET_ErrorString()
 	case WSANO_DATA: return "WSANO_DATA";
 	default: return "NO ERROR";
 	}
+#elif __linux__
+	int		code;
+
+	code = errno;
+	return strerror (code);
 #endif // _WIN32
 }
