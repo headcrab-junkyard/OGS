@@ -269,7 +269,7 @@ int SV_FlyMove(edict_t *ent, float time, trace_t *steptrace)
 			if(trace.ent->v.solid == SOLID_BSP)
 			{
 				ent->v.flags = (int)ent->v.flags | FL_ONGROUND;
-				ent->v.groundentity = EDICT_TO_PROG(trace.ent);
+				ent->v.groundentity = trace.ent;
 			}
 		}
 		if(!trace.plane.normal[2])
@@ -353,12 +353,10 @@ SV_AddGravity
 */
 void SV_AddGravity(edict_t *ent)
 {
-	float ent_gravity;
+	float ent_gravity = 1.0;
 
 	if(ent->v.gravity)
 		ent_gravity = ent->v.gravity;
-	else
-		ent_gravity = 1.0;
 
 	ent->v.velocity[2] -= ent_gravity * sv_gravity.value * host_frametime;
 }
@@ -447,9 +445,7 @@ void SV_PushMove(edict_t *pusher, float movetime)
 		if(check->free)
 			continue;
 		if(check->v.movetype == MOVETYPE_PUSH || check->v.movetype == MOVETYPE_NONE
-#ifdef QUAKE2
 		   || check->v.movetype == MOVETYPE_FOLLOW
-#endif
 		   || check->v.movetype == MOVETYPE_NOCLIP)
 			continue;
 
@@ -995,7 +991,7 @@ void SV_WalkMove(edict_t *ent)
 		if(ent->v.solid == SOLID_BSP)
 		{
 			ent->v.flags = (int)ent->v.flags | FL_ONGROUND;
-			ent->v.groundentity = EDICT_TO_PROG(downtrace.ent);
+			ent->v.groundentity = downtrace.ent;
 		}
 	}
 	else
@@ -1209,7 +1205,7 @@ void SV_Physics_Toss(edict_t *ent)
 	if((int)groundentity->v.flags & FL_CONVEYOR)
 		VectorScale(groundentity->v.movedir, groundentity->v.speed, ent->v.basevelocity);
 	else
-		VectorCopy(vec_origin, ent->v.basevelocity);
+		VectorCopy(vec3_origin, ent->v.basevelocity);
 	SV_CheckWater(ent);
 #endif
 	// regular thinking
@@ -1222,7 +1218,7 @@ void SV_Physics_Toss(edict_t *ent)
 
 	if(((int)ent->v.flags & FL_ONGROUND))
 		//@@
-		if(VectorCompare(ent->v.basevelocity, vec_origin))
+		if(VectorCompare(ent->v.basevelocity, vec3_origin))
 			return;
 
 	SV_CheckVelocity(ent);
@@ -1275,7 +1271,7 @@ void SV_Physics_Toss(edict_t *ent)
 		if(ent->v.velocity[2] < 60 || (ent->v.movetype != MOVETYPE_BOUNCE && ent->v.movetype != MOVETYPE_BOUNCEMISSILE)) // TODO: no bouncemissile support here in qw
 		{
 			ent->v.flags = (int)ent->v.flags | FL_ONGROUND;
-			ent->v.groundentity = EDICT_TO_PROG(trace.ent);
+			ent->v.groundentity = trace.ent; // TODO: was = EDICT_TO_PROG(trace.ent)
 			VectorCopy(vec3_origin, ent->v.velocity);
 			VectorCopy(vec3_origin, ent->v.avelocity);
 		}
@@ -1319,7 +1315,7 @@ void SV_Physics_Step(edict_t *ent)
 	if((int)groundentity->v.flags & FL_CONVEYOR)
 		VectorScale(groundentity->v.movedir, groundentity->v.speed, ent->v.basevelocity);
 	else
-		VectorCopy(vec_origin, ent->v.basevelocity);
+		VectorCopy(vec3_origin, ent->v.basevelocity);
 	//@@
 	gGlobalVariables.time = sv.time;
 	gGlobalVariables.self = EDICT_TO_PROG(ent);
@@ -1344,7 +1340,7 @@ void SV_Physics_Step(edict_t *ent)
 					SV_AddGravity(ent);
 			}
 
-	if(!VectorCompare(ent->v.velocity, vec_origin) || !VectorCompare(ent->v.basevelocity, vec_origin))
+	if(!VectorCompare(ent->v.velocity, vec3_origin) || !VectorCompare(ent->v.basevelocity, vec3_origin))
 	{
 		ent->v.flags = (int)ent->v.flags & ~FL_ONGROUND;
 		// apply friction
