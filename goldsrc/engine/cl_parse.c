@@ -783,6 +783,154 @@ void CL_Parse_Version()
 		Host_Error("CL_Parse_Version: Server is protocol %i instead of %i\n", i, PROTOCOL_VERSION);
 };
 
+/*
+===============
+CL_CheckOrDownloadFile
+
+Returns true if the file exists, otherwise it attempts
+to start a download from the server.
+===============
+*/
+qboolean CL_CheckOrDownloadFile(const char *filename)
+{
+	if(strstr(filename, ".."))
+	{
+		Con_Printf ("Refusing to download a path with ..\n");
+		return true;
+	};
+
+	// it exists, no need to download
+	if(FS_FileExists(filename))
+		return true;
+
+	//ZOID - can't download when recording
+	if (cls.demorecording)
+	{
+		Con_Printf("Unable to download %s in record mode.\n", cls.downloadname);
+		return true;
+	};
+	
+	//ZOID - can't download when playback
+	if (cls.demoplayback)
+		return true;
+
+	Q_strcpy(cls.downloadname, filename);
+	Con_Printf("Downloading %s...\n", cls.downloadname);
+
+	// download to a temp name, and only rename
+	// to the real name when done, so if interrupted
+	// a runt file wont be left
+	COM_StripExtension(cls.downloadname, cls.downloadtempname);
+	Q_strcat(cls.downloadtempname, ".tmp");
+
+	MSG_WriteByte(&cls.netchan.message, clc_stringcmd);
+	MSG_WriteString(&cls.netchan.message, va("download %s", cls.downloadname));
+
+	cls.downloadnumber++;
+
+	return false;
+};
+
+/*
+=================
+Sound_NextDownload
+=================
+*/
+void Sound_NextDownload ()
+{
+	char	*s;
+	int		i;
+
+	if (cls.downloadnumber == 0)
+	{
+		Con_Printf ("Checking sounds...\n");
+		cls.downloadnumber = 1;
+	};
+
+	cls.downloadtype = t_sound;
+	for ( 
+		; cl.sound_name[cls.downloadnumber][0]
+		; cls.downloadnumber++)
+	{
+		s = cl.sound_name[cls.downloadnumber];
+		if (!CL_CheckOrDownloadFile(va("sound/%s",s)))
+			return;		// started a download
+	};
+
+	for (i=1 ; i<MAX_SOUNDS ; i++)
+	{
+		if (!cl.sound_name[i][0])
+			break;
+		cl.sound_precache[i] = S_PrecacheSound (cl.sound_name[i]);
+	};
+
+	// done with sounds, request models now
+	memset (cl.model_precache, 0, sizeof(cl.model_precache));
+	//cl_playerindex = -1; // TODO
+	//cl_spikeindex = -1; // TODO
+	//cl_flagindex = -1; // TODO
+	//MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
+//	MSG_WriteString (&cls.netchan.message, va("modellist %i 0", cl.servercount));
+	//MSG_WriteString (&cls.netchan.message, va(modellist_name, cl.servercount, 0)); // TODO
+};
+
+/*
+=================
+Model_NextDownload
+=================
+*/
+void Model_NextDownload ()
+{
+	char *s;
+	int i;
+	extern char gamedirfile[];
+
+	if (cls.downloadnumber == 0)
+	{
+		Con_Printf ("Checking models...\n");
+		cls.downloadnumber = 1;
+	};
+
+	cls.downloadtype = t_model;
+	for ( 
+		; cl.model_name[cls.downloadnumber][0]
+		; cls.downloadnumber++)
+	{
+		s = cl.model_name[cls.downloadnumber];
+		if (s[0] == '*')
+			continue;	// inline brush model
+		if (!CL_CheckOrDownloadFile(s))
+			return;		// started a download
+	};
+
+	for (i=1 ; i<MAX_MODELS ; i++)
+	{
+		if (!cl.model_name[i][0])
+			break;
+
+		cl.model_precache[i] = Mod_ForName (cl.model_name[i], false);
+
+		if (!cl.model_precache[i])
+		{
+			Con_Printf ("\nThe required model file '%s' could not be found or downloaded.\n\n"
+				, cl.model_name[i]);
+			//Con_Printf("You may need to download or purchase a %s client pack in order to play on this server.\n\n", gamedirfile);
+			CL_Disconnect();
+			return;
+		};
+	};
+
+	// all done
+	cl.worldmodel = cl.model_precache[1];	
+	R_NewMap ();
+	Hunk_Check (); // make sure nothing is hurt
+
+	// done with modellist, request first of static signon messages
+	//MSG_WriteByte(&cls.netchan.message, clc_stringcmd);
+//	MSG_WriteString(&cls.netchan.message, va("prespawn %i 0 %i", cl.servercount, cl.worldmodel->checksum2));
+	//MSG_WriteString(&cls.netchan.message, va(prespawn_name, cl.servercount, cl.worldmodel->checksum2)); // TODO
+};
+
 void CL_ParseResourceList()
 {
 	//begin CL_ParseResourceList()    end   CL_ParseResourceList()   

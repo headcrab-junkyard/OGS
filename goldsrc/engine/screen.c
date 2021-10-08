@@ -1330,6 +1330,150 @@ void SCR_TileClear(void)
 //float oldsbar = 0; // TODO: qw
 
 /*
+// TODO: qw
+void SCR_UpdateScreen (void)
+{
+	vrect_t		vrect;
+
+	if (!scr_initialized || !con_initialized)
+		return;				// not initialized yet
+
+	if (scr_viewsize.value != oldscr_viewsize)
+	{
+		oldscr_viewsize = scr_viewsize.value;
+		vid.recalc_refdef = 1;
+	}
+	
+//
+// check for vid changes
+//
+	if (oldfov != scr_fov.value)
+	{
+		oldfov = scr_fov.value;
+		vid.recalc_refdef = true;
+	}
+	
+	if (oldscreensize != scr_viewsize.value)
+	{
+		oldscreensize = scr_viewsize.value;
+		vid.recalc_refdef = true;
+	}
+
+	if (oldsbar != cl_sbar.value)
+	{
+		oldsbar = cl_sbar.value;
+		vid.recalc_refdef = true;
+	}
+	
+	if (vid.recalc_refdef)
+	{
+		// something changed, so reorder the screen
+		SCR_CalcRefdef ();
+	}
+
+//
+// do 3D refresh drawing, and then update the screen
+//
+	D_EnableBackBufferAccess ();	// of all overlay stuff if drawing directly
+
+	if (scr_fullupdate++ < vid.numpages)
+	{	// clear the entire screen
+		scr_copyeverything = 1;
+		Draw_TileClear (0,0,vid.width,vid.height);
+		Sbar_Changed ();
+	}
+
+	pconupdate = NULL;
+
+	SCR_SetUpToDrawConsole ();
+	SCR_EraseCenterString ();
+	
+	D_DisableBackBufferAccess ();	// for adapters that can't stay mapped in
+									//  for linear writes all the time
+
+	VID_LockBuffer ();
+
+	V_RenderView ();
+
+	VID_UnlockBuffer ();
+
+	D_EnableBackBufferAccess ();	// of all overlay stuff if drawing directly
+
+	if (scr_drawdialog)
+	{
+		Sbar_Draw ();
+		Draw_FadeScreen ();
+		SCR_DrawNotifyString ();
+		scr_copyeverything = true;
+	}
+	else if (cl.intermission == 1 && key_dest == key_game)
+	{
+		Sbar_IntermissionOverlay ();
+	}
+	else if (cl.intermission == 2 && key_dest == key_game)
+	{
+		Sbar_FinaleOverlay ();
+		SCR_CheckDrawCenterString ();
+	}
+	else
+	{
+		SCR_DrawRam ();
+		SCR_DrawNet ();
+		SCR_DrawTurtle ();
+		SCR_DrawPause ();
+		SCR_DrawFPS ();
+		SCR_CheckDrawCenterString ();
+		Sbar_Draw ();
+		SCR_DrawConsole ();	
+		M_Draw ();
+	}
+
+	D_DisableBackBufferAccess ();	// for adapters that can't stay mapped in
+									//  for linear writes all the time
+	if (pconupdate)
+	{
+		D_UpdateRects (pconupdate);
+	}
+
+	V_UpdatePalette ();
+
+//
+// update one of three areas
+//
+	if (scr_copyeverything)
+	{
+		vrect.x = 0;
+		vrect.y = 0;
+		vrect.width = vid.width;
+		vrect.height = vid.height;
+		vrect.pnext = 0;
+	
+		VID_Update (&vrect);
+	}
+	else if (scr_copytop)
+	{
+		vrect.x = 0;
+		vrect.y = 0;
+		vrect.width = vid.width;
+		vrect.height = vid.height - sb_lines;
+		vrect.pnext = 0;
+	
+		VID_Update (&vrect);
+	}	
+	else
+	{
+		vrect.x = scr_vrect.x;
+		vrect.y = scr_vrect.y;
+		vrect.width = scr_vrect.width;
+		vrect.height = scr_vrect.height;
+		vrect.pnext = 0;
+	
+		VID_Update (&vrect);
+	}	
+}
+*/
+
+/*
 ==================
 SCR_UpdateScreen
 

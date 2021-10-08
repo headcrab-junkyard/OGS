@@ -520,7 +520,7 @@ void CL_Disconnect()
 	// if running a local server, shut it down
 	if(cls.demoplayback)
 		CL_StopPlayback();
-	else if(cls.state == ca_connected)
+	else if(cls.state == ca_connected) // TODO: != ca_disconnected in qw
 	{
 		if(cls.demorecording)
 			CL_Stop_f();
@@ -540,6 +540,8 @@ void CL_Disconnect()
 
 		cls.state = ca_disconnected;
 
+		//cls.demoplayback = cls.demorecording = cls.timedemo = false; // TODO: qw
+		
 		if(sv.active)
 			Host_ShutdownServer(false);
 	};
@@ -548,6 +550,17 @@ void CL_Disconnect()
 
 	cls.demoplayback = cls.timedemo = false;
 	cls.signon = 0;
+	
+	// TODO: qw
+	/*
+	if(cls.download)
+	{
+		fclose(cls.download);
+		cls.download = NULL;
+	};
+	*/
+
+	//CL_StopUpload(); // TODO: qw
 };
 
 void CL_Disconnect_f()
@@ -600,14 +613,14 @@ void CL_NextDemo()
 	if(cls.demonum == -1)
 		return; // don't play demos
 
-	SCR_BeginLoadingPlaque();
+	SCR_BeginLoadingPlaque(); // TODO: non-qw
 
 	if(!cls.demos[cls.demonum][0] || cls.demonum == MAX_DEMOS)
 	{
 		cls.demonum = 0;
 		if(!cls.demos[cls.demonum][0])
 		{
-			Con_Printf("No demos listed with startdemos\n");
+			Con_Printf("No demos listed with startdemos\n"); // TODO: non-qw
 			cls.demonum = -1;
 			return;
 		};

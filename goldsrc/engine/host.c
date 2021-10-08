@@ -371,6 +371,7 @@ void SV_DropClient(client_t *drop, qboolean crash, char *fmt, ...)
 			Netchan_Transmit(&drop->netchan, 0, drop->netchan.message.data);
 		}
 
+		// TODO: if (drop->state == cs_spawned) in qw
 		if(drop->edict && drop->spawned)
 		{
 			// call the prog function for removing a client
@@ -379,12 +380,27 @@ void SV_DropClient(client_t *drop, qboolean crash, char *fmt, ...)
 			gEntityInterface.pfnClientDisconnect(drop->edict);
 		}
 
-		Sys_Printf("Client %s removed\n", drop->name);
+		// TODO
+		//if(drop->spectator)
+			//Con_Printf("Spectator %s removed\n",drop->name);
+		//else
+			Sys_Printf("Client %s removed\n", drop->name); // TODO: Con_Printf in qw
+		
+		// TODO: qw
+		/*
+		if(drop->download)
+		{
+			FS_FreeFile(drop->download); // was fclose
+			drop->download = NULL;
+		};
+		
 	}
 
 	// free the client (the body stays around)
-	drop->active = false;
+	drop->active = false; // TODO: QW: drop->state = cs_zombie; // become free in a few seconds
+	//drop->connection_started = realtime; // for zombie timeout // TODO: qw
 	drop->name[0] = 0;
+	//drop->edict->v.frags = 0; // TODO: qw
 	drop->old_frags = 0; // TODO: was -999999
 
 	memset(drop->userinfo, 0, sizeof(drop->userinfo));

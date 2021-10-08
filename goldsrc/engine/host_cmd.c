@@ -206,6 +206,10 @@ void Host_God_f()
 	//if (gGlobalVariables.deathmatch && !host_client->privileged) // TODO: if cheats_active?
 	//return;
 
+	// TODO: qw
+	//if(!SV_SetPlayer())
+		//return;
+	
 	sv_player->v.flags = (int)sv_player->v.flags ^ FL_GODMODE;
 	if(!((int)sv_player->v.flags & FL_GODMODE))
 		SV_ClientPrintf(host_client, "godmode OFF\n");
@@ -502,6 +506,31 @@ void Host_Reconnect_f()
 {
 	SCR_BeginLoadingPlaque();
 	cls.signon = 0; // need new connection messages
+	
+	// TODO: qw
+	//
+	if(cls.download) // don't change when downloading
+		return;
+
+	S_StopAllSounds(true);
+
+	if(cls.state == ca_connected)
+	{
+		Con_Printf("reconnecting...\n");
+		MSG_WriteChar(&cls.netchan.message, clc_stringcmd);
+		MSG_WriteString(&cls.netchan.message, "new");
+		return;
+	};
+
+	if(!*cls.servername)
+	{
+		Con_Printf("No server to reconnect to...\n");
+		return;
+	};
+
+	CL_Disconnect();
+	CL_BeginServerConnect();
+	//
 }
 
 /*
