@@ -125,16 +125,26 @@ void CL_PredictUsercmd(local_state_t *from, local_state_t *to, usercmd_t *u, qbo
 	}
 
 	// TODO: clpmove was pmove
-	VectorCopy(from->origin, clpmove.origin);
-	//	VectorCopy (from->viewangles, clpmove.angles);
+	VectorCopy(from->playerstate.origin, clpmove.origin);
+	//	VectorCopy (from->playerstate.angles, clpmove.angles);
 	VectorCopy(u->viewangles, clpmove.angles);
-	VectorCopy(from->velocity, clpmove.velocity);
+	VectorCopy(from->playerstate.velocity, clpmove.velocity);
+	//VectorCopy(from->playerstate.movedir, clpmove.movedir); // TODO
 
-	clpmove.oldbuttons = from->oldbuttons;
-	clpmove.waterjumptime = from->waterjumptime;
+	clpmove.flags = from->client.flags;
+	clpmove.oldbuttons = from->playerstate.oldbuttons;
+	clpmove.waterjumptime = from->client.waterjumptime;
 	clpmove.dead = cl.stats[STAT_HEALTH] <= 0;
 	clpmove.spectator = spectator;
+	clpmove.movetype = from->playerstate.movetype;
 
+	clpmove.onground = from->playerstate.onground;
+	clpmove.waterlevel = from->client.waterlevel;
+	clpmove.watertype = from->client.watertype;
+	VectorCopy(clpmove.view_ofs, from->client.view_ofs);
+	
+	clpmove.maxspeed = from->client.maxspeed;
+	
 	clpmove.cmd = *u;
 
 	ClientDLL_MoveClient(&clpmove); // TODO: was PlayerMove();
@@ -142,14 +152,19 @@ void CL_PredictUsercmd(local_state_t *from, local_state_t *to, usercmd_t *u, qbo
 	//for (i=0 ; i<3 ; i++)
 		//clpmove.origin[i] = ((int)(clpmove.origin[i]*8))*0.125;
 	
-	to->waterjumptime = clpmove.waterjumptime;
-	to->oldbuttons = clpmove.cmd.buttons;
-	VectorCopy(clpmove.origin, to->origin);
-	VectorCopy(clpmove.angles, to->viewangles);
-	VectorCopy(clpmove.velocity, to->velocity);
-	to->onground = clpmove.onground;
+	to->client.waterjumptime = clpmove.waterjumptime;
+	to->playerstate.oldbuttons = clpmove.cmd.buttons;
+	VectorCopy(clpmove.origin, to->playerstate.origin);
+	VectorCopy(clpmove.angles, to->playerstate.angles);
+	VectorCopy(clpmove.velocity, to->playerstate.velocity);
+	to->playerstate.onground = clpmove.onground;
 
-	to->weaponframe = from->weaponframe;
+	//to->weaponframe = from->weaponframe;
+	
+	qboolean runfuncs = true; // TODO
+	double time = 1.0; // TODO
+	uint random_seed = 0; // TODO
+	ClientDLL_PostRunCmd(from, to, u, runfuncs, time, random_seed);
 }
 
 /*
@@ -174,7 +189,7 @@ void CL_PredictMove()
 	if(cl.paused)
 		return;
 
-	cl.time = realtime - cl_pushlatency.value * 0.001; // TODO: cl.time = realtime - cls.latency - cl_pushlatency.value * 0.001;
+	cl.time = realtime - cl_pushlatency.value * 0.001; // TODO: was cl.time = realtime - cls.latency - cl_pushlatency.value * 0.001;
 	if(cl.time > realtime)
 		cl.time = realtime;
 
@@ -207,8 +222,8 @@ void CL_PredictMove()
 
 	if(cl_nopred.value)
 	{
-		VectorCopy(from->playerstate[cl.playernum].velocity, cl.simvel);
-		VectorCopy(from->playerstate[cl.playernum].origin, cl.simorg);
+		VectorCopy(from->playerstate[cl.playernum].playerstate.velocity, cl.simvel);
+		VectorCopy(from->playerstate[cl.playernum].playerstate.origin, cl.simorg);
 		return;
 	}
 
@@ -250,17 +265,17 @@ void CL_PredictMove()
 	}
 
 	for(i = 0; i < 3; i++)
-		if(fabs(from->playerstate[cl.playernum].origin[i] - to->playerstate[cl.playernum].origin[i]) > 128)
+		if(fabs(from->playerstate[cl.playernum].playerstate.origin[i] - to->playerstate[cl.playernum].playerstate.origin[i]) > 128)
 		{ // teleported, so don't lerp
-			VectorCopy(to->playerstate[cl.playernum].velocity, cl.simvel);
-			VectorCopy(to->playerstate[cl.playernum].origin, cl.simorg);
+			VectorCopy(to->playerstate[cl.playernum].playerstate.velocity, cl.simvel);
+			VectorCopy(to->playerstate[cl.playernum].playerstate.origin, cl.simorg);
 			return;
 		}
 
 	for(i = 0; i < 3; i++)
 	{
-		cl.simorg[i] = from->playerstate[cl.playernum].origin[i] + f * (to->playerstate[cl.playernum].origin[i] - from->playerstate[cl.playernum].origin[i]);
-		cl.simvel[i] = from->playerstate[cl.playernum].velocity[i] + f * (to->playerstate[cl.playernum].velocity[i] - from->playerstate[cl.playernum].velocity[i]);
+		cl.simorg[i] = from->playerstate[cl.playernum].playerstate.origin[i] + f * (to->playerstate[cl.playernum].playerstate.origin[i] - from->playerstate[cl.playernum].playerstate.origin[i]);
+		cl.simvel[i] = from->playerstate[cl.playernum].playerstate.velocity[i] + f * (to->playerstate[cl.playernum].playerstate.velocity[i] - from->playerstate[cl.playernum].playerstate.velocity[i]);
 	}
 }
 
