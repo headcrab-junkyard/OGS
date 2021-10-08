@@ -30,8 +30,12 @@
 #include "demo_api.h"
 #include "net_api.h"
 #include "voicetweak.h"
+#include "triangleapi.h"
+#include "r_efx.h"
 
 #include "winquake.h"
+
+extern triangleapi_t gTriAPI;
 
 void FillRGBA(int x, int y, int width, int height, int r, int g, int b, int a)
 {
@@ -44,6 +48,19 @@ int GetScreenInfo(SCREENINFO *pscrinfo)
 		return 0;
 	
 	// TODO
+	if(pscrinfo->iSize != sizeof(*pscrinfo))
+		return 0;
+	
+	pscrinfo->iWidth = vid.width;
+	pscrinfo->iHeight = vid.height;
+	
+	pscrinfo->iFlags = 0; // TODO
+	
+	pscrinfo->iCharHeight = 8;
+	
+	for(int i = 0; i < 256; ++i)
+		pscrinfo->charWidths[i] = 8;
+	
 	return 1;
 };
 
@@ -69,19 +86,32 @@ char *GetCvarString(const char *szName)
 
 int AddCommand(const char *cmd_name, void (*function)())
 {
+	if(!cmd_name || !*cmd_name)
+		return false;
+	
+	//if(function == NULL)
+		//return false;
+	
 	return Cmd_AddClientCommand(cmd_name, function);
 };
 
 int ServerCmd(const char *szCmdString)
 {
-	// TODO
-	return 0;
+	if(!szCmdString || !*szCmdString)
+		return false;
+	
+	Cmd_TokenizeString(szCmdString);
+	Cmd_ForwardToServer();
+	return true;
 };
 
 int ClientCmd(const char *szCmdString)
 {
-	// TODO
-	return 0;
+	if(!szCmdString || !*szCmdString)
+		return false;
+	
+	Cbuf_AddText(szCmdString);
+	return true;
 };
 
 void GetPlayerInfo(int ent_num, hud_player_info_t *pinfo)
@@ -112,7 +142,8 @@ void GetPlayerInfo(int ent_num, hud_player_info_t *pinfo)
 
 void PlaySoundByName(const char *szSound, float volume)
 {
-	// TODO
+	
+	S_StartStaticSound(S_FindName(szSound), vec3_origin, volume, 1.0f, PITCH_NORM);
 };
 
 void PlaySoundByIndex(int iSound, float volume)
@@ -134,7 +165,7 @@ void ConsolePrint(const char *asMsg)
 
 void CenterPrint(const char *asMsg)
 {
-	// TODO
+	SCR_CenterPrint(/*0,*/ asMsg /*, true*/);
 };
 
 int GetWindowCenterX()
@@ -166,14 +197,13 @@ int GetMaxClients()
 
 const char *PhysInfo_ValueForKey(const char *asKey)
 {
-	// TODO
+	//return Info_ValueForKey(cls.physinfo, asKey); // TODO
 	return "";
 };
 
 const char *ServerInfo_ValueForKey(const char *asKey)
 {
-	// TODO
-	return "";
+	return ""; // TODO: Info_ValueForKey(cl.serverinfo, asKey);
 };
 
 float GetClientMaxspeed()
@@ -190,7 +220,10 @@ int CheckParm(const char *parm, char **ppnext)
 
 void GetMousePosition(int *apnX, int *apnY)
 {
-#ifdef _WIN32
+#ifdef OGS_USE_SDL
+	SDL_GetMouseState(apnX, apnY);
+#else
+#	if defined(_WIN32)
 	POINT current_pos;
 	GetCursorPos(&current_pos);
 	
@@ -199,6 +232,7 @@ void GetMousePosition(int *apnX, int *apnY)
 	
 	if(apnY)
 		*apnY = current_pos.y;
+#	endif
 #endif
 };
 
@@ -219,7 +253,7 @@ struct cl_entity_s *GetViewModel()
 
 struct cl_entity_s *GetEntityByIndex(int anIndex)
 {
-	if(anIndex < 0 || anIndex > MAX_EDICTS) // TODO
+	if(anIndex < 0 || anIndex > MAX_EDICTS) // TODO: MAX_EDICTS -> cl_maxentities or something received from server
 		return NULL;
 	
 	return &cl_entities[anIndex];
@@ -232,12 +266,22 @@ float GetClientTime()
 
 struct model_s *CL_LoadModel(const char *asName, int *index)
 {
+	if(!asName || !*asName)
+		return NULL;
+	
+	if(index)
+		*index = -1;
+	
 	// TODO
 	return NULL;
 };
 
 int CL_CreateVisibleEntity(int anType, struct cl_entity_s *apEnt)
 {
+	switch(anType)
+	{
+	};
+	
 	// TODO
 	return 0;
 };
@@ -250,7 +294,7 @@ const struct model_s *GetSpritePointer(SpriteHandle_t ahSprite)
 
 void PlaySoundByNameAtLocation(const char *asSound, float afVolume, float *avOrigin)
 {
-	// TODO
+	S_StartStaticSound(S_FindName(asSound), avOrigin, afVolume, 1.0f, PITCH_NORM);
 };
 
 unsigned short PrecacheEvent(int anType, const char *asName)
@@ -292,13 +336,14 @@ void CL_HookEvent(const char *name, void (*pfnEvent)(struct event_args_s *apArgs
 	if(!pfnEvent)
 		Sys_Error("CL_HookEvent:  Must provide an event hook callback");
 	
-	// TODO
-	//for(check every hook)
+	for(int i = 0; i < MAX_EVENTS; ++i)
 	{
-		//if(found an already assigned)
+		if(!Q_strcmp(cl.event_precache[i]->name, name))
 		{
-			//Con_Printf("CL_HookEvent:  Called on existing hook, updating event hook");
-			//event.hook = newhook;
+			if(cl.event_precache[i]->fnHook)
+				Con_Printf("CL_HookEvent:  Called on existing hook, updating event hook");
+			
+			cl.event_precache[i]->fnHook = pfnEvent;
 		};
 	};
 };
@@ -391,22 +436,34 @@ void GetMousePos(struct tagPOINT *ppt)
 	if(!ppt)
 		return;
 	
-#ifdef _WIN32
+#ifdef OGS_USE_SDL
+	SDL_GetMouseState(ppt.x, ppt, y);
+#else
+#	if defined(_WIN32)
 	GetCursorPos(ppt);
+#	endif
 #endif
 };
 
 void SetMousePos(int x, int y)
 {
-#ifdef _WIN32
+#ifdef OGS_USE_SDL
+	SDL_SetMouseState(x, y);
+#else
+#	if defined(_WIN32)
 	SetCursorPos(x, y);
+#	endif
 #endif
 };
 
 void SetMouseEnable(qboolean abEnable)
 {
-#ifdef _WIN32
+#ifdef OGS_USE_SDL
+	SDL_ShowCursor(abEnable);
+#else
+#	if defined(_WIN32)
 	ShowCursor(abEnable);
+#	endif
 #endif
 };
 
@@ -447,6 +504,9 @@ float hudGetServerGravityValue()
 
 struct model_s *hudGetModelByIndex(int index)
 {
+	if(index < 0 || index > MAX_MODELS) // TODO: r u sure?
+		return NULL;
+	
 	// TODO
 	return NULL;
 };
@@ -495,14 +555,13 @@ int pfnDrawString(int x, int y, const char *str, int r, int g, int b)
 
 int pfnDrawStringReverse(int x, int y, const char *str, int r, int g, int b)
 {
-	// TODO
-	return 0;
+	//char *str_reversed = malloc(Q_strlen(str) * sizeof(char));
+	return pfnDrawString(x, y, str, r, g, b);
 };
 
 const char *LocalPlayerInfo_ValueForKey(const char *key)
 {
-	// TODO
-	return "";
+	return Info_ValueForKey(cls.userinfo, key);
 };
 
 int pfnVGUI2DrawCharacter(int x, int y, int ch, uint font)
@@ -549,8 +608,7 @@ void pfnPrimeMusicStream(const char *szFilename, int looping)
 
 double GetAbsoluteTime()
 {
-	// TODO
-	return realtime;
+	return realtime; // TODO
 };
 
 void pfnProcessTutorMessageDecayBuffer(int *buffer, int bufferLength)
@@ -570,7 +628,7 @@ void pfnResetTutorMessageDecayData()
 
 void pfnPlaySoundByNameAtPitch(const char *szSound, float volume, int pitch)
 {
-	// TODO
+	S_StartStaticSound(S_FindName(szSound), vec3_origin, volume, 1.0f, pitch);
 };
 
 void pfnFillRGBABlend(int x, int y, int width, int height, int r, int g, int b, int a)
@@ -586,13 +644,12 @@ int pfnGetAppID()
 
 cmdalias_t *pfnGetAliasList()
 {
-	// TODO
-	return NULL;
+	return cmd_alias;
 };
 
 void pfnVguiWrap2_GetMouseDelta(int *x, int *y)
 {
-	// TODO
+	// TODO: VguiWrap2_GetMouseDelta
 };
 
 cl_enginefunc_t gClEngFuncs =
@@ -622,7 +679,7 @@ cl_enginefunc_t gClEngFuncs =
 	
 	AddCommand,
 	
-	HookUserMsg,
+	pfnHookUserMsg,
 	
 	ServerCmd,
 	ClientCmd,
@@ -695,8 +752,8 @@ cl_enginefunc_t gClEngFuncs =
 	
 	PlaySoundByNameAtLocation,
 	
-	PrecacheEvent,
-	PlaybackEvent,
+	EV_Precache,
+	EV_Playback,
 	
 	CL_WeaponAnim,
 	
@@ -725,8 +782,8 @@ cl_enginefunc_t gClEngFuncs =
 	COM_ParseFile,
 	COM_FreeFile,
 
-	NULL, //&triapi, // TODO
-	NULL, //&efxapi, // TODO
+	&gTriAPI,
+	&efx,
 	&eventapi,
 	&demoapi,
 	&netapi,
@@ -811,3 +868,5 @@ cl_enginefunc_t gClEngFuncs =
 
 	pfnVguiWrap2_GetMouseDelta
 };
+
+// TODO: cl_enginefunc_t *pcl_enginefuncs = &gClEngFuncs;
