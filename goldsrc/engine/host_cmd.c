@@ -672,7 +672,8 @@ void Host_Loadgame_f()
 	FILE *f;
 	char mapname[MAX_QPATH];
 	float time, tfloat;
-	char str[32768], *start;
+	char str[32768];
+	const char *start;
 	int i, r;
 	edict_t *ent;
 	int entnum;
@@ -865,7 +866,8 @@ int LoadGamestate(char *level, char *startspot)
 	FILE *f;
 	char mapname[MAX_QPATH];
 	float time, sk;
-	char str[32768], *start;
+	char str[32768];
+	const char *start;
 	int i, r;
 	edict_t *ent;
 	int entnum;
@@ -1353,7 +1355,7 @@ Kicks a user off of the server
 void Host_Kick_f()
 {
 	char *who;
-	char *message = NULL;
+	const char *message = NULL;
 	client_t *save;
 	int i;
 	qboolean byNumber = false;
@@ -1443,7 +1445,7 @@ Host_Give_f
 */
 void Host_Give_f()
 {
-	char *t;
+	const char *t;
 	int v, w;
 
 	if(cmd_source == src_command)

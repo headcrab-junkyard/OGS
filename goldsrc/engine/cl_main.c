@@ -299,6 +299,11 @@ void CL_FullServerinfo_f()
 	};
 };
 
+/*
+==================
+CL_Messages_f
+==================
+*/
 void CL_Messages_f()
 {
 	Con_Printf("-------- Message Load ---------\n");
@@ -306,16 +311,31 @@ void CL_Messages_f()
 	Con_Printf("------ End:  %d Total----\n", 0); // TODO
 };
 
+/*
+==================
+CL_SoundFade_f
+==================
+*/
 void CL_SoundFade_f()
 {
 	// TODO
 };
 
+/*
+==================
+IN_VoiceRecordDown
+==================
+*/
 void IN_VoiceRecordDown()
 {
 	// TODO
 };
 
+/*
+==================
+IN_VoiceRecordUp
+==================
+*/
 void IN_VoiceRecordUp()
 {
 	// TODO

@@ -74,13 +74,13 @@ void Cvar_SetValue(const char *var_name, float value);
 float Cvar_VariableValue(const char *var_name);
 // returns 0 if not defined or non numeric
 
-char *Cvar_VariableString(const char *var_name);
+const char *Cvar_VariableString(const char *var_name);
 // returns an empty string if not defined
 
 /// returns 0 if not defined or non numeric
 int Cvar_VariableInt(const char *var_name);
 
-char *Cvar_CompleteVariable(const char *partial);
+const char *Cvar_CompleteVariable(const char *partial);
 // attempts to match a partial variable name for command line completion
 // returns NULL if nothing fits
 

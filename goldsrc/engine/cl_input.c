@@ -31,12 +31,7 @@ CL_SendMove
 */
 void CL_SendMove(usercmd_t *cmd)
 {
-	int i;
-	int checksumIndex;
 	int bits;
-	int lost;
-	sizebuf_t buf;
-	byte data[128];
 
 	// if we are spectator, try autocam
 	if(cl.spectator)
@@ -45,6 +40,9 @@ void CL_SendMove(usercmd_t *cmd)
 	//CL_FinishMove(cmd); // TODO
 
 	Cam_FinishMove(cmd);
+	
+	sizebuf_t buf;
+	byte data[128];
 
 	// send this and the previous cmds in the message, so
 	// if the last packet was dropped, it can be recovered
@@ -60,18 +58,18 @@ void CL_SendMove(usercmd_t *cmd)
 	MSG_WriteByte(&buf, clc_move);
 
 	// save the position for a checksum byte
-	checksumIndex = buf.cursize;
+	int checksumIndex = buf.cursize;
 	MSG_WriteByte(&buf, 0);
 
 	// write our lossage percentage
-	lost = 0; //CL_CalcNet(); // TODO
+	int lost = 0; //CL_CalcNet(); // TODO
 	MSG_WriteByte(&buf, (byte)lost);
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	MSG_WriteFloat(&buf, cl.mtime[0]); // so server can get ping times
 
-	for(i = 0; i < 3; i++)
+	for(int i = 0; i < 3; i++)
 		MSG_WriteAngle(&buf, cl.viewangles[i]);
 	
 	MSG_WriteShort(&buf, cmd->forwardmove);

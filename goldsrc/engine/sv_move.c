@@ -16,7 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
-// sv_move.c -- monster movement
+
+/// @file
+/// @brief monster movement
 
 #include "quakedef.h"
 

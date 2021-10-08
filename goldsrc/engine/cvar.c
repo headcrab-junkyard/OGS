@@ -107,7 +107,7 @@ int Cvar_VariableInt(const char *var_name)
 Cvar_VariableString
 ============
 */
-char *Cvar_VariableString(const char *var_name)
+const char *Cvar_VariableString(const char *var_name)
 {
 	cvar_t *var;
 
@@ -122,7 +122,7 @@ char *Cvar_VariableString(const char *var_name)
 Cvar_CompleteVariable
 ============
 */
-char *Cvar_CompleteVariable(const char *partial)
+const char *Cvar_CompleteVariable(const char *partial)
 {
 	cvar_t *cvar;
 	int len;

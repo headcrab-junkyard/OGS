@@ -299,7 +299,7 @@ void CL_ParseServerInfo()
 	// parse level name
 	str = MSG_ReadString();
 	strncpy(cl.levelname, str, sizeof(cl.levelname) - 1);
-
+	
 	// parse map cycle
 	str = MSG_ReadString();
 	strncpy(cl.mapcycle, str, sizeof(cl.mapcycle) - 1);
@@ -1395,7 +1395,6 @@ void CL_ParseServerMessage()
 			cl.scores[i].colors = MSG_ReadByte ();
 			CL_NewTranslation (i);
 			break;
-
 		case svc_updatestat:
 			i = MSG_ReadByte ();
 			if (i < 0 || i >= MAX_CL_STATS)

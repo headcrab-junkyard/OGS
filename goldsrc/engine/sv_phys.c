@@ -1465,9 +1465,7 @@ void SV_Physics()
 			continue;
 
 		if(gGlobalVariables.force_retouch)
-		{
 			SV_LinkEdict(ent, true); // force retouch even for stationary
-		}
 
 		if(i > 0 && i <= svs.maxclients)
 			SV_Physics_Client(ent, i);

@@ -369,7 +369,7 @@ void SV_DropClient(client_t *drop, qboolean crash, char *fmt, ...)
 		{
 			MSG_WriteByte(&drop->netchan.message, svc_disconnect);
 			Netchan_Transmit(&drop->netchan, 0, drop->netchan.message.data);
-		}
+		};
 
 		// TODO: if (drop->state == cs_spawned) in qw
 		if(drop->edict && drop->spawned)
@@ -892,16 +892,16 @@ void Host_Init(quakeparms_t *parms)
 #ifdef _WIN32 // on non win32, mouse comes before video for security reasons
 		IN_Init();
 #endif
-
+		
 		// GUI should be initialized before the client dll
 		VGui_Startup();
-
+		
 		// Initialize the client dll now
 		ClientDLL_Init();
 		
 		Voice_RegisterCvars();
 	}
-
+	
 	//Voice_LoadCodec("voice_speex");
 	Cbuf_InsertText("exec valve.rc\n");
 	

@@ -222,6 +222,9 @@ extern redirect_t sv_redirected;
 
 //===========================================================
 
+//
+// sv_main.c
+//
 void SV_Init();
 
 void SV_Frame();

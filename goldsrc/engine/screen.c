@@ -1671,9 +1671,7 @@ void SCR_UpdateScreen(void)
 	D_DisableBackBufferAccess(); // for adapters that can't stay mapped in
 	                             //  for linear writes all the time
 	if(pconupdate)
-	{
 		D_UpdateRects(pconupdate);
-	}
 #endif
 
 	VGui_Frame(); // TODO: looks like this should be called VGui_Paint
