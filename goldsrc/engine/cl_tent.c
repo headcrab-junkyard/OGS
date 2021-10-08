@@ -113,7 +113,6 @@ void CL_ParseTEnt(void)
 	type = MSG_ReadByte();
 	switch(type)
 	{
-
 	case TE_SPIKE: // spike hitting wall
 		pos[0] = MSG_ReadCoord();
 		pos[1] = MSG_ReadCoord();

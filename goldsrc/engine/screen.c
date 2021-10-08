@@ -556,13 +556,11 @@ void SCR_DrawFPS (void)
 
 /*
 ==============
-DrawPause
+SCR_DrawPause
 ==============
 */
 void SCR_DrawPause(void)
 {
-	qpic_t *pic;
-
 	if(!scr_showpause.value) // turn off for screenshots
 		return;
 
@@ -570,7 +568,7 @@ void SCR_DrawPause(void)
 		return;
 
 	//
-	pic = Draw_CachePic("gfx/pause.lmp");
+	qpic_t *pic = Draw_CachePic("gfx/pause.lmp");
 	Draw_Pic((vid.width - pic->width) / 2,
 	         (vid.height - 48 - pic->height) / 2, pic);
 	//
@@ -589,13 +587,11 @@ SCR_DrawLoading
 */
 void SCR_DrawLoading(void)
 {
-	qpic_t *pic;
-
 	if(!scr_drawloading)
 		return;
 
 	//
-	pic = Draw_CachePic("gfx/loading.lmp");
+	qpic_t *pic = Draw_CachePic("gfx/loading.lmp");
 	Draw_Pic((vid.width - pic->width) / 2,
 	         (vid.height - 48 - pic->height) / 2, pic);
 	//

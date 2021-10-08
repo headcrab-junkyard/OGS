@@ -561,9 +561,12 @@ void MSG_WriteBuf(sizebuf_t *buf, const void *data, int length)
 		MSG_WriteByte(buf, ((byte *)data)[i]);
 }
 
+//============================================================
+
 //
 // reading functions
 //
+
 int msg_readcount;
 qboolean msg_badread;
 

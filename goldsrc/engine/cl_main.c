@@ -612,7 +612,6 @@ void CL_SignonReply()
 		
 		Cache_Report(); // print remaining memory
 		break;
-
 	case 2:
 		SCR_EndLoadingPlaque(); // allow normal screen updates
 		break;

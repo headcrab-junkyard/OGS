@@ -617,6 +617,14 @@ void V_SetupRefParams(ref_params_t *params)
 	params->onlyClientDraw = 0;
 };
 
+/*
+==================
+V_RenderView
+
+The player's clipping box goes from (-16 -16 -24) to (16 16 32) from
+the entity origin, so any view position inside that will be valid
+==================
+*/
 //extern vrect_t scr_vrect; // TODO: qw
 void V_RenderView()
 {
@@ -690,9 +698,7 @@ void V_RenderView()
 		vid.aspect *= 2;
 	}
 	else
-	{
 		R_RenderView();
-	}
 
 #ifndef GLQUAKE
 	if(crosshair.value)

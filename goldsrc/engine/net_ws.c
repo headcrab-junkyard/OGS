@@ -346,6 +346,7 @@ idnewt:28000
 qboolean NET_StringToAdr(char *s, netadr_t *a)
 {
 	struct sockaddr sadr;
+	//struct sockaddr_in sadr; // TODO: linux
 	
 	/*
 	struct hostent *h;

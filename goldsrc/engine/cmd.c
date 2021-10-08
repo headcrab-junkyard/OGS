@@ -485,6 +485,8 @@ const char *Cmd_Argv(int arg)
 /*
 ============
 Cmd_Args
+
+Returns a single string containing argv(1) to argv(argc()-1)
 ============
 */
 const char *Cmd_Args()

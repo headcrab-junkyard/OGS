@@ -426,7 +426,7 @@ void V_UpdatePalette();
 void V_Register();
 void V_ParseDamage();
 void V_SetContentsColor(int contents);
-//void V_CalcBlend ();
+void V_CalcBlend();
 
 //
 // cl_tent
