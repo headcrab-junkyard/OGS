@@ -730,9 +730,9 @@ void CL_ParsePlayerinfo()
 		state->modelindex = cl_playerindex;
 
 	if(flags & PF_SKINNUM)
-		state->skinnum = MSG_ReadByte();
+		state->skin = MSG_ReadByte();
 	else
-		state->skinnum = 0;
+		state->skin = 0;
 
 	if(flags & PF_EFFECTS)
 		state->effects = MSG_ReadByte();
@@ -855,7 +855,7 @@ void CL_LinkPlayers()
 
 	for(j = 0, info = cl.players, state = frame->playerstate; j < MAX_CLIENTS; j++, info++, state++)
 	{
-		if(state->messagenum != cl.parsecount)
+		if(state->playerstate.messagenum != cl.parsecount)
 			continue; // not present this frame
 
 // spawn light flashes, even ones coming from invisible objects
@@ -870,10 +870,10 @@ void CL_LinkPlayers()
 				//CL_NewDlight(j, state->origin[0], state->origin[1], state->origin[2], 200 + (rand() & 31), 0.1, 1);
 			//else if(state->effects & EF_RED)
 				//CL_NewDlight(j, state->origin[0], state->origin[1], state->origin[2], 200 + (rand() & 31), 0.1, 2);
-			/*else*/ if(state->effects & EF_BRIGHTLIGHT)
-				CL_NewDlight(j, state->origin[0], state->origin[1], state->origin[2] + 16, 400 + (rand() & 31), 0.1, 0);
-			else if(state->effects & EF_DIMLIGHT)
-				CL_NewDlight(j, state->origin[0], state->origin[1], state->origin[2], 200 + (rand() & 31), 0.1, 0);
+			/*else*/ if(state->playerstate.effects & EF_BRIGHTLIGHT)
+				CL_NewDlight(j, state->playerstate.origin[0], state->playerstate.origin[1], state->playerstate.origin[2] + 16, 400 + (rand() & 31), 0.1, 0);
+			else if(state->playerstate.effects & EF_DIMLIGHT)
+				CL_NewDlight(j, state->playerstate.origin[0], state->playerstate.origin[1], state->playerstate.origin[2], 200 + (rand() & 31), 0.1, 0);
 #ifdef GLQUAKE
 		}
 #endif
@@ -882,7 +882,7 @@ void CL_LinkPlayers()
 		if(j == cl.playernum)
 			continue;
 
-		if(!state->modelindex)
+		if(!state->playerstate.modelindex)
 			continue;
 
 		if(!Cam_DrawPlayer(j))
@@ -895,9 +895,9 @@ void CL_LinkPlayers()
 		cl_numvisedicts++;
 		//ent->keynum = 0; // TODO
 
-		ent->model = cl.model_precache[state->modelindex];
-		ent->skinnum = state->skinnum;
-		ent->frame = state->frame;
+		ent->model = cl.model_precache[state->playerstate.modelindex];
+		ent->skinnum = state->playerstate.skin;
+		ent->frame = state->playerstate.frame;
 		//ent->colormap = info->translations; // TODO
 		//if(state->modelindex == cl_playerindex)
 			//ent->scoreboard = info; // use custom skin // TODO
@@ -907,16 +907,16 @@ void CL_LinkPlayers()
 		//
 		// angles
 		//
-		ent->angles[PITCH] = -state->viewangles[PITCH] / 3;
-		ent->angles[YAW] = state->viewangles[YAW];
+		ent->angles[PITCH] = -state->playerstate.angles[PITCH] / 3;
+		ent->angles[YAW] = state->playerstate.angles[YAW];
 		ent->angles[ROLL] = 0;
-		ent->angles[ROLL] = V_CalcRoll(ent->angles, state->velocity) * 4;
+		ent->angles[ROLL] = V_CalcRoll(ent->angles, state->playerstate.velocity) * 4;
 
 		// only predict half the move to minimize overruns
-		msec = 500 * (playertime - state->state_time);
+		msec = 500 * (playertime - state->playerstate.msg_time); // TODO: was state_time
 		if(msec <= 0 || (!cl_predict_players.value && !cl_predict_players2.value))
 		{
-			VectorCopy(state->origin, ent->origin);
+			VectorCopy(state->playerstate.origin, ent->origin);
 			//Con_DPrintf ("nopredict\n");
 		}
 		else
@@ -924,14 +924,14 @@ void CL_LinkPlayers()
 			// predict players movement
 			if(msec > 255)
 				msec = 255;
-			state->command.msec = msec;
+			frame->cmd.msec = msec; // TODO
 			//Con_DPrintf ("predict: %i\n", msec);
 
 			oldphysent = pmove->numphysent;
 			CL_SetSolidPlayers(j);
-			CL_PredictUsercmd(state, &exact, &state->command, false);
+			CL_PredictUsercmd(state, &exact, &frame->cmd, false); // TODO
 			pmove->numphysent = oldphysent;
-			VectorCopy(exact.origin, ent->origin);
+			VectorCopy(exact.playerstate.origin, ent->origin);
 		}
 
 		//if(state->effects & EF_FLAG1) // TODO
@@ -1014,31 +1014,31 @@ void CL_SetUpPlayerPrediction(qboolean dopred)
 	{
 		pplayer->active = false;
 
-		if(state->messagenum != cl.parsecount)
+		if(state->playerstate.messagenum != cl.parsecount)
 			continue; // not present this frame
 
-		if(!state->modelindex)
+		if(!state->playerstate.modelindex)
 			continue;
 
 		pplayer->active = true;
-		pplayer->flags = state->flags;
+		pplayer->flags = state->client.flags; // TODO: or playerstate.eflags?
 
 		// note that the local player is special, since he moves locally
 		// we use his last predicted postition
 		if(j == cl.playernum)
 		{
-			VectorCopy(cl.frames[cls.netchan.outgoing_sequence & UPDATE_MASK].playerstate[cl.playernum].origin,
+			VectorCopy(cl.frames[cls.netchan.outgoing_sequence & UPDATE_MASK].playerstate[cl.playernum].playerstate.origin,
 			           pplayer->origin);
 		}
 		else
 		{
 			// only predict half the move to minimize overruns
-			msec = 500 * (playertime - state->state_time);
+			msec = 500 * (playertime - state->playerstate.msg_time); // TODO: was state_time
 			if(msec <= 0 ||
 			   (!cl_predict_players.value && !cl_predict_players2.value) ||
 			   !dopred)
 			{
-				VectorCopy(state->origin, pplayer->origin);
+				VectorCopy(state->playerstate.origin, pplayer->origin);
 				//Con_DPrintf ("nopredict\n");
 			}
 			else
@@ -1046,11 +1046,11 @@ void CL_SetUpPlayerPrediction(qboolean dopred)
 				// predict players movement
 				if(msec > 255)
 					msec = 255;
-				state->command.msec = msec;
+				frame->cmd.msec = msec; // TODO
 				//Con_DPrintf ("predict: %i\n", msec);
 
-				CL_PredictUsercmd(state, &exact, &state->command, false);
-				VectorCopy(exact.origin, pplayer->origin);
+				CL_PredictUsercmd(state, &exact, &frame->cmd, false); // TODO
+				VectorCopy(exact.playerstate.origin, pplayer->origin);
 			}
 		}
 	}
