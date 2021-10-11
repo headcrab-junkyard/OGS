@@ -40,7 +40,7 @@ void UnloadClientDLL()
 {
 	if(gpClientDLL)
 	{
-		Sys_UnloadModule_Wrapper(gpClientDLL);
+		FileSystem_UnloadDLL(gpClientDLL);
 		gpClientDLL = NULL;
 	};
 };

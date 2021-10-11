@@ -149,6 +149,7 @@ void FS_AddSearchPathNoWrite(const char *pPath, const char *pathID);
 // TODO: this is not a part of VFileSystem009
 void *FS_LoadLibrary(const char *path); // TODO: wraps Sys_LoadModule
 //void FS_UnloadLibrary(void *apHandle); // TODO: Probably also should be present
+void FileSystem_UnloadDLL(void *apDLL);
 
 ////////////
 

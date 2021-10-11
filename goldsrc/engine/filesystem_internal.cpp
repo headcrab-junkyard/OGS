@@ -332,6 +332,12 @@ void *FS_LoadLibrary(const char *asPath)
 	return Sys_LoadModule(asPath);
 };
 
+
+void FileSystem_UnloadDLL(void *apDLL)
+{
+	Sys_UnloadModule(apDLL);
+};
+
 //////////////////////////////////////////////////////////////
 
 /*
