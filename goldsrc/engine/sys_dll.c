@@ -665,6 +665,13 @@ void Sys_Sleep()
 #endif
 };
 
+/*
+================
+Sys_SendKeyEvents
+
+Send Key_Event calls
+================
+*/
 void Sys_SendKeyEvents()
 {
 #ifdef OGS_USE_SDL
@@ -684,9 +691,14 @@ void Sys_SendKeyEvents()
 		if(!GetMessage(&msg, NULL, 0, 0))
 			Sys_Quit();
 
+		//sys_msg_time = msg.time;
+
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	};
+	
+	// grab frame time 
+	//sys_frame_time = timeGetTime(); // FIXME: should this be at start?
 #endif // SWDS
 #endif
 

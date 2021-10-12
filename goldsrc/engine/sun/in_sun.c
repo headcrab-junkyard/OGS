@@ -24,9 +24,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <signal.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <X11/Xlib.h>

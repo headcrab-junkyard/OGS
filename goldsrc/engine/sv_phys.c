@@ -152,15 +152,12 @@ Two entities have touched, so run their touch functions
 void SV_Impact(edict_t *e1, edict_t *e2)
 {
 	gGlobalVariables.time = sv.time;
-	if(/*e1->v.touch &&*/ e1->v.solid != SOLID_NOT) // TODO
-	{
-		gEntityInterface.pfnTouch(e1, e2);
-	}
 
-	if(/*e2->v.touch &&*/ e2->v.solid != SOLID_NOT) // TODO
-	{
+	if(e1->v.solid != SOLID_NOT)
+		gEntityInterface.pfnTouch(e1, e2);
+
+	if(e2->v.solid != SOLID_NOT)
 		gEntityInterface.pfnTouch(e2, e1);
-	}
 }
 
 /*

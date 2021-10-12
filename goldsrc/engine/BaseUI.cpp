@@ -58,14 +58,14 @@ void LoadGameUIModule()
 			return; // TODO: error
 	};
 
-	auto fnGameUIFactory{ Sys_GetFactory(gpGameUILib) };
+	auto fnGameUIFactory{Sys_GetFactory(gpGameUILib)};
 
 	if(!fnGameUIFactory)
 		return;
 
-	gpGameUI = (IGameUI*)fnGameUIFactory(GAMEUI_INTERFACE_VERSION, nullptr);
-	gpGameConsole = (IGameConsole*)fnGameUIFactory(GAMECONSOLE_INTERFACE_VERSION, nullptr);
-	//gpCareerUI = (ICareerUI*)fnGameUIFactory(CAREERUI_INTERFACE_VERSION, nullptr); // TODO
+	gpGameUI = reinterpret_cast<IGameUI*>(fnGameUIFactory(GAMEUI_INTERFACE_VERSION, nullptr));
+	gpGameConsole = reinterpret_cast<IGameConsole*>(fnGameUIFactory(GAMECONSOLE_INTERFACE_VERSION, nullptr));
+	//gpCareerUI = reinterpret_cast<ICareerUI*>(fnGameUIFactory(CAREERUI_INTERFACE_VERSION, nullptr)); // TODO
 
 	if(!gpGameUI || !gpGameConsole) //|| !gpCareerUI)
 		return;
@@ -84,14 +84,14 @@ void CBaseUI::Initialize(CreateInterfaceFn *factories, int count)
 	if (!gConfigs.bInitialied)
 		Config_Init();
 
-	g_hVGUI2 = (HINTERFACEMODULE)GetModuleHandle("vgui2.dll");
+	ghVGUI2 = (HINTERFACEMODULE)GetModuleHandle("vgui2.dll");
 
-	if(g_hVGUI2)
+	if(ghVGUI2)
 	{
 		auto fnVGUI2CreateInterface{Sys_GetFactory(g_hVGUI2)};
 		auto fnEngineCreateInterface{Sys_GetFactoryThis()};
 
-		IKeyValuesSystem *pKeyValuesSystem = (IKeyValuesSystem *)fnVGUI2CreateInterface(KEYVALUESSYSTEM_INTERFACE_VERSION, NULL);
+		auto pKeyValuesSystem{reinterpret_cast<IKeyValuesSystem *>(fnVGUI2CreateInterface(KEYVALUESSYSTEM_INTERFACE_VERSION, nullptr))};
 
 		vgui::IVGui *pVGui = (vgui::IVGui *)fnVGUI2CreateInterface(VGUI_IVGUI_INTERFACE_VERSION, NULL);
 		vgui::ISurface *pSurface = (vgui::ISurface *)fnEngineCreateInterface(VGUI_SURFACE_INTERFACE_VERSION, NULL);
@@ -120,15 +120,15 @@ void CBaseUI::Start(struct cl_enginefuncs_s *engineFuncs, int interfaceVersion)
 {
 /*
 	CreateInterfaceFn factories[2];
-	factories[0] = g_pMetaHookAPI->GetEngineFactory();
-	factories[1] = Sys_GetFactory(g_hVGUI2);
+	factories[0] = Sys_GetFactoryThis();
+	factories[1] = Sys_GetFactory(ghVGUI2);
 
-	vgui::g_pInput->SetIMEWindow(g_hMainWnd);
+	vgui::g_pInput->SetIMEWindow(ghMainWnd);
 
-	g_pVGuiLocalize = (vgui::ILocalize *)(Sys_GetFactoryThis()(VGUI_LOCALIZE_INTERFACE_VERSION, NULL));
-	g_pVGuiLocalize->AddFile("resource/valve_%language%.txt", "GAME");
+	gpVGuiLocalize = reinterpret_cast<vgui::ILocalize *>(Sys_GetFactoryThis()(VGUI_LOCALIZE_INTERFACE_VERSION, nullptr));
+	gpVGuiLocalize->AddFile("resource/valve_%language%.txt", "GAME");
 
-	g_pFileSystem->CreateDirHierarchy("cfg", "DEFAULT_WRITE_PATH");
+	gpFileSystem->CreateDirHierarchy("cfg", "DEFAULT_WRITE_PATH");
 
 	//if(1)
 	{
@@ -160,7 +160,7 @@ int CBaseUI::Key_Event(int down, int keynum, const char *pszCurrentBinding)
 
 void CBaseUI::CallEngineSurfaceProc(void *hwnd, unsigned int msg, unsigned int wparam, long lparam)
 {
-	// TODO: IEngineSurafce::WndProc?
+	// TODO: IEngineSurface::WndProc(hwnd, msg, wparam, lparam);?
 };
 
 void CBaseUI::Paint(int x, int y, int right, int bottom)

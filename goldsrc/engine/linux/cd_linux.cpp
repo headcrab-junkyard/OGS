@@ -20,15 +20,13 @@
 /// @file
 /// @brief linux implementation of ICDAudio interface
 
-#include <stdio.h>
 #include <unistd.h>
-#include <stdlib.h>
+#include <fcntl.h>
+
 #include <sys/ioctl.h>
 #include <sys/file.h>
 #include <sys/types.h>
-#include <fcntl.h>
-#include <string.h>
-#include <time.h>
+
 #include <errno.h>
 
 #include <linux/cdrom.h>

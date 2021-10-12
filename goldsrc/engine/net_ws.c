@@ -386,7 +386,7 @@ qboolean NET_StringToAdr(char *s, netadr_t *a)
 		return true;
 	};
 	
-	if (!NET_StringToSockaddr (s, &sadr))
+	if (!NET_StringToSockaddr (s, /*(struct sockaddr *)*/&sadr))
 		return false;
 	
 	SockadrToNetadr(&sadr, a);
@@ -666,7 +666,7 @@ void NET_SendPacket(netsrc_t sock, int length, void *data, netadr_t to)
 	else
 		Sys_Error(/*ERR_FATAL,*/ "NET_SendPacket: bad address type");
 	
-	NetadrToSockadr(&to, &addr);
+	NetadrToSockadr(&to, (struct sockaddr_in*)&addr);
 
 	ret = sendto(net_socket, data, length, 0, /*(struct sockaddr *)*/&addr, sizeof(addr));
 	if(ret == -1)

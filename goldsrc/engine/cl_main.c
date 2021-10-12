@@ -62,11 +62,13 @@ cvar_t topcolor = { "topcolor", "0", FCVAR_ARCHIVE | FCVAR_USERINFO };
 cvar_t bottomcolor = { "bottomcolor", "0", FCVAR_ARCHIVE | FCVAR_USERINFO };
 cvar_t rate = { "rate", "2500", FCVAR_ARCHIVE | FCVAR_USERINFO };
 
+// TODO: handle
 cvar_t cl_dlmax = { "cl_dlmax", "80", FCVAR_ARCHIVE | FCVAR_USERINFO };
 cvar_t cl_lc = { "cl_lc", "1", FCVAR_ARCHIVE | FCVAR_USERINFO };
 cvar_t cl_lw = { "cl_lw", "1", FCVAR_ARCHIVE | FCVAR_USERINFO };
 cvar_t cl_updaterate = { "cl_updaterate", "30", FCVAR_ARCHIVE | FCVAR_USERINFO };
 cvar_t cl_autowepswitch = { "_cl_autowepswitch", "1", FCVAR_ARCHIVE | FCVAR_USERINFO };
+//
 
 static qboolean allowremotecmd = true; // TODO: purpose?
 
@@ -1251,6 +1253,8 @@ void CL_ReadPackets ()
 	//while (NET_GetPacket (NS_CLIENT, &net_from, &net_message)) // TODO: q2
 	while (CL_GetMessage())
 	{
+		//Con_Printf("packet\n");
+		
 		//
 		// remote command packet
 		//
@@ -1431,6 +1435,12 @@ void CL_Init()
 	Cvar_RegisterVariable(&topcolor);
 	Cvar_RegisterVariable(&bottomcolor);
 	Cvar_RegisterVariable(&rate);
+	
+	Cvar_RegisterVariable(&cl_dlmax);
+	Cvar_RegisterVariable(&cl_lc);
+	Cvar_RegisterVariable(&cl_lw);
+	Cvar_RegisterVariable(&cl_updaterate);
+	Cvar_RegisterVariable(&cl_autowepswitch);
 
 	Cmd_AddCommand("entities", CL_PrintEntities_f);
 

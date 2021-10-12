@@ -166,7 +166,7 @@ typedef struct
 texwadlump_t texwadlump[TEXWAD_MAXIMAGES];
 int numwadtextures;
 
-void WAD3_LoadTextureWadFile (char *filename)
+void WAD3_LoadTextureWadFile(const char *filename)
 {
 	lumpinfo_t *lumps, *lump_p;
 	wadinfo_t header;
@@ -183,7 +183,7 @@ void WAD3_LoadTextureWadFile (char *filename)
 	*/
 	file = FS_Open (filename, "rb");
 	if (!file)
-		Host_Error ("Couldn't load halflife wad \"%s\"\n", filename);
+		Host_Error("Couldn't load halflife wad \"%s\"\n", filename);
 
 	if (FS_Read(&header, sizeof(wadinfo_t), file) != sizeof(wadinfo_t))
 	{
@@ -194,7 +194,7 @@ void WAD3_LoadTextureWadFile (char *filename)
 
 	if (memcmp(header.identification, "WAD3", 4))
 	{
-		Con_Printf ("WAD3_LoadTextureWadFile: Wad file %s doesn't have WAD3 id\n",filename);
+		Con_Printf("WAD3_LoadTextureWadFile: Wad file %s doesn't have WAD3 id\n", filename);
         FS_Close(file);
 		return;
 	}

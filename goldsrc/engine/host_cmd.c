@@ -1352,6 +1352,7 @@ Host_Kick_f
 Kicks a user off of the server
 ==================
 */
+extern cvar_t name; // TODO: temp
 void Host_Kick_f()
 {
 	char *who;
@@ -1400,7 +1401,7 @@ void Host_Kick_f()
 			if(cls.state == ca_dedicated)
 				who = "Console";
 			else
-				who = cl_name.string;
+				who = name.string; // TODO: was cl_name
 		else
 			who = save->name;
 
@@ -1460,6 +1461,8 @@ void Host_Give_f()
 	t = Cmd_Argv(1);
 	v = atoi(Cmd_Argv(2));
 
+	// TODO
+/*
 	switch(t[0])
 	{
 	case '0':
@@ -1492,6 +1495,7 @@ void Host_Give_f()
 		sv_player->v.ammo_cells = v;
 		break;
 	}
+*/
 }
 
 edict_t *FindViewthing()

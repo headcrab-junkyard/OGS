@@ -18,7 +18,7 @@
  */
 
 /// @file
-/// @brief include this instead of all the other snd_* files to have no sound code whatsoever
+/// @brief SDL2 sound driver implementation
 
 #include "quakedef.h"
 

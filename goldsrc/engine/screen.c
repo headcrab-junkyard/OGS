@@ -91,7 +91,7 @@ cvar_t scr_printspeed = { "scr_printspeed", "8" };
 
 #ifdef GLQUAKE
 //cvar_t scr_allowsnap = {"scr_allowsnap", "1"}; // TODO: outside of the conditional compilation check in qw
-cvar_t gl_triplebuffer = { "gl_triplebuffer", "1", true };
+cvar_t gl_triplebuffer = { "gl_triplebuffer", "1", true }; // TODO: remove
 
 extern cvar_t crosshair;
 #endif
@@ -121,7 +121,7 @@ vrect_t scr_vrect;
 qboolean scr_disabled_for_loading;
 qboolean scr_drawloading;
 float scr_disabled_time;
-//qboolean scr_skipupdate;
+//qboolean scr_skipupdate; // TODO: ???
 
 qboolean block_drawing;
 
@@ -612,7 +612,7 @@ void SCR_SetUpToDrawConsole(void)
 	Con_CheckResize();
 
 	if(scr_drawloading)
-		return; // never a console with loading plaque
+		return; // never show a console with loading plaque
 
 	// decide on the height of the console
 	con_forcedup = !cl.worldmodel || cls.signon != SIGNONS; // TODO: unused in qw
