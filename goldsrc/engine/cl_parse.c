@@ -936,6 +936,70 @@ void CL_ParseResourceList()
 	//begin CL_ParseResourceList()    end   CL_ParseResourceList()   
 	Con_Printf("Verifying and downloading resources...");
 	//GameUI_SetLoadingProgressText("#GameUI_VerifyingResources"); // TODO
+	
+	short nResCount = MSG_ReadShort();
+	for(int i = 0; i < nResCount; ++i)
+	{
+		// TODO: leaks
+		//resource_t *pResource = (resource_t*)Z_Malloc(sizeof(resource_t));
+		
+		resourcetype_t eResType = MSG_ReadByte();
+		
+		char sResFileName[MAX_QPATH];
+		Q_strncpy(sResFileName, MSG_ReadString(), sizeof(sResFileName));
+		
+		switch(eResType)
+		{
+		case t_sound:
+			Sound_NextDownload();
+			break;
+		case t_skin:
+			// TODO
+			break;
+		case t_world:
+		case t_model:
+			Model_NextDownload();
+			break;
+		case t_decal:
+		{
+			int nDecalIndex = MSG_ReadByte();
+			//Decal_NextDownload(); // TODO
+			break;
+		}
+		case t_generic:
+			//Generic_NextDownload(); // TODO
+			break;
+		case t_eventscript:
+			// TODO
+			break;
+		//case dl_none:
+		default:
+			Con_DPrintf("Unknown resource type (%d).\n", eResType);
+		};
+		
+		int nDownloadSize = MSG_ReadByte();
+		
+		byte nFlags = MSG_ReadByte();
+		
+		if(nFlags & RES_CUSTOM)
+		{
+			byte rgucMD5_hash[16];
+			Q_strncpy(rgucMD5_hash, MSG_ReadString(), sizeof(rgucMD5_hash));
+		};
+		
+		qboolean bHasExtraInfo = MSG_ReadOneBit();
+		
+		if(bHasExtraInfo)
+		{
+			// TODO
+		};
+		
+		// TODO: consistency
+		
+		MSG_ReadOneBit();
+		
+		// TODO: alignment to byte boundary
+	};
 };
 
 void CL_ParseVoiceData()
