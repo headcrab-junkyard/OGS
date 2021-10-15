@@ -17,7 +17,8 @@
  * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
 
-// screen.c -- master for refresh, status bar, console, chat, notify, etc
+/// @file
+/// @brief master for refresh, status bar, console, chat, notify, etc
 
 #include "quakedef.h"
 //#include "r_local.h"

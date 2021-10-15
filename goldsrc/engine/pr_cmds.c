@@ -247,15 +247,12 @@ PF_setspawnparms
 */
 void PF_setspawnparms_I(edict_t *ent)
 {
-	int i;
-	client_t *client;
-
-	i = NUM_FOR_EDICT(ent);
+	int i = NUM_FOR_EDICT(ent);
 	if(i < 1 || i > svs.maxclients)
 		Host_Error("Entity is not a client");
 
 	// copy spawn parms out of the client_t
-	client = svs.clients + (i - 1);
+	client_t *client = svs.clients + (i - 1);
 
 	for(i = 0; i < NUM_SPAWN_PARMS; i++)
 		(&gGlobalVariables.parm1)[i] = client->spawn_parms[i];
@@ -331,6 +328,9 @@ void PF_vectoangles_I(const float *valueIn, float *valueOut)
 
 void SV_MoveToOrigin_I(edict_t *pEnt, const float *vGoal, float fDist, int nMoveType)
 {
+	if(!pEnt)
+		return;
+	
 	// TODO
 };
 
@@ -585,8 +585,6 @@ int SV_ModelIndex(const char *name); // TODO
 
 void PF_makestatic_I(edict_t *ent)
 {
-	int i;
-
 	MSG_WriteByte(&sv.signon, svc_spawnstatic);
 
 	MSG_WriteByte(&sv.signon, SV_ModelIndex(pr_strings + ent->v.model));
@@ -595,7 +593,7 @@ void PF_makestatic_I(edict_t *ent)
 	MSG_WriteByte(&sv.signon, ent->v.colormap);
 	MSG_WriteByte(&sv.signon, ent->v.skin);
 
-	for(i = 0; i < 3; i++)
+	for(int i = 0; i < 3; i++)
 	{
 		MSG_WriteCoord(&sv.signon, ent->v.origin[i]);
 		MSG_WriteAngle(&sv.signon, ent->v.angles[i]);

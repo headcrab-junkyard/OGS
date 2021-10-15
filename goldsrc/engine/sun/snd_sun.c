@@ -16,6 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
+
+/// @file
+
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>

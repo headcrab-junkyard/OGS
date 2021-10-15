@@ -16,7 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
-// sbar.c -- status bar code
+
+/// @file
+/// @brief status bar code
 
 #include "quakedef.h"
 

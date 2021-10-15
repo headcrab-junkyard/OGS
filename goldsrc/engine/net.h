@@ -17,6 +17,9 @@
  * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/// @file
+/// @brief engine's interface to the networking layer
+
 /*
 ==============================================================
 
@@ -24,8 +27,6 @@ NET
 
 ==============================================================
 */
-
-// net.h -- engine's interface to the networking layer
 
 #define PORT_ANY -1
 

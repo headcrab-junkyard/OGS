@@ -16,7 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
-// snd_mem.c: sound caching
+
+/// @file
+/// @brief sound caching
 
 #include "quakedef.h"
 
@@ -31,20 +33,17 @@ ResampleSfx
 */
 void ResampleSfx(sfx_t *sfx, int inrate, int inwidth, byte *data)
 {
-	int outcount;
 	int srcsample;
-	float stepscale;
 	int i;
 	int sample, samplefrac, fracstep;
-	sfxcache_t *sc;
 
-	sc = Cache_Check(&sfx->cache);
+	sfxcache_t *sc = Cache_Check(&sfx->cache);
 	if(!sc)
 		return;
 
-	stepscale = (float)inrate / shm->speed; // this is usually 0.5, 1, or 2
+	float stepscale = (float)inrate / shm->speed; // this is usually 0.5, 1, or 2
 
-	outcount = sc->length / stepscale;
+	int outcount = sc->length / stepscale;
 	sc->length = outcount;
 	if(sc->loopstart != -1)
 		sc->loopstart = sc->loopstart / stepscale;
@@ -81,9 +80,9 @@ void ResampleSfx(sfx_t *sfx, int inrate, int inwidth, byte *data)
 				((short *)sc->data)[i] = sample;
 			else
 				((signed char *)sc->data)[i] = sample >> 8;
-		}
-	}
-}
+		};
+	};
+};
 
 //=============================================================================
 
@@ -120,14 +119,14 @@ sfxcache_t *S_LoadSound(sfx_t *s)
 	{
 		Con_Printf("Couldn't load %s\n", namebuffer);
 		return NULL;
-	}
+	};
 
 	info = GetWavinfo(s->name, data, FS_FileSize(namebuffer));
 	if(info.channels != 1)
 	{
 		Con_Printf("%s is a stereo sample\n", s->name);
 		return NULL;
-	}
+	};
 
 	stepscale = (float)info.rate / shm->speed;
 	len = info.samples / stepscale;
@@ -147,7 +146,7 @@ sfxcache_t *S_LoadSound(sfx_t *s)
 	ResampleSfx(s, sc->speed, sc->width, data + info.dataofs);
 
 	return sc;
-}
+};
 
 /*
 ===============================================================================
@@ -163,16 +162,16 @@ byte *last_chunk;
 byte *iff_data;
 int iff_chunk_len;
 
-short GetLittleShort(void)
+short GetLittleShort()
 {
 	short val = 0;
 	val = *data_p;
 	val = val + (*(data_p + 1) << 8);
 	data_p += 2;
 	return val;
-}
+};
 
-int GetLittleLong(void)
+int GetLittleLong()
 {
 	int val = 0;
 	val = *data_p;
@@ -181,9 +180,9 @@ int GetLittleLong(void)
 	val = val + (*(data_p + 3) << 24);
 	data_p += 4;
 	return val;
-}
+};
 
-void FindNextChunk(char *name)
+void FindNextChunk(const char *name)
 {
 	while(1)
 	{
@@ -193,7 +192,7 @@ void FindNextChunk(char *name)
 		{ // didn't find the chunk
 			data_p = NULL;
 			return;
-		}
+		};
 
 		data_p += 4;
 		iff_chunk_len = GetLittleLong();
@@ -201,24 +200,24 @@ void FindNextChunk(char *name)
 		{
 			data_p = NULL;
 			return;
-		}
+		};
 		//		if (iff_chunk_len > 1024*1024)
 		//			Sys_Error ("FindNextChunk: %i length is past the 1 meg sanity limit", iff_chunk_len);
 		data_p -= 8;
 		last_chunk = data_p + 8 + ((iff_chunk_len + 1) & ~1);
 		if(!Q_strncmp(data_p, name, 4))
 			return;
-	}
-}
+	};
+};
 
-void FindChunk(char *name)
+void FindChunk(const char *name)
 {
 	last_chunk = iff_data;
 	FindNextChunk(name);
-}
+};
 
 #if 0
-void DumpChunks(void)
+void DumpChunks()
 {
 	char	str[5];
 	
@@ -232,7 +231,7 @@ void DumpChunks(void)
 		Con_Printf ("0x%x : %s (%d)\n", (int)(data_p - 4), str, iff_chunk_len);
 		data_p += (iff_chunk_len + 1) & ~1;
 	} while (data_p < iff_end);
-}
+};
 #endif
 
 /*
@@ -247,7 +246,7 @@ wavinfo_t GetWavinfo(const char *name, byte *wav, int wavlength)
 	int format;
 	int samples;
 
-	memset(&info, 0, sizeof(info));
+	Q_memset(&info, 0, sizeof(info));
 
 	if(!wav)
 		return info;
@@ -261,7 +260,7 @@ wavinfo_t GetWavinfo(const char *name, byte *wav, int wavlength)
 	{
 		Con_Printf("Missing RIFF/WAVE chunks\n");
 		return info;
-	}
+	};
 
 	// get "fmt " chunk
 	iff_data = data_p + 12;
@@ -272,14 +271,14 @@ wavinfo_t GetWavinfo(const char *name, byte *wav, int wavlength)
 	{
 		Con_Printf("Missing fmt chunk\n");
 		return info;
-	}
+	};
 	data_p += 8;
 	format = GetLittleShort();
 	if(format != 1)
 	{
 		Con_Printf("Microsoft PCM format only\n");
 		return info;
-	}
+	};
 
 	info.channels = GetLittleShort();
 	info.rate = GetLittleLong();
@@ -304,8 +303,8 @@ wavinfo_t GetWavinfo(const char *name, byte *wav, int wavlength)
 				i = GetLittleLong(); // samples in loop
 				info.samples = info.loopstart + i;
 				//				Con_Printf("looped length: %i\n", i);
-			}
-		}
+			};
+		};
 	}
 	else
 		info.loopstart = -1;
@@ -316,7 +315,7 @@ wavinfo_t GetWavinfo(const char *name, byte *wav, int wavlength)
 	{
 		Con_Printf("Missing data chunk\n");
 		return info;
-	}
+	};
 
 	data_p += 4;
 	samples = GetLittleLong() / info.width;
@@ -332,4 +331,4 @@ wavinfo_t GetWavinfo(const char *name, byte *wav, int wavlength)
 	info.dataofs = data_p - wav;
 
 	return info;
-}
+};

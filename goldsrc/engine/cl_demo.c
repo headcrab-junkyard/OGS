@@ -17,6 +17,8 @@
  * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/// @file
+
 #include "quakedef.h"
 
 void CL_FinishTimeDemo();

@@ -16,7 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
-// common.c -- misc functions used in client and server
+
+/// @file
+/// @brief misc functions used in client and server
 
 #include "quakedef.h"
 

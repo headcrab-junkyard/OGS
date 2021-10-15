@@ -27,9 +27,9 @@
 #include "iengine.h"
 #include "igame.h"
 
-qboolean gbDedicatedServer{ false };
+qboolean gbDedicatedServer{false};
 
-char *gsPostRestartCmdLineArgs{ nullptr };
+char *gsPostRestartCmdLineArgs{nullptr};
 
 IDedicatedExports *gpDedicatedExports{nullptr};
 

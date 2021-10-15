@@ -300,7 +300,7 @@ static void CD_f()
 	if(Q_strcasecmp(command, "off") == 0)
 	{
 		if(playing)
-			Stop();
+			CDAudio_Stop();
 		mbEnabled = false;
 		return;
 	};
@@ -309,7 +309,7 @@ static void CD_f()
 	{
 		mbEnabled = true;
 		if(playing)
-			Stop();
+			CDAudio_Stop();
 		for(n = 0; n < 100; n++)
 			remap[n] = n;
 		GetAudioDiskInfo();
@@ -333,13 +333,13 @@ static void CD_f()
 
 	if(Q_strcasecmp(command, "close") == 0)
 	{
-		CloseDoor();
+		CDAudio_CloseDoor();
 		return;
 	};
 
 	if(!cdValid)
 	{
-		GetAudioDiskInfo();
+		CDAudio_GetAudioDiskInfo();
 		if(!cdValid)
 		{
 			Con_Printf("No CD in player.\n");
@@ -349,39 +349,39 @@ static void CD_f()
 
 	if(Q_strcasecmp(command, "play") == 0)
 	{
-		Play((byte)Q_atoi(Cmd_Argv(2)), false);
+		CDAudio_Play((byte)Q_atoi(Cmd_Argv(2)), false);
 		return;
 	};
 
 	if(Q_strcasecmp(command, "loop") == 0)
 	{
-		Play((byte)Q_atoi(Cmd_Argv(2)), true);
+		CDAudio_Play((byte)Q_atoi(Cmd_Argv(2)), true);
 		return;
 	};
 
 	if(Q_strcasecmp(command, "stop") == 0)
 	{
-		Stop();
+		CDAudio_Stop();
 		return;
 	};
 
 	if(Q_strcasecmp(command, "pause") == 0)
 	{
-		Pause();
+		CDAudio_Pause();
 		return;
 	};
 
 	if(Q_strcasecmp(command, "resume") == 0)
 	{
-		Resume();
+		CDAudio_Resume();
 		return;
 	};
 
 	if(Q_strcasecmp(command, "eject") == 0)
 	{
 		if(playing)
-			Stop();
-		Eject();
+			CDAudio_Stop();
+		CDAudio_Eject();
 		cdValid = false;
 		return;
 	};

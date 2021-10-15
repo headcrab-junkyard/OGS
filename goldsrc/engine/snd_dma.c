@@ -20,7 +20,9 @@
  * You should have received a copy of the GNU General Public License
  * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
-// snd_dma.c -- main control for any streaming sound output device
+
+/// @file
+/// @brief main control for any streaming sound output device
 
 #include "quakedef.h"
 #include "snd_codec.h"

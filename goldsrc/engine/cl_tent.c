@@ -16,7 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
-// cl_tent.c -- client side temporary entities
+
+/// @file
+/// @brief client side temporary entities
 
 #include "quakedef.h"
 

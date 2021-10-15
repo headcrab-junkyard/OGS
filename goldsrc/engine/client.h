@@ -20,6 +20,7 @@
 /// @file
 
 #include "usercmd.h"
+#include "custom.h"
 
 /*
 typedef struct
@@ -33,6 +34,7 @@ typedef struct
 // TODO: was player_state_t
 // local_state_t is the information needed by a player entity
 // to do move prediction and to generate a drawable entity
+/*
 typedef struct
 {
 	int messagenum; // all player's won't be updated each frame
@@ -57,6 +59,7 @@ typedef struct
 	int onground; // -1 = in air, else pmove entity number
 	int oldbuttons;
 } local_state_t;
+*/
 
 typedef struct
 {
@@ -282,7 +285,7 @@ typedef struct
 	int num_entities; // held in cl_entities array
 	int num_statics;  // held in cl_staticentities array
 
-	cl_entity_t viewent; // the gun model
+	cl_entity_t viewent; // the gun/weapon model
 
 	// all player information
 	player_info_t players[MAX_CLIENTS];

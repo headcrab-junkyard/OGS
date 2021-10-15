@@ -34,7 +34,7 @@ cldll_func_t cl_funcs;
 
 typedef int (*pfnGetClientDLL)(void *pv);
 
-extern qboolean LoadClientDLLClientGame();
+//extern qboolean LoadClientDLLClientGame();
 
 void UnloadClientDLL()
 {
@@ -47,9 +47,7 @@ void UnloadClientDLL()
 
 qboolean LoadClientDLLF()
 {
-	pfnGetClientDLL fnGetClientDLL = NULL;
-	
-	fnGetClientDLL = (pfnGetClientDLL)Sys_GetExport_Wrapper(gpClientDLL, "F"); // TODO: GetClientDLL?
+	pfnGetClientDLL fnGetClientDLL = (pfnGetClientDLL)Sys_GetExport_Wrapper(gpClientDLL, "F"); // TODO: GetClientDLL?
 
 	if(!fnGetClientDLL)
 		return false;
@@ -75,7 +73,7 @@ void LoadClientDLL()
 	};
 
 	//if(!LoadClientDLLClientGame()) // First check for IClientGame interface
-		if(!LoadClientDLLF()) // Then check there is an "F" export present
+		if(!LoadClientDLLF()) // Then check if there is an "F" export present
 			return; // TODO: per-export loading as a fallback
 	
 	if(!&cl_funcs || (cl_funcs.pfnInitialize && !cl_funcs.pfnInitialize(&gEngFuncs, CLDLL_INTERFACE_VERSION)))

@@ -21,7 +21,7 @@
 #include "quakedef.h"
 #include "public/FileSystem.h"
 
-IFileSystem *gpFileSystem{ nullptr };
+IFileSystem *gpFileSystem{nullptr};
 
 void FileSystem_Init(const char *basedir, void *filesystemFactory)
 {

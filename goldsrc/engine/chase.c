@@ -16,7 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
-// chase.c -- chase camera code
+
+/// @file
+/// @brief chase camera code
 
 #include "quakedef.h"
 

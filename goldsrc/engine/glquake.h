@@ -304,8 +304,19 @@ void GL_MakeAliasModelDisplayLists (model_t *m, aliashdr_t *hdr);
 void R_DrawBrushModel (cl_entity_t *e);
 void R_DrawWorld ();
 void GL_BuildLightmaps ();
+void R_RenderBrushPoly(msurface_t *fa);
 
 //
 // gl_ngraph.c
 //
 //void R_NetGraph ();
+
+//=========================================================
+// particle stuff
+
+void R_DrawParticles();
+void R_InitParticles();
+void R_ClearParticles();
+
+void R_ClearSkyBox();
+void R_DrawSkyBox();

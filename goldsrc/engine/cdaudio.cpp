@@ -24,7 +24,7 @@
 
 extern ICDAudio *CreateCDAudio();
 
-ICDAudio *gpCDAudio{ nullptr };
+ICDAudio *gpCDAudio{nullptr};
 
 int CDAudio_Init()
 {

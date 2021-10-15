@@ -16,7 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
-// snd_mix.c -- portable code to mix sounds for snd_dma.c
+
+/// @file
+/// @brief portable code to mix sounds for snd_dma.c
 
 #include "quakedef.h"
 
@@ -32,10 +34,10 @@ int snd_scaletable[32][256];
 int *snd_p, snd_linear_count, snd_vol;
 short *snd_out;
 
-void Snd_WriteLinearBlastStereo16(void);
+void Snd_WriteLinearBlastStereo16();
 
 //#if !id386 // TODO: check for non-Intel?
-void Snd_WriteLinearBlastStereo16(void)
+void Snd_WriteLinearBlastStereo16()
 {
 	int i;
 	int val;
@@ -57,8 +59,8 @@ void Snd_WriteLinearBlastStereo16(void)
 			snd_out[i + 1] = (short)0x8000;
 		else
 			snd_out[i + 1] = val;
-	}
-}
+	};
+};
 //#endif // !id386
 
 void S_TransferStereo16(int endtime)
@@ -92,7 +94,7 @@ void S_TransferStereo16(int endtime)
 				S_Shutdown();
 				S_Startup();
 				return;
-			}
+			};
 
 			if(++reps > 10000)
 			{
@@ -100,8 +102,8 @@ void S_TransferStereo16(int endtime)
 				S_Shutdown();
 				S_Startup();
 				return;
-			}
-		}
+			};
+		};
 	}
 	else
 #endif
