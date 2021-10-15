@@ -5,7 +5,7 @@
  * Copyright (C) 2007-2008 Kristian Duske
  * Copyright (C) 2010-2011 O. Sezer <sezero@users.sourceforge.net>
  * Copyright (C) 2010-2014 QuakeSpasm developers
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018, 2021 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
