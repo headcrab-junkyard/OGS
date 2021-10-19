@@ -135,6 +135,16 @@ const char *Cvar_CompleteVariable(const char *partial)
 		return NULL;
 
 	// check functions
+	
+	// TODO: qw
+	/*
+	// check exact match
+	for(cvar = cvar_vars; cvar; cvar = cvar->next)
+		if(!Q_strcmp(partial, cvar->name))
+			return cvar->name;
+	*/
+	
+	// check partial match
 	for(cvar = cvar_vars; cvar; cvar = cvar->next)
 		if(!Q_strncmp(partial, cvar->name, len))
 			return cvar->name;

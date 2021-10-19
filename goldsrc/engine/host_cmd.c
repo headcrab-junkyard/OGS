@@ -203,8 +203,12 @@ void Host_God_f()
 		return;
 	}
 
-	//if (gGlobalVariables.deathmatch && !host_client->privileged) // TODO: if cheats_active?
-	//return;
+	//if(gGlobalVariables.deathmatch && !host_client->privileged) // TODO: if cheats_active?
+	if(!sv_cheats.value) // TODO: sv_allow_cheats in qw
+	{
+		//Con_Printf ("You must run the server with -cheats to enable this command.\n"); // TODO: qw
+		return;
+	};
 
 	// TODO: qw
 	//if(!SV_SetPlayer())

@@ -83,6 +83,10 @@ void Cmd_AddCommand(const char *cmd_name, xcommand_t function);
 // called by the init functions of other parts of the program to
 // register commands and functions to call for them.
 // The cmd_name is referenced later, so it should not be in temp memory
+//
+// QW RULES:
+// if function is NULL, the command will be forwarded to the server
+// as a clc_stringcmd instead of executed locally
 
 qboolean Cmd_Exists(const char *cmd_name);
 // used by the cvar code to check for cvar / command name overlap

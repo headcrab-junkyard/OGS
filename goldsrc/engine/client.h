@@ -186,6 +186,15 @@ typedef struct
 
 	// connection information
 	int signon; // 0 to SIGNONS
+	
+	// QW
+	
+	FileHandle_t download; // file transfer from server
+	char downloadtempname[MAX_OSPATH];
+	char downloadname[MAX_OSPATH];
+	int downloadnumber;
+	resourcetype_t downloadtype;
+	int downloadpercent;
 } client_static_t;
 
 extern client_static_t cls;
