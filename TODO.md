@@ -2,16 +2,13 @@
 
 - [ ] Two pmove instances (one for server-side and one for client);
 - [ ] Finish the fs module wrapper;
-- [ ] GameUI module wrapper (vgui_int/vgui_wrap...);
-- [ ] Get rid of Quake status bar;
-- [ ] Render DLL support;
+- [ ] VGUI module wrapper (vgui_int/vgui_wrap...);
 - [ ] Client DLL loading (per single export);
 - [ ] Crypted client dlls loading;
 - [ ] Const-correctness;
 - [ ] Fix cvars to use flags;
 - [ ] FS module/wrapper should support dll loading (because of search directories);
 - [ ] GameUI should search for a IGameClientExports interface implementation and use its internal impl in case it's not found;
-- [ ] GameUI DLL loading;
 - [ ] sv_main : SV_LoadEntities();
 - [ ] Implement Network API;
 - [ ] Implement Demo API;
