@@ -468,6 +468,8 @@ Handles byte ordering and avoids alignment errors
 ==============================================================================
 */
 
+static huffman_t msgHuff;
+
 usercmd_t nullcmd; // guaranteed to be zero
 
 //

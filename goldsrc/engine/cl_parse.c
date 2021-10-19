@@ -616,8 +616,9 @@ void CL_ParseClientdata(int bits)
 	}
 
 	// [always sent]	if (bits & SU_ITEMS)
-	i = MSG_ReadLong();
+	//i = MSG_ReadLong();
 
+/*
 	if(cl.items != i)
 	{ // set flash times
 		Sbar_Changed();
@@ -626,13 +627,14 @@ void CL_ParseClientdata(int bits)
 				cl.item_gettime[j] = cl.time;
 		cl.items = i;
 	}
+*/
 
 	cl.onground = (bits & SU_ONGROUND) != 0;
 	cl.inwater = (bits & SU_INWATER) != 0;
 
-	if(bits & SU_WEAPONFRAME)
-		cl.stats[STAT_WEAPONFRAME] = MSG_ReadByte();
-	else
+	//if(bits & SU_WEAPONFRAME)
+		//cl.stats[STAT_WEAPONFRAME] = MSG_ReadByte();
+	//else
 		cl.stats[STAT_WEAPONFRAME] = 0;
 
 	if(bits & SU_ARMOR)
@@ -662,6 +664,7 @@ void CL_ParseClientdata(int bits)
 		Sbar_Changed();
 	}
 
+/*
 	i = MSG_ReadByte();
 	if(cl.stats[STAT_AMMO] != i)
 	{
@@ -678,6 +681,7 @@ void CL_ParseClientdata(int bits)
 			Sbar_Changed();
 		}
 	}
+*/
 
 	i = MSG_ReadByte();
 

@@ -209,7 +209,7 @@ qboolean SV_movestep(edict_t *ent, vec3_t move, qboolean relink)
 		//		Con_Printf ("back on ground\n");
 		ent->v.flags = (int)ent->v.flags & ~FL_PARTIALGROUND;
 	}
-	ent->v.groundentity = EDICT_TO_PROG(trace.ent);
+	ent->v.groundentity = trace.ent;
 
 	// the move is ok
 	if(relink)
@@ -391,7 +391,7 @@ void SV_MoveToGoal(edict_t *ent, float dist)
 	edict_t *enemy;
 #endif
 
-	goal = PROG_TO_EDICT(ent->v.goalentity);
+	//goal = ent->v.goalentity; // TODO
 
 	if(!((int)ent->v.flags & (FL_ONGROUND | FL_FLY | FL_SWIM)))
 	{
