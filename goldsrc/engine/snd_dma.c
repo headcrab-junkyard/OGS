@@ -33,6 +33,7 @@
 
 void S_Play();
 void S_PlayVol();
+void S_Speak_f();
 void S_SoundList();
 void S_Update_();
 void S_StopAllSounds(qboolean clear);

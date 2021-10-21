@@ -107,6 +107,8 @@ void S_ExtraUpdate();
 sfx_t *S_PrecacheSound(const char *sample);
 void S_TouchSound(const char *sample);
 
+sfx_t *S_FindName(const char *name);
+
 void S_ClearPrecache();
 
 void S_BeginPrecaching();

@@ -275,3 +275,21 @@ void SV_ExecuteClientMessage(client_t *cl);
 
 void SV_BeginRedirect(redirect_t rd);
 void SV_EndRedirect();
+
+void SV_ActivateServer();
+void SV_DeactivateServer();
+
+//
+
+void SV_SetMoveVars();
+
+void SV_UserinfoChanged(client_t *cl);
+
+void SV_ConnectClient();
+
+void SV_SendServerinfo(client_t *cl);
+void SV_SendExtraServerinfo(client_t *cl);
+
+void SV_ConnectionlessPacket();
+
+void SV_New_f();

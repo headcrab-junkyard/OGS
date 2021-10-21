@@ -195,6 +195,7 @@ void COM_InitArgv(int argc, char **argv);
 const char *COM_SkipPath(const char *pathname);
 int COM_ExpandFilename(const char *asFileName, char *asNameOutBuffer, int anOutBufferSize);
 void COM_StripExtension(const char *in, char *out);
+char *COM_FileExtension(const char *in);
 void COM_FileBase(const char *in, char *out);
 void COM_DefaultExtension(char *path, const char *extension);
 

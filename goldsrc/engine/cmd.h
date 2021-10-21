@@ -88,6 +88,8 @@ void Cmd_AddCommand(const char *cmd_name, xcommand_t function);
 // if function is NULL, the command will be forwarded to the server
 // as a clc_stringcmd instead of executed locally
 
+int Cmd_AddClientCommand(const char *cmd_name, xcommand_t function);
+
 qboolean Cmd_Exists(const char *cmd_name);
 // used by the cvar code to check for cvar / command name overlap
 

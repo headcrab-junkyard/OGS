@@ -57,6 +57,8 @@ interface from being ambiguous.
 
 extern cvar_t *cvar_vars;
 
+void Cvar_Init();
+
 void Cvar_RegisterVariable(cvar_t *variable);
 // registers a cvar that already has the name, string, and optionally the
 // archive elements set.

@@ -32,3 +32,5 @@ void IN_ClearStates(); // TODO: not present in Q2
 // restores all button and position states to defaults
 
 //void IN_Activate(qboolean active); // TODO: q2
+
+void IN_Accumulate();
