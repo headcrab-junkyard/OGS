@@ -207,7 +207,7 @@ typedef struct
 {
 	int servercount; // server identification for prespawns
 
-	//char		serverinfo[MAX_SERVERINFO_STRING]; // TODO
+	char serverinfo[MAX_SERVERINFO_STRING];
 
 	int parsecount;    // server message counter
 	int validsequence; // this is the sequence number of the last good
@@ -276,8 +276,9 @@ typedef struct
 	//
 	// information that is static for the entire time connected to a server
 	//
-	//char		model_name[MAX_MODELS][MAX_QPATH];
-	//char		sound_name[MAX_SOUNDS][MAX_QPATH];
+	// TODO: needed?
+	char model_name[MAX_MODELS][MAX_QPATH];
+	char sound_name[MAX_SOUNDS][MAX_QPATH];
 
 	struct model_s *model_precache[MAX_MODELS];
 	struct sfx_s *sound_precache[MAX_SOUNDS];
