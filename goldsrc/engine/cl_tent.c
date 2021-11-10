@@ -105,9 +105,7 @@ void CL_ParseTEnt(void)
 {
 	int type;
 	vec3_t pos;
-#ifdef QUAKE2
 	vec3_t endpos;
-#endif
 	dlight_t *dl;
 	int rnd;
 	int colorStart, colorLength;
@@ -115,6 +113,52 @@ void CL_ParseTEnt(void)
 	type = MSG_ReadByte();
 	switch(type)
 	{
+	case TE_BEAMPOINTS:
+		// TODO
+		for(int i = 0; i < 3; ++i)
+			pos[i] = MSG_ReadCoord();
+		
+		for(int i = 0; i < 3; ++i)
+			endpos[i] = MSG_ReadCoord();
+		
+		MSG_ReadShort();
+		
+		MSG_ReadByte();
+		MSG_ReadByte();
+		MSG_ReadByte();
+		MSG_ReadByte();
+		MSG_ReadByte();
+		
+		for(int i = 0; i < 3; ++i)
+			MSG_ReadByte();
+		
+		MSG_ReadByte();
+		MSG_ReadByte();
+		break;
+
+	case TE_BEAMENTPOINT:
+		// TODO
+		MSG_ReadShort();
+		
+		for(int i = 0; i < 3; ++i)
+			pos[i] = MSG_ReadCoord();
+		
+		MSG_ReadShort();
+		
+		MSG_ReadByte();
+		MSG_ReadByte();
+		MSG_ReadByte();
+		MSG_ReadByte();
+		MSG_ReadByte();
+		
+		for(int i = 0; i < 3; ++i)
+			MSG_ReadByte();
+		
+		MSG_ReadByte();
+		MSG_ReadByte();
+		break;
+
+/*
 	case TE_SPIKE: // spike hitting wall
 		pos[0] = MSG_ReadCoord();
 		pos[1] = MSG_ReadCoord();
@@ -156,7 +200,7 @@ void CL_ParseTEnt(void)
 				S_StartDynamicSound(-1, 0, cl_sfx_ric3, pos, 1, 1, PITCH_NORM);
 		}
 		break;
-
+*/
 	case TE_GUNSHOT: // bullet hitting wall
 		pos[0] = MSG_ReadCoord();
 		pos[1] = MSG_ReadCoord();
@@ -186,10 +230,27 @@ void CL_ParseTEnt(void)
 		S_StartDynamicSound(-1, 0, cl_sfx_r_exp3, pos, 1, 1, PITCH_NORM);
 		break;
 
-	case TE_LIGHTNING1: // lightning bolts
-		CL_ParseBeam(Mod_ForName("progs/bolt.mdl", true));
+	case TE_SMOKE:
+		// TODO
 		break;
 
+	case TE_TRACER:
+		// TODO
+		break;
+
+	case TE_LIGHTNING: // lightning bolts
+		CL_ParseBeam(Mod_ForName("models/bolt.mdl", true));
+		break;
+
+	case TE_BEAMENTS:
+		// TODO
+		break;
+
+	case TE_SPARKS:
+		// TODO
+		break;
+
+/*
 	case TE_LIGHTNING2: // lightning bolts
 		CL_ParseBeam(Mod_ForName("progs/bolt2.mdl", true));
 		break;
@@ -197,6 +258,7 @@ void CL_ParseTEnt(void)
 	case TE_LIGHTNING3: // lightning bolts
 		CL_ParseBeam(Mod_ForName("progs/bolt3.mdl", true));
 		break;
+*/
 
 	// PGM 01/21/97
 	case TE_BEAM: // grappling hook beam
@@ -233,7 +295,10 @@ void CL_ParseTEnt(void)
 		S_StartDynamicSound(-1, 0, cl_sfx_r_exp3, pos, 1, 1, PITCH_NORM);
 		break;
 
-#ifdef QUAKE2
+	case TE_BSPDECAL:
+		// TODO
+		break;
+
 	case TE_IMPLOSION:
 		pos[0] = MSG_ReadCoord();
 		pos[1] = MSG_ReadCoord();
@@ -241,6 +306,11 @@ void CL_ParseTEnt(void)
 		S_StartDynamicSound(-1, 0, cl_sfx_imp, pos, 1, 1, PITCH_NORM);
 		break;
 
+	case TE_SPRITETRAIL:
+		// TODO
+		break;
+
+/*
 	case TE_RAILTRAIL:
 		pos[0] = MSG_ReadCoord();
 		pos[1] = MSG_ReadCoord();
@@ -258,7 +328,179 @@ void CL_ParseTEnt(void)
 		dl->die = cl.time + 0.5;
 		dl->decay = 300;
 		break;
-#endif
+*/
+
+	case TE_BEAMSPRITE:
+		// TODO
+		break;
+
+	case TE_BEAMTORUS:
+		// TODO
+		break;
+
+	case TE_BEAMDISK:
+		// TODO
+		break;
+
+	case TE_BEAMCYLINDER:
+		// TODO
+		break;
+
+	case TE_BEAMFOLLOW:
+		// TODO
+		break;
+	
+	case TE_GLOWSPRITE:
+		// TODO
+		break;
+	
+	case TE_BEAMRING:
+		// TODO
+		break;
+	
+	case TE_STREAK_SPLASH:
+		// TODO
+		break;
+	
+	case TE_BEAMHOSE:
+		// TODO
+		break;
+	
+	case TE_DLIGHT:
+		// TODO
+		break;
+
+	case TE_ELIGHT:
+		// TODO
+		break;
+	
+	case TE_TEXTMESSAGE:
+		// TODO
+		break;
+
+	case TE_LINE:
+		// TODO
+		break;
+
+	case TE_BOX:
+		// TODO
+		break;
+	
+	case TE_KILLBEAM:
+		// TODO
+		break;
+
+	case TE_LARGEFUNNEL:
+		// TODO
+		break;
+
+	case TE_BLOODSTREAM:
+		// TODO
+		break;
+
+	case TE_SHOWLINE:
+		// TODO
+		break;
+
+	case TE_BLOOD:
+		// TODO
+		break;
+
+	case TE_DECAL:
+		// TODO
+		break;
+
+	case TE_FIZZ:
+		// TODO
+		break;
+
+	case TE_MODEL:
+		// TODO
+		break;
+
+	case TE_EXPLODEMODEL:
+		// TODO
+		break;
+
+	case TE_BREAKMODEL:
+		// TODO
+		break;
+
+	case TE_GUNSHOTDECAL:
+		// TODO
+		break;
+
+	case TE_SPRITE_SPRAY:
+		// TODO
+		break;
+
+	case TE_ARMOR_RICOCHET:
+		// TODO
+		break;
+
+	case TE_PLAYERDECAL:
+		// TODO
+		break;
+
+	case TE_BUBBLES:
+		// TODO
+		break;
+
+	case TE_BUBBLETRAIL:
+		// TODO
+		break;
+
+	case TE_BLOODSPRITE:
+		// TODO
+		break;
+
+	case TE_WORLDDECAL:
+		// TODO
+		break;
+
+	case TE_WORLDDECALHIGH:
+		// TODO
+		break;
+
+	case TE_DECALHIGH:
+		// TODO
+		break;
+
+	case TE_PROJECTILE:
+		// TODO
+		break;
+
+	case TE_SPRAY:
+		// TODO
+		break;
+
+	case TE_PLAYERSPRITES:
+		// TODO
+		break;
+
+	case TE_PARTICLEBURST:
+		// TODO
+		break;
+
+	case TE_FIREFIELD:
+		// TODO
+		break;
+
+	case TE_PLAYERATTACHMENT:
+		// TODO
+		break;
+
+	case TE_KILLPLAYERATTACHMENTS:
+		// TODO
+		break;
+
+	case TE_MULTIGUNSHOT:
+		// TODO
+		break;
+
+	case TE_USERTRACER:
+		// TODO
+		break;
 
 	default:
 		Sys_Error("CL_ParseTEnt: bad type");
