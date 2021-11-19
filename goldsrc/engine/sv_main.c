@@ -89,10 +89,6 @@ SV_Spawn_f
 */
 void SV_Spawn_f() // TODO: was Host_Spawn_f
 {
-	int i;
-	client_t *client;
-	edict_t *ent;
-
 	if(cmd_source == src_command)
 	{
 		Con_Printf("spawn is not valid from the console\n");
@@ -118,6 +114,31 @@ void SV_Spawn_f() // TODO: was Host_Spawn_f
 	
 	SV_WriteSpawn(host_client);
 	
+	// actually spawn the player // TODO: QW
+	//gGlobalVariables.time = sv.time; // TODO: QW
+	gEntityInterface.pfnClientPutInServer(sv_player);
+	
+	//if ((Sys_FloatTime() - host_client->netchan.connecttime) <= sv.time) // TODO
+		Sys_Printf("%s entered the game\n", host_client->name);
+};
+
+/*
+================
+SV_New_f
+
+Sends the first message from the server to a connected client.
+This will be sent on the initial connection and upon each server load.
+================
+*/
+void SV_New_f ()
+{
+	int i;
+	client_t *client;
+	edict_t *ent;
+	
+	if (host_client->spawned)
+		return;
+
 	// run the entrance script
 	if(sv.loadgame)
 	{
@@ -155,33 +176,82 @@ void SV_Spawn_f() // TODO: was Host_Spawn_f
 		else
 		*/
 		{
-		// copy spawn parms out of the client_t
-		for(i = 0; i < NUM_SPAWN_PARMS; i++)
-			(&gGlobalVariables.parm1)[i] = host_client->spawn_parms[i];
+			// copy spawn parms out of the client_t
+			//for(i = 0; i < NUM_SPAWN_PARMS; i++)
+				//(&gGlobalVariables.parm1)[i] = host_client->spawn_parms[i];
 
-		// call the spawn function
+			// call the spawn function
 
-		gGlobalVariables.time = sv.time;
-		if(!gEntityInterface.pfnClientConnect(sv_player, host_client->name, "TODO", NULL)) // TODO
-			return; // TODO
-
-		//if ((Sys_FloatTime() - host_client->netchan.connecttime) <= sv.time) // TODO
-			Sys_Printf("%s entered the game\n", host_client->name);
-
-		// actually spawn the player // TODO: QW
-		//gGlobalVariables.time = sv.time; // TODO: QW
-		gEntityInterface.pfnClientPutInServer(sv_player);
+			gGlobalVariables.time = sv.time;
+			if(!gEntityInterface.pfnClientConnect(sv_player, host_client->name, "TODO", NULL)) // TODO
+				return; // TODO
 		}
 	}
 
 	// send all current names, colors, and frag counts
 	SZ_Clear(&host_client->netchan.message);
+	
+	host_client->connected = true; // TODO
+	host_client->connection_started = realtime;
+	host_client->spawned = false; // need prespawn, spawn, etc
+	
+	// send the info about the new client to all connected clients
+	SV_FullClientUpdate(host_client, &sv.reliable_datagram);
+	//host_client->sendinfo = true;
 
+//NOTE:  This doesn't go through ClientReliableWrite since it's before the user
+//spawns.  These functions are written to not overflow
+	// TODO
+	/*
+	if (host_client->num_backbuf) {
+		Con_Printf("WARNING %s: [SV_New] Back buffered (%d0, clearing", host_client->name, host_client->netchan.message.cursize); 
+		host_client->num_backbuf = 0;
+		SZ_Clear(&host_client->netchan.message);
+	}
+	*/
+	
+	// send the serverdata
+	SV_SendServerinfo(host_client);
+	
+	SV_SendExtraServerinfo(host_client);
+	
+	SV_SendDeltaDescription(host_client);
+	
+	// send the movevars
+	SV_SendMoveVars(host_client);
+
+	// send music
+	// TODO
+	MSG_WriteByte(&host_client->netchan.message, svc_cdtrack);
+	//MSG_WriteByte(&host_client->netchan.message, sv.edicts->v.sounds);
+	//MSG_WriteByte(&host_client->netchan.message, sv.edicts->v.sounds);
+	MSG_WriteByte(&host_client->netchan.message, 0); // TODO
+	MSG_WriteByte(&host_client->netchan.message, 0); // TODO
+	
+	// set view
+	MSG_WriteByte(&host_client->netchan.message, svc_setview);
+	MSG_WriteShort(&host_client->netchan.message, NUM_FOR_EDICT(host_client->edict));
+
+	// send user messages
+	SV_SendUserMessages(host_client);
+	
+	// send server info string
+	MSG_WriteByte (&host_client->netchan.message, svc_stufftext);
+	MSG_WriteString (&host_client->netchan.message, va("fullserverinfo \"%s\"\n", svs.info) );
+	
+	// TODO: svc_updateuserinfo
+	
+	// TODO: svc_resourcerequest
+	
+	SV_SendResourceList(host_client);
+	
+	// TODO: svc_spawnbaseline
+	
 	// send time of update
-	MSG_WriteByte(&host_client->netchan.message, svc_time);
-	MSG_WriteFloat(&host_client->netchan.message, sv.time);
+	SV_SendTime(host_client);
 
-	for(i = 0, client = svs.clients; i < svs.maxclients; i++, client++)
+	//SV_UpdateUserInfo(host_client); // TODO
+	for(i = 0, host_client = svs.clients; i < svs.maxclients; i++, host_client++)
 	{
 		// TODO
 		/*
@@ -199,12 +269,7 @@ void SV_Spawn_f() // TODO: was Host_Spawn_f
 	}
 
 	// send all current light styles
-	for(i = 0; i < MAX_LIGHTSTYLES; i++)
-	{
-		MSG_WriteByte(&host_client->netchan.message, svc_lightstyle);
-		MSG_WriteByte(&host_client->netchan.message, (char)i);
-		MSG_WriteString(&host_client->netchan.message, sv.lightstyles[i]);
-	};
+	SV_SendLightStyles(host_client);
 
 	//
 	// send some stats (force stats to be updated)
@@ -251,50 +316,6 @@ void SV_Spawn_f() // TODO: was Host_Spawn_f
 	// TODO: svc_voiceinit
 	
 	MSG_WriteByte(&host_client->netchan.message, -1);
-};
-
-/*
-================
-SV_New_f
-
-Sends the first message from the server to a connected client.
-This will be sent on the initial connection and upon each server load.
-================
-*/
-void SV_New_f ()
-{
-	if (host_client->spawned)
-		return;
-
-	host_client->connected = true; // TODO
-	host_client->connection_started = realtime;
-
-	// send the info about the new client to all connected clients
-	SV_FullClientUpdate(host_client, &sv.reliable_datagram);
-	//host_client->sendinfo = true;
-
-//NOTE:  This doesn't go through ClientReliableWrite since it's before the user
-//spawns.  These functions are written to not overflow
-	// TODO
-	/*
-	if (host_client->num_backbuf) {
-		Con_Printf("WARNING %s: [SV_New] Back buffered (%d0, clearing", host_client->name, host_client->netchan.message.cursize); 
-		host_client->num_backbuf = 0;
-		SZ_Clear(&host_client->netchan.message);
-	}
-	*/
-
-	// send the serverdata
-	SV_SendServerinfo(host_client);
-
-	// send server info string
-	MSG_WriteByte (&host_client->netchan.message, svc_stufftext);
-	MSG_WriteString (&host_client->netchan.message, va("fullserverinfo \"%s\"\n", svs.info) );
-	
-	// TODO: svc_updateuserinfo
-	
-	// TODO: svc_resourcerequest
-	// TODO: svc_resourcelist
 };
 
 // TODO: TODO what?
@@ -1528,13 +1549,33 @@ void SV_SendServerinfo(client_t *client)
 	MSG_WriteString (&client->netchan.message, " "); // TODO: mapcycle
 	
 	MSG_WriteByte(&client->netchan.message, 0);
+
+/*
+================
+SV_SendExtraServerinfo
+
+Sends some extra information regarding the server.
+
+Note: This message is sent at player's connection right after SVC_SERVERINFO.
+Note: The sv_cheats cvar will be set on the client with the value provided.
+Note: It appears FallbackDir is always null.
+================
+*/
+void SV_SendExtraServerinfo(client_t *client)
+{
+	MSG_WriteByte(&client->netchan.message, svc_sendextrainfo);
 	
-	SV_SendExtraServerinfo(client);
-	
-	//SV_SendDeltaDescription(client); // TODO
-	
-	// send the movevars
-	//SV_SendMoveVars(client); // TODO
+	MSG_WriteString(&client->netchan.message, " "); // fallback dir
+	MSG_WriteByte(&client->netchan.message, sv_cheats.value); // cheats state
+};
+
+void SV_SendDeltaDescription(client_t *client)
+{
+	// TODO
+};
+
+void SV_SendMoveVars(client_t *client)
+{
 	MSG_WriteByte(&client->netchan.message, svc_newmovevars);
 	MSG_WriteFloat(&client->netchan.message, movevars.gravity);
 	MSG_WriteFloat(&client->netchan.message, movevars.stopspeed);
@@ -1562,7 +1603,17 @@ void SV_SendServerinfo(client_t *client)
 	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.skyvecy*/);
 	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.skyvecz*/);
 	MSG_WriteString(&client->netchan.message, "2desert" /*movevars.skyname*/);
+};
 
+void SV_SendUserMessages(client_t *client)
+{
+	// TODO
+};
+
+void SV_SendResourceList(client_t *client)
+{
+	// TODO: svc_resourcelist
+	
 	//for(s = sv.model_precache + 1; *s; s++)
 		//MSG_WriteString(&client->netchan.message, *s);
 	//MSG_WriteByte(&client->netchan.message, 0);
@@ -1570,43 +1621,22 @@ void SV_SendServerinfo(client_t *client)
 	//for(s = sv.sound_precache + 1; *s; s++)
 		//MSG_WriteString(&client->netchan.message, *s);
 	//MSG_WriteByte(&client->netchan.message, 0);
+};
 
-	// send music
-	MSG_WriteByte(&client->netchan.message, svc_cdtrack);
-	MSG_WriteByte(&client->netchan.message, sv.edicts->v.sounds);
-	MSG_WriteByte(&client->netchan.message, sv.edicts->v.sounds);
-
-	// set view
-	MSG_WriteByte(&client->netchan.message, svc_setview);
-	MSG_WriteShort(&client->netchan.message, NUM_FOR_EDICT(client->edict));
-
-	// send user messages
-	//SV_SendUserMessages(client); // TODO
-	
-	MSG_WriteByte(&client->netchan.message, svc_signonnum); // TODO: wrong place
-	MSG_WriteByte(&client->netchan.message, 1);
-
-	client->connected = true;
-	client->spawned = false; // need prespawn, spawn, etc
-}
-
-/*
-================
-SV_SendExtraServerinfo
-
-Sends some extra information regarding the server.
-
-Note: This message is sent at player's connection right after SVC_SERVERINFO.
-Note: The sv_cheats cvar will be set on the client with the value provided.
-Note: It appears FallbackDir is always null.
-================
-*/
-void SV_SendExtraServerinfo(client_t *client)
+void SV_SendTime(client_t *client)
 {
-	MSG_WriteByte(&client->netchan.message, svc_sendextrainfo);
-	
-	MSG_WriteString(&client->netchan.message, " "); // fallback dir
-	MSG_WriteByte(&client->netchan.message, sv_cheats.value); // cheats state
+	MSG_WriteByte(&client->netchan.message, svc_time);
+	MSG_WriteFloat(&client->netchan.message, sv.time);
+};
+
+void SV_SendLightStyles(client_t *client)
+{
+	for(int i = 0; i < MAX_LIGHTSTYLES; i++)
+	{
+		MSG_WriteByte(&client->netchan.message, svc_lightstyle);
+		MSG_WriteByte(&client->netchan.message, (char)i);
+		MSG_WriteString(&client->netchan.message, sv.lightstyles[i]);
+	};
 };
 
 /*
