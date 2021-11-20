@@ -2084,19 +2084,197 @@ void SV_FullClientUpdateToClient(client_t *client, client_t *cl)
 }
 
 /*
+==================
+SV_WriteDelta
+
+Writes part of a packetentities message.
+Can delta from either a baseline or a previous packet_entity
+==================
+*/
+void SV_WriteDelta(entity_state_t *from, entity_state_t *to, sizebuf_t *msg, qboolean force)
+{
+	// TODO
+/*
+	int		bits;
+	int		i;
+	float	miss;
+
+// send an update
+	bits = 0;
+	
+	for (i=0 ; i<3 ; i++)
+	{
+		miss = to->origin[i] - from->origin[i];
+		if ( miss < -0.1 || miss > 0.1 )
+			bits |= U_ORIGIN1<<i;
+	}
+
+	if ( to->angles[0] != from->angles[0] )
+		bits |= U_ANGLE1;
+		
+	if ( to->angles[1] != from->angles[1] )
+		bits |= U_ANGLE2;
+		
+	if ( to->angles[2] != from->angles[2] )
+		bits |= U_ANGLE3;
+		
+	if ( to->colormap != from->colormap )
+		bits |= U_COLORMAP;
+		
+	if ( to->skin != from->skin )
+		bits |= U_SKIN;
+		
+	if ( to->frame != from->frame )
+		bits |= U_FRAME;
+	
+	if ( to->effects != from->effects )
+		bits |= U_EFFECTS;
+	
+	if ( to->modelindex != from->modelindex )
+		bits |= U_MODEL;
+
+	if (bits & 511)
+		bits |= U_MOREBITS;
+
+	//if (to->flags & U_SOLID) // TODO
+		//bits |= U_SOLID;
+
+	//
+	// write the message
+	//
+	if (!to->number)
+		Host_Error ("Unset entity number");
+	if (to->number >= 512)
+		Host_Error ("Entity number >= 512");
+
+	if (!bits && !force)
+		return;		// nothing to send!
+	i = to->number | (bits&~511);
+	//if (i & U_REMOVE) // TODO
+		//Sys_Error ("U_REMOVE");
+	MSG_WriteShort (msg, i);
+	
+	if (bits & U_MOREBITS)
+		MSG_WriteByte (msg, bits&255);
+	if (bits & U_MODEL)
+		MSG_WriteByte (msg,	to->modelindex);
+	if (bits & U_FRAME)
+		MSG_WriteByte (msg, to->frame);
+	if (bits & U_COLORMAP)
+		MSG_WriteByte (msg, to->colormap);
+	if (bits & U_SKIN)
+		MSG_WriteByte (msg, to->skin);
+	if (bits & U_EFFECTS)
+		MSG_WriteByte (msg, to->effects);
+	if (bits & U_ORIGIN1)
+		MSG_WriteCoord (msg, to->origin[0]);		
+	if (bits & U_ANGLE1)
+		MSG_WriteAngle(msg, to->angles[0]);
+	if (bits & U_ORIGIN2)
+		MSG_WriteCoord (msg, to->origin[1]);
+	if (bits & U_ANGLE2)
+		MSG_WriteAngle(msg, to->angles[1]);
+	if (bits & U_ORIGIN3)
+		MSG_WriteCoord (msg, to->origin[2]);
+	if (bits & U_ANGLE3)
+		MSG_WriteAngle(msg, to->angles[2]);
+*/
+}
+
+/*
+=============
+SV_EmitPacketEntities
+
+Writes a delta update of a packet_entities_t to the message.
+
+=============
+*/
+void SV_EmitPacketEntities (client_t *client, packet_entities_t *to, sizebuf_t *msg)
+{
+	edict_t	*ent;
+	client_frame_t	*fromframe;
+	packet_entities_t *from;
+	int		oldindex, newindex;
+	int		oldnum, newnum;
+	int		oldmax;
+
+	// this is the frame that we are going to delta update from
+	if (client->delta_sequence != -1)
+	{
+		fromframe = &client->frames[client->delta_sequence & UPDATE_MASK];
+		from = &fromframe->entities;
+		oldmax = from->num_entities;
+
+		MSG_WriteByte (msg, svc_deltapacketentities);
+		MSG_WriteByte (msg, client->delta_sequence);
+	}
+	else
+	{
+		oldmax = 0;	// no delta update
+		from = NULL;
+
+		MSG_WriteByte (msg, svc_packetentities);
+	}
+
+	newindex = 0;
+	oldindex = 0;
+//Con_Printf ("---%i to %i ----\n", client->delta_sequence & UPDATE_MASK
+//			, client->netchan.outgoing_sequence & UPDATE_MASK);
+	while (newindex < to->num_entities || oldindex < oldmax)
+	{
+		newnum = newindex >= to->num_entities ? 9999 : to->entities[newindex].number;
+		oldnum = oldindex >= oldmax ? 9999 : from->entities[oldindex].number;
+
+		if (newnum == oldnum)
+		{	// delta update from old position
+//Con_Printf ("delta %i\n", newnum);
+			SV_WriteDelta (&from->entities[oldindex], &to->entities[newindex], msg, false);
+			oldindex++;
+			newindex++;
+			continue;
+		}
+
+		if (newnum < oldnum)
+		{	// this is a new entity, send it from the baseline
+			ent = EDICT_NUM(newnum);
+//Con_Printf ("baseline %i\n", newnum);
+			SV_WriteDelta (&ent->baseline, &to->entities[newindex], msg, true);
+			newindex++;
+			continue;
+		}
+
+		if (newnum > oldnum)
+		{	// the old entity isn't present in the new message
+//Con_Printf ("remove %i\n", oldnum);
+			MSG_WriteShort (msg, oldnum /*| U_REMOVE*/); // TODO
+			oldindex++;
+			continue;
+		}
+	}
+
+	MSG_WriteShort (msg, 0);	// end of packetentities
+}
+
+/*
 =============
 SV_WriteEntitiesToClient
 
 =============
 */
-void SV_WriteEntitiesToClient(edict_t *clent, sizebuf_t *msg)
+void SV_WriteEntitiesToClient(client_t *client, sizebuf_t *msg)
 {
 	int e, i;
 	byte *pvs;
 	vec3_t org;
 	edict_t *ent;
-
+	packet_entities_t *pack;
+	entity_state_t *state;
+	
+	// this is the frame we are creating
+	client_frame_t *frame = &client->frames[client->netchan.incoming_sequence & UPDATE_MASK];
+	
 	// find the client's PVS
+	edict_t *clent = client->edict;
 	VectorAdd(clent->v.origin, clent->v.view_ofs, org);
 	pvs = SV_FatPVS(org);
 
@@ -2211,6 +2389,14 @@ void SV_WriteEntitiesToClient(edict_t *clent, sizebuf_t *msg)
 		if(bits & U_ANGLE3)
 			MSG_WriteAngle(msg, ent->v.angles[2]);
 	}
+	
+	// encode the packet entities as a delta from the
+	// last packetentities acknowledged by the client
+	
+	SV_EmitPacketEntities(client, pack, msg);
+	
+	// now add the specialized nail update
+	//SV_EmitNailUpdate(msg);
 }
 
 /*
@@ -2583,7 +2769,7 @@ qboolean SV_SendClientDatagram(client_t *client)
 	// add the client specific data to the datagram
 	SV_WriteClientdataToMessage(client->edict, &msg);
 
-	SV_WriteEntitiesToClient(client->edict, &msg);
+	SV_WriteEntitiesToClient(client, &msg);
 
 	// copy the server datagram if there is space
 	if(msg.cursize + sv.datagram.cursize < msg.maxsize)
