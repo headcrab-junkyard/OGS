@@ -1347,6 +1347,31 @@ void Host_Pause_f()
 	}
 }
 
+/*
+==================
+Host_Pause_f
+==================
+*/
+void Host_Unpause_f()
+{
+	if(cmd_source == src_command)
+	{
+		Cmd_ForwardToServer();
+		return;
+	}
+
+	if(!sv.paused)
+	{
+		sv.paused = 0;
+
+		SV_BroadcastPrintf("%s unpaused the game\n", pr_strings + sv_player->v.netname);
+
+		// send notification to all clients
+		MSG_WriteByte(&sv.reliable_datagram, svc_setpause);
+		MSG_WriteByte(&sv.reliable_datagram, sv.paused);
+	}
+}
+
 //===========================================================================
 
 /*
@@ -1787,7 +1812,10 @@ void Host_InitCommands()
 	Cmd_AddCommand("say_team", Host_Say_Team_f);
 	Cmd_AddCommand("tell", Host_Tell_f);
 	Cmd_AddCommand("kill", Host_Kill_f);
+	
 	Cmd_AddCommand("pause", Host_Pause_f);
+	Cmd_AddCommand("unpause", Host_Unpause_f);
+	
 	Cmd_AddCommand("kick", Host_Kick_f);
 	Cmd_AddCommand("ping", Host_Ping_f);
 	Cmd_AddCommand("load", Host_Loadgame_f);
