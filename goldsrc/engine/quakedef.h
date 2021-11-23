@@ -122,6 +122,9 @@ void VID_UnlockBuffer();
 #define MAX_MODELS 512 // these are sent over the net as bytes
 #define MAX_SOUNDS 512 // so they cannot be blindly increased
 
+#define MAX_EVENTS 1024
+
+#define MAX_USERMSGS 128 // TODO: ???
 
 #define SAVEGAME_COMMENT_LENGTH 39
 

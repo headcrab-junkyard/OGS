@@ -21,9 +21,6 @@
 #include "quakedef.h"
 #include "event_args.h"
 
-#define MAX_EVENTS 1024
-
-
 typedef struct eventqueentry_s
 {
 	event_args_t args;
