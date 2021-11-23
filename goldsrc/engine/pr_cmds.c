@@ -254,8 +254,8 @@ void PF_setspawnparms_I(edict_t *ent)
 	// copy spawn parms out of the client_t
 	client_t *client = svs.clients + (i - 1);
 
-	for(i = 0; i < NUM_SPAWN_PARMS; i++)
-		(&gGlobalVariables.parm1)[i] = client->spawn_parms[i];
+	//for(i = 0; i < NUM_SPAWN_PARMS; i++)
+		//(&gGlobalVariables.parm1)[i] = client->spawn_parms[i];
 };
 
 void SaveSpawnParms(edict_t *ent)

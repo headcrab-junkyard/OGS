@@ -1877,8 +1877,8 @@ void SV_ConnectClient()
 	{
 		// call the progs to get default spawn parms for the new client
 		gEntityInterface.pfnParmsNewLevel();
-		for (i=0 ; i<NUM_SPAWN_PARMS ; i++)
-			client->spawn_parms[i] = (&gGlobalVariables.parm1)[i];
+		//for (i=0 ; i<NUM_SPAWN_PARMS ; i++)
+			//client->spawn_parms[i] = (&gGlobalVariables.parm1)[i];
 	};
 	
 	// TODO
@@ -3191,8 +3191,8 @@ void SV_SaveSpawnparms()
 		// call the progs to get default spawn parms for the new client
 		//gGlobalVariables.self = EDICT_TO_PROG(host_client->edict); // TODO
 		gEntityInterface.pfnParmsChangeLevel();
-		for(j = 0; j < NUM_SPAWN_PARMS; j++)
-			host_client->spawn_parms[j] = (&gGlobalVariables.parm1)[j];
+		//for(j = 0; j < NUM_SPAWN_PARMS; j++)
+			//host_client->spawn_parms[j] = (&gGlobalVariables.parm1)[j];
 	}
 }
 
