@@ -109,7 +109,7 @@ void S_TransferStereo16(int endtime)
 #endif
 	{
 		pbuf = (DWORD *)shm->buffer;
-	}
+	};
 
 	while(lpaintedtime < endtime)
 	{
@@ -129,13 +129,13 @@ void S_TransferStereo16(int endtime)
 
 		snd_p += snd_linear_count;
 		lpaintedtime += (snd_linear_count >> 1);
-	}
+	};
 
 #ifdef _WIN32
 	if(pDSBuf)
 		pDSBuf->lpVtbl->Unlock(pDSBuf, pbuf, dwSize, NULL, 0);
 #endif
-}
+};
 
 void S_TransferPaintBuffer(int endtime)
 {
@@ -158,7 +158,7 @@ void S_TransferPaintBuffer(int endtime)
 	{
 		S_TransferStereo16(endtime);
 		return;
-	}
+	};
 
 	p = (int *)paintbuffer;
 	count = (endtime - paintedtime) * shm->channels;
@@ -181,7 +181,7 @@ void S_TransferPaintBuffer(int endtime)
 				S_Shutdown();
 				S_Startup();
 				return;
-			}
+			};
 
 			if(++reps > 10000)
 			{
@@ -189,14 +189,14 @@ void S_TransferPaintBuffer(int endtime)
 				S_Shutdown();
 				S_Startup();
 				return;
-			}
-		}
+			};
+		};
 	}
 	else
 #endif
 	{
 		pbuf = (DWORD *)shm->buffer;
-	}
+	};
 
 	if(shm->samplebits == 16)
 	{
@@ -211,7 +211,7 @@ void S_TransferPaintBuffer(int endtime)
 				val = (short)0x8000;
 			out[out_idx] = val;
 			out_idx = (out_idx + 1) & out_mask;
-		}
+		};
 	}
 	else if(shm->samplebits == 8)
 	{
@@ -226,8 +226,8 @@ void S_TransferPaintBuffer(int endtime)
 				val = (short)0x8000;
 			out[out_idx] = (val >> 8) + 128;
 			out_idx = (out_idx + 1) & out_mask;
-		}
-	}
+		};
+	};
 
 #ifdef _WIN32
 	if(pDSBuf)
@@ -244,9 +244,9 @@ void S_TransferPaintBuffer(int endtime)
 
 		//		if ((dwNewpos >= il) && (dwNewpos <= ir))
 		//			Con_Printf("%d-%d p %d c\n", il, ir, dwNewpos);
-	}
+	};
 #endif
-}
+};
 
 /*
 ===============================================================================
@@ -306,7 +306,7 @@ void S_PaintChannels(int endtime)
 						SND_PaintChannelFrom16(ch, sc, count);
 
 					ltime += count;
-				}
+				};
 
 				// if at end of loop, restart
 				if(ltime >= ch->end)
@@ -320,25 +320,25 @@ void S_PaintChannels(int endtime)
 					{ // channel just stopped
 						ch->sfx = NULL;
 						break;
-					}
-				}
-			}
-		}
+					};
+				};
+			};
+		};
 
 		// transfer out according to DMA format
 		S_TransferPaintBuffer(end);
 		paintedtime = end;
-	}
-}
+	};
+};
 
-void SND_InitScaletable(void)
+void SND_InitScaletable()
 {
 	int i, j;
 
 	for(i = 0; i < 32; i++)
 		for(j = 0; j < 256; j++)
 			snd_scaletable[i][j] = ((signed char)j) * i * 8;
-}
+};
 
 //#if !id386 // TODO: check for non-Intel?
 void SND_PaintChannelFrom8(channel_t *ch, sfxcache_t *sc, int count)
@@ -362,10 +362,10 @@ void SND_PaintChannelFrom8(channel_t *ch, sfxcache_t *sc, int count)
 		data = sfx[i];
 		paintbuffer[i].left += lscale[data];
 		paintbuffer[i].right += rscale[data];
-	}
+	};
 
 	ch->pos += count;
-}
+};
 //#endif // !id386
 
 void SND_PaintChannelFrom16(channel_t *ch, sfxcache_t *sc, int count)
@@ -387,7 +387,7 @@ void SND_PaintChannelFrom16(channel_t *ch, sfxcache_t *sc, int count)
 		right = (data * rightvol) >> 8;
 		paintbuffer[i].left += left;
 		paintbuffer[i].right += right;
-	}
+	};
 
 	ch->pos += count;
-}
+};

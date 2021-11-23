@@ -343,16 +343,14 @@ This was a major timewaster in progs, so it was converted to C
 */
 void PF_changeyaw_I(edict_t *ent)
 {
-	float ideal, current, move, speed;
-
 	//ent = PROG_TO_EDICT(gGlobalVariables.self);
-	current = anglemod(ent->v.angles[1]);
-	ideal = ent->v.ideal_yaw;
-	speed = ent->v.yaw_speed;
+	float current = anglemod(ent->v.angles[1]);
+	float ideal = ent->v.ideal_yaw;
+	float speed = ent->v.yaw_speed;
 
 	if(current == ideal)
 		return;
-	move = ideal - current;
+	float move = ideal - current;
 	if(ideal > current)
 	{
 		if(move >= 180)
@@ -385,15 +383,13 @@ PF_changepitch
 */
 void PF_changepitch_I(edict_t *ent)
 {
-	float ideal, current, move, speed;
-
-	current = anglemod(ent->v.angles[0]);
-	ideal = ent->v.idealpitch;
-	speed = ent->v.pitch_speed;
+	float current = anglemod(ent->v.angles[0]);
+	float ideal = ent->v.idealpitch;
+	float speed = ent->v.pitch_speed;
 
 	if(current == ideal)
 		return;
-	move = ideal - current;
+	float move = ideal - current;
 	if(ideal > current)
 	{
 		if(move >= 180)

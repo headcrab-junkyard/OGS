@@ -290,8 +290,8 @@ void SV_ClientPrintf(client_t *cl, /*int level,*/ const char *fmt, ...)
 	va_list argptr;
 	char string[1024];
 
-	//if (level < cl->messagelevel)
-	//return;
+	//if(level < cl->messagelevel)
+		//return;
 
 	va_start(argptr, fmt);
 	vsprintf(string, fmt, argptr);

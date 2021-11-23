@@ -24,6 +24,20 @@
 
 #define MAX_IPFILTERS 1024
 
+extern cvar_t sv_maxvelocity;
+extern cvar_t sv_gravity;
+extern cvar_t sv_nostep; // TODO: remove
+extern cvar_t sv_friction;
+extern cvar_t sv_edgefriction;
+extern cvar_t sv_waterfriction;
+extern cvar_t sv_stopspeed;
+extern cvar_t sv_maxspeed;
+extern cvar_t sv_spectatormaxspeed;
+extern cvar_t sv_accelerate;
+extern cvar_t sv_airaccelerate;
+extern cvar_t sv_wateraccelerate;
+extern cvar_t sv_idealpitchscale; // TODO: remove
+extern cvar_t sv_aim;
 
 extern cvar_t sv_stepsize;
 
@@ -617,20 +631,6 @@ SV_Init
 void SV_Init()
 {
 	int i;
-	extern cvar_t sv_maxvelocity;
-	extern cvar_t sv_gravity;
-	extern cvar_t sv_nostep; // TODO: remove
-	extern cvar_t sv_friction;
-	extern cvar_t sv_edgefriction; // TODO: remove
-	extern	cvar_t	sv_waterfriction;
-	extern cvar_t sv_stopspeed;
-	extern cvar_t sv_maxspeed;
-	extern	cvar_t	sv_spectatormaxspeed;
-	extern cvar_t sv_accelerate;
-	extern	cvar_t	sv_airaccelerate;
-	extern	cvar_t	sv_wateraccelerate;
-	extern cvar_t sv_idealpitchscale; // TODO: remove
-	extern cvar_t sv_aim;
 	
 	// TODO: SV_InitOperatorCommands()?
 	Cmd_AddCommand("spawn", SV_Spawn_f);

@@ -86,7 +86,7 @@ void Z_ClearZone(memzone_t *zone, int size)
 	block->tag = 0; // free block
 	block->id = ZONEID;
 	block->size = size - sizeof(memzone_t);
-}
+};
 
 /*
 ========================
@@ -117,7 +117,7 @@ void Z_Free(void *ptr)
 		if(block == mainzone->rover)
 			mainzone->rover = other;
 		block = other;
-	}
+	};
 
 	other = block->next;
 	if(!other->tag)
@@ -127,8 +127,8 @@ void Z_Free(void *ptr)
 		block->next->prev = block;
 		if(other == mainzone->rover)
 			mainzone->rover = block;
-	}
-}
+	};
+};
 
 /*
 ========================
@@ -146,7 +146,7 @@ void *Z_Malloc(int size)
 	Q_memset(buf, 0, size);
 
 	return buf;
-}
+};
 
 void *Z_TagMalloc(int size, int tag)
 {
@@ -192,7 +192,7 @@ void *Z_TagMalloc(int size, int tag)
 		new->next->prev = new;
 		base->next = new;
 		base->size = size;
-	}
+	};
 
 	base->tag = tag; // no longer a free block
 
@@ -204,7 +204,7 @@ void *Z_TagMalloc(int size, int tag)
 	*(int *)((byte *)base + base->size - 4) = ZONEID;
 
 	return (void *)((byte *)base + sizeof(memblock_t));
-}
+};
 
 /*
 ========================
@@ -230,15 +230,15 @@ void Z_Print(memzone_t *zone)
 			Con_Printf("ERROR: next block doesn't have proper back link\n");
 		if(!block->tag && !block->next->tag)
 			Con_Printf("ERROR: two consecutive free blocks\n");
-	}
-}
+	};
+};
 
 /*
 ========================
 Z_CheckHeap
 ========================
 */
-void Z_CheckHeap(void)
+void Z_CheckHeap()
 {
 	memblock_t *block;
 
@@ -252,8 +252,8 @@ void Z_CheckHeap(void)
 			Sys_Error("Z_CheckHeap: next block doesn't have proper back link\n");
 		if(!block->tag && !block->next->tag)
 			Sys_Error("Z_CheckHeap: two consecutive free blocks\n");
-	}
-}
+	};
+};
 
 //============================================================================
 
@@ -275,7 +275,7 @@ int hunk_high_used;
 qboolean hunk_tempactive;
 int hunk_tempmark;
 
-void R_FreeTextures(void);
+void R_FreeTextures();
 
 /*
 ==============
@@ -284,7 +284,7 @@ Hunk_Check
 Run consistancy and sentinal trahing checks
 ==============
 */
-void Hunk_Check(void)
+void Hunk_Check()
 {
 	hunk_t *h;
 
@@ -295,8 +295,8 @@ void Hunk_Check(void)
 		if(h->size < 16 || h->size + (byte *)h - hunk_base > hunk_size)
 			Sys_Error("Hunk_Check: bad size");
 		h = (hunk_t *)((byte *)h + h->size);
-	}
-}
+	};
+};
 
 /*
 ==============
@@ -337,7 +337,7 @@ void Hunk_Print(qboolean all)
 			Con_Printf("          :%8i REMAINING\n", hunk_size - hunk_low_used - hunk_high_used);
 			Con_Printf("-------------------------\n");
 			h = starthigh;
-		}
+		};
 
 		//
 		// if totally done, break
@@ -375,14 +375,14 @@ void Hunk_Print(qboolean all)
 				Con_Printf("          :%8i %8s (TOTAL)\n", sum, name);
 			count = 0;
 			sum = 0;
-		}
+		};
 
 		h = next;
-	}
+	};
 
 	Con_Printf("-------------------------\n");
 	Con_Printf("%8i total blocks\n", totalblocks);
-}
+};
 
 /*
 ===================
@@ -427,12 +427,12 @@ Hunk_Alloc
 void *Hunk_Alloc(int size)
 {
 	return Hunk_AllocName(size, "unknown");
-}
+};
 
 int Hunk_LowMark(void)
 {
 	return hunk_low_used;
-}
+};
 
 void Hunk_FreeToLowMark(int mark)
 {
@@ -440,18 +440,18 @@ void Hunk_FreeToLowMark(int mark)
 		Sys_Error("Hunk_FreeToLowMark: bad mark %i", mark);
 	memset(hunk_base + mark, 0, hunk_low_used - mark);
 	hunk_low_used = mark;
-}
+};
 
-int Hunk_HighMark(void)
+int Hunk_HighMark()
 {
 	if(hunk_tempactive)
 	{
 		hunk_tempactive = false;
 		Hunk_FreeToHighMark(hunk_tempmark);
-	}
+	};
 
 	return hunk_high_used;
-}
+};
 
 void Hunk_FreeToHighMark(int mark)
 {
@@ -459,12 +459,12 @@ void Hunk_FreeToHighMark(int mark)
 	{
 		hunk_tempactive = false;
 		Hunk_FreeToHighMark(hunk_tempmark);
-	}
+	};
 	if(mark < 0 || mark > hunk_high_used)
 		Sys_Error("Hunk_FreeToHighMark: bad mark %i", mark);
 	memset(hunk_base + hunk_size - hunk_high_used, 0, hunk_high_used - mark);
 	hunk_high_used = mark;
-}
+};
 
 /*
 ===================
@@ -482,7 +482,7 @@ void *Hunk_HighAllocName(int size, char *name)
 	{
 		Hunk_FreeToHighMark(hunk_tempmark);
 		hunk_tempactive = false;
-	}
+	};
 
 #ifdef PARANOID
 	Hunk_Check();
@@ -494,7 +494,7 @@ void *Hunk_HighAllocName(int size, char *name)
 	{
 		Con_Printf("Hunk_HighAlloc: failed on %i bytes\n", size);
 		return NULL;
-	}
+	};
 
 	hunk_high_used += size;
 	Cache_FreeHigh(hunk_high_used);
@@ -507,7 +507,7 @@ void *Hunk_HighAllocName(int size, char *name)
 	Q_strncpy(h->name, name, 8);
 
 	return (void *)(h + 1);
-}
+};
 
 /*
 =================
@@ -518,24 +518,22 @@ Return space from the top of the hunk
 */
 void *Hunk_TempAlloc(int size)
 {
-	void *buf;
-
 	size = (size + 15) & ~15;
 
 	if(hunk_tempactive)
 	{
 		Hunk_FreeToHighMark(hunk_tempmark);
 		hunk_tempactive = false;
-	}
+	};
 
 	hunk_tempmark = Hunk_HighMark();
 
-	buf = Hunk_HighAllocName(size, "temp");
+	void *buf = Hunk_HighAllocName(size, "temp");
 
 	hunk_tempactive = true;
 
 	return buf;
-}
+};
 
 /*
 ===============================================================================
@@ -584,8 +582,8 @@ void Cache_Move(cache_system_t *c)
 		//		Con_Printf ("cache_move failed\n");
 
 		Cache_Free(c->user); // tough luck...
-	}
-}
+	};
+};
 
 /*
 ============
@@ -606,8 +604,8 @@ void Cache_FreeLow(int new_low_hunk)
 		if((byte *)c >= hunk_base + new_low_hunk)
 			return;    // there is space to grow the hunk
 		Cache_Move(c); // reclaim the space
-	}
-}
+	};
+};
 
 /*
 ============
@@ -634,9 +632,9 @@ void Cache_FreeHigh(int new_high_hunk)
 		{
 			Cache_Move(c); // try to move it
 			prev = c;
-		}
-	}
-}
+		};
+	};
+};
 
 void Cache_UnlinkLRU(cache_system_t *cs)
 {
@@ -647,7 +645,7 @@ void Cache_UnlinkLRU(cache_system_t *cs)
 	cs->lru_prev->lru_next = cs->lru_next;
 
 	cs->lru_prev = cs->lru_next = NULL;
-}
+};
 
 void Cache_MakeLRU(cache_system_t *cs)
 {
@@ -658,7 +656,7 @@ void Cache_MakeLRU(cache_system_t *cs)
 	cs->lru_next = cache_head.lru_next;
 	cs->lru_prev = &cache_head;
 	cache_head.lru_next = cs;
-}
+};
 
 /*
 ============
@@ -688,7 +686,7 @@ cache_system_t *Cache_TryAlloc(int size, qboolean nobottom)
 
 		Cache_MakeLRU(new);
 		return new;
-	}
+	};
 
 	// search from the bottom up for space
 
@@ -712,8 +710,8 @@ cache_system_t *Cache_TryAlloc(int size, qboolean nobottom)
 				Cache_MakeLRU(new);
 
 				return new;
-			}
-		}
+			};
+		};
 
 		// continue looking
 		new = (cache_system_t *)((byte *)cs + cs->size);
@@ -735,10 +733,10 @@ cache_system_t *Cache_TryAlloc(int size, qboolean nobottom)
 		Cache_MakeLRU(new);
 
 		return new;
-	}
+	};
 
 	return NULL; // couldn't allocate
-}
+};
 
 /*
 ============
@@ -747,11 +745,11 @@ Cache_Flush
 Throw everything out, so new data will be demand cached
 ============
 */
-void Cache_Flush(void)
+void Cache_Flush()
 {
 	while(cache_head.next != &cache_head)
 		Cache_Free(cache_head.next->user); // reclaim the space
-}
+};
 
 /*
 ============
@@ -759,15 +757,13 @@ Cache_Print
 
 ============
 */
-void Cache_Print(void)
+void Cache_Print()
 {
 	cache_system_t *cd;
 
 	for(cd = cache_head.next; cd != &cache_head; cd = cd->next)
-	{
 		Con_Printf("%8i : %s\n", cd->size, cd->name);
-	}
-}
+};
 
 /*
 ============
@@ -775,10 +771,10 @@ Cache_Report
 
 ============
 */
-void Cache_Report(void)
+void Cache_Report()
 {
 	Con_DPrintf("%4.1f megabyte data cache\n", (hunk_size - hunk_high_used - hunk_low_used) / (float)(1024 * 1024));
-}
+};
 
 /*
 ============
@@ -786,9 +782,9 @@ Cache_Compact
 
 ============
 */
-void Cache_Compact(void)
+void Cache_Compact()
 {
-}
+};
 
 /*
 ============
@@ -796,13 +792,13 @@ Cache_Init
 
 ============
 */
-void Cache_Init(void)
+void Cache_Init()
 {
 	cache_head.next = cache_head.prev = &cache_head;
 	cache_head.lru_next = cache_head.lru_prev = &cache_head;
 
 	Cmd_AddCommand("flush", Cache_Flush);
-}
+};
 
 /*
 ==============
@@ -827,7 +823,7 @@ void Cache_Free(cache_user_t *c)
 	c->data = NULL;
 
 	Cache_UnlinkLRU(cs);
-}
+};
 
 /*
 ==============
@@ -848,7 +844,7 @@ void *Cache_Check(cache_user_t *c)
 	Cache_MakeLRU(cs);
 
 	return c->data;
-}
+};
 
 /*
 ==============
@@ -877,17 +873,17 @@ void *Cache_Alloc(cache_user_t *c, int size, char *name)
 			c->data = (void *)(cs + 1);
 			cs->user = c;
 			break;
-		}
+		};
 
 		// free the least recently used cahedat
 		if(cache_head.lru_prev == &cache_head)
 			Sys_Error("Cache_Alloc: out of memory");
 		// not enough memory at all
 		Cache_Free(cache_head.lru_prev->user);
-	}
+	};
 
 	return Cache_Check(c);
-}
+};
 
 //============================================================================
 
@@ -898,7 +894,6 @@ Memory_Init
 */
 void Memory_Init(void *buf, int size)
 {
-	int p;
 	int zonesize = DYNAMIC_SIZE;
 
 	hunk_base = buf;
@@ -907,14 +902,14 @@ void Memory_Init(void *buf, int size)
 	hunk_high_used = 0;
 
 	Cache_Init();
-	p = COM_CheckParm("-zone");
+	int p = COM_CheckParm("-zone");
 	if(p)
 	{
 		if(p < com_argc - 1)
 			zonesize = Q_atoi(com_argv[p + 1]) * 1024;
 		else
 			Sys_Error("Memory_Init: you must specify a size in KB after -zone");
-	}
+	};
 	mainzone = Hunk_AllocName(zonesize, "zone");
 	Z_ClearZone(mainzone, zonesize);
-}
+};

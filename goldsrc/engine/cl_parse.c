@@ -568,18 +568,17 @@ CL_ParseBaseline
 */
 void CL_ParseBaseline(cl_entity_t *ent)
 {
-	int i;
-
 	ent->baseline.modelindex = MSG_ReadByte();
 	ent->baseline.frame = MSG_ReadByte();
 	ent->baseline.colormap = MSG_ReadByte();
 	ent->baseline.skin = MSG_ReadByte();
-	for(i = 0; i < 3; i++)
+	
+	for(int i = 0; i < 3; i++)
 	{
 		ent->baseline.origin[i] = MSG_ReadCoord();
 		ent->baseline.angles[i] = MSG_ReadAngle();
-	}
-}
+	};
+};
 
 /*
 ==================
