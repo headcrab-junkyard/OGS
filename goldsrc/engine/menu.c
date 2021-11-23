@@ -21,7 +21,6 @@
 /// @brief temporary legacy menu support layer
 
 #include "quakedef.h"
-#include "gameuiwrap.h"
 
 pfnM_Keydown fnM_Keydown;
 pfnM_Draw fnM_Draw;
@@ -49,10 +48,10 @@ M_ToggleMenu_f
 */
 void M_ToggleMenu_f()
 {
-	if(GameUI_IsGameUIActive())
-		GameUI_HideGameUI();
+	if(BaseUI_IsGameUIVisible())
+		BaseUI_HideGameUI();
 	else
-		GameUI_ActivateGameUI();
+		BaseUI_ActivateGameUI();
 	
 /*
 	m_entersound = true;
