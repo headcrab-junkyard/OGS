@@ -1305,6 +1305,10 @@ void CL_ParseServerMessage()
 			break;
 		case svc_packetentities:
 			CL_ParsePacketEntities(false);
+			// TODO: is this how it should work?
+			cls.signon = 2;
+			CL_SignonReply();
+			//
 			break;
 		case svc_deltapacketentities:
 			CL_ParsePacketEntities(true);
