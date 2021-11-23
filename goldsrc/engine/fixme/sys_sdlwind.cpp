@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018-2019 BlackPhrase
+ * Copyright (C) 2018-2021 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,17 +32,37 @@ public:
 	CGame();
 	~CGame();
 
+	void Init();
+	void Shutdown();
+
 	void CreateGameWindow() override;
 
 	void PlayStartupVideos() override;
 	void PlayVideoAndWait(const char *name, bool) override;
 
 	void SleepUntilInput(int time) override;
+
+	void SetActiveApp(bool abActive);
+	bool IsActiveApp();
+
+	void SetWindowXY(int x, int y);
+	void SetWindowSize(int width, int height);
+
+	void SetCursorVisible(bool abVisible);
+
+	bool IsMultiplayer();
+
+	void *GetMainWindow();
+	void *GetMainWindowAddress();
+
+	void GetWindowRect(); // TODO: args
 private:
 	SDL_GLContext mGLContext;
-	
+
 	SDL_Window *mpWindow{nullptr};
 	SDL_Cursor *mpCursor{nullptr};
+
+	bool mbActiveApp{false};
 };
 
 CGame::CGame() = default;
@@ -57,6 +77,16 @@ CGame::~CGame() //= default;
 	SDL_GL_DeleteContext(mGLContext); // TODO: unused?
 	SDL_DestroyWindow(mainwindow);
 	SDL_Quit();
+};
+
+void CGame::Init()
+{
+	// TODO
+};
+
+void CGame::Shutdown()
+{
+	// TODO
 };
 
 void CGame::CreateGameWindow()
@@ -184,6 +214,54 @@ void CGame::PlayVideoAndWait(const char *name, bool)
 };
 
 void CGame::SleepUntilInput(int time)
+{
+	// TODO
+};
+
+void CGame::SetActiveApp(bool abActive)
+{
+	// TODO
+	mbActiveApp = abActive;
+};
+
+bool CGame::IsActiveApp()
+{
+	// TODO
+	return mbActiveApp;
+};
+
+void CGame::SetWindowXY(int x, int y)
+{
+	// TODO
+};
+
+void CGame::SetWindowSize(int width, int height)
+{
+	// TODO
+};
+
+void CGame::SetCursorVisible(bool abVisible)
+{
+	// TODO
+};
+
+bool CGame::IsMultiplayer()
+{
+	// TODO
+	return false;
+};
+
+void *CGame::GetMainWindow()
+{
+	return reinterpret_cast<void*>(mpWindow);
+};
+
+void *CGame::GetMainWindowAddress()
+{
+	return reinterpret_cast<void*>(mpWindow);
+};
+
+void CGame::GetWindowRect()
 {
 	// TODO
 };

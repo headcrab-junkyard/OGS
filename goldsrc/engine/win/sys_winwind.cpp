@@ -55,6 +55,9 @@ class CGame final : public IGame
 public:
 	CGame();
 	~CGame();
+	
+	void Init();
+	void Shutdown();
 
 	void CreateGameWindow() override;
 
@@ -62,6 +65,23 @@ public:
 	void PlayVideoAndWait(const char *name, bool) override;
 
 	void SleepUntilInput(int time) override;
+	
+	void SetActiveApp(bool abActive);
+	bool IsActiveApp();
+	
+	void SetWindowXY(int x, int y);
+	void SetWindowSize(int width, int height);
+	
+	void SetCursorVisible(bool abVisible);
+	
+	bool IsMultiplayer();
+	
+	void *GetMainWindow();
+	void *GetMainWindowAddress();
+	
+	void GetWindowRect(); // TODO: args
+private:
+	bool mbActiveApp{false};
 };
 
 CGame gGame;
@@ -71,6 +91,8 @@ CGame::CGame() = default;
 
 CGame::~CGame() //= default;
 {
+	AppActivate(false, false);
+	
 	if (mainwindow)
 	{
 		DestroyWindow (mainwindow);
@@ -78,6 +100,16 @@ CGame::~CGame() //= default;
 	};
 	
 	//UnregisterClass (WINDOW_CLASS_NAME, glw_state.hInstance); // TODO
+};
+
+void CGame::Init()
+{
+	// TODO
+};
+
+void CGame::Shutdown()
+{
+	// TODO
 };
 
 /*
@@ -202,4 +234,52 @@ void CGame::PlayVideoAndWait(const char *name, bool)
 void CGame::SleepUntilInput(int time)
 {
 	//MsgWaitForMultipleObjects(1, &tevent, FALSE, time, QS_ALLINPUT); // TODO
+};
+
+void CGame::SetActiveApp(bool abActive)
+{
+	// TODO
+	mbActiveApp = abActive;
+};
+
+bool CGame::IsActiveApp()
+{
+	// TODO
+	return mbActiveApp;
+};
+
+void CGame::SetWindowXY(int x, int y)
+{
+	// TODO
+};
+
+void CGame::SetWindowSize(int width, int height)
+{
+	// TODO
+};
+
+void CGame::SetCursorVisible(bool abVisible)
+{
+	// TODO
+};
+
+bool CGame::IsMultiplayer()
+{
+	// TODO
+	return false;
+};
+
+void *CGame::GetMainWindow()
+{
+	return reinterpret_cast<void*>(mainwindow);
+};
+
+void *CGame::GetMainWindowAddress()
+{
+	return reinterpret_cast<void*>(mainwindow);
+};
+
+void CGame::GetWindowRect()
+{
+	// TODO
 };
