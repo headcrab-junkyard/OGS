@@ -86,6 +86,8 @@ typedef struct
 	char *model_precache[MAX_MODELS]; // NULL terminated
 	struct model_s *models[MAX_MODELS];
 	char *sound_precache[MAX_SOUNDS]; // NULL terminated
+	struct event_s *event_precache[MAX_EVENTS];
+	struct usermsg_s *usermsgs[MAX_USERMSGS];
 	char *lightstyles[MAX_LIGHTSTYLES];
 	int num_edicts;
 	int max_edicts;
@@ -136,6 +138,8 @@ typedef struct client_s
 
 	int userid;                     // identifying number
 	char userinfo[MAX_INFO_STRING]; // infostring
+	
+	char physinfo[MAX_INFO_STRING]; // physics info string
 	
 	usercmd_t lastcmd; // for filling in big drops and partial predictions
 	double localtime;  // of last message
