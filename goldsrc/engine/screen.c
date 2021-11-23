@@ -108,11 +108,7 @@ int scr_fullupdate;
 int clearconsole;
 int clearnotify;
 
-#ifdef GLQUAKE
-int sb_lines; // TODO: outside of the conditional compilation check in qw
-#endif
-
-viddef_t vid; // global video state
+//viddef_t vid; // global video state
 
 #ifndef GLQUAKE
 vrect_t *pconupdate;
