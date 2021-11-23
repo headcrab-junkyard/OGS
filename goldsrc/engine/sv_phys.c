@@ -152,12 +152,26 @@ Two entities have touched, so run their touch functions
 void SV_Impact(edict_t *e1, edict_t *e2)
 {
 	gGlobalVariables.time = sv.time;
-
+	
+	// TODO: should there be only one call to the pfnShouldCollide func?
+	
 	if(e1->v.solid != SOLID_NOT)
+	{
+		if(gNewDLLFunctions.pfnShouldCollide)
+			if(!gNewDLLFunctions.pfnShouldCollide(e1, e2))
+				return;
+		
 		gEntityInterface.pfnTouch(e1, e2);
+	};
 
 	if(e2->v.solid != SOLID_NOT)
+	{
+		if(gNewDLLFunctions.pfnShouldCollide)
+			if(!gNewDLLFunctions.pfnShouldCollide(e2, e1))
+				return;
+		
 		gEntityInterface.pfnTouch(e2, e1);
+	};
 }
 
 /*
