@@ -19,8 +19,11 @@
 
 /// @file
 
+extern "C"
+{
 #include "quakedef.h"
 #include "winquake.h"
+}
 #include "igame.h"
 
 // TODO: should be located in winquake header
@@ -28,13 +31,233 @@
 
 const char WINDOW_CLASS_NAME[] = "WinQuake";
 
+HWND mainwindow;
+
+extern DEVMODE gdevmode;
+extern qboolean vid_canalttab;
+extern qboolean vid_wassuspended;
+extern int window_x, window_y;
+
 /*
 cvar_t vid_width = {"vid_width", "640", FCVAR_ARCHIVE};
 cvar_t vid_height = {"vid_height", "480", FCVAR_ARCHIVE};
 cvar_t vid_fullscreen = {"vid_fullscreen", "false", FCVAR_ARCHIVE};
 */
 
-extern "C" LONG WINAPI MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+extern "C" void ClearAllStates();
+extern "C" void VID_UpdateWindowStatus();
+extern "C" int MapKey(int key);
+extern "C" LRESULT CDAudio_MessageHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+/****************************************************************************
+*
+* Function:     AppActivate
+* Parameters:   fActive - True if app is activating
+*
+* Description:  If the application is activating, then swap the system
+*               into SYSPAL_NOSTATIC mode so that our palettes will display
+*               correctly.
+*
+****************************************************************************/
+void AppActivate(BOOL fActive, BOOL minimize)
+{
+	MSG msg;
+	HDC hdc;
+	int i, t;
+	static bool sound_active;
+
+	ActiveApp = fActive;
+	Minimized = minimize;
+
+	// enable/disable sound on focus gain/loss
+	if(!ActiveApp && sound_active)
+	{
+		S_BlockSound();
+		sound_active = false;
+	}
+	else if(ActiveApp && !sound_active)
+	{
+		S_UnblockSound();
+		sound_active = true;
+	};
+
+	if(fActive)
+	{
+		if(modestate == MS_FULLDIB)
+		{
+			IN_ActivateMouse();
+			IN_HideMouse();
+			if(vid_canalttab && vid_wassuspended)
+			{
+				vid_wassuspended = false;
+				ChangeDisplaySettings(&gdevmode, CDS_FULLSCREEN);
+				ShowWindow(mainwindow, SW_SHOWNORMAL);
+			};
+		}
+		else if((modestate == MS_WINDOWED) /*&& _windowed_mouse.value*/ && key_dest == key_game)
+		{
+			IN_ActivateMouse();
+			IN_HideMouse();
+		};
+	};
+
+	if(!fActive)
+	{
+		if(modestate == MS_FULLDIB)
+		{
+			IN_DeactivateMouse();
+			IN_ShowMouse();
+			if(vid_canalttab)
+			{
+				ChangeDisplaySettings(NULL, 0);
+				vid_wassuspended = true;
+			};
+		}
+		else if((modestate == MS_WINDOWED) /*&& _windowed_mouse.value*/)
+		{
+			IN_DeactivateMouse();
+			IN_ShowMouse();
+		};
+	};
+};
+
+// main window procedure
+LONG WINAPI MainWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	LONG lRet = 1;
+	int fwKeys, xPos, yPos, fActive, fMinimized, temp;
+	extern unsigned int uiWheelMessage;
+
+	if(uMsg == uiWheelMessage)
+		uMsg = WM_MOUSEWHEEL;
+
+#ifdef OGS_USE_IMGUI
+	if(ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
+        return true;
+#endif
+	
+	switch(uMsg)
+	{
+	case WM_KILLFOCUS:
+		if(modestate == MS_FULLDIB)
+			ShowWindow(mainwindow, SW_SHOWMINNOACTIVE);
+		break;
+
+	case WM_CREATE:
+		break;
+
+	case WM_MOVE:
+		window_x = (int)LOWORD(lParam);
+		window_y = (int)HIWORD(lParam);
+		VID_UpdateWindowStatus();
+		
+		//if((modestate == MS_WINDOWED) && !in_mode_set && !Minimized)
+			//VID_RememberWindowPos();
+		
+		break;
+
+	case WM_KEYDOWN:
+	case WM_SYSKEYDOWN:
+		Key_Event(MapKey(lParam), true);
+		break;
+
+	case WM_KEYUP:
+	case WM_SYSKEYUP:
+		Key_Event(MapKey(lParam), false);
+		break;
+
+	case WM_SYSCHAR:
+		// keep Alt-Space from happening
+		break;
+
+	// this is complicated because Win32 seems to pack multiple mouse events into
+	// one update sometimes, so we always check all states and look for events
+	case WM_LBUTTONDOWN:
+	case WM_LBUTTONUP:
+	case WM_RBUTTONDOWN:
+	case WM_RBUTTONUP:
+	case WM_MBUTTONDOWN:
+	case WM_MBUTTONUP:
+	case WM_MOUSEMOVE:
+		temp = 0;
+
+		if(wParam & MK_LBUTTON)
+			temp |= 1;
+
+		if(wParam & MK_RBUTTON)
+			temp |= 2;
+
+		if(wParam & MK_MBUTTON)
+			temp |= 4;
+
+		IN_MouseEvent(temp);
+
+		break;
+
+	// JACK: This is the mouse wheel with the Intellimouse
+	// Its delta is either positive or neg, and we generate the proper
+	// Event.
+	case WM_MOUSEWHEEL:
+		if((short)HIWORD(wParam) > 0)
+		{
+			Key_Event(K_MWHEELUP, true);
+			Key_Event(K_MWHEELUP, false);
+		}
+		else
+		{
+			Key_Event(K_MWHEELDOWN, true);
+			Key_Event(K_MWHEELDOWN, false);
+		};
+		break;
+
+	case WM_SIZE:
+		Minimized = false;
+
+		if(!(wParam & SIZE_RESTORED))
+		{
+			if(wParam & SIZE_MINIMIZED)
+				Minimized = true;
+		};
+		break;
+
+	case WM_CLOSE:
+		Sys_Quit();
+		break;
+
+	case WM_ACTIVATE:
+		fActive = LOWORD(wParam);
+		fMinimized = (BOOL)HIWORD(wParam);
+		AppActivate(!(fActive == WA_INACTIVE), fMinimized);
+
+		// fix the leftover Alt from any Alt-Tab or the like that switched us away
+		ClearAllStates();
+
+		break;
+
+	case WM_DESTROY:
+	{
+		if(mainwindow)
+			DestroyWindow(mainwindow);
+
+		PostQuitMessage(0);
+	};
+	break;
+
+	case MM_MCINOTIFY:
+		lRet = CDAudio_MessageHandler(hWnd, uMsg, wParam, lParam);
+		break;
+
+	default:
+		/* pass all unhandled messages to DefWindowProc */
+		lRet = DefWindowProc(hWnd, uMsg, wParam, lParam);
+		break;
+	};
+
+	/* return 1 if handled message, 0 if not */
+	return lRet;
+};
 
 void CenterWindow(HWND hWndCenter, int width, int height, BOOL lefttopjustify)
 {
