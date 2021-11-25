@@ -1712,12 +1712,24 @@ void ResetTutorMessageDecayData()
 
 void pfnQueryClientCvarValue(const edict_t *player, const char *cvarName)
 {
-	// TODO
+	if(!player)
+		return;
+	
+	if(!cvarName || !*cvarName)
+		return;
+	
+	SV_SendCvarValue(svs.clients[NUM_FOR_EDICT(pClient) - 1], cvarName);
 };
 
 void pfnQueryClientCvarValue2(const edict_t *player, const char *cvarName, int requestID)
 {
-	// TODO
+	if(!player)
+		return;
+	
+	if(!cvarName || !*cvarName)
+		return;
+	
+	SV_SendCvarValueEx(svs.clients[NUM_FOR_EDICT(pClient) - 1], cvarName, requestID);
 };
 
 int pfnCheckParm(const char *sCmdLineToken, char **ppnext)
