@@ -1377,7 +1377,10 @@ void PF_crosshairangle_I(const edict_t *pClient, float pitch, float yaw)
 
 void PF_FadeVolume(const edict_t *pClient, int nFadePercent, int nFadeOutSeconds, int nHoldTime, int nFadeInSeconds)
 {
-	// TODO
+	if(!pClient)
+		return; // TODO: or broadcast to everyone?
+	
+	SV_SendSoundFade(svs.clients[NUM_FOR_EDICT(pClient) - 1], nFadePercent, nHoldTime, nFadeOutSeconds, nFadeInSeconds);
 };
 
 void PF_SetClientMaxspeed(const edict_t *pClient, float fSpeed)
