@@ -1366,7 +1366,10 @@ float PF_Time()
 
 void PF_crosshairangle_I(const edict_t *pClient, float pitch, float yaw)
 {
-	// TODO
+	if(!pClient)
+		return; // TODO: or broadcast to everyone?
+	
+	SV_SendCrosshairAngle(svs.clients[NUM_FOR_EDICT(pClient) - 1], pitch, yaw);
 };
 
 // TODO
