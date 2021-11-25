@@ -224,6 +224,7 @@ extern "C" {
 #include "crc.h"
 
 #include "entity_state.h"
+#include "event_args.h"
 
 #include "wad.h"
 #include "draw.h"
@@ -266,6 +267,14 @@ extern "C" {
 #endif
 
 #include "voice.h"
+
+#include "vgui_int.h"
+
+#include "custom.h"
+
+#include "baseuiwrap.h"
+
+#include "huffman.h"
 
 // TODO: qw
 /*
