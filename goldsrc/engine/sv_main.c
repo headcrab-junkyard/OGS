@@ -331,7 +331,7 @@ void SV_New_f ()
 	MSG_WriteByte(&host_client->netchan.message, 1);
 	//host_client->sendsignon = true;
 	
-	// TODO: svc_voiceinit
+	SV_SendVoiceInit(host_client);
 	
 	MSG_WriteByte(&host_client->netchan.message, -1);
 };
@@ -1657,7 +1657,14 @@ void SV_SendSoundFade(client_t *client, int initialpercent, int holdtime, int fa
 	MSG_WriteByte(&client->netchan.message, fadeintime);
 };
 
-// TODO: unused
+// TODO: SV_InitVoiceForClient?
+void SV_SendVoiceInit(client_t *client)
+{
+	MSG_WriteByte(&client->netchan.message, svc_voiceinit);
+	MSG_WriteString(&client->netchan.message, sv_voicecodec.string);
+	MSG_WriteByte(&client->netchan.message, sv_voicequality.value);
+};
+
 void SV_SendVoiceData(client_t *client, int playerindex, const void *data, int bufsize)
 {
 	MSG_WriteByte(&client->netchan.message, svc_voicedata);
