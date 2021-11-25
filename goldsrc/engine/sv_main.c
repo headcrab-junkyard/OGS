@@ -1683,6 +1683,14 @@ void SV_SendCrosshairAngle(client_t *client, float pitch, float yaw)
 	MSG_WriteChar(&client->netchan.message, yaw * 5);
 };
 
+// TODO: unused
+void SV_SendWeaponAnim(client_t *client, int sequence, int bodygroup)
+{
+	MSG_WriteByte(&client->netchan.message, svc_weaponanim);	
+	MSG_WriteByte(&client->netchan.message, sequence);
+	MSG_WriteByte(&client->netchan.message, bodygroup);
+};
+
 /*
 ================
 SV_ConnectClient
