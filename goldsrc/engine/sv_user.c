@@ -839,6 +839,12 @@ void SV_RunClients ()
 }
 */
 
+
+void SV_ParseDelta(client_t *cl)
+{
+	cl->delta_sequence = MSG_ReadByte();
+};
+
 void SV_ParseConsistencyResponse(client_t *cl)
 {
 	// TODO
@@ -1051,7 +1057,7 @@ void SV_ExecuteClientMessage(client_t *cl)
 			break;
 		
 		case clc_delta:
-			cl->delta_sequence = MSG_ReadByte();
+			SV_ParseDelta(cl);
 			break;
 		
 		case clc_resourcelist:
