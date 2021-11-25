@@ -1639,6 +1639,34 @@ void SV_SendLightStyles(client_t *client)
 	};
 };
 
+void SV_SendSoundFade(client_t *client, int initialpercent, int holdtime, int fadeouttime, int fadeintime)
+{
+	MSG_WriteByte(&client->netchan.message, svc_soundfade);
+	MSG_WriteByte(&client->netchan.message, initialpercent);
+	MSG_WriteByte(&client->netchan.message, holdtime);
+	MSG_WriteByte(&client->netchan.message, fadeouttime);
+	MSG_WriteByte(&client->netchan.message, fadeintime);
+};
+
+// TODO: unused
+void SV_SendVoiceData(client_t *client, int playerindex, const void *data, int bufsize)
+{
+	MSG_WriteByte(&client->netchan.message, svc_voicedata);
+	MSG_WriteByte(&client->netchan.message, playerindex);
+	MSG_WriteShort(&client->netchan.message, bufsize);
+	MSG_WriteBuf(&client->netchan.message, data);
+};
+
+void SV_SendCrosshairAngle(client_t *client, float pitch, float yaw)
+{
+	MSG_WriteByte(&client->netchan.message, svc_crosshairangle);
+	//MSG_WriteFloat(&client->netchan.message, pitch);
+	//MSG_WriteFloat(&client->netchan.message, yaw);
+	// TODO
+	MSG_WriteChar(&client->netchan.message, pitch * 5);
+	MSG_WriteChar(&client->netchan.message, yaw * 5);
+};
+
 /*
 ================
 SV_ConnectClient
