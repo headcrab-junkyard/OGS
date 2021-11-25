@@ -839,10 +839,29 @@ void SV_RunClients ()
 }
 */
 
+void SV_ParseStringCommand(client_t *cl)
+{
+	char *s = MSG_ReadString();
+	
+	Cmd_TokenizeString(s);
+	
+	host_client = cl; // TODO: hack to let SV_New_f work properly
+	sv_player = cl->edict;
+	
+	if(Cmd_Exists(Cmd_Argv(0)))
+		Cmd_ExecuteString(s, src_client); // TODO: this allows players to call any cmd on the server??????????????
+	else
+		gEntityInterface.pfnClientCommand(sv_player);
+};
 
 void SV_ParseDelta(client_t *cl)
 {
 	cl->delta_sequence = MSG_ReadByte();
+};
+
+void SV_ParseResourceList(client_t *cl)
+{
+	// TODO
 };
 
 void SV_ParseConsistencyResponse(client_t *cl)
@@ -865,24 +884,28 @@ void SV_ParseVoiceData(client_t *cl)
 	Mem_Free(pData);
 };
 
-void SV_ParseStringCommand(client_t *cl)
 {
-	char *s = MSG_ReadString();
+
+void SV_ParseCvarValueResponse(client_t *cl)
+{
+	const char *sCvarValue = MSG_ReadString();
 	
-	Cmd_TokenizeString(s);
+	// TODO: something else?
 	
-	host_client = cl; // TODO: hack to let SV_New_f work properly
-	sv_player = cl->edict;
-	
-	if(Cmd_Exists(Cmd_Argv(0)))
-		Cmd_ExecuteString(s, src_client); // TODO: this allows players to call any cmd on the server??????????????
-	else
-		gEntityInterface.pfnClientCommand(sv_player);
+	if(gNewDLLFunctions.pfnCvarValue)
+		gNewDLLFunctions.pfnCvarValue(client->edict, sCvarValue); // TODO: why there is no cvar name here?
 };
 
-void SV_ParseResourceList(client_t *cl)
+void SV_ParseCvarValueResponseEx(client_t *cl)
 {
-	// TODO
+	int nRequestID = MSG_ReadLong(); // TODO: long?
+	const char *sCvarName = MSG_ReadString(); // TODO: either the client sends it or the server operates on the nRequestID and gets the name from it
+	const char *sCvarValue = MSG_ReadString();
+	
+	// TODO: something else?
+	
+	if(gNewDLLFunctions.pfnCvarValue2)
+		gNewDLLFunctions.pfnCvarValue2(client->edict, nRequestID, sCvarName, sCvarValue);
 };
 
 /*
@@ -1092,11 +1115,11 @@ void SV_ExecuteClientMessage(client_t *cl)
 			break;
 		
 		case clc_cvarvalue:
-			// TODO
+			SV_ParseCvarValueResponse(cl);
 			break;
 		
 		case clc_cvarvalue2:
-			// TODO
+			SV_ParseCvarValueResponseEx(cl);
 			break;
 		
 		// TODO: unused
