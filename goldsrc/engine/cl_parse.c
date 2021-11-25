@@ -1433,12 +1433,32 @@ void CL_ParseServerMessage()
 		case svc_sendcvarvalue:
 		{
 			const char *sName = MSG_ReadString();
+			
+			MSG_WriteByte(&cls.netchan.message, clc_cvarvalue);
+			
+			cvar_t *pCvar = Cvar_FindVar(sName);
+			
+			if(!pCvar)
+				MSG_WriteString(&cls.netchan.message, "Bad CVAR request");
+			else
+				MSG_WriteString(&cls.netchan.message, pCvar->string);
 			break;
 		}
 		case svc_sendcvarvalue2:
 		{
 			int nRequestID = MSG_ReadLong();
 			const char *sName = MSG_ReadString();
+			
+			MSG_WriteByte(&cls.netchan.message, clc_cvarvalue2);
+			MSG_WriteLong(&cls.netchan.message, nRequestID);
+			MSG_WriteString(&cls.netchan.message, sName);
+			
+			cvar_t *pCvar = Cvar_FindVar(sName);
+			
+			if(!pCvar)
+				MSG_WriteString(&cls.netchan.message, "Bad CVAR request");
+			else
+				MSG_WriteString(&cls.netchan.message, pCvar->string);
 			break;
 		}
 			/* TODO: Original Quake protocol remnants unused in GS
