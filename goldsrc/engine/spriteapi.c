@@ -21,10 +21,12 @@
 #include "quakedef.h"
 #include "spriteapi.h"
 
-SpriteHandle_t ghCurrentSprite{NULL};
+typedef float vec2_t[2];
+
+SpriteHandle_t ghCurrentSprite = NULL;
 vec3_t gvSpriteColor;
 
-qboolean gbScissorActive{false};
+qboolean gbScissorActive = false;
 vec2_t gvScissorPos;
 vec2_t gvScissorSize;
 
