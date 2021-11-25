@@ -77,6 +77,10 @@ cvar_t sv_maxrate = {"sv_maxrate", "0", FCVAR_SERVER};
 cvar_t sv_minupdaterate = {"sv_minupdaterate", "10"};
 cvar_t sv_maxupdaterate = {"sv_maxupdaterate", "30"};
 
+cvar_t sv_voiceenable = {"sv_voiceenable", "1"};
+cvar_t sv_voicecodec = {"sv_voicecodec", "voice_speex"};
+cvar_t sv_voicequality = {"sv_voicequality", "3"};
+
 //============================================================================
 
 void SV_WriteSpawn(client_t *client)
@@ -688,6 +692,11 @@ void SV_Init()
 	// TODO: unused
 	Cvar_RegisterVariable(&sv_minupdaterate);
 	Cvar_RegisterVariable(&sv_maxupdaterate);
+	
+	Cvar_RegisterVariable(&sv_voiceenable); // TODO: unused
+	// TODO: looks like these cvars are present in the code but not registered
+	//Cvar_RegisterVariable(&sv_voicecodec);
+	//Cvar_RegisterVariable(&sv_voicequality);
 	
 	for(i = 0; i < MAX_MODELS; i++)
 		sprintf(localmodels[i], "*%i", i);
