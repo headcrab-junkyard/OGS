@@ -128,6 +128,32 @@ qboolean SV_RunThink(edict_t *ent)
 {
 	float thinktime;
 
+	// TODO: qw
+//
+/*
+	do
+	{
+		thinktime = ent->v.nextthink;
+		if (thinktime <= 0)
+			return true;
+		if (thinktime > sv.time + host_frametime)
+			return true;
+		
+		if (thinktime < sv.time)
+			thinktime = sv.time;	// don't let things stay in the past.
+									// it is possible to start that way
+									// by a trigger with a local time.
+		ent->v.nextthink = 0;
+		pr_global_struct->time = thinktime;
+		PR_ExecuteProgram (ent->v.think);
+
+		if (ent->free)
+			return false;
+	} while (1);
+
+	return true;
+*/
+//
 	thinktime = ent->v.nextthink;
 	if(thinktime <= 0 || thinktime > sv.time + host_frametime)
 		return true;
@@ -140,6 +166,7 @@ qboolean SV_RunThink(edict_t *ent)
 	gGlobalVariables.time = thinktime;
 	gEntityInterface.pfnThink(ent);
 	return !ent->free;
+//
 }
 
 /*
@@ -362,6 +389,7 @@ SV_AddGravity
 
 ============
 */
+// TODO: void SV_AddGravity(edict_t *ent, float scale) in qw
 void SV_AddGravity(edict_t *ent)
 {
 	float ent_gravity = 1.0;
@@ -369,7 +397,8 @@ void SV_AddGravity(edict_t *ent)
 	if(ent->v.gravity)
 		ent_gravity = ent->v.gravity;
 
-	ent->v.velocity[2] -= ent_gravity * sv_gravity.value * host_frametime;
+	ent->v.velocity[2] -= ent_gravity * movevars.gravity * host_frametime;
+	// TODO: ent->v.velocity[2] -= scale * movevars.gravity * host_frametime; in qw
 }
 
 /*
@@ -523,7 +552,6 @@ void SV_PushMove(edict_t *pusher, float movetime)
 	}
 }
 
-#ifdef QUAKE2
 /*
 ============
 SV_PushRotate
@@ -643,7 +671,6 @@ void SV_PushRotate(edict_t *pusher, float movetime)
 		}
 	}
 }
-#endif
 
 /*
 ================
@@ -671,11 +698,9 @@ void SV_Physics_Pusher(edict_t *ent)
 
 	if(movetime)
 	{
-#ifdef QUAKE2
 		if(ent->v.avelocity[0] || ent->v.avelocity[1] || ent->v.avelocity[2])
 			SV_PushRotate(ent, movetime);
 		else
-#endif
 			SV_PushMove(ent, movetime); // advances ent->v.ltime if not blocked
 	}
 
@@ -1022,6 +1047,7 @@ SV_Physics_Client
 Player character actions
 ================
 */
+/*
 void SV_Physics_Client(edict_t *ent, int num)
 {
 	if(!svs.clients[num - 1].active)
@@ -1093,6 +1119,7 @@ void SV_Physics_Client(edict_t *ent, int num)
 	gGlobalVariables.time = sv.time;
 	gEntityInterface.pfnPlayerPostThink(ent);
 }
+*/
 
 //============================================================================
 
@@ -1477,23 +1504,44 @@ void SV_Physics()
 
 		if(gGlobalVariables.force_retouch)
 			SV_LinkEdict(ent, true); // force retouch even for stationary
-
-		if(i > 0 && i <= svs.maxclients)
-			SV_Physics_Client(ent, i);
-		else if(ent->v.movetype == MOVETYPE_PUSH)
+		
+		switch(ent->v.movetype)
+		{
+		//case MOVETYPE_WALK:
+			//if(i > 0 && i <= svs.maxclients)
+			//SV_Physics_Client(ent, i);
+			//break;
+		case MOVETYPE_PUSH:
 			SV_Physics_Pusher(ent);
-		else if(ent->v.movetype == MOVETYPE_NONE)
+			break;
+		case MOVETYPE_PUSHSTEP:
+			SV_Physics_Pusher(ent); // TODO: The physics of this movetype is very similar to that of MOVETYPE_PUSH, except that MOVETYPE_PUSHSTEP uses a slightly different way to collide with other entities.
+			break;
+		case MOVETYPE_NONE:
 			SV_Physics_None(ent);
-		else if(ent->v.movetype == MOVETYPE_FOLLOW)
+			break;
+		case MOVETYPE_FOLLOW:
 			SV_Physics_Follow(ent);
-		else if(ent->v.movetype == MOVETYPE_NOCLIP)
+			break;
+		case MOVETYPE_NOCLIP:
 			SV_Physics_Noclip(ent);
-		else if(ent->v.movetype == MOVETYPE_STEP)
+			break;
+		case MOVETYPE_STEP:
 			SV_Physics_Step(ent);
-		else if(ent->v.movetype == MOVETYPE_TOSS || ent->v.movetype == MOVETYPE_BOUNCE || ent->v.movetype == MOVETYPE_BOUNCEMISSILE || ent->v.movetype == MOVETYPE_FLY || ent->v.movetype == MOVETYPE_FLYMISSILE)
+			break;
+		case MOVETYPE_TOSS:
+		case MOVETYPE_BOUNCE:
+		case MOVETYPE_BOUNCEMISSILE:
+		case MOVETYPE_FLY:
+		case MOVETYPE_FLYMISSILE:
 			SV_Physics_Toss(ent);
-		else
+			break;
+		// TODO: case MOVETYPE_COMPOUND:
+			// TODO: unused?
+			//break;
+		default:
 			Sys_Error("SV_Physics: bad movetype %i", (int)ent->v.movetype);
+		};
 	}
 
 	if(gGlobalVariables.force_retouch)
