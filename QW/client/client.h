@@ -11,18 +11,7 @@ ca_active			// everything is in, so frames can be rendered
 
 
 typedef struct
-{
-
-	
-
-	FILE		*download;		// file transfer from server
-	char		downloadtempname[MAX_OSPATH];
-	char		downloadname[MAX_OSPATH];
-	int			downloadnumber;
-	dltype_t	downloadtype;
-	int			downloadpercent;
-
-	
+{	
 
 	float		latency;		// rolling average
 } client_static_t;

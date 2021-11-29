@@ -64,25 +64,9 @@ void SV_ClientPrintf (client_t *cl, int level, char *fmt, ...)
 	SV_PrintToClient(cl, level, string);
 }
 
-/*
-=================
-SV_BroadcastPrintf
-
-Sends text to all active clients
-=================
-*/
 void SV_BroadcastPrintf (int level, char *fmt, ...)
 {
-	va_list		argptr;
-	char		string[1024];
 	client_t	*cl;
-	int			i;
-
-	va_start (argptr,fmt);
-	vsprintf (string, fmt,argptr);
-	va_end (argptr);
-	
-	Sys_Printf ("%s", string);	// print to the console
 
 	for (i=0, cl = svs.clients ; i<MAX_CLIENTS ; i++, cl++)
 	{

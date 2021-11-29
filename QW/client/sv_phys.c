@@ -1,30 +1,3 @@
-qboolean SV_RunThink (edict_t *ent)
-{
-	float	thinktime;
-
-	do
-	{
-		thinktime = ent->v.nextthink;
-		if (thinktime <= 0)
-			return true;
-		if (thinktime > sv.time + host_frametime)
-			return true;
-		
-		if (thinktime < sv.time)
-			thinktime = sv.time;	// don't let things stay in the past.
-									// it is possible to start that way
-									// by a trigger with a local time.
-		ent->v.nextthink = 0;
-		pr_global_struct->time = thinktime;
-		PR_ExecuteProgram (ent->v.think);
-
-		if (ent->free)
-			return false;
-	} while (1);
-
-	return true;
-}
-
 int SV_FlyMove (edict_t *ent, float time, trace_t *steptrace)
 {
 
@@ -135,13 +108,6 @@ int SV_FlyMove (edict_t *ent, float time, trace_t *steptrace)
 
 	return blocked;
 }
-
-void SV_AddGravity (edict_t *ent, float scale)
-{
-	ent->v.velocity[2] -= scale * movevars.gravity * host_frametime;
-}
-
-					
 
 /*
 ============
@@ -347,24 +313,6 @@ void SV_RunEntity (edict_t *ent)
 
 	switch ( (int)ent->v.movetype)
 	{
-	case MOVETYPE_PUSH:
-		SV_Physics_Pusher (ent);
-		break;
-	case MOVETYPE_NONE:
-		SV_Physics_None (ent);
-		break;
-	case MOVETYPE_NOCLIP:
-		SV_Physics_Noclip (ent);
-		break;
-	case MOVETYPE_STEP:
-		SV_Physics_Step (ent);
-		break;
-	case MOVETYPE_TOSS:
-	case MOVETYPE_BOUNCE:
-	case MOVETYPE_FLY:
-	case MOVETYPE_FLYMISSILE:
-		SV_Physics_Toss (ent);
-		break;
 	default:
 		SV_Error ("SV_Physics: bad movetype %i", (int)ent->v.movetype);			
 	}

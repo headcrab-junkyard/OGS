@@ -1,13 +1,3 @@
-/*
-Copyright (C) 1996-1997 Id Software, Inc.
-
-*/
-// world.c -- world query functions
-
-
-
-
-areanode_t	sv_areanodes[AREA_NODES];
 int			sv_numareanodes;
 
 int SV_PointContents (vec3_t p)
