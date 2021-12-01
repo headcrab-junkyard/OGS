@@ -3393,6 +3393,14 @@ void SV_ActivateServer()
 	gEntityInterface.pfnServerActivate(sv.edicts, sv.max_edicts, svs.maxclients);
 };
 
+// TODO: use
+void SV_DeactivateServer()
+{
+	sv.state = ss_loading;
+	
+	gEntityInterface.pfnServerDeactivate();
+};
+
 /*
 ================
 SV_SpawnServer
