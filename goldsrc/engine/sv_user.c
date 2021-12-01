@@ -884,7 +884,11 @@ void SV_ParseVoiceData(client_t *cl)
 	Mem_Free(pData);
 };
 
+// TODO: SV_IgnoreHLTV?
+void SV_ParseHLTV(client_t *cl)
 {
+	// TODO
+};
 
 void SV_ParseCvarValueResponse(client_t *cl)
 {
@@ -1111,7 +1115,7 @@ void SV_ExecuteClientMessage(client_t *cl)
 			break;
 		
 		case clc_hltv:
-			// TODO
+			SV_ParseHLTV(cl);
 			break;
 		
 		case clc_cvarvalue:
