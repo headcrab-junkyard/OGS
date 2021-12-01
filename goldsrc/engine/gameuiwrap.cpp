@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018, 2021 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,15 +31,6 @@ extern IGameConsole *gpGameConsole;
 
 //void GameUI_Start(struct cl_enginefuncs_s *engineFuncs, int interfaceVersion, void *system);
 
-// TODO
-extern "C" int GameUI_ActivateGameUI()
-{
-	if(gpGameUI)
-		return gpGameUI->ActivateGameUI();
-
-	return 0;
-};
-
 int GameUI_ActivateDemoUI()
 {
 	if(gpGameUI)
@@ -68,22 +59,6 @@ void GameUI_DisconnectFromServer()
 {
 	if(gpGameUI)
 		gpGameUI->DisconnectFromServer();
-};
-
-// TODO
-extern "C" void GameUI_HideGameUI()
-{
-	if(gpGameUI)
-		gpGameUI->HideGameUI();
-};
-
-// TODO
-extern "C" qboolean GameUI_IsGameUIActive()
-{
-	if(gpGameUI)
-		return gpGameUI->IsGameUIActive();
-
-	return false;
 };
 
 void GameUI_LoadingStarted(const char *resourceType, const char *resourceName)
