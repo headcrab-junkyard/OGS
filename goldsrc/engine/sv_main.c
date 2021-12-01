@@ -1691,16 +1691,14 @@ void SV_SendWeaponAnim(client_t *client, int sequence, int bodygroup)
 	MSG_WriteByte(&client->netchan.message, bodygroup);
 };
 
-// TODO: unused
-// TODO: SV_RequestCvarValue? SV_QueryCvarValue?
-void SV_SendCvarValue(client_t *client, const char *cvarname)
+// TODO: SV_RequestCvarValue?
+void SV_QueryCvarValue(client_t *client, const char *cvarname)
 {
 	MSG_WriteByte(&client->netchan.message, svc_sendcvarvalue);	
 	MSG_WriteString(&client->netchan.message, cvarname);
 };
 
-// TODO: unused
-void SV_SendCvarValueEx(client_t *client, const char *cvarname, int requestID)
+void SV_QueryCvarValueEx(client_t *client, const char *cvarname, int requestID)
 {
 	MSG_WriteByte(&client->netchan.message, svc_sendcvarvalue2);
 	MSG_WriteLong(&client->netchan.message, requestID);

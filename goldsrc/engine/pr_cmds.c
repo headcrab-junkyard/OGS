@@ -1724,7 +1724,7 @@ void pfnQueryClientCvarValue(const edict_t *player, const char *cvarName)
 	if(!cvarName || !*cvarName)
 		return;
 	
-	SV_SendCvarValue(svs.clients[NUM_FOR_EDICT(pClient) - 1], cvarName);
+	SV_QueryCvarValue(svs.clients[NUM_FOR_EDICT(pClient) - 1], cvarName);
 };
 
 void pfnQueryClientCvarValue2(const edict_t *player, const char *cvarName, int requestID)
@@ -1735,7 +1735,7 @@ void pfnQueryClientCvarValue2(const edict_t *player, const char *cvarName, int r
 	if(!cvarName || !*cvarName)
 		return;
 	
-	SV_SendCvarValueEx(svs.clients[NUM_FOR_EDICT(pClient) - 1], cvarName, requestID);
+	SV_QueryCvarValueEx(svs.clients[NUM_FOR_EDICT(pClient) - 1], cvarName, requestID);
 };
 
 int pfnCheckParm(const char *sCmdLineToken, char **ppnext)
