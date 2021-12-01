@@ -1614,7 +1614,23 @@ void SV_SetMoveVars()
 	movevars.accelerate		    = sv_accelerate.value;		 
 	movevars.airaccelerate	    = sv_airaccelerate.value;	 
 	movevars.wateraccelerate	= sv_wateraccelerate.value;	   
-	movevars.friction			= sv_friction.value;			 
+	movevars.friction			= sv_friction.value;
+	movevars.edgefriction		= sv_edgefriction.value; // TODO
 	movevars.waterfriction	    = sv_waterfriction.value;	 
 	movevars.entgravity			= 1.0;
+	movevars.bounce				= sv_bounce.value;
+	movevars.stepsize			= sv_stepsize.value;
+	movevars.maxvelocity		= sv_maxvelocity.value; // TODO
+	movevars.zmax				= sv_zmax.value;
+	movevars.waveheight			= 0.0f; // TODO
+	movevars.footsteps			= 1; // TODO: mp_footsteps.value;
+	movevars.rollangle			= 0.0f; // TODO
+	movevars.rollspeed			= 0.0f; // TODO
+	movevars.skycolorred		= sv_skycolor_r.value;
+	movevars.skycolorgreen		= sv_skycolor_g.value;
+	movevars.skycolorblue		= sv_skycolor_b.value;
+	movevars.skyvecx			= sv_skyvec_x.value;
+	movevars.skyvecy			= sv_skyvec_y.value;
+	movevars.skyvecz			= sv_skyvec_z.value;
+	movevars.skyname			= "2desert"; //sv_skyname.string; // TODO
 }
