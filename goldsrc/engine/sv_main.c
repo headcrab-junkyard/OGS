@@ -1707,6 +1707,26 @@ void SV_QueryCvarValueEx(client_t *client, const char *cvarname, int requestID)
 
 /*
 ================
+SV_SendCustomization
+================
+*/
+// TODO: unused
+// TODO: or pass a pointer to resource_t?
+void SV_SendCustomization(client_t *client, customization_t *custom)
+{
+	MSG_WriteByte(&client->netchan.message, svc_customization);
+	MSG_WriteByte(&client->netchan.message, custom->resource.playernum);
+	MSG_WriteByte(&client->netchan.message, custom->resource.type);
+	MSG_WriteString(&client->netchan.message, custom->resource.szFileName);
+	MSG_WriteShort(&client->netchan.message, custom->resource.nIndex);
+	MSG_WriteLong(&client->netchan.message, custom->resource.nDownloadSize);
+	MSG_WriteByte(&client->netchan.message, custom->resource.ucFlags);
+	for(int i = 0; i <= 15; ++i) // TODO: MSG_WriteBuf?
+		MSG_WriteByte(&client->netchan.message, custom->resource.rgucMD5_hash[i]);
+};
+
+/*
+================
 SV_ConnectClient
 
 Initializes a client_t for a new net connection (A connection request that did not come from the master).
