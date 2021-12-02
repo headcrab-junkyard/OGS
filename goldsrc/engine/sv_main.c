@@ -700,6 +700,8 @@ void SV_Init()
 	
 	Cvar_RegisterVariable(&sv_stepsize);
 	
+	Cvar_RegisterVariable(&sv_bounce);
+	
 	Cvar_RegisterVariable(&sv_cheats);
 	
 	// TODO: unused

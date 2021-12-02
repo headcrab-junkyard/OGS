@@ -56,6 +56,20 @@ cvar_t sv_nostep = { "sv_nostep", "0" };
 extern cvar_t sv_stepsize;
 
 extern cvar_t sv_zmax;
+extern cvar_t sv_wateramp;
+
+extern cvar_t mp_footsteps;
+
+extern cvar_t sv_skyname;
+
+extern cvar_t sv_skycolor_r;
+extern cvar_t sv_skycolor_g;
+extern cvar_t sv_skycolor_b;
+
+extern cvar_t sv_skyvec_x;
+extern cvar_t sv_skyvec_y;
+extern cvar_t sv_skyvec_z;
+
 
 #define MOVE_EPSILON 0.01
 
