@@ -730,6 +730,10 @@ void SV_Init()
 	Cvar_RegisterVariable(&sv_skyvec_y);
 	Cvar_RegisterVariable(&sv_skyvec_z);
 	
+	// Allow cheats if dev mode is enabled
+	if(COM_CheckParm("-dev"))
+		Cvar_SetValue("sv_cheats", 1);
+	
 	for(i = 0; i < MAX_MODELS; i++)
 		sprintf(localmodels[i], "*%i", i);
 };
