@@ -1635,21 +1635,21 @@ void SV_SendMoveVars(client_t *client)
 	MSG_WriteFloat(&client->netchan.message, movevars.edgefriction);
 	MSG_WriteFloat(&client->netchan.message, movevars.waterfriction);
 	MSG_WriteFloat(&client->netchan.message, movevars.entgravity);
-	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.bounce*/);
-	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.stepsize*/);
-	MSG_WriteFloat(&client->netchan.message, 0.0f /* movevars.maxvelocity*/);
-	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.zmax*/);
-	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.waveheight*/);
-	MSG_WriteByte(&client->netchan.message, 1 /*movevars.footsteps*/);
-	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.rollangle*/);
-	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.rollspeed*/);
-	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.skycolorred*/);
-	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.skycolorgreen*/);
-	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.skycolorblue*/);
-	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.skyvecx*/);
-	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.skyvecy*/);
-	MSG_WriteFloat(&client->netchan.message, 0.0f /*movevars.skyvecz*/);
-	MSG_WriteString(&client->netchan.message, "2desert" /*movevars.skyname*/);
+	MSG_WriteFloat(&client->netchan.message, movevars.bounce);
+	MSG_WriteFloat(&client->netchan.message, movevars.stepsize);
+	MSG_WriteFloat(&client->netchan.message, movevars.maxvelocity);
+	MSG_WriteFloat(&client->netchan.message, movevars.zmax);
+	MSG_WriteFloat(&client->netchan.message, movevars.waveheight);
+	MSG_WriteByte(&client->netchan.message, movevars.footsteps);
+	MSG_WriteFloat(&client->netchan.message, movevars.rollangle);
+	MSG_WriteFloat(&client->netchan.message, movevars.rollspeed);
+	MSG_WriteFloat(&client->netchan.message, movevars.skycolorred);
+	MSG_WriteFloat(&client->netchan.message, movevars.skycolorgreen);
+	MSG_WriteFloat(&client->netchan.message, movevars.skycolorblue);
+	MSG_WriteFloat(&client->netchan.message, movevars.skyvecx);
+	MSG_WriteFloat(&client->netchan.message, movevars.skyvecy);
+	MSG_WriteFloat(&client->netchan.message, movevars.skyvecz);
+	MSG_WriteString(&client->netchan.message, movevars.skyname);
 };
 
 void SV_SendUserMessages(client_t *client)
