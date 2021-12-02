@@ -49,9 +49,13 @@ cvar_t	sv_spectatormaxspeed = { "sv_spectatormaxspeed", "500"};
 cvar_t	sv_accelerate		 = { "sv_accelerate", "10", FCVAR_SERVER};
 cvar_t	sv_airaccelerate	 = { "sv_airaccelerate", "0.7", FCVAR_SERVER};    
 cvar_t	sv_wateraccelerate	 = { "sv_wateraccelerate", "10", FCVAR_SERVER};
+
+cvar_t sv_bounce = {"sv_bounce", "1", FCVAR_SERVER};
 cvar_t sv_nostep = { "sv_nostep", "0" };
 
 extern cvar_t sv_stepsize;
+
+extern cvar_t sv_zmax;
 
 #define MOVE_EPSILON 0.01
 

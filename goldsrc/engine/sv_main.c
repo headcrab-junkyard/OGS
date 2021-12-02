@@ -40,6 +40,7 @@ extern cvar_t sv_idealpitchscale; // TODO: remove
 extern cvar_t sv_aim;
 
 extern cvar_t sv_stepsize;
+extern cvar_t sv_bounce;
 
 typedef struct
 {
@@ -80,6 +81,22 @@ cvar_t sv_maxupdaterate = {"sv_maxupdaterate", "30"};
 cvar_t sv_voiceenable = {"sv_voiceenable", "1"};
 cvar_t sv_voicecodec = {"sv_voicecodec", "voice_speex"};
 cvar_t sv_voicequality = {"sv_voicequality", "3"};
+
+
+cvar_t sv_zmax = {"sv_zmax", "4096"};
+cvar_t sv_wateramp = {"sv_wateramp", "0"};
+
+cvar_t mp_footsteps = {"mp_footsteps", "1", FCVAR_SERVER};
+
+cvar_t sv_skyname = {"sv_skyname", "desert"};
+
+cvar_t sv_skycolor_r = {"sv_skycolor_r", "0"};
+cvar_t sv_skycolor_g = {"sv_skycolor_g", "0"};
+cvar_t sv_skycolor_b = {"sv_skycolor_b", "0"};
+
+cvar_t sv_skyvec_x = {"sv_skyvec_x", "0"};
+cvar_t sv_skyvec_y = {"sv_skyvec_y", "0"};
+cvar_t sv_skyvec_z = {"sv_skyvec_z", "0"};
 
 //============================================================================
 
@@ -697,6 +714,21 @@ void SV_Init()
 	// TODO: looks like these cvars are present in the code but not registered
 	//Cvar_RegisterVariable(&sv_voicecodec);
 	//Cvar_RegisterVariable(&sv_voicequality);
+	
+	Cvar_RegisterVariable(&sv_zmax);
+	Cvar_RegisterVariable(&sv_wateramp);
+	
+	Cvar_RegisterVariable(&mp_footsteps);
+	
+	Cvar_RegisterVariable(&sv_skyname);
+	
+	Cvar_RegisterVariable(&sv_skycolor_r);
+	Cvar_RegisterVariable(&sv_skycolor_g);
+	Cvar_RegisterVariable(&sv_skycolor_b);
+	
+	Cvar_RegisterVariable(&sv_skyvec_x);
+	Cvar_RegisterVariable(&sv_skyvec_y);
+	Cvar_RegisterVariable(&sv_skyvec_z);
 	
 	for(i = 0; i < MAX_MODELS; i++)
 		sprintf(localmodels[i], "*%i", i);
