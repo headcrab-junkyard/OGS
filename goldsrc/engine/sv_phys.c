@@ -1607,30 +1607,42 @@ extern cvar_t sv_accelerate;
 
 void SV_SetMoveVars()
 {
-	movevars.gravity			= sv_gravity.value; 
-	movevars.stopspeed		    = sv_stopspeed.value;		 
-	movevars.maxspeed			= sv_maxspeed.value;			 
-	movevars.spectatormaxspeed  = sv_spectatormaxspeed.value; 
-	movevars.accelerate		    = sv_accelerate.value;		 
-	movevars.airaccelerate	    = sv_airaccelerate.value;	 
-	movevars.wateraccelerate	= sv_wateraccelerate.value;	   
+	movevars.gravity			= sv_gravity.value;
+	
+	movevars.stopspeed		    = sv_stopspeed.value;
+	
+	movevars.maxspeed			= sv_maxspeed.value;
+	movevars.spectatormaxspeed  = sv_spectatormaxspeed.value;
+	
+	movevars.accelerate		    = sv_accelerate.value;
+	movevars.airaccelerate	    = sv_airaccelerate.value;
+	movevars.wateraccelerate	= sv_wateraccelerate.value;
+	
 	movevars.friction			= sv_friction.value;
-	movevars.edgefriction		= sv_edgefriction.value; // TODO
-	movevars.waterfriction	    = sv_waterfriction.value;	 
+	movevars.edgefriction		= sv_edgefriction.value;
+	movevars.waterfriction	    = sv_waterfriction.value;
+	
 	movevars.entgravity			= 1.0;
+	
 	movevars.bounce				= sv_bounce.value;
 	movevars.stepsize			= sv_stepsize.value;
-	movevars.maxvelocity		= sv_maxvelocity.value; // TODO
+	movevars.maxvelocity		= sv_maxvelocity.value;
+	
 	movevars.zmax				= sv_zmax.value;
-	movevars.waveheight			= 0.0f; // TODO
-	movevars.footsteps			= 1; // TODO: mp_footsteps.value;
+	movevars.waveHeight			= sv_wateramp.value;
+	
+	movevars.footsteps			= mp_footsteps.value;
+	
+	Q_strcpy(movevars.skyName, "2desert"); //sv_skyname.string; // TODO
+	
 	movevars.rollangle			= 0.0f; // TODO
 	movevars.rollspeed			= 0.0f; // TODO
-	movevars.skycolorred		= sv_skycolor_r.value;
-	movevars.skycolorgreen		= sv_skycolor_g.value;
-	movevars.skycolorblue		= sv_skycolor_b.value;
-	movevars.skyvecx			= sv_skyvec_x.value;
-	movevars.skyvecy			= sv_skyvec_y.value;
-	movevars.skyvecz			= sv_skyvec_z.value;
-	movevars.skyname			= "2desert"; //sv_skyname.string; // TODO
+	
+	movevars.skycolor_r			= sv_skycolor_r.value;
+	movevars.skycolor_g			= sv_skycolor_g.value;
+	movevars.skycolor_b			= sv_skycolor_b.value;
+	
+	movevars.skyvec_x			= sv_skyvec_x.value;
+	movevars.skyvec_y			= sv_skyvec_y.value;
+	movevars.skyvec_z			= sv_skyvec_z.value;
 }
