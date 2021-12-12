@@ -441,6 +441,11 @@ void Key_Unbindall_f()
 			Key_SetBinding(i, "");
 };
 
+void Key_Escape_f()
+{
+	// TODO: this closes the console and gameui if open
+};
+
 /*
 ===================
 Key_Bind_f
@@ -572,6 +577,7 @@ void Key_Init()
 	Cmd_AddCommand("bind", Key_Bind_f);
 	Cmd_AddCommand("unbind", Key_Unbind_f);
 	Cmd_AddCommand("unbindall", Key_Unbindall_f);
+	Cmd_AddCommand("escape", Key_Escape_f);
 };
 
 /*
