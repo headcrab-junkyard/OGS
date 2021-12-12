@@ -188,89 +188,6 @@ void CL_Users_f()
 
 /*
 ==================
-CL_SetInfo_f
-
-Allow clients to change userinfo
-==================
-*/
-void CL_SetInfo_f()
-{
-	if (Cmd_Argc() == 1)
-	{
-		Info_Print (cls.userinfo);
-		return;
-	};
-	
-	if (Cmd_Argc() != 3)
-	{
-		Con_Printf ("usage: setinfo [ <key> <value> ]\n");
-		return;
-	};
-	
-	// TODO
-	//if (!stricmp(Cmd_Argv(1), pmodel_name) || !strcmp(Cmd_Argv(1), emodel_name))
-		//return;
-
-	Info_SetValueForKey (cls.userinfo, Cmd_Argv(1), Cmd_Argv(2), MAX_INFO_STRING);
-	if (cls.state >= ca_connected)
-		Cmd_ForwardToServer ();
-};
-
-/*
-==================
-CL_FullInfo_f
-
-Allow clients to change userinfo
-==================
-*/
-void CL_FullInfo_f()
-{
-	char	key[512];
-	char	value[512];
-	char	*o;
-	char	*s;
-
-	if (Cmd_Argc() != 2)
-	{
-		Con_Printf ("fullinfo <complete info string>\n");
-		return;
-	};
-
-	s = Cmd_Argv(1);
-	if (*s == '\\')
-		s++;
-	while (*s)
-	{
-		o = key;
-		while (*s && *s != '\\')
-			*o++ = *s++;
-		*o = 0;
-
-		if (!*s)
-		{
-			Con_Printf ("MISSING VALUE\n");
-			return;
-		};
-
-		o = value;
-		s++;
-		while (*s && *s != '\\')
-			*o++ = *s++;
-		*o = 0;
-
-		if (*s)
-			s++;
-
-		// TODO
-		//if (!stricmp(key, pmodel_name) || !stricmp(key, emodel_name))
-			//continue;
-
-		Info_SetValueForKey (cls.userinfo, key, value, MAX_INFO_STRING);
-	};
-};
-
-/*
-==================
 CL_FullServerinfo_f
 
 Sent by server when serverinfo changes
@@ -311,58 +228,6 @@ void CL_Messages_f()
 	Con_Printf("-------- Message Load ---------\n");
 	Con_Printf("User messages:  %d:%fK\n", 0, 0.00); // TODO
 	Con_Printf("------ End:  %d Total----\n", 0); // TODO
-};
-
-/*
-==================
-CL_SoundFade_f
-==================
-*/
-void CL_SoundFade_f()
-{
-	// TODO
-};
-
-/*
-==================
-IN_VoiceRecordDown
-==================
-*/
-void IN_VoiceRecordDown()
-{
-	// TODO
-};
-
-/*
-==================
-IN_VoiceRecordUp
-==================
-*/
-void IN_VoiceRecordUp()
-{
-	// TODO
-};
-
-/*
-==================
-CL_Interp_f
-==================
-*/
-void CL_Interp_f()
-{
-	// TODO
-	static qboolean enabled = false;
-	
-	if(enabled)
-	{
-		enabled = false;
-		Con_Printf("Frame Interpolation OFF");
-	}
-	else
-	{
-		enabled = true;
-		Con_Printf("Frame Interpolation ON");
-	};
 };
 
 /*
@@ -1456,16 +1321,10 @@ void CL_Init()
 	
 	Cmd_AddCommand("users", CL_Users_f);
 	
-	Cmd_AddCommand("setinfo", CL_SetInfo_f);
-	Cmd_AddCommand("fullinfo", CL_FullInfo_f);
 	Cmd_AddCommand("fullserverinfo", CL_FullServerinfo_f);
 	
 	Cmd_AddCommand("cl_messages", CL_Messages_f);
 	
-	Cmd_AddCommand("soundfade", CL_SoundFade_f);
 	
-	Cmd_AddCommand("+voicerecord", IN_VoiceRecordDown);
-	Cmd_AddCommand("-voicerecord", IN_VoiceRecordUp);
 	
-	Cmd_AddCommand("interp", CL_Interp_f);
 };

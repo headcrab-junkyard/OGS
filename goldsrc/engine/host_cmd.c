@@ -115,6 +115,55 @@ void Host_InitializeGameDLL()
 
 /*
 ==================
+Host_CD_f
+==================
+*/
+void Host_CD_f()
+{
+	// TODO
+};
+
+/*
+==================
+S_MP3_Stop
+==================
+*/
+void S_MP3_Stop()
+{
+	// TODO
+};
+
+/*
+==================
+S_MP3_Play
+==================
+*/
+void S_MP3_Play(const char *name)
+{
+	if(!name || !*name)
+		S_MP3_Stop();
+	
+	// TODO
+};
+
+/*
+==================
+S_Quit_f
+==================
+*/
+void Host_MP3_f()
+{
+	if(Cmd_Argc() == 3)
+	{
+		if(!Q_strcmp(Cmd_Argv(1), "play"))
+			S_MP3_Play(Cmd_Argv(2));
+		else if(!Q_strcmp(Cmd_Argv(1), "stop"))
+			S_MP3_Stop();
+	};
+};
+
+/*
+==================
 Host_Quit_f
 ==================
 */
@@ -133,6 +182,28 @@ void Host_Quit_f()
 
 	Sys_Quit();
 }
+
+/*
+==================
+Host_ShutdownServer_f
+==================
+*/
+void Host_ShutdownServer_f()
+{
+	// TODO: CL_Disconnect?
+	Host_ShutdownServer(false);
+	// TODO: something else?
+};
+
+/*
+==================
+CL_SoundFade_f
+==================
+*/
+void Host_SoundFade_f()
+{
+	// TODO
+};
 
 /*
 ==================
@@ -187,6 +258,26 @@ void Host_Status_f()
 		print("   %s\n", client->netchan.remote_address);
 	}
 }
+
+/*
+==================
+Host_Stat_f
+==================
+*/
+void Host_Stat_f()
+{
+	// TODO
+};
+
+/*
+==================
+Host_Stats_f
+==================
+*/
+void Host_Stats_f()
+{
+	// TODO
+};
 
 /*
 ==================
@@ -327,6 +418,46 @@ void Host_Ping_f()
 	}
 }
 
+void Host_RestartEngine_f()
+{
+	// TODO
+};
+
+void Host_SetRenderer_f()
+{
+	// TODO
+};
+
+void Host_SetVideoMode_f()
+{
+	// TODO
+};
+
+void Host_SetGameDir_f()
+{
+	// TODO
+};
+
+void Host_SetHDModels_f()
+{
+	// TODO
+};
+
+void Host_SetAddonsFolder_f()
+{
+	// TODO
+};
+
+void Host_SetVidLevel_f()
+{
+	// TODO
+};
+
+void Host_CareerAudio_f()
+{
+	// TODO
+};
+
 /*
 ===============================================================================
 
@@ -422,6 +553,26 @@ void Host_Map_f()
 
 /*
 ==================
+Host_Career_f
+==================
+*/
+void Host_Career_f()
+{
+	// TODO
+};
+
+/*
+==================
+Host_Maps_f
+==================
+*/
+void Host_Maps_f()
+{
+	// TODO
+};
+
+/*
+==================
 Host_Changelevel_f
 
 Goes to a new map, taking all clients along
@@ -498,6 +649,11 @@ void Host_Restart_f()
 	SV_SpawnServer(mapname, startspot);
 }
 
+void Host_Reload_f()
+{
+	// TODO
+};
+
 /*
 ==================
 Host_Reconnect_f
@@ -536,6 +692,26 @@ void Host_Reconnect_f()
 	CL_BeginServerConnect();
 	//
 }
+
+/*
+==================
+Host_Motd_f
+==================
+*/
+void Host_Motd_f()
+{
+	// TODO
+};
+
+/*
+==================
+Host_MotdWrite_f
+==================
+*/
+void Host_MotdWrite_f()
+{
+	// TODO
+};
 
 /*
 ===============================================================================
@@ -664,6 +840,16 @@ void Host_Savegame_f()
 	fclose(f);
 	Con_Printf("done.\n");
 }
+
+/*
+===============
+Host_Autosave_f
+===============
+*/
+void Host_Autosave_f()
+{
+	// TODO
+};
 
 /*
 ===============
@@ -1349,7 +1535,17 @@ void Host_Pause_f()
 
 /*
 ==================
-Host_Pause_f
+Host_SetPause_f
+==================
+*/
+void Host_SetPause_f()
+{
+	// TODO
+};
+
+/*
+==================
+Host_Unpause_f
 ==================
 */
 void Host_Unpause_f()
@@ -1649,6 +1845,36 @@ void Host_Viewprev_f()
 }
 
 /*
+=======================
+Host_WriteConfig_f
+======================
+*/
+void Host_WriteConfig_f()
+{
+	// TODO
+};
+
+/*
+==================
+IN_VoiceRecordDown
+==================
+*/
+void IN_VoiceRecordDown()
+{
+	// TODO
+};
+
+/*
+==================
+IN_VoiceRecordUp
+==================
+*/
+void IN_VoiceRecordUp()
+{
+	// TODO
+};
+
+/*
 ===============================================================================
 
 DEMO LOOP CONTROL
@@ -1729,6 +1955,111 @@ void Host_Stopdemo_f()
 //=============================================================================
 
 /*
+==================
+CL_SetInfo_f
+
+Allow clients to change userinfo
+==================
+*/
+void CL_SetInfo_f()
+{
+	if (Cmd_Argc() == 1)
+	{
+		Info_Print (cls.userinfo);
+		return;
+	};
+	
+	if (Cmd_Argc() != 3)
+	{
+		Con_Printf ("usage: setinfo [ <key> <value> ]\n");
+		return;
+	};
+	
+	// TODO
+	//if (!stricmp(Cmd_Argv(1), pmodel_name) || !strcmp(Cmd_Argv(1), emodel_name))
+		//return;
+
+	Info_SetValueForKey (cls.userinfo, Cmd_Argv(1), Cmd_Argv(2), MAX_INFO_STRING);
+	if (cls.state >= ca_connected)
+		Cmd_ForwardToServer ();
+};
+
+/*
+==================
+CL_FullInfo_f
+
+Allow clients to change userinfo
+==================
+*/
+void CL_FullInfo_f()
+{
+	char	key[512];
+	char	value[512];
+	char	*o;
+	char	*s;
+
+	if (Cmd_Argc() != 2)
+	{
+		Con_Printf ("fullinfo <complete info string>\n");
+		return;
+	};
+
+	s = Cmd_Argv(1);
+	if (*s == '\\')
+		s++;
+	while (*s)
+	{
+		o = key;
+		while (*s && *s != '\\')
+			*o++ = *s++;
+		*o = 0;
+
+		if (!*s)
+		{
+			Con_Printf ("MISSING VALUE\n");
+			return;
+		};
+
+		o = value;
+		s++;
+		while (*s && *s != '\\')
+			*o++ = *s++;
+		*o = 0;
+
+		if (*s)
+			s++;
+
+		// TODO
+		//if (!stricmp(key, pmodel_name) || !stricmp(key, emodel_name))
+			//continue;
+
+		Info_SetValueForKey (cls.userinfo, key, value, MAX_INFO_STRING);
+	};
+};
+
+/*
+==================
+CL_Interp_f
+==================
+*/
+void Host_Interp_f()
+{
+	// TODO
+	static qboolean enabled = false;
+	
+	if(enabled)
+	{
+		enabled = false;
+		Con_Printf("Frame Interpolation OFF");
+	}
+	else
+	{
+		enabled = true;
+		Con_Printf("Frame Interpolation ON");
+	};
+};
+
+/*
 ====================
 SV_SetMaster_f
 
@@ -1791,41 +2122,86 @@ void Host_InitCommands()
 		Info_SetValueForStarKey (svs.info, "*cheats", "ON", MAX_SERVERINFO_STRING);
 	}
 	*/
-
+	
+	Cmd_AddCommand("cd", Host_CD_f);
+	Cmd_AddCommand("mp3", Host_MP3_f);
+	
+	Cmd_AddCommand("shutdownserver", Host_ShutdownServer_f);
+	
+	Cmd_AddCommand("soundfade", Host_SoundFade_f);
+	
 	Cmd_AddCommand("status", Host_Status_f);
+	
+	Cmd_AddCommand("stat", Host_Stat_f);
+	Cmd_AddCommand("stats", Host_Stats_f);
+	
 	Cmd_AddCommand("quit", Host_Quit_f);
 	Cmd_AddCommand("exit", Host_Quit_f);
-	Cmd_AddCommand("god", Host_God_f);
-	Cmd_AddCommand("notarget", Host_Notarget_f);
-	Cmd_AddCommand("fly", Host_Fly_f);
+	
+	Cmd_AddCommand("_restart", Host_RestartEngine_f);
+	Cmd_AddCommand("_setrenderer", Host_SetRenderer_f);
+	Cmd_AddCommand("_setvideomode", Host_SetVideoMode_f);
+	Cmd_AddCommand("_setgamedir", Host_SetGameDir_f);
+	Cmd_AddCommand("_sethdmodels", Host_SetHDModels_f);
+	Cmd_AddCommand("_setaddons_folder", Host_SetAddonsFolder_f);
+	Cmd_AddCommand("_set_vid_level", Host_SetVidLevel_f);
+	Cmd_AddCommand("_careeraudio", Host_CareerAudio_f);
+	
 	Cmd_AddCommand("map", Host_Map_f);
+	Cmd_AddCommand("career", Host_Career_f);
+	Cmd_AddCommand("maps", Host_Maps_f);
+	
 	Cmd_AddCommand("restart", Host_Restart_f);
+	Cmd_AddCommand("reload", Host_Reload_f);
+	
 	Cmd_AddCommand("changelevel", Host_Changelevel_f);
 	Cmd_AddCommand("changelevel2", Host_Changelevel2_f);
+	
 	Cmd_AddCommand("reconnect", Host_Reconnect_f);
-	Cmd_AddCommand("noclip", Host_Noclip_f);
+
 	Cmd_AddCommand("version", Host_Version_f);
-#ifdef HEADCRABGODS
-	Cmd_AddCommand("please", Host_Please_f);
-#endif
+	
+	//Cmd_AddCommand("please", Host_Please_f); // TODO: not present
+	
 	Cmd_AddCommand("say", Host_Say_f);
 	Cmd_AddCommand("say_team", Host_Say_Team_f);
+	
 	Cmd_AddCommand("tell", Host_Tell_f);
 	Cmd_AddCommand("kill", Host_Kill_f);
 	
 	Cmd_AddCommand("pause", Host_Pause_f);
+	Cmd_AddCommand("setpause", Host_SetPause_f);
 	Cmd_AddCommand("unpause", Host_Unpause_f);
+	
+	//Cmd_AddCommand("give", Host_Give_f); // TODO: not present
 	
 	Cmd_AddCommand("kick", Host_Kick_f);
 	Cmd_AddCommand("ping", Host_Ping_f);
+	
+	Cmd_AddCommand("motd", Host_Motd_f);
+	Cmd_AddCommand("motd_write", Host_MotdWrite_f);
+	
 	Cmd_AddCommand("load", Host_Loadgame_f);
 	Cmd_AddCommand("save", Host_Savegame_f);
-	Cmd_AddCommand("give", Host_Give_f);
-
+	Cmd_AddCommand("autosave", Host_Autosave_f);
+	
+	Cmd_AddCommand("writecfg", Host_WriteConfig_f);
+	
+	Cmd_AddCommand("+voicerecord", IN_VoiceRecordDown);
+	Cmd_AddCommand("-voicerecord", IN_VoiceRecordUp);
+	
 	Cmd_AddCommand("startdemos", Host_Startdemos_f);
 	Cmd_AddCommand("demos", Host_Demos_f);
 	Cmd_AddCommand("stopdemo", Host_Stopdemo_f);
-
+	
+	Cmd_AddCommand("setinfo", CL_SetInfo_f);
+	Cmd_AddCommand("fullinfo", CL_FullInfo_f);
+	
+	Cmd_AddCommand("god", Host_God_f);
+	Cmd_AddCommand("notarget", Host_Notarget_f);
+	Cmd_AddCommand("fly", Host_Fly_f);
+	Cmd_AddCommand("noclip", Host_Noclip_f);
+	
 	Cmd_AddCommand("viewmodel", Host_Viewmodel_f);
 	Cmd_AddCommand("viewframe", Host_Viewframe_f);
 	Cmd_AddCommand("viewnext", Host_Viewnext_f);
@@ -1833,6 +2209,8 @@ void Host_InitCommands()
 
 	Cmd_AddCommand("mcache", Mod_Print);
 	
-	Cmd_AddCommand ("setmaster", SV_SetMaster_f);
-	Cmd_AddCommand ("heartbeat", SV_Heartbeat_f);
+	Cmd_AddCommand("interp", Host_Interp_f);
+	
+	Cmd_AddCommand("setmaster", SV_SetMaster_f);
+	Cmd_AddCommand("heartbeat", SV_Heartbeat_f);
 };
