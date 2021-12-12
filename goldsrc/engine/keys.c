@@ -621,7 +621,7 @@ void Key_Event(int key, qboolean down)
 		shift_down = down;
 
 	// console key is hardcoded, so the user can never unbind it
-	if(key == '`' || key == '~')
+	if(key == '`' || key == '~') // TODO: actually should check for the toggleconsole cmd which is bound to the tilde key
 	{
 		if (!down)
 			return;
