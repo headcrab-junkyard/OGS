@@ -323,6 +323,16 @@ void CL_PlayDemo_f()
 
 /*
 ====================
+CL_ViewDemo_f
+====================
+*/
+void CL_ViewDemo_f()
+{
+	// TODO
+};
+
+/*
+====================
 CL_FinishTimeDemo
 
 ====================
@@ -368,4 +378,54 @@ void CL_TimeDemo_f()
 	cls.timedemo = true;
 	cls.td_startframe = host_framecount;
 	cls.td_lastframe = -1; // get a new message this frame
+};
+
+/*
+====================
+CL_ListDemo_f
+====================
+*/
+void CL_ListDemo_f()
+{
+	// TODO
+};
+
+/*
+====================
+CL_AppendDemo_f
+====================
+*/
+void CL_AppendDemo_f()
+{
+	// TODO
+};
+
+/*
+====================
+CL_RemoveDemo_f
+====================
+*/
+void CL_RemoveDemo_f()
+{
+	// TODO
+};
+
+/*
+====================
+CL_SwapDemo_f
+====================
+*/
+void CL_SwapDemo_f()
+{
+	// TODO
+};
+
+/*
+====================
+CL_SetDemoInfo_f
+====================
+*/
+void CL_SetDemoInfo_f()
+{
+	// TODO
 };

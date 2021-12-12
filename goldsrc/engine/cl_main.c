@@ -161,6 +161,16 @@ void CL_Connect_f()
 };
 
 /*
+================
+CL_Retry_f
+================
+*/
+void CL_Retry_f()
+{
+	// TODO
+};
+
+/*
 ====================
 CL_Users_f
 
@@ -228,6 +238,76 @@ void CL_Messages_f()
 	Con_Printf("-------- Message Load ---------\n");
 	Con_Printf("User messages:  %d:%fK\n", 0, 0.00); // TODO
 	Con_Printf("------ End:  %d Total----\n", 0); // TODO
+};
+
+/*
+==================
+CL_Rcon_f
+==================
+*/
+void CL_Rcon_f()
+{
+	// TODO
+};
+
+/*
+==================
+CL_PingServers_f
+==================
+*/
+void CL_PingServers_f()
+{
+	// TODO
+};
+
+/*
+==================
+CL_SList_f
+==================
+*/
+void CL_SList_f()
+{
+	// TODO
+};
+
+/*
+==================
+CL_List_f
+==================
+*/
+void CL_List_f()
+{
+	// TODO
+};
+
+/*
+==================
+CL_Upload_f
+==================
+*/
+void CL_Upload_f()
+{
+	// TODO
+};
+
+/*
+==================
+CL_HTTPStop_f
+==================
+*/
+void CL_HTTPStop_f()
+{
+	// TODO
+};
+
+/*
+==================
+CL_SpecPos_f
+==================
+*/
+void CL_SpecPos_f()
+{
+	// TODO
 };
 
 /*
@@ -459,6 +539,76 @@ void CL_Disconnect_f()
 
 /*
 =====================
+CL_Listen_f
+=====================
+*/
+void CL_Listen_f()
+{
+	// TODO
+};
+
+/*
+=====================
+CL_GG_f
+=====================
+*/
+void CL_GG_f()
+{
+	// TODO
+};
+
+/*
+=====================
+CL_Commentator_f
+=====================
+*/
+void CL_Commentator_f()
+{
+	// TODO
+};
+
+/*
+=====================
+CL_WavePlayLen_f
+=====================
+*/
+void CL_WavePlayLen_f()
+{
+	// TODO
+};
+
+/*
+=====================
+CL_Snapshot_f
+=====================
+*/
+void CL_Snapshot_f()
+{
+	// TODO
+};
+
+/*
+=====================
+CL_StartMovie_f
+=====================
+*/
+void CL_StartMovie_f()
+{
+	// TODO
+};
+
+/*
+=====================
+CL_EndMovie_f
+=====================
+*/
+void CL_EndMovie_f()
+{
+	// TODO
+};
+
+/*
+=====================
 CL_SignonReply
 
 An svc_signonnum has been received, perform a client side setup
@@ -537,6 +687,16 @@ void CL_PrintEntities_f()
 		};
 		Con_Printf("%s:%2i  (%5.1f,%5.1f,%5.1f) [%5.1f %5.1f %5.1f]\n", ent->model->name, ent->frame, ent->origin[0], ent->origin[1], ent->origin[2], ent->angles[0], ent->angles[1], ent->angles[2]);
 	};
+};
+
+/*
+==============
+CL_GameDir_f
+==============
+*/
+void CL_GameDir_f()
+{
+	// TODO
 };
 
 /*
@@ -1309,7 +1469,10 @@ void CL_Init()
 
 	Cmd_AddCommand("entities", CL_PrintEntities_f);
 
+	Cmd_AddCommand("gamedir", CL_GameDir_f);
+	
 	Cmd_AddCommand("connect", CL_Connect_f);
+	Cmd_AddCommand("retry", CL_Retry_f);
 	Cmd_AddCommand("disconnect", CL_Disconnect_f);
 
 	Cmd_AddCommand("record", CL_Record_f);
@@ -1317,14 +1480,42 @@ void CL_Init()
 	Cmd_AddCommand("stop", CL_Stop_f);
 
 	Cmd_AddCommand("playdemo", CL_PlayDemo_f);
+	Cmd_AddCommand("viewdemo", CL_ViewDemo_f); // TODO
 	Cmd_AddCommand("timedemo", CL_TimeDemo_f);
+	Cmd_AddCommand("listdemo", CL_ListDemo_f) // TODO
+	Cmd_AddCommand("appenddemo", CL_AppendDemo_f); // TODO
+	Cmd_AddCommand("removedemo", CL_RemoveDemo_f); // TODO
+	Cmd_AddCommand("swapdemo", CL_SwapDemo_f); // TODO
+	Cmd_AddCommand("setdemoinfo", CL_SetDemoInfo_f); // TODO
 	
-	Cmd_AddCommand("users", CL_Users_f);
+	Cmd_AddCommand("listen", CL_Listen_f);
+	
+	Cmd_AddCommand("gg", CL_GG_f);
+	
+	Cmd_AddCommand("commentator", CL_Commentator_f);
+	Cmd_AddCommand("waveplaylen", CL_WavePlayLen_f);
+	
+	Cmd_AddCommand("snapshot", CL_Snapshot_f);
+	
+	Cmd_AddCommand("startmovie", CL_StartMovie_f);
+	Cmd_AddCommand("endmovie", CL_EndMovie_f);
+	
+	//Cmd_AddCommand("users", CL_Users_f);
 	
 	Cmd_AddCommand("fullserverinfo", CL_FullServerinfo_f);
 	
 	Cmd_AddCommand("cl_messages", CL_Messages_f);
 	
+	Cmd_AddCommand("rcon", CL_Rcon_f);
 	
+	Cmd_AddCommand("pingservers", CL_PingServers_f);
 	
+	Cmd_AddCommand("slist", CL_SList_f);
+	Cmd_AddCommand("list", CL_List_f);
+	
+	Cmd_AddCommand("upload", CL_Upload_f);
+	
+	Cmd_AddCommand("httpstop", CL_HTTPStop_f);
+	
+	Cmd_AddCommand("spec_pos", CL_SpecPos_f);
 };
