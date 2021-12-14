@@ -22,6 +22,19 @@
 
 //extern void R_InitBubble(); // TODO
 
+void GL_Dump_f()
+{
+	const char *gl_vendor = qglGetString(GL_VENDOR);
+	Con_Printf("GL Vendor: %s\n", gl_vendor);
+	const char *gl_renderer = qglGetString(GL_RENDERER);
+	Con_Printf("GL Renderer: %s\n", gl_renderer);
+
+	const char *gl_version = qglGetString(GL_VERSION);
+	Con_Printf("GL Version: %s\n", gl_version);
+	const char *gl_extensions = qglGetString(GL_EXTENSIONS);
+	Con_Printf("GL Extensions: %s\n", gl_extensions); // TODO: buffer overflow!?
+};
+
 /*
 ==================
 R_InitTextures
@@ -196,7 +209,8 @@ void R_Init(void)
 	Cmd_AddCommand("timerefresh", R_TimeRefresh_f);
 	Cmd_AddCommand("envmap", R_Envmap_f);
 	Cmd_AddCommand("pointfile", R_ReadPointFile_f);
-
+	
+	Cmd_AddCommand("gl_dump", GL_Dump_f);
 	Cvar_RegisterVariable(&r_norefresh);
 	Cvar_RegisterVariable(&r_lightmap);
 	Cvar_RegisterVariable(&r_fullbright);
