@@ -430,6 +430,12 @@ void Key_Unbind_f()
 		Con_Printf("\"%s\" isn't a valid key\n", Cmd_Argv(1));
 		return;
 	};
+	
+	if(b == K_ESCAPE)
+	{
+		Con_Printf("Can't unbind ESCAPE key\n");
+		return;
+	};
 
 	Key_SetBinding(b, "");
 };
