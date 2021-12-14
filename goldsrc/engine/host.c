@@ -836,13 +836,19 @@ void Host_Init(quakeparms_t *parms)
 
 	W_LoadWadFile("gfx.wad");
 	//W_LoadWadFile("fonts.wad"); // TODO
-
+	
+	HPAK_Init();
+	
 	Key_Init();
 	Con_Init();
+	
 	PR_Init();
 	Mod_Init();
+	
 	NET_Init();
 	Netchan_Init();
+	DELTA_Init();
+	
 	SV_Init();
 	Pmove_Init(&svpmove);
 
