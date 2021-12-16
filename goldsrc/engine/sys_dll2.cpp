@@ -153,7 +153,6 @@ int CEngineAPI::Run(void *instance, const char *basedir, const char *cmdline, ch
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // TODO
-/*
 class CGameUIFuncs final : public IGameUIFuncs
 {
 public:
@@ -185,19 +184,19 @@ EXPOSE_SINGLE_INTERFACE(CGameUIFuncs, IGameUIFuncs, GAMEUIFUNCS_INTERFACE_VERSIO
 CGameUIFuncs::CGameUIFuncs() = default;
 CGameUIFuncs::~CGameUIFuncs() = default;
 
-bool CGameUIFuncs::IsKeyDown(char const *keyname, bool &isdown)
+bool CGameUIFuncs::IsKeyDown(const char *keyname, bool &isdown)
 {
 	return false; // TODO: Key_IsDown(keyname, isdown);
 };
 
 const char *CGameUIFuncs::Key_NameForKey(int keynum)
 {
-	return Key_NameForKey(keynum);
+	return Key_KeynumToString(keynum);
 };
 
 const char *CGameUIFuncs::Key_BindingForKey(int keynum)
 {
-	return Key_BindingForKey(keynum);
+	return Key_GetBinding(keynum);
 };
 
 vgui2::KeyCode CGameUIFuncs::GetVGUI2KeyCodeForBind(const char *bind)
@@ -205,11 +204,27 @@ vgui2::KeyCode CGameUIFuncs::GetVGUI2KeyCodeForBind(const char *bind)
 	return vgui2::KeyCode::KEY_NONE;
 };
 
-void CGameUIFuncs::GetVideoModes(struct vmode_s **liststart, int *count){};
+void CGameUIFuncs::GetVideoModes(struct vmode_s **liststart, int *count)
+{
+	// TODO
+};
 
-void CGameUIFuncs::GetCurrentVideoMode(int *wide, int *tall, int *bpp){};
+void CGameUIFuncs::GetCurrentVideoMode(int *wide, int *tall, int *bpp)
+{
+	if(wide)
+		*wide = vid.width;
+	
+	if(tall)
+		*tall = vid.height;
+	
+	if(bpp)
+		*bpp = 0; // TODO
+};
 
-void CGameUIFuncs::GetCurrentRenderer(char *name, int namelen, int *windowed, int *hdmodels, int *addons_folder, int *vid_level){};
+void CGameUIFuncs::GetCurrentRenderer(char *name, int namelen, int *windowed, int *hdmodels, int *addons_folder, int *vid_level)
+{
+	// TODO
+};
 
 bool CGameUIFuncs::IsConnectedToVACSecureServer()
 {
@@ -220,7 +235,6 @@ int CGameUIFuncs::Key_KeyStringToKeyNum(const char *string)
 {
 	return Key_KeyStringToKeyNum(string);
 };
-*/
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
