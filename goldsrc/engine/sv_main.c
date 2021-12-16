@@ -364,6 +364,27 @@ void SV_SendServerInfoChange(const char *key, const char *value)
 	MSG_WriteString (&sv.reliable_datagram, value);
 };
 
+
+void SV_LogAddres_f()
+{
+	// TODO
+};
+
+void SV_LogAddressAdd_f()
+{
+	// TODO
+};
+
+void SV_LogAddressDel_f()
+{
+	// TODO
+};
+
+void SV_Log_f()
+{
+	// TODO
+};
+
 /*
 ===========
 SV_Serverinfo_f
@@ -442,6 +463,11 @@ void SV_Localinfo_f ()
 		return;
 	};
 	Info_SetValueForKey (localinfo, Cmd_Argv(1), Cmd_Argv(2), MAX_LOCALINFO_STRING);
+};
+
+void SV_ShowInfo_f()
+{
+	// TODO
 };
 
 // TODO
@@ -654,6 +680,16 @@ void SV_Init()
 	int i;
 	
 	// TODO: SV_InitOperatorCommands()?
+	
+	Cmd_AddCommand("logaddress", SV_LogAddress_f);
+	Cmd_AddCommand("logaddress_add", SV_LogAddressAdd_f);
+	Cmd_AddCommand("logaddress_del", SV_LogAddressDel_f);
+	
+	Cmd_AddCommand("log", SV_Log_f);
+	
+	
+	Cmd_AddCommand("showinfo", SV_ShowInfo_f);
+	
 	Cmd_AddCommand("spawn", SV_Spawn_f);
 	Cmd_AddCommand("new", SV_New_f);
 	
