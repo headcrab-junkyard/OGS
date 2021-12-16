@@ -1077,6 +1077,44 @@ void NET_Sleep(int msec)
 
 //===================================================================
 
+static void MaxPlayers_f (void)
+{
+	int 	n;
+
+	if (Cmd_Argc () != 2)
+	{
+		Con_Printf ("\"maxplayers\" is \"%u\"\n", svs.maxclients);
+		return;
+	}
+
+	if (sv.active)
+	{
+		Con_Printf ("maxplayers can not be changed while a server is running.\n");
+		return;
+	}
+
+	n = Q_atoi(Cmd_Argv(1));
+	if (n < 1)
+		n = 1;
+	if (n > svs.maxclientslimit)
+	{
+		n = svs.maxclientslimit;
+		Con_Printf ("\"maxplayers\" set to \"%u\"\n", n);
+	}
+
+	if ((n == 1) && listening)
+		Cbuf_AddText ("listen 0\n");
+
+	if ((n > 1) && (!listening))
+		Cbuf_AddText ("listen 1\n");
+
+	svs.maxclients = n;
+	if (n == 1)
+		Cvar_Set ("deathmatch", "0");
+	else
+		Cvar_Set ("deathmatch", "1");
+}
+
 /*
 ====================
 NET_Init
@@ -1115,6 +1153,8 @@ void NET_Init()
 	Cvar_RegisterVariable(&port);
 	Cvar_RegisterVariable(&hostport);
 	Cvar_RegisterVariable(&clientport);
+	
+	Cmd_AddCommand("maxplayers", MaxPlayers_f); // TODO: should it be here or somewhere else?
 	
 	//net_shownet = Cvar_RegisterVariable("net_shownet", "0", 0);
 	
