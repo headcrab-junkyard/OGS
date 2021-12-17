@@ -276,6 +276,7 @@ void SV_New_f ()
 	
 	SV_UpdateUserInfo(host_client); // NOTE: this will update/send info about each connected client to this client
 	
+	SV_RequestResourceList(host_client); // allow the client to send its resources (a custom logo decal)
 	
 	// TODO: svc_resourcerequest
 	
@@ -1823,6 +1824,18 @@ void SV_SendMoveVars(client_t *client)
 void SV_SendUserMessages(client_t *client)
 {
 	// TODO
+};
+
+/*
+================
+SV_SendResourceList
+================
+*/
+void SV_RequestResourceList(client_t *client)
+{
+	MSG_WriteByte(&client->netchan.message, svc_resourcerequest);
+	MSG_WriteByte(&client->netchan.message, svs.spawncount);
+	MSG_WriteByte(&client->netchan.message, 0);
 };
 
 void SV_SendResourceList(client_t *client)
