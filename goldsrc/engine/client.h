@@ -329,6 +329,14 @@ typedef struct
 	char mapcycle[8192];
 } client_state_t;
 
+typedef void (*pfnEventHook)(struct event_args_s *args);
+
+typedef struct event_s
+{
+	const char *name;
+	pfnEventHook fnHook;
+} event_t;
+
 //
 // cvars
 //
