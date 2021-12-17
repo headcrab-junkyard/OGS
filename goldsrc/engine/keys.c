@@ -584,6 +584,14 @@ void Key_Init()
 	Cmd_AddCommand("unbind", Key_Unbind_f);
 	Cmd_AddCommand("unbindall", Key_Unbindall_f);
 	Cmd_AddCommand("escape", Key_Escape_f);
+	
+	// Manually bind the escape and tilde keys to the appropriate cmds
+	Key_SetBinding(K_ESCAPE, "cancelselect");
+	Key_SetBinding('`', "toggleconsole");
+	Key_SetBinding('~', "toggleconsole");
+	//keybindings[K_ESCAPE] = "cancelselect";
+	//keybindings['`'] = "toggleconsole";
+	//keybindings['~'] = "toggleconsole";
 };
 
 /*
