@@ -232,7 +232,7 @@ void Host_InitLocal()
 
 	host_time = 1.0; // so a think at time 0 won't get called
 	
-	if(COM_CheckParm("-developer"))
+	if(COM_CheckParm("-dev")) // TODO: wrong place?
 		Cvar_SetValue("developer", 1);
 }
 
