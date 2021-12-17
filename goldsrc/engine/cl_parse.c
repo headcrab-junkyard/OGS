@@ -90,8 +90,9 @@ const char *svc_strings[] =
   "svc_resourcelocation",
   "svc_sendcvarvalue",
   "svc_sendcvarvalue2",
+  "svc_exec",
   
-  //NULL
+  "End of List"
 };
 
 //=============================================================================
@@ -1461,7 +1462,12 @@ void CL_ParseServerMessage()
 				MSG_WriteString(&cls.netchan.message, pCvar->string);
 			break;
 		}
-			/* TODO: Original Quake protocol remnants unused in GS
+		case svc_exec:
+		{
+			// TODO
+			break;
+		}
+		/* TODO: Original Quake protocol remnants unused in GS
 		case svc_updatename:
 			Sbar_Changed ();
 			i = MSG_ReadByte ();

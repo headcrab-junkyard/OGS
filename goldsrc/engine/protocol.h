@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018-2020 BlackPhrase
+ * Copyright (C) 2018-2021 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,8 @@
 /// @brief communications protocols
 
 #pragma once
+
+//=========================================
 
 #define PROTOCOL_VERSION 48
 
@@ -100,6 +102,8 @@
 // these determine which intermission screen plays
 #define GAME_COOP 0
 #define GAME_DEATHMATCH 1
+
+//==============================================
 
 //==================
 // note that there are some defs.qc that mirror to these numbers
@@ -190,9 +194,12 @@ enum
 	svc_resourcelocation = 56,
 	svc_sendcvarvalue = 57,
 	svc_sendcvarvalue2 = 58,
+	svc_exec = 59,
 	
 	svc_sizeof
 };
+
+//==============================================
 
 //
 // client to server
@@ -214,6 +221,8 @@ enum
 	
 	clc_sizeof
 };
+
+//==============================================
 
 #define DEFAULT_SOUND_PACKET_VOLUME 255
 #define DEFAULT_SOUND_PACKET_ATTENUATION 1.0
