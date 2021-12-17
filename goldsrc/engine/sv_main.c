@@ -284,6 +284,11 @@ void SV_New_f ()
 	
 	SV_SendResourceList(host_client);
 	
+	// TODO: cut here?
+	// TODO: the rest is part of signon msg?
+	
+	//host_client->sendsignon = true;
+	
 	// TODO: svc_spawnbaseline
 	
 	// send time of update
