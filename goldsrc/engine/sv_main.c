@@ -365,7 +365,57 @@ void SV_SendServerInfoChange(const char *key, const char *value)
 };
 
 
-void SV_LogAddres_f()
+/*
+==================
+SV_BanID_f
+==================
+*/
+void SV_BanID_f()
+{
+	// TODO
+};
+
+/*
+==================
+SV_WriteID_f
+==================
+*/
+void SV_WriteID_f()
+{
+	// TODO
+};
+
+/*
+==================
+SV_RemoveID_f
+==================
+*/
+void SV_RemoveID_f()
+{
+	// TODO
+};
+
+/*
+==================
+SV_ListID_f
+==================
+*/
+void SV_ListID_f()
+{
+	// TODO
+};
+
+/*
+==================
+SV_ResetRcon_f
+==================
+*/
+void SV_ResetRcon_f()
+{
+	// TODO
+};
+
+void SV_LogAddress_f()
 {
 	// TODO
 };
@@ -523,6 +573,26 @@ void SV_User_f ()
 };
 
 /*
+===========
+SV_Users_f
+===========
+*/
+void SV_Users_f()
+{
+	// TODO
+};
+
+/*
+===========
+SV_DownloadFile_f
+===========
+*/
+void SV_DownloadFile_f()
+{
+	// TODO
+};
+
+/*
 =================
 StringToFilter
 =================
@@ -672,6 +742,46 @@ void SV_WriteIP_f ()
 
 /*
 ===============
+SV_DropClient_f
+===============
+*/
+void SV_DropClient_f()
+{
+	// TODO
+};
+
+/*
+===============
+SV_SendResource_f
+===============
+*/
+void SV_SendResource_f()
+{
+	// TODO
+};
+
+/*
+===============
+SV_SendEnts_f
+===============
+*/
+void SV_SendEnts_f()
+{
+	// TODO
+};
+
+/*
+===============
+SV_FullUpdate_f
+===============
+*/
+void SV_FullUpdate_f()
+{
+	// TODO
+};
+
+/*
+===============
 SV_Init
 ===============
 */
@@ -681,28 +791,44 @@ void SV_Init()
 	
 	// TODO: SV_InitOperatorCommands()?
 	
+	Cmd_AddCommand("banid", SV_BanID_f);
+	Cmd_AddCommand("writeid", SV_WriteID_f);
+	Cmd_AddCommand("removeid", SV_RemoveID_f);
+	Cmd_AddCommand("listid", SV_ListID_f);
+	
+	Cmd_AddCommand("resetrcon", SV_ResetRcon_f);
+	
 	Cmd_AddCommand("logaddress", SV_LogAddress_f);
 	Cmd_AddCommand("logaddress_add", SV_LogAddressAdd_f);
 	Cmd_AddCommand("logaddress_del", SV_LogAddressDel_f);
 	
 	Cmd_AddCommand("log", SV_Log_f);
 	
+	Cmd_AddCommand("serverinfo", SV_Serverinfo_f);
+	Cmd_AddCommand("localinfo", SV_Localinfo_f);
 	
 	Cmd_AddCommand("showinfo", SV_ShowInfo_f);
 	
+	Cmd_AddCommand("user", SV_User_f);
+	Cmd_AddCommand("users", SV_Users_f);
+	
+	Cmd_AddCommand("dlfile", SV_DownloadFile_f);
+	
+	Cmd_AddCommand("addip", SV_AddIP_f);
+	Cmd_AddCommand("removeip", SV_RemoveIP_f);
+	Cmd_AddCommand("listip", SV_ListIP_f);
+	Cmd_AddCommand("writeip", SV_WriteIP_f);
+	
+	Cmd_AddCommand("dropclient", SV_DropClient_f);
 	Cmd_AddCommand("spawn", SV_Spawn_f);
 	Cmd_AddCommand("new", SV_New_f);
 	
-	Cmd_AddCommand ("serverinfo", SV_Serverinfo_f);
-	Cmd_AddCommand ("localinfo", SV_Localinfo_f);
+	Cmd_AddCommand("sendres", SV_SendResource_f);
+	Cmd_AddCommand("sendents", SV_SendEnts_f);
 	
-	Cmd_AddCommand ("user", SV_User_f);
+	Cmd_AddCommand("fullupdate", SV_FullUpdate_f);
 	//
 	
-	Cmd_AddCommand ("addip", SV_AddIP_f);
-	Cmd_AddCommand ("removeip", SV_RemoveIP_f);
-	Cmd_AddCommand ("listip", SV_ListIP_f);
-	Cmd_AddCommand ("writeip", SV_WriteIP_f);
 	
 	Cvar_RegisterVariable(&sv_timeout);
 
