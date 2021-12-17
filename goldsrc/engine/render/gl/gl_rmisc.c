@@ -37,6 +37,16 @@ void GL_Dump_f()
 
 /*
 ==================
+GL_Texels_f
+==================
+*/
+void GL_Texels_f()
+{
+	// TODO
+};
+
+/*
+==================
 R_InitTextures
 ==================
 */
@@ -211,6 +221,8 @@ void R_Init(void)
 	Cmd_AddCommand("pointfile", R_ReadPointFile_f);
 	
 	Cmd_AddCommand("gl_dump", GL_Dump_f);
+	Cmd_AddCommand("gl_texels", GL_Texels_f);
+	
 	Cvar_RegisterVariable(&r_norefresh);
 	Cvar_RegisterVariable(&r_lightmap);
 	Cvar_RegisterVariable(&r_fullbright);
