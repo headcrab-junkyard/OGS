@@ -276,6 +276,10 @@ extern "C" {
 
 #include "huffman.h"
 
+#include "hpak.h"
+
+#include "delta.h"
+
 // TODO: qw
 /*
 #ifndef max
