@@ -274,7 +274,8 @@ void SV_New_f ()
 	MSG_WriteByte (&host_client->netchan.message, svc_stufftext);
 	MSG_WriteString (&host_client->netchan.message, va("fullserverinfo \"%s\"\n", svs.info) );
 	
-	// TODO: svc_updateuserinfo
+	SV_UpdateUserInfo(host_client); // NOTE: this will update/send info about each connected client to this client
+	
 	
 	// TODO: svc_resourcerequest
 	
@@ -284,24 +285,8 @@ void SV_New_f ()
 	
 	// send time of update
 	SV_SendTime(host_client);
-
-	//SV_UpdateUserInfo(host_client); // TODO
-	for(i = 0, host_client = svs.clients; i < svs.maxclients; i++, host_client++)
-	{
-		// TODO
-		/*
-		MSG_WriteByte(&host_client->netchan.message, svc_updatename);
-		MSG_WriteByte(&host_client->netchan.message, i);
-		MSG_WriteString(&host_client->netchan.message, client->name);
-		MSG_WriteByte(&host_client->netchan.message, svc_updatefrags);
-		MSG_WriteByte(&host_client->netchan.message, i);
-		MSG_WriteShort(&host_client->netchan.message, client->old_frags);
-		MSG_WriteByte(&host_client->netchan.message, svc_updatecolors);
-		MSG_WriteByte(&host_client->netchan.message, i);
-		MSG_WriteByte(&host_client->netchan.message, client->topcolor);
-		MSG_WriteByte(&host_client->netchan.message, client->bottomcolor);
-		*/
-	}
+	
+	SV_UpdateUserInfo(host_client); // TODO: again?
 
 	// send all current light styles
 	SV_SendLightStyles(host_client);
@@ -364,6 +349,27 @@ void SV_SendServerInfoChange(const char *key, const char *value)
 	MSG_WriteString (&sv.reliable_datagram, value);
 };
 
+/*
+==================
+SV_UpdateUserInfo
+==================
+*/
+// TODO: this func updates info about each other client, not only one
+void SV_UpdateUserInfo(client_t *client) // TODO: client_t *otherclient?
+{
+	int i;
+	client_t *otherclient;
+	
+	for(i = 0, otherclient = svs.clients; i < svs.maxclients; ++i, ++otherclient)
+	{
+		MSG_WriteByte(&client->netchan.message, svc_updateuserinfo);
+		MSG_WriteByte(&client->netchan.message, i);
+		MSG_WriteLong(&client->netchan.message, otherclient->userid);
+		MSG_WriteString(&client->netchan.message, otherclient->userinfo);
+		for(int j = 0; j <= 15; ++j) // TODO: MSG_WriteBuf
+			MSG_WriteByte(&client->netchan.message, otherclient->cdkeyhash[j]);
+	}
+};
 
 /*
 ==================
