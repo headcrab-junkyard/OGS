@@ -278,7 +278,9 @@ void SV_New_f ()
 	
 	SV_RequestResourceList(host_client); // allow the client to send its resources (a custom logo decal)
 	
-	// TODO: svc_resourcerequest
+	// TODO: after this the client might send a clc_resourcelist msg which should be parsed
+	
+	SV_SendResourceLocation(host_client); // TODO: some conditions (maybe if we actually need to send something or the cvar is not null)
 	
 	SV_SendResourceList(host_client);
 	
@@ -1838,6 +1840,16 @@ void SV_RequestResourceList(client_t *client)
 	MSG_WriteByte(&client->netchan.message, 0);
 };
 
+/*
+================
+SV_SendResourceLocation
+================
+*/
+void SV_SendResourceLocation(client_t *client)
+{
+	//MSG_WriteByte(&client->netchan.message, svc_resourcelocation);
+	//MSG_WriteString(&client->netchan.message, sv_downloadurl.string); // TODO
+};
 void SV_SendResourceList(client_t *client)
 {
 	// TODO: svc_resourcelist
