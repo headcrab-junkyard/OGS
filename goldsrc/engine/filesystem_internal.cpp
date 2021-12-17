@@ -127,7 +127,11 @@ unsigned int FS_FileSize(const char *pFileName)
 
 long FS_GetFileTime(const char *pFileName)
 {
-	return gpFileSystem->GetFileTime(pFileName);
+	//auto t{VID_ForceUnlockedAndReturnState()}; // TODO: non-SWDS windows
+	auto retval{gpFileSystem->GetFileTime(pFileName)};
+	//VID_ForceLockState(t); // TODO: non-SWDS windows
+	
+	return retval;
 };
 
 void FS_FileTimeToString(char *pStrip, int maxCharsIncludingTerminator, long fileTime)
@@ -326,12 +330,19 @@ void FS_AddSearchPathNoWrite(const char *pPath, const char *pathID)
 	gpFileSystem->AddSearchPathNoWrite(pPath, pathID);
 };
 
+//////////////////////////////////////////////////////////////
+
 void *FS_LoadLibrary(const char *asPath)
 {
 	// TODO: mb something else
 	return Sys_LoadModule(asPath);
 };
 
+// BP: a duplicate?
+void *FileSystem_LoadDLL(const char *asPath)
+{
+	return FS_LoadLibrary(asPath);
+};
 
 void FileSystem_UnloadDLL(void *apDLL)
 {
@@ -377,10 +388,10 @@ Sys_mkdir
 */
 void FS_mkdir(const char *path)
 {
-// TODO: if not dedicated?
-
 #ifdef _WIN32
+#ifndef SWDS
 	//_mkdir(path); // TODO
+#endif
 #else
 	mkdir(path, 0777);
 #endif
