@@ -1,4 +1,4 @@
-<p align="center">
+	<p align="center">
 	<a href="https://gitlab.com/BlackPhrase/OGS"><img width="256" heigth="256" src="./docs/OGSLogo512x512.png?raw=true" alt="OGS Logo"/></a>
 </p>
 
@@ -6,8 +6,8 @@
 	<a href="https://ci.appveyor.com/project/BlackPhrase/OGS">
 		<img src="https://ci.appveyor.com/api/projects/status/gitlab/BlackPhrase/OGS?svg=true"/>
 	</a>
-	<a href="https://codeclimate.com/gitlab/BlackPhrase/OGS/issues">
-		<img src="https://img.shields.io/codeclimate/issues/gitlab/BlackPhrase/OGS.svg"/>
+	<a href="https://codeclimate.com/github/BlackPhrase/OGS/issues">
+		<img src="https://img.shields.io/codeclimate/issues/github/BlackPhrase/OGS.svg"/>
 	</a>
 </p>
 
@@ -21,10 +21,17 @@
 
 ## Overview
 
-This is a [GoldSource](https://en.wikipedia.org/wiki/GoldSrc) game engine reimplementation using only original id Tech 2 engine (NetQuake/QuakeWorld/Quake 2) sources (and 
-its forks) and no reverse-engineered code (like from ReHLDS or Xash3D)
+This is a [GoldSource](https://en.wikipedia.org/wiki/GoldSrc) game engine reimplementation. It's based on an original WinQuake/NetQuake codebase (just like Valve did with GoldSrc). Various improvements and fixes from QuakeWorld (client-side prediction code, console commands, client-server connection mechanics), Quake 2 (renderer improvements, game dll interface) and Quake 3 (improved net messaging system) code bases were applied above it. There is also some other Quake engine forks were used to implement certain features. It doesn't use any of the reverse-engineered code (like from ReHLDS or Xash3D engine).
 
-For more information about the project you can visit its official [Wiki](./wiki)
+The original Quake progs code was reused the same way as Valve did for their Half-Life and was moved out of the repo into its own and now can be found [here](https://gitlab.com/BlackPhrase/openlambda). It's GPLv3-licensed and is fully compatible with the engine. It uses the same APIs so technically it should possible to run the original HLSDK compiled binaries with this engine.
+
+The engine SDK was also rewritten (and still being in process of) to be compatible with GPL license and can be found [here](https://gitlab.com/BlackPhrase/ogs-sdk).
+
+There is an ongoing process of rewriting the VGUI2 library to make it usable by the GameUI and Client DLL code. It's not fully functional yet but also required in order to run the engine. You can find it [here](https://gitlab.com/BlackPhrase/vgui2-reimp).
+
+Some of the key features of GoldSrc engine were also implemented, partially implemented or waiting to be implemented by using features of other Quake engine forks (and trying not to reinvent the wheel).
+
+For more information about the project you can visit its official [Wiki](./wiki).
 
 ## Getting Started
 
@@ -60,7 +67,7 @@ All built binaries will be located in "%your chosen location%/bin" folder. You n
 
 It is recommended to launch the engine with the following command line arguments:
 
->-window -width 1280 -height 600 -force -developer 5 -condebug -gamma 1 +developer -zone 32768
+>-window -width 1280 -height 600 -force -dev 5 -condebug -gamma 1 +dev -zone 32768
 
 ## Mini-Q&A
 
@@ -97,6 +104,10 @@ Feel free to create issues or pull-requests if you have any problems or you want
 Any help is appreciated (especially from coders and documentation/wiki writers). 
 Please read the [Contributing Guidelines](CONTRIBUTING.md) before providing any changes and for additional information
 
+## Credits
+
+OGS engine is using original WinQuake codebase as a base and some of the QuakeWorld, Quake 2 and Quake 3 code pieces applied above it. It also integrates various parts from other Quake engine forks developed by other people throughout the time. Thanks to everyone which work became part of the engine. For the full list see the [Credits](CREDITS.md) file.
+
 ## Screenshots
 
 ![Menu Test](docs/ogs-menu-test3.png)
@@ -106,5 +117,4 @@ Please read the [Contributing Guidelines](CONTRIBUTING.md) before providing any 
 ## License
 
 * [GNU GPL v3+](LICENSE) for most of the codebase;  
-* MIT for ogs-interface code ("Valve's interface/module factory" reimplementation; located in "goldsrc/tier1" and "goldsrc/public/tier1" folders);  
 * [BSD-3](https://github.com/ValveSoftware/GameNetworkingSockets/blob/master/LICENSE) for pieces taken from the GameNetworkingSockets repo (tier0/vstdlib sources and headers written by Valve for original GS engine);
