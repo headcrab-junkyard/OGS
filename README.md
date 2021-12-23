@@ -1,5 +1,7 @@
-	<p align="center">
-	<a href="https://gitlab.com/BlackPhrase/OGS"><img width="256" heigth="256" src="./docs/OGSLogo512x512.png?raw=true" alt="OGS Logo"/></a>
+<p align="center">
+	<a href="https://gitlab.com/BlackPhrase/OGS">
+		<img width="256" heigth="256" src="./docs/OGSLogo512x512.png?raw=true" alt="OGS Engine Logo"/>
+	</a>
 </p>
 
 <p align="center">
@@ -12,6 +14,8 @@
 </p>
 
 # OGS Engine
+
+https://github.com/ValveSoftware/halflife/issues/1712#issuecomment-272569051
 
 >Gold Source is a version of Quake and Quake is open source so maybe that is an option for you.
 >
@@ -111,7 +115,7 @@ OGS engine is using original WinQuake codebase as a base and some of the QuakeWo
 ## Screenshots
 
 ![Menu Test](docs/ogs-menu-test3.png)
-![Map Test](docs/ogs-map-test3.png)
+![Map Test](docs/ogs-map-test4.png)
 ![ImGui Test](docs/ogs-imgui-test.png)
 
 ## License
