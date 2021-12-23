@@ -447,9 +447,40 @@ void Key_Unbindall_f()
 			Key_SetBinding(i, "");
 };
 
+/*
+================
+M_ToggleMenu_f
+================
+*/
 void Key_Escape_f()
 {
 	// TODO: this closes the console and gameui if open
+	
+	if(BaseUI_IsGameUIVisible())
+		BaseUI_HideGameUI();
+	else
+		BaseUI_ActivateGameUI();
+	
+/*
+	m_entersound = true;
+	
+	if(key_dest == key_menu)
+	{
+		if(m_state != m_main)
+		{
+			M_Menu_Main_f();
+			return;
+		};
+		key_dest = key_game;
+		m_state = m_none;
+		return;
+	};
+	
+	if(key_dest == key_console)
+		Con_ToggleConsole_f();
+	else
+		M_Menu_Main_f();
+*/
 };
 
 /*

@@ -40,37 +40,3 @@ void M_Draw()
 	S_ExtraUpdate();
 	VID_LockBuffer();
 };
-
-/*
-================
-M_ToggleMenu_f
-================
-*/
-void M_ToggleMenu_f()
-{
-	if(BaseUI_IsGameUIVisible())
-		BaseUI_HideGameUI();
-	else
-		BaseUI_ActivateGameUI();
-	
-/*
-	m_entersound = true;
-	
-	if(key_dest == key_menu)
-	{
-		if(m_state != m_main)
-		{
-			M_Menu_Main_f();
-			return;
-		};
-		key_dest = key_game;
-		m_state = m_none;
-		return;
-	};
-	
-	if(key_dest == key_console)
-		Con_ToggleConsole_f();
-	else
-		M_Menu_Main_f();
-*/
-};
