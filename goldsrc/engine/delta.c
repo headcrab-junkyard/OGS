@@ -21,9 +21,22 @@
 #include "quakedef.h"
 #include "delta.h"
 
+void DELTA_Stats_f()
+{
+	// TODO
+};
+
+void DELTA_Clear_f()
+{
+	// TODO
+};
+
 void DELTA_Init()
 {
 	// TODO
+	
+	Cmd_AddCommand("delta_stats", DELTA_Stats_f);
+	Cmd_AddCommand("delta_clear", DELTA_Clear_f);
 };
 
 void DELTA_Load(const char *filename)
