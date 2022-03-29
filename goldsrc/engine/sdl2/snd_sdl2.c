@@ -22,74 +22,38 @@
 
 #include "quakedef.h"
 
-cvar_t bgmvolume = { "bgmvolume", "1", true };
-cvar_t volume = { "volume", "0.7", true };
-
-void S_Init()
+qboolean SNDDMA_Init()
 {
+	if(SDL_WasInit(SDL_INIT_AUDIO) != 0)
+		return true;
+	
+	if(SDL_InitSubSystem(SDL_INIT_AUDIO) != 0)
+	{
+		Con_DPrintf("Failed to init SDL2 audio subsystem, sound initialization skipped...\n");
+		return false;
+	};
+	
+	return true;
 }
 
-void S_AmbientOff()
+void SNDDMA_Shutdown()
 {
+	if(SDL_WasInit(SDL_INIT_AUDIO) != 0)
+		SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
 
-void S_AmbientOn()
+void SNDDMA_Submit()
 {
-}
+	if(SDL_WasInit(SDL_INIT_AUDIO) == 0)
+		return;
+	
+	// TODO
+};
 
-void S_Shutdown()
+int SNDDMA_GetDMAPos()
 {
-}
-
-void S_TouchSound(const char *sample)
-{
-}
-
-void S_ClearBuffer()
-{
-}
-
-void S_StaticSound(sfx_t *sfx, vec3_t origin, float vol, float attenuation)
-{
-}
-
-void S_StartSound(int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float fvol, float attenuation)
-{
-}
-
-void S_StopSound(int entnum, int entchannel)
-{
-}
-
-sfx_t *S_PrecacheSound(const char *sample)
-{
-	return NULL;
-}
-
-void S_ClearPrecache()
-{
-}
-
-void S_Update(vec3_t origin, vec3_t v_forward, vec3_t v_right, vec3_t v_up)
-{
-}
-
-void S_StopAllSounds(qboolean clear)
-{
-}
-
-void S_BeginPrecaching()
-{
-}
-
-void S_EndPrecaching()
-{
-}
-
-void S_ExtraUpdate()
-{
-}
-
-void S_LocalSound(const char *s)
-{
-}
+	if(SDL_WasInit(SDL_INIT_AUDIO) == 0)
+		return;
+	
+	// TODO
+};

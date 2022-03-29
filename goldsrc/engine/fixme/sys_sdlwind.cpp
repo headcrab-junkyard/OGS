@@ -93,8 +93,8 @@ void CGame::CreateGameWindow()
 {
 	// Init SDL2
 	if(SDL_WasInit(SDL_INIT_VIDEO | SDL_INIT_TIMER) == 0)
-		if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) // TODO: SDL_InitSubsystem?
-			Sys_Error("Couldn't create SDL2 window! (%s)", SDL_GetError());
+		if(SDL_InitSubsystem(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) // TODO: Do we need timer? Joystick? The joystick can be initialized later
+			Sys_Error("Couldn't init SDL2! (%s)", SDL_GetError());
 	
 	// Setup window attributes
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -104,20 +104,25 @@ void CGame::CreateGameWindow()
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 	
 	SDL_DisplayMode CurrentDisplayMode;
-	SDL_GetCurrentDisplayMode(0, &CurrentDisplayMode);
+	SDL_GetCurrentDisplayMode(0, &CurrentDisplayMode); // TODO: SDL_GetClosestDisplayMode
 	
-	SDL_WindowFlags WindowFlags{SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI}; // TODO: check if we should add opengl to flags
+	Uint32 /*SDL_WindowFlags*/ nWindowFlags{SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI}; // TODO: check if we should add opengl to flags
 	
 	if(!COM_CheckParm("-noontop"))
-		WindowFlags |= SDL_WINDOW_ALWAYS_ON_TOP; //SDL_ALLOW_TOPMOST
+		nWindowFlags |= SDL_WINDOW_ALWAYS_ON_TOP; //SDL_ALLOW_TOPMOST
 	
 	if(COM_CheckParm("-noborder"))
-		WindowFlags |= SDL_WINDOW_BORDERLESS;
+		nWindowFlags |= SDL_WINDOW_BORDERLESS;
 	
 	if(COM_CheckParm("-fullscreen"))
-		WindowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP; // SDL_WINDOW_FULLSCREEN
+		nWindowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP; // SDL_WINDOW_FULLSCREEN
 	
-	mpWindow = SDL_CreateWindow("OGS Engine Tech Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 600, WindowFlags); // TODO: title should be "Half-Life"
+	constexpr auto sWindowTitle{"OGS Engine Tech Demo"};
+	
+	int nWindowWidth{1280};
+	int nWindowHeight{600};
+	
+	mpWindow = SDL_CreateWindow(sWindowTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, nWindowWidth, nWindowHeight, nWindowFlags); // TODO: title should be "Half-Life"
 
 	if(!mpWindow)
 		Sys_Error("Failed to create SDL Window! (%s)", SDL_GetError());
