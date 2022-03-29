@@ -44,8 +44,10 @@ cvar_t sv_waterfriction = { "sv_waterfriction", "4", FCVAR_SERVER};
 cvar_t sv_stopspeed = { "sv_stopspeed", "100", FCVAR_SERVER };
 cvar_t sv_gravity = { "sv_gravity", "800", FCVAR_SERVER };
 cvar_t sv_maxvelocity = { "sv_maxvelocity", "2000" };
+
 cvar_t	sv_maxspeed			 = { "sv_maxspeed", "320", FCVAR_SERVER};
 cvar_t	sv_spectatormaxspeed = { "sv_spectatormaxspeed", "500"};
+
 cvar_t	sv_accelerate		 = { "sv_accelerate", "10", FCVAR_SERVER};
 cvar_t	sv_airaccelerate	 = { "sv_airaccelerate", "0.7", FCVAR_SERVER};    
 cvar_t	sv_wateraccelerate	 = { "sv_wateraccelerate", "10", FCVAR_SERVER};

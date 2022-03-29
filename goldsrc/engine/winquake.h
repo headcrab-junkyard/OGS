@@ -29,6 +29,7 @@
 #pragma warning(disable : 4229) // mgraph gets this
 
 #include <windows.h>
+
 #define WM_MOUSEWHEEL 0x020A
 
 #ifndef SWDS

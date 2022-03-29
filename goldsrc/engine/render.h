@@ -77,10 +77,10 @@ extern struct texture_s *r_notexture_mip;
 void R_Init();
 void R_InitTextures();
 void R_InitEfrags();
-void R_RenderView(); // must set r_refdef first
+void R_RenderView(); // Must set r_refdef first
 void R_ViewChanged(vrect_t *pvrect, int lineadj, float aspect);
-// called whenever r_refdef or vid change
-void R_InitSky(struct texture_s *mt); // called at level load
+// Called whenever r_refdef or vid change
+void R_InitSky(struct texture_s *mt); // Called at level load
 
 void R_AddEfrags(cl_entity_t *ent);
 void R_RemoveEfrags(cl_entity_t *ent);
@@ -102,16 +102,16 @@ void R_LavaSplash(vec3_t org);
 void R_TeleportSplash(vec3_t org);
 
 void R_PushDlights();
-//void R_InitParticles ();
-//void R_ClearParticles ();
-//void R_DrawParticles ();
-void R_DrawWaterSurfaces ();
+//void R_InitParticles();
+//void R_ClearParticles();
+//void R_DrawParticles();
+void R_DrawWaterSurfaces();
 
 //
 // surface cache related
 //
-extern int reinit_surfcache;    // if 1, surface cache is currently empty and
-extern qboolean r_cache_thrash; // set if thrashing the surface cache
+extern int reinit_surfcache; // If 1, surface cache is currently empty and
+extern qboolean r_cache_thrash; // Set if thrashing the surface cache
 
 int D_SurfaceCacheForRes(int width, int height);
 void D_FlushCaches();

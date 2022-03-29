@@ -21,7 +21,7 @@
 #include "quakedef.h"
 #include "GameUI/IGameConsole.h"
 
-IGameConsole *gpGameConsole{ nullptr };
+IGameConsole *gpGameConsole{nullptr};
 
 //void GameConsole_Initialize();
 

@@ -37,7 +37,7 @@ sfx_t *cl_sfx_r_exp3;
 CL_ParseTEnt
 =================
 */
-void CL_InitTEnts(void)
+void CL_InitTEnts()
 {
 	cl_sfx_tink1 = S_PrecacheSound("weapons/tink1.wav");
 	cl_sfx_ric1 = S_PrecacheSound("weapons/ric1.wav");
@@ -78,7 +78,7 @@ void CL_ParseBeam(model_t *m)
 			VectorCopy(start, b->start);
 			VectorCopy(end, b->end);
 			return;
-		}
+		};
 
 	// find a free beam
 	for(i = 0, b = cl_beams; i < MAX_BEAMS; i++, b++)
@@ -91,17 +91,17 @@ void CL_ParseBeam(model_t *m)
 			VectorCopy(start, b->start);
 			VectorCopy(end, b->end);
 			return;
-		}
-	}
+		};
+	};
 	Con_Printf("beam list overflow!\n");
-}
+};
 
 /*
 =================
 CL_ParseTEnt
 =================
 */
-void CL_ParseTEnt(void)
+void CL_ParseTEnt()
 {
 	int type;
 	vec3_t pos;
@@ -504,15 +504,15 @@ void CL_ParseTEnt(void)
 
 	default:
 		Sys_Error("CL_ParseTEnt: bad type");
-	}
-}
+	};
+};
 
 /*
 =================
 CL_NewTempEntity
 =================
 */
-cl_entity_t *CL_NewTempEntity(void)
+cl_entity_t *CL_NewTempEntity()
 {
 	cl_entity_t *ent;
 
@@ -528,14 +528,14 @@ cl_entity_t *CL_NewTempEntity(void)
 
 	ent->colormap = vid.colormap;
 	return ent;
-}
+};
 
 /*
 =================
 CL_UpdateTEnts
 =================
 */
-void CL_UpdateTEnts(void)
+void CL_UpdateTEnts()
 {
 	int i;
 	beam_t *b;
@@ -555,9 +555,7 @@ void CL_UpdateTEnts(void)
 
 		// if coming from the player, update the start position
 		if(b->entity == cl.viewentity)
-		{
 			VectorCopy(cl_entities[cl.viewentity].origin, b->start);
-		}
 
 		// calculate pitch and yaw
 		VectorSubtract(b->end, b->start, dist);
@@ -580,7 +578,7 @@ void CL_UpdateTEnts(void)
 			pitch = (int)(atan2(dist[2], forward) * 180 / M_PI);
 			if(pitch < 0)
 				pitch += 360;
-		}
+		};
 
 		// add new entities for the lightning
 		VectorCopy(b->start, org);
@@ -599,6 +597,6 @@ void CL_UpdateTEnts(void)
 			for(i = 0; i < 3; i++)
 				org[i] += dist[i] * 30;
 			d -= 30;
-		}
-	}
-}
+		};
+	};
+};

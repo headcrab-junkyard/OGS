@@ -832,7 +832,7 @@ void Host_Init(quakeparms_t *parms)
 	//Host_InitVCR (parms);
 	COM_Init(parms->basedir); // TODO: no basedir?
 	Host_InitLocal();
-	//Sys_Init ();
+	//Sys_Init();
 
 	W_LoadWadFile("gfx.wad");
 	//W_LoadWadFile("fonts.wad"); // TODO
@@ -946,7 +946,7 @@ void Host_Shutdown()
 	{
 		printf("recursive shutdown\n");
 		return;
-	}
+	};
 	isdown = true;
 
 	// keep Con_Printf from trying to update the screen

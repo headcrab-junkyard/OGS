@@ -29,7 +29,6 @@ extern cvar_t bgmvolume;
 static qboolean cdValid = false;
 static qboolean playing = false;
 static qboolean wasPlaying = false;
-
 static qboolean playLooping = false;
 static float cdvolume;
 static byte remap[100];
@@ -95,7 +94,7 @@ int CCDAudio::Init()
 	if(dwReturn = mciSendCommand(wDeviceID, MCI_SET, MCI_SET_TIME_FORMAT, (DWORD)(LPVOID)&mciSetParms))
 	{
 		Con_Printf("MCI_SET_TIME_FORMAT failed (%i)\n", dwReturn);
-		mciSendCommand(wDeviceID, MCI_CLOSE, 0, (DWORD) nullptr);
+		mciSendCommand(wDeviceID, MCI_CLOSE, 0, (DWORD)nullptr);
 		return -1;
 	};
 
@@ -125,7 +124,7 @@ void CCDAudio::Shutdown()
 
 	Stop();
 
-	if(mciSendCommand(wDeviceID, MCI_CLOSE, MCI_WAIT, (DWORD) nullptr))
+	if(mciSendCommand(wDeviceID, MCI_CLOSE, MCI_WAIT, (DWORD)nullptr))
 		Con_DPrintf("CDAudio_Shutdown: MCI_CLOSE failed\n");
 };
 
@@ -236,7 +235,7 @@ void CCDAudio::Stop()
 	if(!playing)
 		return;
 
-	if(dwReturn = mciSendCommand(wDeviceID, MCI_STOP, 0, (DWORD) nullptr))
+	if(dwReturn = mciSendCommand(wDeviceID, MCI_STOP, 0, (DWORD)nullptr))
 		Con_DPrintf("MCI_STOP failed (%i)", dwReturn);
 
 	wasPlaying = false;
@@ -450,7 +449,7 @@ void CCDAudio::Eject()
 {
 	DWORD dwReturn;
 
-	if(dwReturn = mciSendCommand(wDeviceID, MCI_SET, MCI_SET_DOOR_OPEN, (DWORD) nullptr))
+	if(dwReturn = mciSendCommand(wDeviceID, MCI_SET, MCI_SET_DOOR_OPEN, (DWORD)nullptr))
 		Con_DPrintf("MCI_SET_DOOR_OPEN failed (%i)\n", dwReturn);
 };
 
@@ -458,7 +457,7 @@ void CCDAudio::CloseDoor()
 {
 	DWORD dwReturn;
 
-	if(dwReturn = mciSendCommand(wDeviceID, MCI_SET, MCI_SET_DOOR_CLOSED, (DWORD) nullptr))
+	if(dwReturn = mciSendCommand(wDeviceID, MCI_SET, MCI_SET_DOOR_CLOSED, (DWORD)nullptr))
 		Con_DPrintf("MCI_SET_DOOR_CLOSED failed (%i)\n", dwReturn);
 };
 
