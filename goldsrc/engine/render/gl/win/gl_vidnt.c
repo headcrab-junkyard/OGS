@@ -713,7 +713,7 @@ void VID_Shutdown()
 
 		if(hRC)
 			qwglDeleteContext(hRC);
-
+		
 		if(hDC && mainwindow)
 			ReleaseDC(mainwindow, hDC);
 

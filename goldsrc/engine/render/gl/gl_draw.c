@@ -17,8 +17,8 @@
  * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
 
-// draw.c -- this is the only file outside the refresh that touches the
-// vid buffer
+/// @file
+/// @brief this is the only file outside the refresh that touches the vid buffer
 
 #include "quakedef.h"
 

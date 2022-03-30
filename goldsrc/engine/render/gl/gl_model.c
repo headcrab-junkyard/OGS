@@ -16,7 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
-// models.c -- model loading and caching
+
+/// @file
+/// @brief model loading and caching
 
 // models are the only shared resource between a client and server running
 // on the same machine.
@@ -54,7 +56,7 @@ void Mod_Init(void)
 
 /*
 ===============
-Mod_Init
+Mod_Extradata
 
 Caches the data if needed
 ===============

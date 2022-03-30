@@ -16,7 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
-// r_surf.c: surface-related refresh code
+
+/// @file
+/// @brief surface-related refresh code
 
 #include "quakedef.h"
 

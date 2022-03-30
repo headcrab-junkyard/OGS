@@ -16,12 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
-// r_misc.c
+
+/// @file
 
 #include "quakedef.h"
 
 //extern void R_InitBubble(); // TODO
 
+/*
+==================
+GL_Dump_f
+==================
+*/
 void GL_Dump_f()
 {
 	const char *gl_vendor = qglGetString(GL_VENDOR);
@@ -50,7 +56,7 @@ void GL_Texels_f()
 R_InitTextures
 ==================
 */
-void R_InitTextures(void)
+void R_InitTextures()
 {
 	int x, y, m;
 	byte *dest;
@@ -74,9 +80,9 @@ void R_InitTextures(void)
 					*dest++ = 0;
 				else
 					*dest++ = 0xff;
-			}
-	}
-}
+			};
+	};
+};
 
 byte dottexture[8][8] =
 {
@@ -90,7 +96,7 @@ byte dottexture[8][8] =
   { 0, 0, 0, 0, 0, 0, 0, 0 },
 };
 
-void R_InitParticleTexture(void)
+void R_InitParticleTexture()
 {
 	int x, y;
 	byte data[8][8][4];
@@ -109,8 +115,8 @@ void R_InitParticleTexture(void)
 			data[y][x][1] = 255;
 			data[y][x][2] = 255;
 			data[y][x][3] = dottexture[x][y] * 255;
-		}
-	}
+		};
+	};
 	
 	//
 	qglTexImage2D(GL_TEXTURE_2D, 0, gl_alpha_format, 8, 8, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
@@ -139,7 +145,7 @@ void R_InitParticleTexture(void)
 	r_notexture = GL_LoadPic ("***r_notexture***", (byte *)data, 8, 8, it_wall, 32);
 	*/
 	//
-}
+};
 
 /*
 ===============
@@ -148,7 +154,7 @@ R_Envmap_f
 Grab six views for environment mapping tests
 ===============
 */
-void R_Envmap_f(void)
+void R_Envmap_f()
 {
 	byte buffer[256 * 256 * 4];
 
@@ -205,14 +211,14 @@ void R_Envmap_f(void)
 	qglDrawBuffer(GL_BACK);
 	qglReadBuffer(GL_BACK);
 	GL_EndRendering();
-}
+};
 
 /*
 ===============
 R_Init
 ===============
 */
-void R_Init(void)
+void R_Init()
 {
 	extern cvar_t gl_finish; // TODO
 
@@ -270,7 +276,7 @@ void R_Init(void)
 
 	playertextures = texture_extension_number;
 	texture_extension_number += 16; // TODO: MAX_CLIENTS in qw
-}
+};
 
 /*
 ===============
@@ -342,7 +348,7 @@ void R_TranslatePlayerSkin(int playernum)
 			translate[BOTTOM_RANGE + i] = bottom + i;
 		else
 			translate[BOTTOM_RANGE + i] = bottom + 15 - i;
-	}
+	};
 
 	//
 	// locate the original skin pixels
@@ -403,8 +409,7 @@ void R_TranslatePlayerSkin(int playernum)
 		translated[i+1] = translate[original[i+1]];
 		translated[i+2] = translate[original[i+2]];
 		translated[i+3] = translate[original[i+3]];
-	}
-
+	};
 
 	// don't mipmap these, because it takes too long
 	GL_Upload8 (translated, NULL, paliashdr->skinwidth, paliashdr->skinheight, false, false, true);
@@ -437,12 +442,12 @@ void R_TranslatePlayerSkin(int playernum)
 				frac += fracstep;
 				out2[j + 3] = translate[inrow[frac >> 16]];
 				frac += fracstep;
-			}
-		}
+			};
+		};
 
 		GL_Upload8_EXT((byte *)pixels, scaled_width, scaled_height, false, false);
 		return;
-	}
+	};
 
 	for(i = 0; i < 256; i++)
 		translate32[i] = d_8to24table[translate[i]];
@@ -464,8 +469,8 @@ void R_TranslatePlayerSkin(int playernum)
 			frac += fracstep;
 			out[j + 3] = translate32[inrow[frac >> 16]];
 			frac += fracstep;
-		}
-	}
+		};
+	};
 
 	qglTexImage2D(GL_TEXTURE_2D, 0, gl_solid_format, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
@@ -473,14 +478,14 @@ void R_TranslatePlayerSkin(int playernum)
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 #endif // TODO: } in qw (?????????????????)
-}
+};
 
 /*
 ===============
 R_NewMap
 ===============
 */
-void R_NewMap(void)
+void R_NewMap()
 {
 	int i;
 
@@ -515,7 +520,7 @@ void R_NewMap(void)
 	};
 	
 	R_LoadSkys();
-}
+};
 
 /*
 ====================
@@ -524,30 +529,27 @@ R_TimeRefresh_f
 For program optimization
 ====================
 */
-void R_TimeRefresh_f(void)
+void R_TimeRefresh_f()
 {
-	int i;
-	float start, stop, time;
-
 	qglDrawBuffer(GL_FRONT);
 	qglFinish();
 
-	start = Sys_FloatTime();
-	for(i = 0; i < 128; i++)
+	float start = Sys_FloatTime();
+	for(int i = 0; i < 128; i++)
 	{
 		r_refdef.viewangles[1] = i / 128.0 * 360.0;
 		R_RenderView();
-	}
+	};
 
 	qglFinish();
-	stop = Sys_FloatTime();
-	time = stop - start;
+	float stop = Sys_FloatTime();
+	float time = stop - start;
 	Con_Printf("%f seconds (%f fps)\n", time, 128 / time);
 
 	qglDrawBuffer(GL_BACK);
 	GL_EndRendering();
-}
+};
 
-void D_FlushCaches(void)
+void D_FlushCaches()
 {
-}
+};

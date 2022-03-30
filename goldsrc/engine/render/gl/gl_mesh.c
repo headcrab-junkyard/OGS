@@ -16,7 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
-// gl_mesh.c: triangle model functions
+
+/// @file
+/// @brief triangle model functions
 
 #include "quakedef.h"
 

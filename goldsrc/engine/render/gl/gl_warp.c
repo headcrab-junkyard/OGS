@@ -16,7 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with OGS Engine. If not, see <http://www.gnu.org/licenses/>.
  */
-// gl_warp.c -- sky and water polygons
+
+/// @file
+/// @brief sky and water polygons
 
 #include "quakedef.h"
 
@@ -925,11 +927,9 @@ void R_DrawSkyChain(msurface_t *s)
 R_ClearSkyBox
 ==============
 */
-void R_ClearSkyBox(void)
+void R_ClearSkyBox()
 {
-	int i;
-
-	for(i = 0; i < 6; i++)
+	for(int i = 0; i < 6; i++)
 	{
 		skymins[0][i] = skymins[1][i] = 9999;
 		skymaxs[0][i] = skymaxs[1][i] = -9999;
