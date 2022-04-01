@@ -440,19 +440,6 @@ void CL_StopUpload();
 */
 
 //
-// view
-//
-void V_StartPitchDrift();
-void V_StopPitchDrift();
-
-void V_RenderView();
-void V_UpdatePalette();
-void V_Register();
-void V_ParseDamage();
-void V_SetContentsColor(int contents);
-void V_CalcBlend();
-
-//
 // cl_tent
 //
 void CL_InitTEnts();

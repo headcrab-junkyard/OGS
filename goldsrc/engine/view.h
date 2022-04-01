@@ -33,8 +33,23 @@ extern float v_blend[4];
 extern cvar_t lcd_x;
 
 void V_Init();
+
+void V_Register();
+
 void V_RenderView();
-float V_CalcRoll(vec3_t angles, vec3_t velocity);
+
 void V_UpdatePalette();
+
+float V_CalcRoll(vec3_t angles, vec3_t velocity);
+
 void V_CalcShake(); // TODO
 void V_ApplyShake(float *avOrigin, float *avAngles, float afFactor); // TODO
+
+void V_StartPitchDrift();
+void V_StopPitchDrift();
+
+void V_ParseDamage();
+
+void V_SetContentsColor(int contents);
+
+void V_CalcBlend();
