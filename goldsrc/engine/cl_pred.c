@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018-2019, 2021 BlackPhrase
+ * Copyright (C) 2018-2019, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -174,6 +174,10 @@ CL_PredictMove
 */
 void CL_PredictMove()
 {
+#ifndef SWDS
+	if(cls.state == ca_dedicated)
+		return;
+	
 	int ack, current;
 	int i;
 	float f;
@@ -277,6 +281,7 @@ void CL_PredictMove()
 		cl.simorg[i] = from->playerstate[cl.playernum].playerstate.origin[i] + f * (to->playerstate[cl.playernum].playerstate.origin[i] - from->playerstate[cl.playernum].playerstate.origin[i]);
 		cl.simvel[i] = from->playerstate[cl.playernum].playerstate.velocity[i] + f * (to->playerstate[cl.playernum].playerstate.velocity[i] - from->playerstate[cl.playernum].playerstate.velocity[i]);
 	}
+#endif // SWDS
 }
 
 /*

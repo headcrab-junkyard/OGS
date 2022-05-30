@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-2001 Id Software, Inc.
- * Copyright (C) 2018, 2020-2021 BlackPhrase
+ * Copyright (C) 2018, 2020-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -368,6 +368,10 @@ Resend a connect message if the last one has timed out
 */
 void CL_CheckForResend()
 {
+#ifndef SWDS
+	if(cls.state == ca_dedicated)
+		return;
+	
 	netadr_t adr;
 	char data[2048];
 	double t1, t2;
@@ -413,6 +417,7 @@ void CL_CheckForResend()
 	sprintf(data, "%c%c%c%cgetchallenge\n", 255, 255, 255, 255);
 	NET_SendPacket(NS_CLIENT, Q_strlen(data), data, adr);
 	//
+#endif // SWDS
 };
 
 void CL_BeginServerConnect()
@@ -1274,6 +1279,10 @@ CL_ReadPackets
 */
 void CL_ReadPackets ()
 {
+#ifndef SWDS
+	if(cls.state == ca_dedicated)
+		return;
+	
 //	while (NET_GetPacket ())
 	//while (NET_GetPacket (NS_CLIENT, &net_from, &net_message)) // TODO: q2
 	while (CL_GetMessage())
@@ -1332,6 +1341,7 @@ void CL_ReadPackets ()
 	}
 	//else // TODO: q2
 		//cl.timeoutcount = 0; // TODO: q2
+#endif // SWDS
 };
 
 /*
@@ -1341,6 +1351,10 @@ CL_SendCmd
 */
 void CL_SendCmd()
 {
+#ifndef SWDS
+	if(cls.state == ca_dedicated)
+		return;
+	
 	int i;
 	usercmd_t *cmd;
 	int seq_hash;
@@ -1393,6 +1407,7 @@ void CL_SendCmd()
 	// deliver the message
 	//
 	Netchan_Transmit(&cls.netchan, cls.netchan.message.cursize, cls.netchan.message.data);
+#endif // SWDS
 };
 
 /*

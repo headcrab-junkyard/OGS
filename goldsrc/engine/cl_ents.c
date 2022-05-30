@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018, 2020-2021 BlackPhrase
+ * Copyright (C) 2018, 2020-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -996,6 +996,10 @@ This sets up the first phase.
 */
 void CL_SetUpPlayerPrediction(qboolean dopred)
 {
+#ifndef SWDS
+	if(cls.state == ca_dedicated)
+		return;
+	
 	int j;
 	local_state_t *state;
 	local_state_t exact;
@@ -1056,6 +1060,7 @@ void CL_SetUpPlayerPrediction(qboolean dopred)
 			}
 		}
 	}
+#endif // SWDS
 }
 
 /*
@@ -1113,8 +1118,10 @@ Made up of: clients, packet_entities, nails, and tents
 */
 void CL_EmitEntities()
 {
+#ifndef SWDS
 	if(cls.state != ca_active)
 		return;
+	
 	if(!cl.validsequence)
 		return;
 
@@ -1128,4 +1135,5 @@ void CL_EmitEntities()
 	CL_LinkPacketEntities();
 	CL_LinkProjectiles();
 	CL_UpdateTEnts();
+#endif // SWDS
 }

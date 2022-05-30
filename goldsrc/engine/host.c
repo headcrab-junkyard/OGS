@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-2001 Id Software, Inc.
- * Copyright (C) 2018-2021 BlackPhrase
+ * Copyright (C) 2018-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -533,12 +533,17 @@ qboolean Host_FilterTime(float time)
 
 void Host_UpdateScreen()
 {
+#ifndef SWDS
+	if(cls.state == ca_dedicated)
+		return;
+	
 	// TODO: something else?
 
 	SCR_UpdateScreen();
 	ClientDLL_HudRedraw(cl.intermission);
 
 	// TODO: something else?
+#endif
 };
 
 // TODO: void Host_GetHostInfo( float *fps, int *nActive, int *nSpectators, int *nMaxPlayers, char *pszMap );
