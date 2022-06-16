@@ -49,8 +49,9 @@ void W_OpenWad (char *filename)
 	wadhandle = SafeOpenRead (filename);
 	SafeRead (wadhandle, &header, sizeof(header));
 
-	if (strncmp(header.identification,"WAD2",4))
-		Error ("Wad file %s doesn't have WAD2 id\n",filename);
+	if (strncmp(header.identification,"WAD2",4) &&
+		strncmp(header.identification,"WAD3",4))
+		Error ("Wad file %s doesn't have WAD2/WAD3 id\n",filename);
 		
 	header.numlumps = LittleLong(header.numlumps);
 	header.infotableofs = LittleLong(header.infotableofs);
@@ -299,7 +300,7 @@ WriteWad
 ===============
 */
 
-void WriteWad (void)
+void WriteWad (int wad3)
 {
 	wadinfo_t	header;
 	int			ofs;
@@ -315,7 +316,7 @@ void WriteWad (void)
 	header.identification[0] = 'W';
 	header.identification[1] = 'A';
 	header.identification[2] = 'D';
-	header.identification[3] = '2';
+	header.identification[3] = wad3 ? '3' : '2';
 	
 	header.numlumps = wadlong(outlumps);
 	header.infotableofs = wadlong(ofs);

@@ -49,5 +49,5 @@ void CleanupName (char *in, char *out);
 //
 void	NewWad (char *pathname, qboolean bigendien);
 void	AddLump (char *name, void *buffer, int length, int type, int compress);
-void	WriteWad (void);
+void	WriteWad (int wad3);
 
