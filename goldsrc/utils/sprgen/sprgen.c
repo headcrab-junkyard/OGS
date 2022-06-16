@@ -216,6 +216,27 @@ void Cmd_Type (void)
 		Error ("Bad sprite type\n");
 }
 
+/*
+===============
+Cmd_Texture
+===============
+*/
+void Cmd_Texture(void)
+{
+	GetToken(false);
+
+	if(!strcmp(token, "additive"))
+		;
+	else if(!strcmp(token, "normal"))
+		;
+	else if(!strcmp(token, "indexalpha"))
+		;
+	else if(!strcmp(token, "alphatest"))
+		;
+	else
+		Error("Bad sprite texture type\n");
+}
+
 
 /*
 ===============
@@ -406,6 +427,8 @@ void ParseScript (void)
 		{
 			Cmd_Type ();
 		}
+		else if(!strcmp(token, "$texture"))
+			Cmd_Texture();
 		else if (!strcmp (token, "$beamlength"))
 		{
 			Cmd_Beamlength ();

@@ -19,6 +19,7 @@ typedef struct
 } qpic_t;
 
 
+#include "qfont.h"
 #define SCRN(x,y)       (*(byteimage+(y)*byteimagewidth+x))
 
 

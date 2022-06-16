@@ -32,6 +32,7 @@ void GrabPic (void);
 void GrabMip (void);
 void GrabColormap (void);
 void GrabColormap2 (void);
+void GrabFont(void);
 
 typedef struct
 {
@@ -48,6 +49,7 @@ command_t       commands[] =
 	{"raw",GrabRaw},
 
 	{"colormap2",GrabColormap2},
+	{"font",GrabFont},
 
 	{NULL,NULL}                     // list terminator
 };

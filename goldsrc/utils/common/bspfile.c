@@ -248,7 +248,7 @@ void	LoadBSPFile (char *filename)
 		((int *)header)[i] = LittleLong ( ((int *)header)[i]);
 
 	if (header->version != BSPVERSION)
-		Error ("%s is version %i, not %i", filename, i, BSPVERSION);
+		Error ("%s is version %i, not %i", filename, header->version, BSPVERSION);
 
 	nummodels = CopyLump (LUMP_MODELS, dmodels, sizeof(dmodel_t));
 	numvertexes = CopyLump (LUMP_VERTEXES, dvertexes, sizeof(dvertex_t));
