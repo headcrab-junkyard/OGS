@@ -58,11 +58,21 @@ endif()
 
 #####################################################################
 
-# Find required packages
+# Find the required packages
+
+find_package(OpenGL REQUIRED)
+find_package(BZip2)
+find_package(CURL)
 
 if(OGS_USE_SDL)
 	find_package(SDL2 REQUIRED)
 endif()
+
+#find_package(CEGUI)
+#find_package(CEF REQUIRED)
+
+find_package(Speex)
+
 # Set C language standard
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
