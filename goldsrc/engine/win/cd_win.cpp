@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,9 +55,6 @@ private:
 	void Play(byte track, qboolean looping) /*override*/;
 	void Stop() /*override*/;
 
-	void Eject();
-	void CloseDoor();
-
 	int GetAudioDiskInfo();
 
 	bool mbInitialized{ false };
@@ -69,9 +66,9 @@ CCDAudio::~CCDAudio() = default;
 
 int CCDAudio::Init()
 {
-	DWORD dwReturn;
-	MCI_OPEN_PARMS mciOpenParms;
-	MCI_SET_PARMS mciSetParms;
+	//DWORD dwReturn;
+	//MCI_OPEN_PARMS mciOpenParms;
+	//MCI_SET_PARMS mciSetParms;
 	int n;
 
 	if(cls.state == ca_dedicated)
@@ -80,6 +77,7 @@ int CCDAudio::Init()
 	if(COM_CheckParm("-nocdaudio"))
 		return -1;
 
+	/*
 	mciOpenParms.lpstrDeviceType = "cdaudio";
 	if(dwReturn = mciSendCommand(0, MCI_OPEN, MCI_OPEN_TYPE | MCI_OPEN_SHAREABLE, (DWORD)(LPVOID)&mciOpenParms))
 	{
@@ -97,6 +95,7 @@ int CCDAudio::Init()
 		mciSendCommand(wDeviceID, MCI_CLOSE, 0, (DWORD)nullptr);
 		return -1;
 	};
+	*/
 
 	for(n = 0; n < 100; n++)
 		remap[n] = n;
@@ -124,8 +123,8 @@ void CCDAudio::Shutdown()
 
 	Stop();
 
-	if(mciSendCommand(wDeviceID, MCI_CLOSE, MCI_WAIT, (DWORD)nullptr))
-		Con_DPrintf("CDAudio_Shutdown: MCI_CLOSE failed\n");
+	//if(mciSendCommand(wDeviceID, MCI_CLOSE, MCI_WAIT, (DWORD)nullptr))
+		//Con_DPrintf("CDAudio_Shutdown: MCI_CLOSE failed\n");
 };
 
 void CCDAudio::Frame() // TODO: was Update
@@ -174,6 +173,7 @@ void CCDAudio::Play(byte track, qboolean looping)
 		return;
 	};
 
+	/*
 	// don't try to play a non-audio track
 	mciStatusParms.dwItem = MCI_CDA_STATUS_TYPE_TRACK;
 	mciStatusParms.dwTrack = track;
@@ -190,6 +190,7 @@ void CCDAudio::Play(byte track, qboolean looping)
 		return;
 	};
 
+	
 	// get the length of the track to be played
 	mciStatusParms.dwItem = MCI_STATUS_LENGTH;
 	mciStatusParms.dwTrack = track;
@@ -199,6 +200,7 @@ void CCDAudio::Play(byte track, qboolean looping)
 		Con_DPrintf("MCI_STATUS failed (%i)\n", dwReturn);
 		return;
 	};
+	*/
 
 	if(playing)
 	{
@@ -342,7 +344,6 @@ static void CD_f()
 
 	if(Q_strcasecmp(command, "close") == 0)
 	{
-		CDAudio_CloseDoor();
 		return;
 	};
 
@@ -390,7 +391,6 @@ static void CD_f()
 	{
 		if(playing)
 			CDAudio_Stop();
-		CDAudio_Eject();
 		cdValid = false;
 		return;
 	};
@@ -443,22 +443,6 @@ extern "C" LONG CDAudio_MessageHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 */
 
 	return 0;
-};
-
-void CCDAudio::Eject()
-{
-	DWORD dwReturn;
-
-	if(dwReturn = mciSendCommand(wDeviceID, MCI_SET, MCI_SET_DOOR_OPEN, (DWORD)nullptr))
-		Con_DPrintf("MCI_SET_DOOR_OPEN failed (%i)\n", dwReturn);
-};
-
-void CCDAudio::CloseDoor()
-{
-	DWORD dwReturn;
-
-	if(dwReturn = mciSendCommand(wDeviceID, MCI_SET, MCI_SET_DOOR_CLOSED, (DWORD)nullptr))
-		Con_DPrintf("MCI_SET_DOOR_CLOSED failed (%i)\n", dwReturn);
 };
 
 int CCDAudio::GetAudioDiskInfo()
