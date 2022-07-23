@@ -1,5 +1,3 @@
-# Engine module
-
 # Overview
 
 This is the engine module. It's using the original WinQuake/NetQuake codebase as a base and some of the QuakeWorld, Quake 2, and Quake 3 improvements and fixes applied above that (so it went a similar way of evolution to the original GoldSrc engine).
