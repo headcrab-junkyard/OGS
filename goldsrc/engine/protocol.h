@@ -124,8 +124,6 @@
 
 #define	svc_updatestatlong	38		// [byte] [long]		
 
-#define svc_sellscreen		33
-
 #define	svc_smallkick		34		// set client punchangle to 2
 #define	svc_bigkick			35		// set client punchangle to 4
 
@@ -212,7 +210,7 @@ enum
 	clc_stringcmd, // [string] message
 	clc_delta, // [byte] sequence number, requests delta compression of message
 	clc_resourcelist,
-	clc_tmove,
+	clc_tmove, // teleport request, spectator only
 	clc_fileconsistency,
 	clc_voicedata,
 	clc_hltv,

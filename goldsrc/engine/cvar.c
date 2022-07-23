@@ -176,12 +176,14 @@ void Cvar_Set(const char *var_name, const char *value)
 	var->string = Z_Malloc(Q_strlen(value) + 1);
 	Q_strcpy(var->string, value);
 	var->value = Q_atof(var->string);
-	if (var->flags & FCVAR_SERVER && changed)
+	
+	// TODO: non-qw
+	if(var->flags & FCVAR_SERVER && changed)
 	{
 		if(sv.active)
 			SV_BroadcastPrintf("\"%s\" changed to \"%s\"\n", var->name, var->string);
-	}
-}
+	};
+};
 
 /*
 ============

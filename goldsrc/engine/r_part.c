@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,22 +43,18 @@ vec3_t r_pright, r_pup, r_ppn;
 R_InitParticles
 ===============
 */
-void R_InitParticles(void)
+void R_InitParticles()
 {
-	int i;
-
-	i = COM_CheckParm("-particles");
-
+	int i = COM_CheckParm("-particles");
+	
+	r_numparticles = MAX_PARTICLES;
+	
 	if(i)
 	{
 		r_numparticles = (int)(Q_atoi(com_argv[i + 1]));
 		if(r_numparticles < ABSOLUTE_MIN_PARTICLES)
 			r_numparticles = ABSOLUTE_MIN_PARTICLES;
-	}
-	else
-	{
-		r_numparticles = MAX_PARTICLES;
-	}
+	};
 
 	particles = (particle_t *)
 	Hunk_AllocName(r_numparticles * sizeof(particle_t), "particles");
@@ -177,7 +173,7 @@ void R_EntityParticles(cl_entity_t *ent)
 R_ClearParticles
 ===============
 */
-void R_ClearParticles(void)
+void R_ClearParticles()
 {
 	int i;
 
@@ -189,7 +185,7 @@ void R_ClearParticles(void)
 	particles[r_numparticles - 1].next = NULL;
 }
 
-void R_ReadPointFile_f(void)
+void R_ReadPointFile_f()
 {
 	FileHandle_t f;
 	vec3_t org;
@@ -244,7 +240,7 @@ R_ParseParticleEffect
 Parse an effect out of the server message
 ===============
 */
-void R_ParseParticleEffect(void)
+void R_ParseParticleEffect()
 {
 	vec3_t org, dir;
 	int i, count, msgcount, color;
@@ -639,7 +635,7 @@ R_DrawParticles
 */
 extern cvar_t sv_gravity;
 
-void R_DrawParticles(void)
+void R_DrawParticles()
 {
 	particle_t *p, *kill;
 	float grav;

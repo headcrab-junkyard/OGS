@@ -245,12 +245,11 @@ Writes key bindings and archived cvars to config.cfg
 */
 void Host_WriteConfiguration()
 {
-	FILE *f;
-
 	// dedicated servers initialize the host but don't parse and set the config.cfg cvars
+	// TODO: if(host_initialized) in qw
 	if(host_initialized & !isDedicated)
 	{
-		f = fopen(va("%s/config.cfg", com_gamedir), "w");
+		FILE *f = fopen(va("%s/config.cfg", com_gamedir), "w");
 		if(!f)
 		{
 			Con_Printf("Couldn't write config.cfg.\n");

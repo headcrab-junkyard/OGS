@@ -23,8 +23,7 @@
 #include "event_api.h"
 #include "event_args.h"
 
-void EV_PlaySound(int nEnt, float *vOrigin, int nChannel, const char *sSample,
-				float fVolume, float fAttenuation, int nFlags, int nPitch)
+void EV_PlaySound(int nEnt, float *vOrigin, int nChannel, const char *sSample, float fVolume, float fAttenuation, int nFlags, int nPitch)
 {
 	if(!sSample || !*sSample)
 		return;

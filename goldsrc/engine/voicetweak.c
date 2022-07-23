@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 
 qboolean gbInVoiceTweakMode = false;
 
-float gVoiceTweakControlMap[3] = { 0.0f }; // TODO
+float gVoiceTweakControlMap[3] = {0.0f}; // TODO
 
 static int Voice_StartVoiceTweakMode()
 {
@@ -53,7 +53,7 @@ static float Voice_GetControlFloat(VoiceTweakControl aeControl)
 
 static int Voice_GetSpeakingVolume()
 {
-	return 0; // TODO
+	return 0; // TODO: voice_scale?
 };
 
 IVoiceTweak gVoiceTweak =

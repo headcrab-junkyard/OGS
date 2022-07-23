@@ -22,6 +22,7 @@
 
 #include "IGameServerData.h"
 
+// TODO: CServerRemoteAccess
 class CGameServerData final : public IGameServerData
 {
 public:

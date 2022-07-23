@@ -72,7 +72,7 @@ extern vec3_t r_origin, vpn, vright, vup;
 
 extern struct texture_s *r_notexture_mip;
 
-//extern	cl_entity_t	r_worldentity; // QW
+//extern cl_entity_t r_worldentity; // QW
 
 void R_Init();
 void R_InitTextures();

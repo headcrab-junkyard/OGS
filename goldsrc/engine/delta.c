@@ -41,7 +41,7 @@ void DELTA_Init()
 
 void DELTA_Load(const char *filename)
 {
-	FileHandle_t pFile = FS_Open(va("%s", filename), "rb");
+	FileHandle_t pFile = FS_Open(va("%s", filename), "r");
 	
 	if(!pFile)
 		Sys_Error("DELTA_Load:  Couldn't load file %s", filename);
