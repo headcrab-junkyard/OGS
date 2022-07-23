@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "interface.h"
+#include "tier1/interface.h"
 
 const char OGS_VGUIWRAP_INTERFACE_VERSION[] = "OGSVGuiWrap001";
 
