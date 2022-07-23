@@ -20,7 +20,12 @@
 
 #pragma once
 
+#include <memory>
 #include "ivguiwrap.hpp"
+
+using vgui::Panel;
+
+class CSurfaceBaseImpl;
 
 class CVGuiWrap final : public IVGuiWrap
 {
@@ -28,11 +33,17 @@ public:
 	CVGuiWrap();
 	~CVGuiWrap();
 	
-	void Startup() override;
+	/*bool*/ void Startup() override;
 	void Shutdown() override;
 	
 	//void CallSurfaceProc() override;
 	
+	void KeyEvent() override;
+	void MouseEvent() override;
+	void MouseMove(int anPosX, int anPosY) override;
+	
 	void *GetPanel() const override;
 private:
+	std::unique_ptr<CSurfaceBaseImpl> mpSurface;
+	std::unique_ptr<vgui::Panel> mpRootPanel;
 };
