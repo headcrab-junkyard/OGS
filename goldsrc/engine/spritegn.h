@@ -60,7 +60,7 @@
 
 #endif
 
-#define SPRITE_VERSION 1
+#define SPRITE_VERSION 2 // TODO: was 1
 
 // must match definition in modelgen.h
 #ifndef SYNCTYPE_T
@@ -75,6 +75,7 @@ typedef struct
 	int ident;
 	int version;
 	int type;
+	int texFormat;
 	float boundingradius;
 	int width;
 	int height;
