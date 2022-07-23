@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2019 BlackPhrase
+ * Copyright (C) 2019, 2021 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,15 +20,24 @@
 
 #pragma once
 
+#include <speex/speex.h>
+
 #include "voice/ivoicecodec.h"
 
-class CVoiceCodec final : public IVoiceCodec
+class CVoiceCodecSpeex final : public IVoiceCodec
 {
 public:
-	CVoiceCodec();
-	~CVoiceCodec();
+	CVoiceCodecSpeex();
+	~CVoiceCodecSpeex();
 	
 	bool Init(int anQuality) override;
 	void Shutdown() override;
+	
+	void Encode();
+	void Decode();
 private:
+	SpeexBits mBits{};
+	
+	void *mpEncState{nullptr}; ///< Holds the state of the encoder
+	void *mpDecState{nullptr}; ///< Holds the state of the decoder
 };

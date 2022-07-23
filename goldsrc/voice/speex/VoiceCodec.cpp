@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2019 BlackPhrase
+ * Copyright (C) 2019, 2021 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,18 +20,43 @@
 
 #include "VoiceCodec.hpp"
 
-EXPOSE_SINGLE_INTERFACE(CVoiceCodec, IVoiceCodec, OGS_VOICECODEC_INTERFACE_VERSION);
+EXPOSE_SINGLE_INTERFACE(CVoiceCodecSpeex, IVoiceCodec, OGS_VOICECODEC_INTERFACE_VERSION);
 
-CVoiceCodec::CVoiceCodec() = default;
-CVoiceCodec::~CVoiceCodec() = default;
+CVoiceCodecSpeex::CVoiceCodecSpeex() = default;
+CVoiceCodecSpeex::~CVoiceCodecSpeex() = default;
 
-bool CVoiceCodec::Init(int anQuality)
+bool CVoiceCodecSpeex::Init(int anQuality)
 {
-	// TODO
+	mpEncState{speex_encoder_init(&speex_nb_mode)};
+	mpDecState{speex_decoder_init(&speex_nb_mode)};
+	
+	speex_bits_init(&mBits);
+	
+	speex_encoder_ctl(mpEncState, SPEEX_SET_QUALITY, &anQuality);
+	
 	return true;
 };
 
-void CVoiceCodec::Shutdown()
+void CVoiceCodecSpeex::Shutdown()
 {
-	// TODO
+	speex_bits_destroy(&mBits);
+	
+	speex_decoder_destroy(pDecState);
+	speex_encoder_destroy(pEncState);
+};
+
+void CVoiceCodecSpeex::Encode()
+{
+	speex_bits_reset(&mBits);
+	
+	speex_encode_int(mpEncState, input_frame, &mBits);
+	
+	nbBytes = speex_bits_write(&mBits, byte_ptr, MAX_NB_BYTES);
+};
+
+void CVoiceCodecSpeex::Decode()
+{
+	speex_bits_read_from(&mBits, input_bytes, nbBytes);
+	
+	speex_decode_int(mpDecState, &mBits, output_frame);
 };
