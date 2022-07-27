@@ -151,10 +151,6 @@ void CCDAudio::Frame() // TODO: was Update
 
 void CCDAudio::Play(byte track, qboolean looping)
 {
-	DWORD dwReturn;
-	MCI_PLAY_PARMS mciPlayParms;
-	MCI_STATUS_PARMS mciStatusParms;
-
 	if(!mbEnabled)
 		return;
 
@@ -173,7 +169,10 @@ void CCDAudio::Play(byte track, qboolean looping)
 		return;
 	};
 
-	/*
+/*
+	DWORD dwReturn;
+	MCI_STATUS_PARMS mciStatusParms;
+	
 	// don't try to play a non-audio track
 	mciStatusParms.dwItem = MCI_CDA_STATUS_TYPE_TRACK;
 	mciStatusParms.dwTrack = track;
@@ -200,7 +199,7 @@ void CCDAudio::Play(byte track, qboolean looping)
 		Con_DPrintf("MCI_STATUS failed (%i)\n", dwReturn);
 		return;
 	};
-	*/
+*/
 
 	if(playing)
 	{
@@ -209,6 +208,9 @@ void CCDAudio::Play(byte track, qboolean looping)
 		Stop();
 	};
 
+/*
+	MCI_PLAY_PARMS mciPlayParms;
+	
 	mciPlayParms.dwFrom = MCI_MAKE_TMSF(track, 0, 0, 0);
 	mciPlayParms.dwTo = (mciStatusParms.dwReturn << 8) | track;
 	mciPlayParms.dwCallback = (DWORD)mainwindow;
@@ -218,6 +220,7 @@ void CCDAudio::Play(byte track, qboolean looping)
 		Con_DPrintf("CDAudio: MCI_PLAY failed (%i)\n", dwReturn);
 		return;
 	};
+*/
 
 	playLooping = looping;
 	playTrack = track;
@@ -229,45 +232,45 @@ void CCDAudio::Play(byte track, qboolean looping)
 
 void CCDAudio::Stop()
 {
-	DWORD dwReturn;
-
 	if(!mbEnabled)
 		return;
 
 	if(!playing)
 		return;
-
+	
+/*
+	DWORD dwReturn;
 	if(dwReturn = mciSendCommand(wDeviceID, MCI_STOP, 0, (DWORD)nullptr))
 		Con_DPrintf("MCI_STOP failed (%i)", dwReturn);
-
+*/
+	
 	wasPlaying = false;
 	playing = false;
 };
 
 void CCDAudio::Pause()
 {
-	DWORD dwReturn;
-	MCI_GENERIC_PARMS mciGenericParms;
-
 	if(!mbEnabled)
 		return;
 
 	if(!playing)
 		return;
-
+	
+/*
+	DWORD dwReturn;
+	MCI_GENERIC_PARMS mciGenericParms;
+	
 	mciGenericParms.dwCallback = (DWORD)mainwindow;
 	if(dwReturn = mciSendCommand(wDeviceID, MCI_PAUSE, 0, (DWORD)(LPVOID)&mciGenericParms))
 		Con_DPrintf("MCI_PAUSE failed (%i)", dwReturn);
-
+*/
+	
 	wasPlaying = playing;
 	playing = false;
 };
 
 void CCDAudio::Resume()
 {
-	DWORD dwReturn;
-	MCI_PLAY_PARMS mciPlayParms;
-
 	if(!mbEnabled)
 		return;
 
@@ -276,7 +279,11 @@ void CCDAudio::Resume()
 
 	if(!wasPlaying)
 		return;
-
+	
+/*
+	DWORD dwReturn;
+	MCI_PLAY_PARMS mciPlayParms;
+	
 	mciPlayParms.dwFrom = MCI_MAKE_TMSF(playTrack, 0, 0, 0);
 	mciPlayParms.dwTo = MCI_MAKE_TMSF(playTrack + 1, 0, 0, 0);
 	mciPlayParms.dwCallback = (DWORD)mainwindow;
@@ -286,6 +293,8 @@ void CCDAudio::Resume()
 		Con_DPrintf("CDAudio: MCI_PLAY failed (%i)\n", dwReturn);
 		return;
 	};
+*/
+	
 	playing = true;
 }
 
@@ -447,11 +456,12 @@ extern "C" LONG CDAudio_MessageHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 
 int CCDAudio::GetAudioDiskInfo()
 {
+	cdValid = false;
+	
+/*
 	DWORD dwReturn;
 	MCI_STATUS_PARMS mciStatusParms;
-
-	cdValid = false;
-
+	
 	mciStatusParms.dwItem = MCI_STATUS_READY;
 	dwReturn = mciSendCommand(wDeviceID, MCI_STATUS, MCI_STATUS_ITEM | MCI_WAIT, (DWORD)(LPVOID)&mciStatusParms);
 	if(dwReturn)
@@ -479,9 +489,11 @@ int CCDAudio::GetAudioDiskInfo()
 		Con_DPrintf("CDAudio: no music tracks\n");
 		return -1;
 	};
-
-	cdValid = true;
+	
 	maxTrack = mciStatusParms.dwReturn;
+*/
+	
+	cdValid = true;
 
 	return 0;
 };
