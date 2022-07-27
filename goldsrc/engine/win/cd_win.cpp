@@ -57,8 +57,8 @@ private:
 
 	int GetAudioDiskInfo();
 
-	bool mbInitialized{ false };
-	bool mbEnabled{ false };
+	bool mbInitialized{false};
+	bool mbEnabled{false};
 };
 
 CCDAudio::CCDAudio() = default;
@@ -69,7 +69,6 @@ int CCDAudio::Init()
 	//DWORD dwReturn;
 	//MCI_OPEN_PARMS mciOpenParms;
 	//MCI_SET_PARMS mciSetParms;
-	int n;
 
 	if(cls.state == ca_dedicated)
 		return -1;
@@ -97,21 +96,22 @@ int CCDAudio::Init()
 	};
 	*/
 
-	for(n = 0; n < 100; n++)
+	for(int n = 0; n < 100; n++)
 		remap[n] = n;
 
 	mbInitialized = true;
 	mbEnabled = true;
 
-	if(GetAudioDiskInfo())
+	//if(GetAudioDiskInfo())
 	{
-		Con_Printf("CDAudio_Init: No CD in player.\n");
-		cdValid = false;
+		//Con_Printf("CDAudio_Init: No CD in player.\n");
+		//cdValid = false;
+		//mbEnabled = false; // TODO: qw
 	};
 
 	//Cmd_AddCommand("cd", CD_f); // TODO
 
-	Con_Printf("CD Audio Initialized\n");
+	//Con_Printf("CD Audio Initialized\n");
 
 	return 0;
 };
@@ -313,7 +313,7 @@ static void CD_f()
 
 	if(Q_strcasecmp(command, "on") == 0)
 	{
-		enabled = true;
+		gpCDAudio->SetActive(true);
 		return;
 	};
 
@@ -321,13 +321,13 @@ static void CD_f()
 	{
 		if(playing)
 			CDAudio_Stop();
-		enabled = false;
+		gpCDAudio->SetActive(false);
 		return;
 	};
 
 	if(Q_strcasecmp(command, "reset") == 0)
 	{
-		enabled = true;
+		gpCDAudio->SetActive(true);
 		if(playing)
 			CDAudio_Stop();
 		for(n = 0; n < 100; n++)
