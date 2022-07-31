@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-2001 Id Software, Inc.
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ void CDAudio_Shutdown();
 void CDAudio_Update();
 
 void CDAudio_Play(byte track, qboolean looping); // TODO: int track?
-void CDAudio_Stop();
+void CDAudio_Stop(); // TODO: can be removed
 
 void CDAudio_Pause();
 void CDAudio_Resume();

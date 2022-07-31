@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-2001 Id Software, Inc.
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,52 +22,48 @@
 #include "quakedef.h"
 #include "icdaudio.h"
 
-extern ICDAudio *CreateCDAudio();
-
-ICDAudio *gpCDAudio{nullptr};
+extern ICDAudio *cdaudio;
 
 int CDAudio_Init()
 {
-	gpCDAudio = CreateCDAudio(); // TODO
-
-	if(gpCDAudio)
-		return gpCDAudio->Init();
+	if(cdaudio)
+		return cdaudio->Init();
 	
 	return 0;
 };
 
 void CDAudio_Shutdown()
 {
-	if(gpCDAudio)
-		gpCDAudio->Shutdown();
+	if(cdaudio)
+		cdaudio->Shutdown();
 };
 
 void CDAudio_Update()
 {
-	if(gpCDAudio)
-		gpCDAudio->Frame();
+	if(cdaudio)
+		cdaudio->Frame();
 };
 
 void CDAudio_Play(byte track, qboolean looping)
 {
-	//if(gpCDAudio)
-		//gpCDAudio->Play(track, looping);
+	//if(cdaudio)
+		//cdaudio->Play(track, looping);
 };
 
 void CDAudio_Stop()
 {
-	//if(gpCDAudio)
-		//gpCDAudio->Stop();
+	//if(cdaudio)
+		//cdaudio->Stop();
 };
 
 void CDAudio_Pause()
 {
-	if(gpCDAudio)
-		gpCDAudio->Pause();
+	if(cdaudio)
+		cdaudio->Pause();
 };
 
 void CDAudio_Resume()
 {
-	if(gpCDAudio)
-		gpCDAudio->Resume();
+	if(cdaudio)
+		cdaudio->Resume();
 };
