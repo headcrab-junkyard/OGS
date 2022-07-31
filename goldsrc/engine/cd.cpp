@@ -18,6 +18,7 @@
  */
 
 /// @file
+/// @brief ICDAudio interface implementation
 
 #include "quakedef.h"
 #include "icdaudio.h"
@@ -25,6 +26,7 @@
 //extern HWND mainwindow;
 extern cvar_t bgmvolume;
 
+/*
 void CD_Command_f()
 {
 	//if(COM_CheckParm("-nocdaudio") || COM_CheckParm("-nosound")) // TODO: <-- ADD THIS (Bugfix; Not present in GS)
@@ -34,20 +36,19 @@ void CD_Command_f()
 
 	if(!stricmp(command, "on"))
 	{
-		g_CDAudio.mbEnabled = true;
+		g_CDAudio.m_bEnabled = true;
 		return;
 	};
 
 	// ...
 };
+*/
 
-/*
 static void CD_f()
 {
 	char *command;
 	int ret;
 	int n;
-	int startAddress;
 
 	if(Cmd_Argc() < 2)
 		return;
@@ -56,7 +57,7 @@ static void CD_f()
 
 	if(Q_strcasecmp(command, "on") == 0)
 	{
-		gpCDAudio->SetActive(true);
+		cdaudio->m_bEnabled = true; // TODO: cdaudio->SetActive(true);
 		return;
 	};
 
@@ -64,13 +65,13 @@ static void CD_f()
 	{
 		if(playing)
 			CDAudio_Stop();
-		gpCDAudio->SetActive(false);
+		cdaudio->m_bEnabled = false; // TODO: cdaudio->SetActive(false);
 		return;
 	};
 
 	if(Q_strcasecmp(command, "reset") == 0)
 	{
-		gpCDAudio->SetActive(true);
+		cdaudio->m_bEnabled = true; // TODO: cdaudio->SetActive(true);
 		if(playing)
 			CDAudio_Stop();
 		for(n = 0; n < 100; n++)
@@ -158,7 +159,6 @@ static void CD_f()
 		return;
 	};
 };
-*/
 
 class CCDAudio final : public ICDAudio
 {
@@ -169,11 +169,11 @@ public:
 	int Init() override; // TODO: remove?
 	void Shutdown() override; // TODO: remove?
 	
-	void Frame() override;
+	void Frame() override; // TODO: Update?
 	
 	void Pause() override;
 	void Resume() override;
-	
+//private: // TODO
 	void MP3_Init();
 	void MP3_InitStream();
 private:
@@ -183,14 +183,18 @@ private:
 	int GetAudioDiskInfo();
 public: //private:
 	float m_flVolume{0.0f}; // private?
-	bool mbEnabled{false}; // TODO: m_bEnabled
+	bool m_bEnabled{false};
 private:
 	bool mbInitialized{false};
 	
 	byte remap[100]{};
-	byte cdrom{0};
+	//byte cdrom{0};
 	byte playTrack{0};
 	byte maxTrack{0};
+	
+	// TODO: Linux-only
+	//int cdfile{-1};
+	//char cd_dev[64]{"/dev/cdrom"};
 	
 	bool cdValid{false};
 	bool playing{false;
@@ -198,31 +202,25 @@ private:
 	bool playLooping{false};
 };
 
-//static CCDAudio g_CDAudio;
-//ICDAudio *cdaudio = &g_CDAudio;
-
-// TODO: temp
-ICDAudio *CreateCDAudio()
-{
-	return new CCDAudio();
-};
+static CCDAudio g_CDAudio;
+ICDAudio *cdaudio = &g_CDAudio;
 
 CCDAudio::CCDAudio() = default;
 CCDAudio::~CCDAudio() = default;
 
 int CCDAudio::Init()
 {
-	//DWORD dwReturn;
-	//MCI_OPEN_PARMS mciOpenParms;
-	//MCI_SET_PARMS mciSetParms;
-
 	if(cls.state == ca_dedicated)
 		return -1;
 
 	if(COM_CheckParm("-nocdaudio"))
 		return -1;
 
-	/*
+/*
+	DWORD dwReturn;
+	MCI_OPEN_PARMS mciOpenParms;
+	MCI_SET_PARMS mciSetParms;
+	
 	mciOpenParms.lpstrDeviceType = "cdaudio";
 	if(dwReturn = mciSendCommand(0, MCI_OPEN, MCI_OPEN_TYPE | MCI_OPEN_SHAREABLE, (DWORD)(LPVOID)&mciOpenParms))
 	{
@@ -240,19 +238,32 @@ int CCDAudio::Init()
 		mciSendCommand(wDeviceID, MCI_CLOSE, 0, (DWORD)nullptr);
 		return -1;
 	};
-	*/
+	//
+	if((i = COM_CheckParm("-cddev")) != 0 && i < com_argc - 1)
+	{
+		strncpy(cd_dev, com_argv[i + 1], sizeof(cd_dev));
+		cd_dev[sizeof(cd_dev) - 1] = 0;
+	};
+
+	if((cdfile = open(cd_dev, O_RDONLY)) == -1)
+	{
+		Con_Printf("CDAudio_Init: open of \"%s\" failed (%i)\n", cd_dev, errno);
+		cdfile = -1;
+		return -1;
+	};
+*/
 
 	for(int n = 0; n < 100; n++)
 		remap[n] = n;
 
 	mbInitialized = true;
-	mbEnabled = true;
+	m_bEnabled = true;
 
 	//if(GetAudioDiskInfo())
 	{
 		//Con_Printf("CDAudio_Init: No CD in player.\n");
 		//cdValid = false;
-		//mbEnabled = false; // TODO: qw
+		//m_bEnabled = false; // TODO: qw
 	};
 
 	//Cmd_AddCommand("cd", CD_f); // TODO
@@ -273,12 +284,15 @@ void CCDAudio::Shutdown()
 
 	//if(mciSendCommand(wDeviceID, MCI_CLOSE, MCI_WAIT, (DWORD)nullptr))
 		//Con_DPrintf("CDAudio_Shutdown: MCI_CLOSE failed\n");
+	//
+	//close(cdfile);
+	//cdfile = -1;
 };
 
 void CCDAudio::Frame()
 {
 	// This is set to TRUE when "cd on" went to the console
-	if(!mbEnabled)
+	if(!m_bEnabled)
 		return;
 
 	if(m_flVolume != bgmvolume.value)
@@ -298,13 +312,40 @@ void CCDAudio::Frame()
 		// TODO
 		//Cvar_DirectSet(&bgmvolume, va("%f", m_flVolume)); // cvar_t bgmvolume is not registered, you should never call Cvar_DirectSet with an unregistered cvar!
 	};
+	
+	// TODO: linux-only
+/*
+	struct cdrom_subchnl subchnl;
+	static time_t lastchk;
+	
+	if(playing && lastchk < time(nullptr))
+	{
+		lastchk = time(nullptr) + 2; //two seconds between chks
+		subchnl.cdsc_format = CDROM_MSF;
+		if(ioctl(cdfile, CDROMSUBCHNL, &subchnl) == -1)
+		{
+			Con_DPrintf("ioctl cdromsubchnl failed\n");
+			playing = false;
+			return;
+		};
+		if(subchnl.cdsc_audiostatus != CDROM_AUDIO_PLAY && subchnl.cdsc_audiostatus != CDROM_AUDIO_PAUSED)
+		{
+			playing = false;
+			if(playLooping)
+				Play(playTrack, true);
+		};
+	};
+*/
 };
 
 void CCDAudio::Pause()
 {
-	if(!mbEnabled)
+	if(!m_bEnabled)
 		return;
-
+	
+	//if(cdfile == -1)
+		//return;
+	
 	if(!playing)
 		return;
 	
@@ -315,6 +356,9 @@ void CCDAudio::Pause()
 	mciGenericParms.dwCallback = (DWORD)mainwindow;
 	if(dwReturn = mciSendCommand(wDeviceID, MCI_PAUSE, 0, (DWORD)(LPVOID)&mciGenericParms))
 		Con_DPrintf("MCI_PAUSE failed (%i)", dwReturn);
+	//
+	if(ioctl(cdfile, CDROMPAUSE) == -1)
+		Con_DPrintf("ioctl cdrompause failed\n");
 */
 	
 	wasPlaying = playing;
@@ -323,9 +367,12 @@ void CCDAudio::Pause()
 
 void CCDAudio::Resume()
 {
-	if(!mbEnabled)
+	if(!m_bEnabled)
 		return;
-
+	
+	//if(cdfile == -1)
+		//return;
+	
 	if(!cdValid)
 		return;
 
@@ -345,6 +392,9 @@ void CCDAudio::Resume()
 		Con_DPrintf("CDAudio: MCI_PLAY failed (%i)\n", dwReturn);
 		return;
 	};
+	//
+	if(ioctl(cdfile, CDROMRESUME) == -1)
+		Con_DPrintf("ioctl cdromresume failed\n");
 */
 	
 	playing = true;
@@ -363,9 +413,12 @@ void CCDAudio::MP3_InitStream(int trackNum, bool looping)
 
 void CCDAudio::Play(byte track, qboolean looping)
 {
-	if(!mbEnabled)
+	if(!m_bEnabled)
 		return;
-
+	
+	//if(cdfile == -1)
+		//return;
+	
 	if(!cdValid)
 	{
 		GetAudioDiskInfo();
@@ -401,7 +454,6 @@ void CCDAudio::Play(byte track, qboolean looping)
 		return;
 	};
 
-	
 	// get the length of the track to be played
 	mciStatusParms.dwItem = MCI_STATUS_LENGTH;
 	mciStatusParms.dwTrack = track;
@@ -409,6 +461,23 @@ void CCDAudio::Play(byte track, qboolean looping)
 	if(dwReturn)
 	{
 		Con_DPrintf("MCI_STATUS failed (%i)\n", dwReturn);
+		return;
+	};
+	//
+	struct cdrom_tocentry entry;
+	
+	// don't try to play a non-audio track
+	entry.cdte_track = track;
+	entry.cdte_format = CDROM_MSF;
+	if(ioctl(cdfile, CDROMREADTOCENTRY, &entry) == -1)
+	{
+		Con_DPrintf("ioctl cdromreadtocentry failed\n");
+		return;
+	};
+
+	if(entry.cdte_ctrl == CDROM_DATA_TRACK)
+	{
+		Con_Printf("CDAudio: track %i is not audio\n", track);
 		return;
 	};
 */
@@ -432,6 +501,22 @@ void CCDAudio::Play(byte track, qboolean looping)
 		Con_DPrintf("CDAudio: MCI_PLAY failed (%i)\n", dwReturn);
 		return;
 	};
+	//
+	struct cdrom_ti ti;
+	
+	ti.cdti_trk0 = track;
+	ti.cdti_trk1 = track;
+	ti.cdti_ind0 = 1;
+	ti.cdti_ind1 = 99;
+
+	if(ioctl(cdfile, CDROMPLAYTRKIND, &ti) == -1)
+	{
+		Con_DPrintf("ioctl cdromplaytrkind failed\n");
+		return;
+	};
+
+	if(ioctl(cdfile, CDROMRESUME) == -1)
+		Con_DPrintf("ioctl cdromresume failed\n");
 */
 
 	playLooping = looping;
@@ -444,9 +529,12 @@ void CCDAudio::Play(byte track, qboolean looping)
 
 void CCDAudio::Stop()
 {
-	if(!mbEnabled)
+	if(!m_bEnabled)
 		return;
-
+	
+	//if(cdfile == -1)
+		//return;
+	
 	if(!playing)
 		return;
 	
@@ -454,6 +542,9 @@ void CCDAudio::Stop()
 	DWORD dwReturn;
 	if(dwReturn = mciSendCommand(wDeviceID, MCI_STOP, 0, (DWORD)nullptr))
 		Con_DPrintf("MCI_STOP failed (%i)", dwReturn);
+	//
+	if(ioctl(cdfile, CDROMSTOP) == -1)
+		Con_DPrintf("ioctl cdromstop failed (%d)\n", errno);
 */
 	
 	wasPlaying = false;
@@ -497,6 +588,22 @@ int CCDAudio::GetAudioDiskInfo()
 	};
 	
 	maxTrack = mciStatusParms.dwReturn;
+	//
+	struct cdrom_tochdr tochdr;
+
+	if(ioctl(cdfile, CDROMREADTOCHDR, &tochdr) == -1)
+	{
+		Con_DPrintf("ioctl cdromreadtochdr failed\n");
+		return -1;
+	};
+
+	if(tochdr.cdth_trk0 < 1)
+	{
+		Con_DPrintf("CDAudio: no music tracks\n");
+		return -1;
+	};
+
+	maxTrack = tochdr.cdth_trk1;
 */
 	
 	cdValid = true;
