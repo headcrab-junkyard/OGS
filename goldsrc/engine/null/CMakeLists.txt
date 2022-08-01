@@ -1,0 +1,5 @@
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} PLATFORM_SOURCES)
+
+target_sources(${PROJECT_NAME}
+	PRIVATE ${PLATFORM_SOURCES}
+)
