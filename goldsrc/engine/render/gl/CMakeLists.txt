@@ -1,4 +1,4 @@
-project(ogs-render-gl)
+project(ogs-renderer-gl)
 
 #if(NOT OGS_USE_INTERNAL_RENDER) #if(OGS_EVOL)
 #	add_library(${PROJECT_NAME} MODULE)

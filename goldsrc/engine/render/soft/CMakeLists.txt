@@ -1,4 +1,4 @@
-project(ogs-render-soft)
+project(ogs-renderer-soft)
 
 file(GLOB PROJECT_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/*.c
