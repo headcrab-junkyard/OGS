@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018-2021 BlackPhrase
+ * Copyright (C) 2018-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,6 +53,19 @@
 #include <setjmp.h>
 //#include <ctype.h>
 #include <time.h>
+
+#ifdef __unix__ // TODO: __linux__?
+#	include <unistd.h>
+#	include <fcntl.h>
+
+#	include <sys/ioctl.h>
+#	include <sys/file.h>
+#	include <sys/types.h>
+
+#	include <errno.h>
+
+//#	include <linux/cdrom.h>
+#endif
 
 #if defined(_WIN32) && !defined(WINDED)
 
