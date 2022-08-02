@@ -1300,8 +1300,6 @@ char *Sys_ConsoleInput (void)
 
 void IN_Init(void)
 {
-	if(COM_CheckParm("-nomouse"))
-		return;
 	mouse_x = mouse_y = 0.0;
 	mouse_avail = 1;
 }
@@ -1309,24 +1307,6 @@ void IN_Init(void)
 void IN_Shutdown(void)
 {
 	mouse_avail = 0;
-}
-
-void IN_Commands(void)
-{
-	int i;
-
-	if(!mouse_avail)
-		return;
-
-	for(i = 0; i < mouse_buttons; i++)
-	{
-		if((mouse_buttonstate & (1 << i)) && !(mouse_oldbuttonstate & (1 << i)))
-			Key_Event(K_MOUSE1 + i, true);
-
-		if(!(mouse_buttonstate & (1 << i)) && (mouse_oldbuttonstate & (1 << i)))
-			Key_Event(K_MOUSE1 + i, false);
-	}
-	mouse_oldbuttonstate = mouse_buttonstate;
 }
 
 void IN_Move(usercmd_t *cmd)

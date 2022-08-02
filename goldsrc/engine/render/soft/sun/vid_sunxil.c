@@ -47,7 +47,6 @@
 #define MIN_HEIGHT 200
 
 cvar_t _windowed_mouse = { "_windowed_mouse", "0", true };
-cvar_t m_filter = { "m_filter", "0", true };
 float old_windowed_mouse;
 
 // The following X property format is defined in Motif 1.1's
@@ -1301,8 +1300,7 @@ void Sys_SendKeyEvents(void)
 void IN_Init(void)
 {
 	Cvar_RegisterVariable(&_windowed_mouse);
-	if(COM_CheckParm("-nomouse"))
-		return;
+	
 	mouse_x = mouse_y = 0.0;
 	mouse_avail = 1;
 }
@@ -1310,24 +1308,6 @@ void IN_Init(void)
 void IN_Shutdown(void)
 {
 	mouse_avail = 0;
-}
-
-void IN_Commands(void)
-{
-	int i;
-
-	if(!mouse_avail)
-		return;
-
-	for(i = 0; i < mouse_buttons; i++)
-	{
-		if((mouse_buttonstate & (1 << i)) && !(mouse_oldbuttonstate & (1 << i)))
-			Key_Event(K_MOUSE1 + i, true);
-
-		if(!(mouse_buttonstate & (1 << i)) && (mouse_oldbuttonstate & (1 << i)))
-			Key_Event(K_MOUSE1 + i, false);
-	}
-	mouse_oldbuttonstate = mouse_buttonstate;
 }
 
 void IN_Move(usercmd_t *cmd)
