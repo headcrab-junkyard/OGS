@@ -21,6 +21,13 @@
 
 #include "quakdef.h"
 
+cvar_t _windowed_mouse = { "_windowed_mouse", "0", true };
+
+float old_windowed_mouse;
+
+qboolean mouse_avail;
+int mouse_buttonstate;
+
 void mousehandler(int buttonstate, int dx, int dy)
 {
 	mouse_buttonstate = buttonstate;
@@ -31,29 +38,23 @@ void mousehandler(int buttonstate, int dx, int dy)
 void IN_Init()
 {
 #ifdef SVGALIB
-	int mtype;
-	char *mousedev;
-	int mouserate;
-
 	if(UseMouse)
 	{
 		Cvar_RegisterVariable(&mouse_button_commands[0]);
 		Cvar_RegisterVariable(&mouse_button_commands[1]);
 		Cvar_RegisterVariable(&mouse_button_commands[2]);
-		Cvar_RegisterVariable(&m_filter);
-		Cmd_AddCommand("force_centerview", Force_CenterView_f);
 
 		mouse_buttons = 3;
 
-		mtype = vga_getmousetype();
+		int mtype = vga_getmousetype();
 
-		mousedev = "/dev/mouse";
+		char *mousedev = "/dev/mouse";
 		if(getenv("MOUSEDEV"))
 			mousedev = getenv("MOUSEDEV");
 		if(COM_CheckParm("-mdev"))
 			mousedev = com_argv[COM_CheckParm("-mdev") + 1];
 
-		mouserate = 1200;
+		int mouserate = 1200;
 		if(getenv("MOUSERATE"))
 			mouserate = atoi(getenv("MOUSERATE"));
 		if(COM_CheckParm("-mrate"))
