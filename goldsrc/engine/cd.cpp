@@ -26,38 +26,22 @@
 //extern HWND mainwindow;
 extern cvar_t bgmvolume;
 
-/*
-void CD_Command_f()
+static void CD_f() // TODO: CD_Command_f?
 {
-	//if(COM_CheckParm("-nocdaudio") || COM_CheckParm("-nosound")) // TODO: <-- ADD THIS (Bugfix; Not present in GS)
-	//return;
-
-	// ...
-
-	if(!stricmp(command, "on"))
-	{
-		g_CDAudio.m_bEnabled = true;
-		return;
-	};
-
-	// ...
-};
-*/
-
-static void CD_f()
-{
-	char *command;
-	int ret;
-	int n;
+	// TODO: possible bugfix, not present in GS
+	//if(COM_CheckParm("-nosound") || COM_CheckParm("-nocdaudio"))
+		//return;
 
 	if(Cmd_Argc() < 2)
 		return;
 
-	command = Cmd_Argv(1);
-
-	if(Q_strcasecmp(command, "on") == 0)
+	char *command = Cmd_Argv(1);
+	
+	int n;
+	
+	if(Q_strcasecmp(command, "on") == 0) // TODO: stricmp?
 	{
-		cdaudio->m_bEnabled = true; // TODO: cdaudio->SetActive(true);
+		cdaudio->m_bEnabled = true; // TODO: cdaudio->SetActive(true); g_CDAudio.m_bEnabled = true;
 		return;
 	};
 
@@ -82,7 +66,7 @@ static void CD_f()
 
 	if(Q_strcasecmp(command, "remap") == 0)
 	{
-		ret = Cmd_Argc() - 2;
+		int ret = Cmd_Argc() - 2;
 		if(ret <= 0)
 		{
 			for(n = 1; n < 100; n++)
@@ -266,7 +250,7 @@ int CCDAudio::Init()
 		//m_bEnabled = false; // TODO: qw
 	};
 
-	//Cmd_AddCommand("cd", CD_f); // TODO
+	Cmd_AddCommand("cd", CD_f);
 
 	//Con_Printf("CD Audio Initialized\n");
 	
@@ -405,7 +389,7 @@ void CCDAudio::MP3_Init()
 	// TODO
 };
 
-// TODO: is it renamed Play method?
+// TODO: is it the renamed Play method?
 void CCDAudio::MP3_InitStream(int trackNum, bool looping)
 {
 	// TODO

@@ -32,4 +32,4 @@ void CDAudio_Stop(); // TODO: can be removed
 void CDAudio_Pause();
 void CDAudio_Resume();
 
-//void CDAudio_Activate(qboolean active); // Q2
+//void CDAudio_Activate(qboolean active); // TODO: Q2

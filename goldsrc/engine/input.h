@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-2001 Id Software, Inc.
- * Copyright (C) 2018-2020 BlackPhrase
+ * Copyright (C) 2018-2020, 2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,9 +28,11 @@ void IN_Shutdown();
 
 //void IN_Frame(); // TODO: Q2
 
-void IN_ClearStates(); // TODO: not present in Q2
-// restores all button and position states to defaults
-
 //void IN_Activate(qboolean active); // TODO: q2
 
+/// Restores all button and position states to defaults
+void IN_ClearStates(); // TODO: not present in Q2
+
 void IN_Accumulate();
+
+void IN_MouseEvent(int mstate);

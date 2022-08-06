@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018, 2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,21 +33,21 @@ int GameUI_HasExclusiveInput();
 
 //void GameUI_RunFrame();
 
-void GameUI_ConnectToServer(const char *game, int IP, int port);
+void GameUI_ConnectToServer(const char *asGame, int anIP, int anPort);
 void GameUI_DisconnectFromServer();
 
-void GameUI_LoadingStarted(const char *resourceType, const char *resourceName);
-void GameUI_LoadingFinished(const char *resourceType, const char *resourceName);
+void GameUI_LoadingStarted(const char *asResourceType, const char *asResourceName);
+void GameUI_LoadingFinished(const char *asResourceType, const char *asResourceName);
 
-void GameUI_StartProgressBar(const char *progressType, int progressSteps);
-int GameUI_ContinueProgressBar(int progressPoint, float progressFraction);
-void GameUI_StopProgressBar(qboolean bError, const char *failureReason, const char *extendedReason);
-int GameUI_SetProgressBarStatusText(const char *statusText);
+void GameUI_StartProgressBar(const char *asProgressType, int anProgressSteps);
+int GameUI_ContinueProgressBar(int anProgressPoint, float afProgressFraction);
+void GameUI_StopProgressBar(qboolean abError, const char *asFailureReason, const char *asExtendedReason);
+int GameUI_SetProgressBarStatusText(const char *asStatusText);
 
-void GameUI_SetSecondaryProgressBar(float progress);
-void GameUI_SetSecondaryProgressBarText(const char *statusText);
+void GameUI_SetSecondaryProgressBar(float afProgress);
+void GameUI_SetSecondaryProgressBarText(const char *asStatusText);
 
 // Obsolete, does nothing
-//void GameUI_ValidateCDKey(qboolean force, qboolean inConnect);
+//void GameUI_ValidateCDKey(qboolean abForce, qboolean abInConnect);
 
-void GameUI_OnDisconnectFromServer(int eSteamLoginFailure, const char *username);
+void GameUI_OnDisconnectFromServer(int aeSteamLoginFailure, const char *asUserName);

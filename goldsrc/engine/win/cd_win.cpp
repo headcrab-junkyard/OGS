@@ -21,10 +21,11 @@
 
 #include <windows.h>
 #include "quakedef.h"
-#include "icdaudio.h"
+#include "cdaudio.h"
 
 UINT wDeviceID;
 
+// TODO: probably unused and should be removed
 extern "C" LONG CDAudio_MessageHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if(lParam != wDeviceID)
@@ -42,19 +43,14 @@ extern "C" LONG CDAudio_MessageHandler(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 				CDAudio_Play(playTrack, true);
 		};
 		break;
-
 	case MCI_NOTIFY_ABORTED:
 	case MCI_NOTIFY_SUPERSEDED:
 		break;
-
 	case MCI_NOTIFY_FAILURE:
-		Con_DPrintf("MCI_NOTIFY_FAILURE\n");
 		CDAudio_Stop();
 		cdValid = false;
 		break;
-
 	default:
-		Con_DPrintf("Unexpected MM_MCINOTIFY type (%i)\n", wParam);
 		return 1;
 	};
 */

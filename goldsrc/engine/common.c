@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-2005 Id Software, Inc.
- * Copyright (C) 2018, 2020-2021 BlackPhrase
+ * Copyright (C) 2018, 2020-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -244,8 +244,9 @@ int Q_strncasecmp(const char *s1, const char *s2, int n)
 		}
 		if(!c1)
 			return 0; // strings are equal
-		              //              s1++;
-		              //              s2++;
+		
+		//s1++;
+		//s2++;
 	}
 
 	return -1;

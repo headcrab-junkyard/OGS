@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -86,7 +86,6 @@ void IN_HideMouse();
 void IN_ActivateMouse();
 void IN_RestoreOriginalMouseState();
 void IN_SetQuakeMouseState();
-void IN_MouseEvent(int mstate);
 
 extern qboolean winsock_lib_initialized;
 

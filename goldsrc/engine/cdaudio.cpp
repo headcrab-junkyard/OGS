@@ -22,8 +22,6 @@
 #include "quakedef.h"
 #include "icdaudio.h"
 
-extern ICDAudio *cdaudio;
-
 int CDAudio_Init()
 {
 	if(cdaudio)

@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018-2019, 2021 BlackPhrase
+ * Copyright (C) 2018-2019, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,11 +23,13 @@
 // 02/21/97 JCB Added extended DirectInput code to support external controllers.
 
 #include <dinput.h>
+
 #include "quakedef.h"
 #include "winquake.h"
 
-#define DINPUT_BUFFERSIZE 16
 #define iDirectInputCreate(a, b, c, d) pDirectInputCreate(a, b, c, d)
+
+const int DINPUT_BUFFERSIZE = 16;
 
 HRESULT(WINAPI *pDirectInputCreate)(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUT *lplpDirectInput, LPUNKNOWN punkOuter);
 
@@ -93,8 +95,8 @@ void IN_UpdateClipCursor()
 	//if(mouseinitialized && mouseactive && !dinput)
 	{
 		ClipCursor(&window_rect);
-	}
-}
+	};
+};
 
 /*
 ===========
@@ -107,8 +109,8 @@ void IN_ShowMouse()
 	{
 		ShowCursor(TRUE);
 		//mouseshowtoggle = 1;
-	}
-}
+	};
+};
 
 /*
 ===========
@@ -121,8 +123,8 @@ void IN_HideMouse()
 	{
 		ShowCursor(FALSE);
 		//mouseshowtoggle = 0;
-	}
-}
+	};
+};
 
 /*
 ===========
@@ -170,7 +172,7 @@ void IN_SetQuakeMouseState()
 {
 	if(mouseactivatetoggle)
 		IN_ActivateMouse();
-}
+};
 
 /*
 ===========
@@ -217,13 +219,13 @@ void IN_RestoreOriginalMouseState()
 	{
 		IN_DeactivateMouse();
 		mouseactivatetoggle = true;
-	}
+	};
 
 	// try to redraw the cursor so it gets reinitialized, because sometimes it
 	// has garbage after the mode switch
 	ShowCursor(TRUE);
 	ShowCursor(FALSE);
-}
+};
 
 /*
 ===========
@@ -251,8 +253,8 @@ qboolean IN_InitDInput()
 		{
 			Con_SafePrintf("Couldn't load dinput.dll\n");
 			return false;
-		}
-	}
+		};
+	};
 
 	if(!pDirectInputCreate)
 	{
@@ -262,16 +264,14 @@ qboolean IN_InitDInput()
 		{
 			Con_SafePrintf("Couldn't get DI proc addr\n");
 			return false;
-		}
-	}
+		};
+	};
 
 	// register with DirectInput and get an IDirectInput to play with.
 	hr = iDirectInputCreate(0 /*global_hInstance*/, DIRECTINPUT_VERSION, &g_pdi, NULL); // TODO
 
 	if(FAILED(hr))
-	{
 		return false;
-	}
 
 	// obtain an interface to the system mouse device.
 	hr = IDirectInput_CreateDevice(g_pdi, &GUID_SysMouse, &g_pMouse, NULL);
@@ -280,7 +280,7 @@ qboolean IN_InitDInput()
 	{
 		Con_SafePrintf("Couldn't open DI mouse device\n");
 		return false;
-	}
+	};
 
 	// set the data format to "mouse format".
 	hr = IDirectInputDevice_SetDataFormat(g_pMouse, &df);
@@ -289,7 +289,7 @@ qboolean IN_InitDInput()
 	{
 		Con_SafePrintf("Couldn't set DI mouse format\n");
 		return false;
-	}
+	};
 
 	// set the cooperativity level.
 	hr = IDirectInputDevice_SetCooperativeLevel(g_pMouse, mainwindow,
@@ -299,8 +299,7 @@ qboolean IN_InitDInput()
 	{
 		Con_SafePrintf("Couldn't set DI coop level\n");
 		return false;
-	}
-
+	};
 	// set the buffer size to DINPUT_BUFFERSIZE elements.
 	// the buffer size is a DWORD property associated with the device
 	hr = IDirectInputDevice_SetProperty(g_pMouse, DIPROP_BUFFERSIZE, &dipdw.diph);
@@ -309,10 +308,10 @@ qboolean IN_InitDInput()
 	{
 		Con_SafePrintf("Couldn't set DI buffersize\n");
 		return false;
-	}
+	};
 
 	return true;
-}
+};
 
 /*
 ===========
@@ -325,16 +324,14 @@ void IN_StartupMouse()
 	dinput = IN_InitDInput();
 
 	if(!dinput)
-	{
 		// TODO: moved to client dll
-	}
 
 	// if a fullscreen video mode was set before the mouse was initialized,
 	// set the mouse state appropriately
 	if(mouseactivatetoggle)
 		IN_ActivateMouse();
 */
-}
+};
 
 /*
 ===========
@@ -344,7 +341,7 @@ IN_Init
 void IN_Init()
 {
 	uiWheelMessage = RegisterWindowMessage("MSWHEEL_ROLLMSG");
-}
+};
 
 /*
 ===========
@@ -359,14 +356,14 @@ void IN_Shutdown()
 	{
 		IDirectInputDevice_Release(g_pMouse);
 		g_pMouse = NULL;
-	}
+	};
 
 	if(g_pdi)
 	{
 		IDirectInput_Release(g_pdi);
 		g_pdi = NULL;
-	}
-}
+	};
+};
 
 /*
 ===========
