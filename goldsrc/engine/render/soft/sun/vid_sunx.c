@@ -1248,10 +1248,6 @@ void VID_SetDefaultMode(void)
 {
 }
 
-void I_DrawCircle(int window, int x, int y, int r)
-{
-}
-
 void Sys_SendKeyEvents(void)
 {
 	// get events from x server

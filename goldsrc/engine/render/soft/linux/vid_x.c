@@ -1176,10 +1176,6 @@ void VID_DitherOff()
 	}
 }
 
-void Sys_DrawCircle(int window, int x, int y, int r)
-{
-}
-
 void Sys_SendKeyEvents()
 {
 	// get events from x server
