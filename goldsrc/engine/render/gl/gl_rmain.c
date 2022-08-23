@@ -72,32 +72,63 @@ int d_lightstylevalue[256]; // 8.8 fraction of base light value
 
 void R_MarkLeaves(void);
 
+cvar_t ati_npatch = { "ati_npatch", "1.0" }; // TODO: register
+
+cvar_t r_bmodelinterp = { "r_bmodelinterp", "1" }; // TODO: register
 cvar_t r_norefresh = { "r_norefresh", "0" };
 cvar_t r_drawentities = { "r_drawentities", "1" };
 cvar_t r_drawviewmodel = { "r_drawviewmodel", "1" };
 cvar_t r_speeds = { "r_speeds", "0" };
 cvar_t r_fullbright = { "r_fullbright", "0" };
+cvar_t r_decals = { "r_decals", "4096" }; // TODO: register
+cvar_t sp_decals = { "sp_decals", "4096" }; // TODO: register
+cvar_t mp_decals = { "mp_decals", "300" }; // TODO: register
 cvar_t r_lightmap = { "r_lightmap", "0" };
 cvar_t r_shadows = { "r_shadows", "0" };
 cvar_t r_mirroralpha = { "r_mirroralpha", "1" };
 cvar_t r_wateralpha = { "r_wateralpha", "1" };
 cvar_t r_dynamic = { "r_dynamic", "1" };
 cvar_t r_novis = { "r_novis", "0" };
-//cvar_t	r_netgraph = {"r_netgraph","0"}; // TODO
+cvar_t r_mmx = { "r_mmx", "0" }; // TODO: register
+cvar_t r_traceglow = { "r_traceglow", "0" }; // TODO: register
+cvar_t r_wadtextures = { "r_wadtextures", "0" }; // TODO: register
+cvar_t r_glowshellfreq = { "r_glowshellfreq", "2.2" }; // TODO: register
 
-cvar_t gl_finish = { "gl_finish", "0" };
+//cvar_t r_netgraph = {"r_netgraph", "0"}; // TODO: remove
+
+cvar_t d_spriteskip = { "d_spriteskip", "0" }; // TODO: register
+
+cvar_t gl_finish = { "gl_finish", "0" }; // TODO: remove?
 cvar_t gl_clear = { "gl_clear", "0" };
 cvar_t gl_cull = { "gl_cull", "1" };
-cvar_t gl_texsort = { "gl_texsort", "1" };
-cvar_t gl_smoothmodels = { "gl_smoothmodels", "1" };
+cvar_t gl_texsort = { "gl_texsort", "1" }; // TODO: remove
+cvar_t gl_smoothmodels = { "gl_smoothmodels", "1" }; // TODO: remove
 cvar_t gl_affinemodels = { "gl_affinemodels", "0" };
-cvar_t gl_polyblend = { "gl_polyblend", "1" };
-cvar_t gl_flashblend = { "gl_flashblend", "1" };
-cvar_t gl_playermip = { "gl_playermip", "0" };
-cvar_t gl_nocolors = { "gl_nocolors", "0" };
-cvar_t gl_keeptjunctions = { "gl_keeptjunctions", "0" }; // TODO: 1 in qw
-cvar_t gl_reporttjunctions = { "gl_reporttjunctions", "0" };
-cvar_t gl_doubleeyes = { "gl_doubleeys", "1" }; // TODO: not present in qw
+cvar_t gl_polyblend = { "gl_polyblend", "1" }; // TODO: remove
+cvar_t gl_flashblend = { "gl_flashblend", "0" };
+cvar_t gl_playermip = { "gl_playermip", "0" }; // TODO: remove
+cvar_t gl_nocolors = { "gl_nocolors", "0" }; // TODO: remove
+cvar_t gl_keeptjunctions = { "gl_keeptjunctions", "1", FCVAR_ARCHIVE };
+cvar_t gl_wateramp = { "gl_wateramp", "0.3" }; // TODO: register
+cvar_t gl_dither = { "gl_dither", "1" }; // TODO: register
+cvar_t gl_spriteblend = { "gl_spriteblend", "1" }; // TODO: register
+cvar_t gl_polyoffset = { "gl_polyoffset", "4" }; // TODO: register
+cvar_t gl_lightholes = { "gl_lightholes", "1" }; // TODO: register
+cvar_t gl_zmax = { "gl_zmax", "4096" }; // TODO: register
+cvar_t gl_alphamin = { "gl_alphamin", "0.25" }; // TODO: register
+cvar_t gl_overdraw = { "gl_overdraw", "0" }; // TODO: register
+cvar_t gl_watersides = { "gl_watersides", "0" }; // TODO: register
+cvar_t gl_overbright = { "gl_overbright", "1" }; // TODO: register
+cvar_t gl_envmapsize = { "gl_envmapsize", "256" }; // TODO: register
+cvar_t gl_flipmatrix = { "gl_flipmatrix", "0" }; // TODO: register
+cvar_t gl_monolights = { "gl_monolights", "0" }; // TODO: register
+cvar_t gl_fog = { "gl_fog", "1" }; // TODO: register
+cvar_t gl_wireframe = { "gl_wireframe", "0" }; // TODO: register
+
+cvar_t gl_reporttjunctions = { "gl_reporttjunctions", "0" }; // TODO: remove
+cvar_t gl_doubleeyes = { "gl_doubleeys", "1" }; // TODO: not present in qw & gs, remove
+
+cvar_t gl_vsync = {"gl_vsync", "0", FCVAR_ARCHIVE}; // TODO: wrong place
 
 extern cvar_t gl_ztrick;
 //extern	cvar_t	scr_fov; // TODO
