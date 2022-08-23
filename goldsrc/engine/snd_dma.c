@@ -75,17 +75,23 @@ int desired_bits = 16;
 int sound_started = 0;
 
 cvar_t bgmvolume = { "bgmvolume", "1", true };
+cvar_t mp3volume = {"MP3Volume", "0.8", FCVAR_ARCHIVE};
+cvar_t mp3fadetime = {"MP3FadeTime", "2", FCVAR_ARCHIVE};
 cvar_t volume = { "volume", "0.7", true };
+cvar_t suitvolume = {"suitvolume", "0.25"}; // TODO: register (why it's here?)
 
+cvar_t hisound = {"hisound", "1"}; // TODO: register
 cvar_t nosound = { "nosound", "0" };
 cvar_t precache = { "precache", "1" };
 cvar_t loadas8bit = { "loadas8bit", "0" };
-cvar_t bgmbuffer = { "bgmbuffer", "4096" };
+cvar_t bgmbuffer = { "bgmbuffer", "4096" }; // TODO: remove
 cvar_t ambient_level = { "ambient_level", "0.3" };
 cvar_t ambient_fade = { "ambient_fade", "100" };
 cvar_t snd_noextraupdate = { "snd_noextraupdate", "0" };
 cvar_t snd_show = { "snd_show", "0" };
 cvar_t _snd_mixahead = { "_snd_mixahead", "0.1", true };
+
+cvar_t speak_enabled = {"speak_enabled", "1"}; // TODO: register
 
 // ====================================================================
 // User-setable variables
@@ -184,6 +190,8 @@ void S_Init()
 
 	Cvar_RegisterVariable(&nosound);
 	Cvar_RegisterVariable(&volume);
+	Cvar_RegisterVariable(&mp3volume); // TODO: unused
+	Cvar_RegisterVariable(&mp3fadetime); // TODO: unused
 	Cvar_RegisterVariable(&precache);
 	Cvar_RegisterVariable(&loadas8bit);
 	Cvar_RegisterVariable(&bgmvolume);
