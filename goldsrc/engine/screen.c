@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-2001 Id Software, Inc.
- * Copyright (C) 2018-2021 BlackPhrase
+ * Copyright (C) 2018-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -84,11 +84,19 @@ float scr_conlines; // lines of console to display
 float oldscreensize, oldfov;
 //float oldsbar; // TODO: qw
 cvar_t scr_viewsize = { "viewsize", "120", true };
-cvar_t scr_fov = { "fov", "90" }; // 10 - 170
-cvar_t scr_conspeed = { "scr_conspeed", "300" };
+cvar_t scr_fov = { "fov", "90" }; // 10 - 170 // TODO: remove?
+cvar_t scr_conspeed = { "scr_conspeed", "300" }; // TODO: remove?
 cvar_t scr_centertime = { "scr_centertime", "2" };
 cvar_t scr_showpause = { "showpause", "1" };
 cvar_t scr_printspeed = { "scr_printspeed", "8" };
+
+cvar_t scr_graphheight = { "graphheight", "64.0" }; // TODO: register
+
+cvar_t scr_downloading = { "scr_downloading", "-1.0" }; // TODO: register
+
+cvar_t scr_connectmsg = { "scr_connectmsg2", "0" }; // TODO: register
+cvar_t scr_connectmsg1 = { "scr_connectmsg1", "0" }; // TODO: register
+cvar_t scr_connectmsg2 = { "scr_connectmsg2", "0" }; // TODO: register
 
 #ifdef GLQUAKE
 //cvar_t scr_allowsnap = {"scr_allowsnap", "1"}; // TODO: outside of the conditional compilation check in qw
