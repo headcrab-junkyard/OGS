@@ -26,48 +26,100 @@
 #include "winquake.h"
 #endif
 
+int fps_count; // TODO: used by gl_screen
+
 // we need to declare some mouse variables here, because the menu system
 // references them even when on a unix system.
 
+//cvar_t cl_hudswap = {"cl_hudswap", "0", true};
+cvar_t cl_maxfps = {"fps_max", "72", FCVAR_ARCHIVE}; // TODO: wrong place
+
+cvar_t entlatency = { "entlatency", "20" }; // TODO: remove, make cmd instead
+cvar_t cl_predict_players = { "cl_predict_players", "1" }; // TODO: remove, make cmd instead
+cvar_t cl_predict_players2 = { "cl_predict_players2", "1" }; // TODO: remove
+
+cvar_t localid = { "localid", "" }; // TODO: remove
+
+//
+
+cvar_t ex_interp = {"ex_interp", "0.1", FCVAR_ARCHIVE}; // TODO: register
+
+cvar_t cl_weaponlistfix = {"cl_weaponlistfix", "0"}; // TODO: register
+
+cvar_t cl_fixtimerate = {"cl_fixtimerate", "7.5"}; // TODO: register
+
+cvar_t cl_connect_test = {"cl_connect_test", "0"}; // TODO: register?
+
+cvar_t cl_needinstanced = {"cl_needinstanced", "0"}; // TODO: register
+
+cvar_t cl_clockreset = {"cl_clockreset", "0.1"}; // TODO: register
+
+cvar_t cl_himodels = {"cl_himodels", "0", FCVAR_ARCHIVE}; // TODO: register
+
+cvar_t cl_gaitestimation = {"cl_gaitestimation", "1"}; // TODO: register
+
 cvar_t cl_timeout = { "cl_timeout", "60", FCVAR_ARCHIVE };
 
+cvar_t cl_showmessages = {"cl_showmessages", "0"}; // TODO: register
+cvar_t show_fps = {"cl_showfps", "0", FCVAR_ARCHIVE}; // set for running times
+cvar_t cl_showevents = {"cl_showevents", "0"}; // TODO: register
 cvar_t cl_shownet = { "cl_shownet", "0" }; // can be 0, 1, or 2
-cvar_t cl_nolerp = { "cl_nolerp", "0" };
+cvar_t cl_showsizes = {"cl_showsizes", "0"}; // TODO: register
 
-/*
-cvar_t	cl_hudswap	= {"cl_hudswap", "0", true};
-cvar_t	cl_maxfps	= {"fps_max", "0", true};
-*/
-
-cvar_t entlatency = { "entlatency", "20" };
-cvar_t cl_predict_players = { "cl_predict_players", "1" };
-cvar_t cl_predict_players2 = { "cl_predict_players2", "1" };
 cvar_t cl_solid_players = { "cl_solid_players", "1" };
 
-cvar_t localid = { "localid", "" };
+cvar_t cl_nodelta = {"cl_nodelta", "0"}; // TODO: register?
+cvar_t cl_idealpitchscale = {"cl_idealpitchscale", "0.8", FCVAR_ARCHIVE}; // TODO: register
 
-cvar_t show_fps = {"cl_showfps", "0", FCVAR_ARCHIVE}; // set for running times
-int fps_count; // TODO: used by gl_screen
+cvar_t rcon_address = {"rcon_address", ""}; // TODO: register
+cvar_t rcon_port = {"rcon_port", "0"}; // TODO: register
+
+cvar_t cl_resend = {"cl_resend", "6"}; // TODO: register
+
+cvar_t cl_slist = {"cl_slist", "10"}; // TODO: register
+
+cvar_t cl_allowdownload = {"cl_allowdownload", "1", FCVAR_ARCHIVE}; // TODO: register
+cvar_t cl_allowupload = {"cl_allowupload", "1", FCVAR_ARCHIVE}; // TODO: register
+
+cvar_t cl_download_ingame = {"cl_download_ingame", "1", FCVAR_ARCHIVE}; // TODO: register
+
+cvar_t cl_cmdrate = {"cl_cmdrate", "60", FCVAR_ARCHIVE}; // TODO: register
+cvar_t cl_cmdbackup = {"cl_cmdbackup", "2", FCVAR_ARCHIVE}; // TODO: register
+
+cvar_t cl_logofile = {"cl_logofile", "lambda", FCVAR_ARCHIVE}; // TODO: register
+cvar_t cl_logocolor = {"cl_logocolor", "orange", FCVAR_ARCHIVE}; // TODO: register
 
 //
 // info mirrors
 //
 cvar_t password = { "password", "", FCVAR_USERINFO };
-cvar_t spectator = { "spectator", "", FCVAR_USERINFO };
-cvar_t model = { "model", "", FCVAR_ARCHIVE | FCVAR_USERINFO };
-cvar_t name = { "name", "unnamed", FCVAR_ARCHIVE | FCVAR_USERINFO }; // TODO: cl_name?
+cvar_t name = { "name", "unnamed", FCVAR_ARCHIVE | FCVAR_USERINFO }; // TODO: cl_name? "unknown"?
 cvar_t team = { "team", "", FCVAR_ARCHIVE | FCVAR_USERINFO };
 cvar_t skin = { "skin", "", FCVAR_ARCHIVE | FCVAR_USERINFO };
+cvar_t model = { "model", "", FCVAR_ARCHIVE | FCVAR_USERINFO };
 cvar_t topcolor = { "topcolor", "0", FCVAR_ARCHIVE | FCVAR_USERINFO };
 cvar_t bottomcolor = { "bottomcolor", "0", FCVAR_ARCHIVE | FCVAR_USERINFO };
-cvar_t rate = { "rate", "2500", FCVAR_ARCHIVE | FCVAR_USERINFO };
+cvar_t rate = { "rate", "30000", FCVAR_ARCHIVE | FCVAR_USERINFO };
+cvar_t spectator = { "spectator", "", FCVAR_USERINFO }; // TODO: remove
 
 // TODO: handle
-cvar_t cl_dlmax = { "cl_dlmax", "80", FCVAR_ARCHIVE | FCVAR_USERINFO };
-cvar_t cl_lc = { "cl_lc", "1", FCVAR_ARCHIVE | FCVAR_USERINFO };
+cvar_t cl_updaterate = { "cl_updaterate", "60", FCVAR_ARCHIVE | FCVAR_USERINFO }; // TODO: 20?
 cvar_t cl_lw = { "cl_lw", "1", FCVAR_ARCHIVE | FCVAR_USERINFO };
-cvar_t cl_updaterate = { "cl_updaterate", "30", FCVAR_ARCHIVE | FCVAR_USERINFO };
-cvar_t cl_autowepswitch = { "_cl_autowepswitch", "1", FCVAR_ARCHIVE | FCVAR_USERINFO };
+cvar_t cl_lc = { "cl_lc", "1", FCVAR_ARCHIVE | FCVAR_USERINFO };
+cvar_t cl_dlmax = { "cl_dlmax", "512", FCVAR_ARCHIVE | FCVAR_USERINFO };
+
+cvar_t fs_lazy_precache = {"fs_lazy_precache", "0"}; // TODO: register
+cvar_t fs_perf_warnings = {"fs_perf_warnings", "0"}; // TODO: register
+cvar_t fs_startup_timings = {"fs_startup_timings", "0"}; // TODO: register
+cvar_t fs_precache_timings = {"fs_precache_timings", "0"}; // TODO: register
+
+cvar_t cl_mousegrab = {"cl_mousegrab", "1", FCVAR_ARCHIVE}; // TODO: register
+
+cvar_t m_rawinput = {"m_rawinput", "0", FCVAR_ARCHIVE}; // TODO: register
+
+cvar_t cl_filterstuffcmd = {"cl_filterstuffcmd", "0", FCVAR_ARCHIVE}; // TODO: register
+
+cvar_t cl_autowepswitch = { "_cl_autowepswitch", "1", FCVAR_ARCHIVE | FCVAR_USERINFO }; // TODO: wrong place? part of client dll?
 //
 
 static qboolean allowremotecmd = true; // TODO: purpose?

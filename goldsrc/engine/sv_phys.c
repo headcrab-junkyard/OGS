@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018-2019, 2021 BlackPhrase
+ * Copyright (C) 2018-2019, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,22 +40,28 @@ solid_edge items only clip against bsp models.
 */
 
 cvar_t sv_friction = { "sv_friction", "4", FCVAR_SERVER };
-cvar_t sv_waterfriction = { "sv_waterfriction", "4", FCVAR_SERVER};   
+cvar_t sv_waterfriction = { "sv_waterfriction", "4", FCVAR_SERVER}; // TODO: set to 1?
+
 cvar_t sv_stopspeed = { "sv_stopspeed", "100", FCVAR_SERVER };
 cvar_t sv_gravity = { "sv_gravity", "800", FCVAR_SERVER };
 cvar_t sv_maxvelocity = { "sv_maxvelocity", "2000" };
 
-cvar_t	sv_maxspeed			 = { "sv_maxspeed", "320", FCVAR_SERVER};
-cvar_t	sv_spectatormaxspeed = { "sv_spectatormaxspeed", "500"};
-
-cvar_t	sv_accelerate		 = { "sv_accelerate", "10", FCVAR_SERVER};
-cvar_t	sv_airaccelerate	 = { "sv_airaccelerate", "0.7", FCVAR_SERVER};    
-cvar_t	sv_wateraccelerate	 = { "sv_wateraccelerate", "10", FCVAR_SERVER};
+extern cvar_t sv_stepsize; // TODO: move here
 
 cvar_t sv_bounce = {"sv_bounce", "1", FCVAR_SERVER};
-cvar_t sv_nostep = { "sv_nostep", "0" };
 
-extern cvar_t sv_stepsize;
+extern cvar_t sv_maxspeed;
+cvar_t	sv_spectatormaxspeed = { "sv_spectatormaxspeed", "500"};
+
+extern cvar_t sv_accelerate;
+cvar_t	sv_airaccelerate	 = { "sv_airaccelerate", "0.7", FCVAR_SERVER}; // TODO: set to 10?
+cvar_t	sv_wateraccelerate	 = { "sv_wateraccelerate", "10", FCVAR_SERVER};
+
+cvar_t sv_zmax = {"sv_zmax", "4096"};
+
+cvar_t sv_wateramp = {"sv_wateramp", "0"};
+
+cvar_t sv_skyname = {"sv_skyname", "desert"};
 
 extern cvar_t sv_zmax;
 extern cvar_t sv_wateramp;
@@ -72,6 +78,7 @@ extern cvar_t sv_skyvec_x;
 extern cvar_t sv_skyvec_y;
 extern cvar_t sv_skyvec_z;
 
+cvar_t sv_nostep = { "sv_nostep", "0" }; // TODO: remove?
 
 #define MOVE_EPSILON 0.01
 

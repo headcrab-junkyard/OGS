@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018, 2020-2021 BlackPhrase
+ * Copyright (C) 2018, 2020-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,21 +39,40 @@ when crossing a water boudnary.
 cvar_t lcd_x = { "lcd_x", "0" }; // FIXME: make this work sometime...
 cvar_t lcd_yaw = { "lcd_yaw", "0" };
 
-cvar_t cl_rollspeed = { "cl_rollspeed", "200" };
-cvar_t cl_rollangle = { "cl_rollangle", "2.0" };
+cvar_t v_dark = {"v_dark", "0"};
 
-cvar_t v_kicktime = { "v_kicktime", "0.5", false };
-cvar_t v_kickroll = { "v_kickroll", "0.6", false };
-cvar_t v_kickpitch = { "v_kickpitch", "0.6", false };
+cvar_t lambert = {"lambert", "1.5"};
 
 cvar_t crosshair = { "crosshair", "0", true };
-cvar_t cl_crossx = { "cl_crossx", "0", false };
-cvar_t cl_crossy = { "cl_crossy", "0", false };
-cvar_t	crosshaircolor = {"crosshaircolor", "79", true};
+
+cvar_t v_gamma = { "gamma", "2.5", true };
+
+cvar_t brightness = {"brightness", "0", FCVAR_ARCHIVE};
+
+cvar_t lightgamma = {"lightgamma", "2.5"};
+cvar_t texgamma = {"texgamma", "2"};
+
+cvar_t direct = {"direct", "0.9"};
+
+//
+
+cvar_t cl_rollspeed = { "cl_rollspeed", "200" }; // TODO: remove
+cvar_t cl_rollangle = { "cl_rollangle", "2.0" }; // TODO: remove
+
+cvar_t v_kicktime = { "v_kicktime", "0.5", false }; // TODO: remove
+cvar_t v_kickroll = { "v_kickroll", "0.6", false }; // TODO: remove
+cvar_t v_kickpitch = { "v_kickpitch", "0.6", false }; // TODO: remove
+
+cvar_t cl_crossx = { "cl_crossx", "0", false }; // TODO: remove
+cvar_t cl_crossy = { "cl_crossy", "0", false }; // TODO: remove
+
+cvar_t crosshaircolor = {"crosshaircolor", "79", true}; // TODO: remove?
 
 #ifdef GLQUAKE
-cvar_t gl_cshiftpercent = { "gl_cshiftpercent", "100", false };
+cvar_t gl_cshiftpercent = { "gl_cshiftpercent", "100", false }; // TODO: remove
 #endif
+
+//
 
 float v_dmg_time, v_dmg_roll, v_dmg_pitch;
 
@@ -73,8 +92,6 @@ cshift_t cshift_empty = { { 130, 80, 50 }, 0 };
 cshift_t cshift_water = { { 130, 80, 50 }, 128 };
 cshift_t cshift_slime = { { 0, 25, 5 }, 150 };
 cshift_t cshift_lava = { { 255, 80, 0 }, 150 };
-
-cvar_t v_gamma = { "gamma", "1", true };
 
 byte gammatable[256]; // palette is sent through this
 

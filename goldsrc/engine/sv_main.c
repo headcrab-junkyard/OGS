@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018, 2020-2021 BlackPhrase
+ * Copyright (C) 2018, 2020-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,37 +58,74 @@ char localinfo[MAX_LOCALINFO_STRING+1]; // local game info
 
 char localmodels[MAX_MODELS][5]; // inline model names for precache
 
-cvar_t sv_filterban = { "sv_filterban", "1" };
+cvar_t rcon_password = {"rcon_password", ""}; // password for remote server commands // TODO: wrong place?
 
-cvar_t sv_timeout = { "sv_timeout", "60" }; // seconds without any message
+cvar_t sv_enableoldqueries = {"sv_enableoldqueries", "0"}; // TODO: register
 
-cvar_t sv_password = {"sv_password", "", FCVAR_SERVER};	// password for entering the game
+cvar_t sv_instancedbaseline = {"sv_instancedbaseline", "1"}; // TODO: register
 
-cvar_t sv_allow_download = {"sv_allowdownload", "1"};
-
-cvar_t sv_allow_upload = {"sv_allowupload", "1", FCVAR_SERVER};
-
-//cvar_t pausable	= {"pausable", "1"}; // TODO: already defined in host
-
-cvar_t sv_cheats = {"sv_cheats", "0", FCVAR_SERVER};
-
-cvar_t sv_minrate = {"sv_minrate", "0", FCVAR_SERVER};
-cvar_t sv_maxrate = {"sv_maxrate", "0", FCVAR_SERVER};
+cvar_t sv_contact = {"sv_contact", "", FCVAR_SERVER}; // TODO: register
 
 cvar_t sv_minupdaterate = {"sv_minupdaterate", "10"};
 cvar_t sv_maxupdaterate = {"sv_maxupdaterate", "30"};
 
-cvar_t sv_voiceenable = {"sv_voiceenable", "1"};
-cvar_t sv_voicecodec = {"sv_voicecodec", "voice_speex"};
-cvar_t sv_voicequality = {"sv_voicequality", "3"};
+cvar_t sv_minrate = {"sv_minrate", "0", FCVAR_SERVER};
+cvar_t sv_maxrate = {"sv_maxrate", "0", FCVAR_SERVER};
 
+cvar_t sv_filterban = { "sv_filterban", "1" };
 
-cvar_t sv_zmax = {"sv_zmax", "4096"};
-cvar_t sv_wateramp = {"sv_wateramp", "0"};
+cvar_t sv_logrelay = {"sv_logrelay", "0"}; // TODO: register
 
-cvar_t mp_footsteps = {"mp_footsteps", "1", FCVAR_SERVER};
+cvar_t sv_language = {"sv_language", "0"}; // TODO: register
 
-cvar_t sv_skyname = {"sv_skyname", "desert"};
+cvar_t violence_hblood = {"violence_hblood", "1", FCVAR_ARCHIVE}; // TODO: register
+cvar_t violence_ablood = {"violence_ablood", "1", FCVAR_ARCHIVE}; // TODO: register
+cvar_t violence_hgibs = {"violence_hgibs", "1", FCVAR_ARCHIVE}; // TODO: register
+cvar_t violence_agibs = {"violence_agibs", "1", FCVAR_ARCHIVE}; // TODO: register
+
+cvar_t sv_newunit = {"sv_newunit", "0"}; // TODO: register
+
+cvar_t sv_aim = { "sv_aim", "0.93", FCVAR_ARCHIVE | FCVAR_SERVER }; // TODO: set to 1? or 0?
+
+cvar_t laddermode = {"laddermode", "0"}; // TODO: register
+
+cvar_t sv_clienttrace = {"sv_clienttrace", "1", FCVAR_SERVER}; // TODO: register
+
+cvar_t sv_timeout = { "sv_timeout", "60" }; // seconds without any message
+
+cvar_t sv_failuretime = {"sv_failuretime", "0.5"}; // TODO: register
+
+cvar_t sv_cheats = {"sv_cheats", "0", FCVAR_SERVER};
+
+cvar_t sv_password = {"sv_password", "", FCVAR_SERVER};	// password for entering the game
+
+cvar_t sv_lan = {"sv_lan", "0"}; // TODO: register, set to 0?
+cvar_t sv_lan_rate = {"sv_lan_rate", "20000"}; // TODO: register
+
+cvar_t sv_proxies = {"sv_proxies", "1", FCVAR_SERVER}; // TODO: register
+
+cvar_t sv_outofdatetime = {"sv_outofdatetime", "1800"}; // TODO: register
+
+cvar_t mapcyclefile = {"mapcyclefile", "mapcycle.txt"}; // TODO: register, set to ""/0?
+cvar_t motdfile = {"motdfile", "motd.txt"}; // TODO: register, set to ""/0?
+cvar_t servercfgfile = {"servercfgfile", "server.cfg"}; // TODO: register, set to ""/0?
+cvar_t mapchangecfgfile = {"mapchangecfgfile", ""}; // TODO: register
+cvar_t lservercfgfile = {"lservercfgfile", "listenserver.cfg"}; // TODO: register, set to ""/0?
+cvar_t logsdir = {"logsdir", "logs"}; // TODO: register, set to ""/0?
+cvar_t bannedcfgfile = {"bannedcfgfile", "banned.cfg"}; // TODO: register, set to ""/0?
+
+cvar_t sv_allow_download = {"sv_allowdownload", "1"};
+
+cvar_t sv_send_logos = {"sv_send_logos", "1"}; // TODO: register
+cvar_t sv_send_resources = {"sv_send_resources", "1"}; // TODO: register
+
+cvar_t sv_logbans = {"sv_logbans", "0"}; // TODO: register
+
+cvar_t sv_allow_upload = {"sv_allowupload", "1", FCVAR_SERVER};
+
+cvar_t sv_uploadmax = {"sv_uploadmax", "0.5", FCVAR_SERVER}; // TODO: register
+
+cvar_t hpk_maxsize = {"hpk_maxsize", "4", FCVAR_ARCHIVE}; // TODO: register
 
 cvar_t sv_skycolor_r = {"sv_skycolor_r", "0"};
 cvar_t sv_skycolor_g = {"sv_skycolor_g", "0"};
@@ -97,6 +134,48 @@ cvar_t sv_skycolor_b = {"sv_skycolor_b", "0"};
 cvar_t sv_skyvec_x = {"sv_skyvec_x", "0"};
 cvar_t sv_skyvec_y = {"sv_skyvec_y", "0"};
 cvar_t sv_skyvec_z = {"sv_skyvec_z", "0"};
+
+cvar_t sv_visiblemaxplayers = {"sv_visiblemaxplayers", "-1"}; // TODO: register
+
+cvar_t max_queries_sec = {"max_queries_sec", "3", FCVAR_SERVER}; // TODO: register
+cvar_t max_queries_sec_global = {"max_queries_sec_global", "30", FCVAR_SERVER}; // TODO: register
+cvar_t max_queries_window = {"max_queries_window", "60", FCVAR_SERVER}; // TODO: register
+
+cvar_t sv_logblocks = {"sv_logblocks", "0", FCVAR_SERVER}; // TODO: register
+
+cvar_t sv_downloadurl = {"sv_downloadurl", ""}; // TODO: register
+
+cvar_t sv_allow_dlfile = {"sv_allow_dlfile", "1"}; // TODO: register
+
+cvar_t sv_version = {"sv_version", ""}; // TODO: register
+
+cvar_t sv_rcon_minfailures = {"sv_rcon_minfailures", "5"}; // TODO: register
+cvar_t sv_rcon_maxfailures = {"sv_rcon_maxfailures", "10"}; // TODO: register
+cvar_t sv_rcon_minfailuretime = {"sv_rcon_minfailuretime", "30"}; // TODO: register
+cvar_t sv_rcon_banpenalty = {"sv_rcon_banpenalty", "0"}; // TODO: register
+
+//
+
+extern cvar_t sv_voiceenable;
+extern cvar_t sv_voicecodec;
+extern cvar_t sv_voicequality;
+
+extern cvar_t sv_zmax;
+extern cvar_t sv_wateramp;
+
+extern cvar_t mp_footsteps;
+
+extern cvar_t sv_skyname;
+
+/*
+extern cvar_t sv_skycolor_r;
+extern cvar_t sv_skycolor_g;
+extern cvar_t sv_skycolor_b;
+
+extern cvar_t sv_skyvec_x;
+extern cvar_t sv_skyvec_y;
+extern cvar_t sv_skyvec_z;
+*/
 
 //============================================================================
 

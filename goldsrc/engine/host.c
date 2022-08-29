@@ -56,12 +56,21 @@ jmp_buf host_abortserver;
 byte *host_basepal;
 byte *host_colormap;
 
-cvar_t hostname = {"hostname", "unnamed"/*, FCVAR_SERVER*/};
+cvar_t sys_ticrate = { "sys_ticrate", "0.05" }; // TODO: should be 100.0
+cvar_t sys_timescale = { "sys_timescale", "1.0" }; // TODO: register
+
+cvar_t fps_max = {"fps_max", "100"}; // TODO: register
+cvar_t fps_override = {"fps_override", "0", FCVAR_ARCHIVE}; // TODO: register
+
+cvar_t sv_stats = {"sv_stats", "1"}; // TODO: register
+
+cvar_t hostname = {"hostname", "Half-Life"/*, FCVAR_SERVER*/};
+
 cvar_t host_framerate = { "host_framerate", "0" }; // set for slow motion
 cvar_t host_speeds = { "host_speeds", "0" };       // set for running times
 cvar_t host_profile = { "host_profile", "0" };
 
-cvar_t sys_ticrate = { "sys_ticrate", "0.05" };
+cvar_t host_killtime = {"host_killtime", "0"}; // TODO: register
 
 cvar_t fraglimit = { "fraglimit", "0", false, true };
 cvar_t timelimit = { "timelimit", "0", false, true };
@@ -72,6 +81,8 @@ cvar_t developer = { "developer", "1" }; // show extra messages (should be 0 for
 #else
 cvar_t developer = { "developer", "0" };
 #endif
+
+cvar_t host_limitlocal = {"host_limitlocal", "0"}; // TODO: register
 
 cvar_t skill = { "skill", "1" };           // 0 - 3
 cvar_t deathmatch = { "deathmatch", "0", FCVAR_SERVER }; // 0, 1, or 2

@@ -46,7 +46,12 @@ int con_current;    // where next message will be printed
 int con_x;          // offset in current line for next print
 char *con_text = 0;
 
-cvar_t con_notifytime = { "con_notifytime", "3" }; //seconds
+cvar_t console = {"console", "0", FCVAR_ARCHIVE};
+cvar_t con_fastmode = {"con_fastmode", "1"};
+cvar_t con_notifytime = {"con_notifytime", "4"}; //seconds
+cvar_t con_color = {"con_color", "255 180 30", FCVAR_ARCHIVE};
+cvar_t con_shifttoggleconsole = {"con_shifttoggleconsole", "0"};
+cvar_t con_mono = {"con_mono", "0", FCVAR_ARCHIVE};
 
 #define NUM_CON_TIMES 4
 float con_times[NUM_CON_TIMES]; // realtime time the line was generated
@@ -341,7 +346,12 @@ void Con_Init()
 	//
 	// register our commands
 	//
+	Cvar_RegisterVariable(&console); // TODO: unused
+	Cvar_RegisterVariable(&con_fastmode); // TODO: unused
 	Cvar_RegisterVariable(&con_notifytime);
+	Cvar_RegisterVariable(&con_color); // TODO: unused
+	Cvar_RegisterVariable(&con_shifttoggleconsole); // TODO: unused
+	Cvar_RegisterVariable(&con_mono); // TODO: unused
 
 	Cmd_AddCommand("condebug", Con_Debug_f);
 	Cmd_AddCommand("toggleconsole", Con_ToggleConsole_f);

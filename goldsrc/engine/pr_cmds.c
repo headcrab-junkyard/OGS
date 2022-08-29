@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018-2021 BlackPhrase
+ * Copyright (C) 2018-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 #include "usermsg.h"
 #include "Sequence.h"
 
-cvar_t sv_aim = { "sv_aim", "0.93" };
+extern cvar_t sv_aim;
 
 /*
 ===============================================================================

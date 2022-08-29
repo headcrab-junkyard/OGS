@@ -90,13 +90,13 @@ cvar_t scr_centertime = { "scr_centertime", "2" };
 cvar_t scr_showpause = { "showpause", "1" };
 cvar_t scr_printspeed = { "scr_printspeed", "8" };
 
-cvar_t scr_graphheight = { "graphheight", "64.0" }; // TODO: register
+cvar_t scr_graphheight = { "graphheight", "64.0", FCVAR_ARCHIVE };
 
-cvar_t scr_downloading = { "scr_downloading", "-1.0" }; // TODO: register
+cvar_t scr_downloading = { "scr_downloading", "-1.0" };
 
-cvar_t scr_connectmsg = { "scr_connectmsg2", "0" }; // TODO: register
-cvar_t scr_connectmsg1 = { "scr_connectmsg1", "0" }; // TODO: register
-cvar_t scr_connectmsg2 = { "scr_connectmsg2", "0" }; // TODO: register
+cvar_t scr_connectmsg = { "scr_connectmsg", "0" };
+cvar_t scr_connectmsg1 = { "scr_connectmsg1", "0" };
+cvar_t scr_connectmsg2 = { "scr_connectmsg2", "0" };
 
 #ifdef GLQUAKE
 //cvar_t scr_allowsnap = {"scr_allowsnap", "1"}; // TODO: outside of the conditional compilation check in qw
