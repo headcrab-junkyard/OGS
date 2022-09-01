@@ -56,21 +56,23 @@ jmp_buf host_abortserver;
 byte *host_basepal;
 byte *host_colormap;
 
-cvar_t sys_ticrate = { "sys_ticrate", "0.05" }; // TODO: should be 100.0
-cvar_t sys_timescale = { "sys_timescale", "1.0" }; // TODO: register
+playermove_t svpmove;
 
-cvar_t fps_max = {"fps_max", "100"}; // TODO: register
-cvar_t fps_override = {"fps_override", "0", FCVAR_ARCHIVE}; // TODO: register
+cvar_t sys_ticrate = { "sys_ticrate", "100" }; // TODO: was 0.05
+cvar_t sys_timescale = { "sys_timescale", "1.0" };
 
-cvar_t sv_stats = {"sv_stats", "1"}; // TODO: register
+cvar_t fps_max = {"fps_max", "100"}; // TODO: FCVAR_ARCHIVE?
+cvar_t fps_override = {"fps_override", "0", FCVAR_ARCHIVE};
+
+cvar_t sv_stats = {"sv_stats", "1"};
 
 cvar_t hostname = {"hostname", "Half-Life"/*, FCVAR_SERVER*/};
 
 cvar_t host_framerate = { "host_framerate", "0" }; // set for slow motion
-cvar_t host_speeds = { "host_speeds", "0" };       // set for running times
+cvar_t host_speeds = { "host_speeds", "0" }; // set for running times
 cvar_t host_profile = { "host_profile", "0" };
 
-cvar_t host_killtime = {"host_killtime", "0"}; // TODO: register
+cvar_t host_killtime = {"host_killtime", "0"};
 
 cvar_t fraglimit = { "fraglimit", "0", false, true };
 cvar_t timelimit = { "timelimit", "0", false, true };
@@ -82,15 +84,13 @@ cvar_t developer = { "developer", "1" }; // show extra messages (should be 0 for
 cvar_t developer = { "developer", "0" };
 #endif
 
-cvar_t host_limitlocal = {"host_limitlocal", "0"}; // TODO: register
+cvar_t host_limitlocal = {"host_limitlocal", "0"};
 
-cvar_t skill = { "skill", "1" };           // 0 - 3
+cvar_t skill = { "skill", "1" }; // 0 - 3
 cvar_t deathmatch = { "deathmatch", "0", FCVAR_SERVER }; // 0, 1, or 2
-cvar_t coop = { "coop", "0", FCVAR_SERVER };             // 0 or 1
+cvar_t coop = { "coop", "0", FCVAR_SERVER }; // 0 or 1
 
 cvar_t pausable = { "pausable", "1", FCVAR_SERVER };
-
-playermove_t svpmove;
 
 /*
 ================
@@ -218,15 +218,23 @@ Host_InitLocal
 void Host_InitLocal()
 {
 	Host_InitCommands();
-
+	
+	Cvar_RegisterVariable(&sys_ticrate);
+	Cvar_RegisterVariable(&sys_timescale);
+	
+	Cvar_RegisterVariable(&fps_max);
+	Cvar_RegisterVariable(&fps_override);
+	
+	Cvar_RegisterVariable(&sv_stats);
+	
 	Cvar_RegisterVariable(&hostname);
 
 	Cvar_RegisterVariable(&host_framerate);
 	Cvar_RegisterVariable(&host_speeds);
 	Cvar_RegisterVariable(&host_profile);
-
-	Cvar_RegisterVariable(&sys_ticrate);
-
+	Cvar_RegisterVariable(&host_killtime);
+	Cvar_RegisterVariable(&host_limitlocal);
+	
 	Cvar_RegisterVariable(&fraglimit);
 	Cvar_RegisterVariable(&timelimit);
 	Cvar_RegisterVariable(&teamplay);

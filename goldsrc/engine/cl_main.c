@@ -32,7 +32,7 @@ int fps_count; // TODO: used by gl_screen
 // references them even when on a unix system.
 
 //cvar_t cl_hudswap = {"cl_hudswap", "0", true};
-cvar_t cl_maxfps = {"fps_max", "72", FCVAR_ARCHIVE}; // TODO: wrong place
+//cvar_t cl_maxfps = {"fps_max", "72", FCVAR_ARCHIVE}; // TODO: wrong place
 
 cvar_t entlatency = { "entlatency", "20" }; // TODO: remove, make cmd instead
 cvar_t cl_predict_players = { "cl_predict_players", "1" }; // TODO: remove, make cmd instead
@@ -61,7 +61,7 @@ cvar_t cl_gaitestimation = {"cl_gaitestimation", "1"}; // TODO: register
 cvar_t cl_timeout = { "cl_timeout", "60", FCVAR_ARCHIVE };
 
 cvar_t cl_showmessages = {"cl_showmessages", "0"}; // TODO: register
-cvar_t show_fps = {"cl_showfps", "0", FCVAR_ARCHIVE}; // set for running times
+cvar_t show_fps = {"cl_showfps", "0", FCVAR_ARCHIVE}; // set for running times TODO: cl_showfps
 cvar_t cl_showevents = {"cl_showevents", "0"}; // TODO: register
 cvar_t cl_shownet = { "cl_shownet", "0" }; // can be 0, 1, or 2
 cvar_t cl_showsizes = {"cl_showsizes", "0"}; // TODO: register
@@ -71,8 +71,8 @@ cvar_t cl_solid_players = { "cl_solid_players", "1" };
 cvar_t cl_nodelta = {"cl_nodelta", "0"}; // TODO: register?
 cvar_t cl_idealpitchscale = {"cl_idealpitchscale", "0.8", FCVAR_ARCHIVE}; // TODO: register
 
-cvar_t rcon_address = {"rcon_address", ""}; // TODO: register
-cvar_t rcon_port = {"rcon_port", "0"}; // TODO: register
+cvar_t rcon_address = {"rcon_address", ""};
+cvar_t rcon_port = {"rcon_port", "0"};
 
 cvar_t cl_resend = {"cl_resend", "6"}; // TODO: register
 
@@ -103,7 +103,7 @@ cvar_t rate = { "rate", "30000", FCVAR_ARCHIVE | FCVAR_USERINFO };
 cvar_t spectator = { "spectator", "", FCVAR_USERINFO }; // TODO: remove
 
 // TODO: handle
-cvar_t cl_updaterate = { "cl_updaterate", "60", FCVAR_ARCHIVE | FCVAR_USERINFO }; // TODO: 20?
+cvar_t cl_updaterate = { "cl_updaterate", "60", FCVAR_ARCHIVE | FCVAR_USERINFO };
 cvar_t cl_lw = { "cl_lw", "1", FCVAR_ARCHIVE | FCVAR_USERINFO };
 cvar_t cl_lc = { "cl_lc", "1", FCVAR_ARCHIVE | FCVAR_USERINFO };
 cvar_t cl_dlmax = { "cl_dlmax", "512", FCVAR_ARCHIVE | FCVAR_USERINFO };
@@ -115,11 +115,10 @@ cvar_t fs_precache_timings = {"fs_precache_timings", "0"}; // TODO: register
 
 cvar_t cl_mousegrab = {"cl_mousegrab", "1", FCVAR_ARCHIVE}; // TODO: register
 
-cvar_t m_rawinput = {"m_rawinput", "0", FCVAR_ARCHIVE}; // TODO: register
+cvar_t m_rawinput = {"m_rawinput", "0", FCVAR_ARCHIVE}; // TODO: register, wrong place?
 
 cvar_t cl_filterstuffcmd = {"cl_filterstuffcmd", "0", FCVAR_ARCHIVE}; // TODO: register
 
-cvar_t cl_autowepswitch = { "_cl_autowepswitch", "1", FCVAR_ARCHIVE | FCVAR_USERINFO }; // TODO: wrong place? part of client dll?
 //
 
 static qboolean allowremotecmd = true; // TODO: purpose?
@@ -1493,27 +1492,18 @@ void CL_Init()
 	// register our commands
 	//
 	
-	//Cvar_RegisterVariable (&cl_warncmd);
+	//Cvar_RegisterVariable(&cl_warncmd);
 
 	Cvar_RegisterVariable(&cl_shownet);
 	Cvar_RegisterVariable(&show_fps);
 	
 	//Cvar_RegisterVariable (&cl_sbar);
-	//Cvar_RegisterVariable (&cl_hudswap);
-	//Cvar_RegisterVariable (&cl_maxfps);
 	Cvar_RegisterVariable(&cl_timeout);
 
-	//Cvar_RegisterVariable (&rcon_password);
-	//Cvar_RegisterVariable (&rcon_address);
+	Cvar_RegisterVariable(&rcon_address);
+	Cvar_RegisterVariable(&rcon_port);
 
-	Cvar_RegisterVariable(&cl_nolerp);
-
-	Cvar_RegisterVariable(&entlatency);
-	Cvar_RegisterVariable(&cl_predict_players2);
-	Cvar_RegisterVariable(&cl_predict_players);
 	Cvar_RegisterVariable(&cl_solid_players);
-
-	Cvar_RegisterVariable(&localid);
 
 	//
 	// info mirrors
@@ -1521,7 +1511,6 @@ void CL_Init()
 	Cvar_RegisterVariable(&name);
 	Cvar_RegisterVariable(&model);
 	Cvar_RegisterVariable(&password);
-	Cvar_RegisterVariable(&spectator);
 	Cvar_RegisterVariable(&skin);
 	Cvar_RegisterVariable(&team);
 	Cvar_RegisterVariable(&topcolor);
@@ -1532,7 +1521,6 @@ void CL_Init()
 	Cvar_RegisterVariable(&cl_lc);
 	Cvar_RegisterVariable(&cl_lw);
 	Cvar_RegisterVariable(&cl_updaterate);
-	Cvar_RegisterVariable(&cl_autowepswitch);
 
 	Cmd_AddCommand("entities", CL_PrintEntities_f);
 

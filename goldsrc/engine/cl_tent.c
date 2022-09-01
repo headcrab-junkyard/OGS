@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,15 @@
 /// @brief client side temporary entities
 
 #include "quakedef.h"
+
+cvar_t tracerspeed = {"tracerspeed", "6000"}; // TODO: register
+cvar_t traceroffset = {"traceroffset", "30"}; // TODO: register
+cvar_t tracerlength = {"tracerlength", "0.8"}; // TODO: register
+cvar_t tracerred = {"tracerred", "0.8"}; // TODO: register
+cvar_t tracergreen = {"tracergreen", "0.8"}; // TODO: register
+cvar_t tracerblue = {"tracerblue", "0.4"}; // TODO: register
+cvar_t traceralpha = {"traceralpha", "0.5"}; // TODO: register
+cvar_t egon_amplitude = {"egon_amplitude", "0.0"}; // TODO: register?
 
 int num_temp_entities;
 cl_entity_t cl_temp_entities[MAX_TEMP_ENTITIES];

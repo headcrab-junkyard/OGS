@@ -40,35 +40,26 @@ solid_edge items only clip against bsp models.
 */
 
 cvar_t sv_friction = { "sv_friction", "4", FCVAR_SERVER };
-cvar_t sv_waterfriction = { "sv_waterfriction", "4", FCVAR_SERVER}; // TODO: set to 1?
-
 cvar_t sv_stopspeed = { "sv_stopspeed", "100", FCVAR_SERVER };
 cvar_t sv_gravity = { "sv_gravity", "800", FCVAR_SERVER };
 cvar_t sv_maxvelocity = { "sv_maxvelocity", "2000" };
-
-extern cvar_t sv_stepsize; // TODO: move here
-
+cvar_t sv_stepsize = {"sv_stepsize", "18", FCVAR_SERVER};
 cvar_t sv_bounce = {"sv_bounce", "1", FCVAR_SERVER};
-
-extern cvar_t sv_maxspeed;
-cvar_t	sv_spectatormaxspeed = { "sv_spectatormaxspeed", "500"};
-
-extern cvar_t sv_accelerate;
-cvar_t	sv_airaccelerate	 = { "sv_airaccelerate", "0.7", FCVAR_SERVER}; // TODO: set to 10?
-cvar_t	sv_wateraccelerate	 = { "sv_wateraccelerate", "10", FCVAR_SERVER};
-
+cvar_t sv_spectatormaxspeed = { "sv_spectatormaxspeed", "500"};
+cvar_t sv_airaccelerate = { "sv_airaccelerate", "0.7", FCVAR_SERVER}; // TODO: set to 10?
+cvar_t sv_wateraccelerate = { "sv_wateraccelerate", "10", FCVAR_SERVER};
+cvar_t sv_waterfriction = { "sv_waterfriction", "4", FCVAR_SERVER}; // TODO: set to 1?
 cvar_t sv_zmax = {"sv_zmax", "4096"};
-
 cvar_t sv_wateramp = {"sv_wateramp", "0"};
-
 cvar_t sv_skyname = {"sv_skyname", "desert"};
 
-extern cvar_t sv_zmax;
-extern cvar_t sv_wateramp;
+//
+
+// TODO: move to sv_phys.h/server.h?
+extern cvar_t sv_maxspeed;
+extern cvar_t sv_accelerate;
 
 extern cvar_t mp_footsteps;
-
-extern cvar_t sv_skyname;
 
 extern cvar_t sv_skycolor_r;
 extern cvar_t sv_skycolor_g;

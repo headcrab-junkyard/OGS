@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,21 @@
 #endif
 
 #define PAINTBUFFER_SIZE 512
+
+// TODO: wrong place?
+cvar_t room_delay = {"room_delay", "0"}; // TODO: register
+cvar_t room_feedback = {"room_feedback", "0.2"}; // TODO: register
+cvar_t room_dlylp = {"room_dlylp", "1.0"}; // TODO: register
+cvar_t room_size = {"room_size", "0"}; // TODO: register
+cvar_t room_refl = {"room_refl", "0.7"}; // TODO: register
+cvar_t room_rvblp = {"room_rvblp", "1.0"}; // TODO: register
+cvar_t room_left = {"room_left", "0"}; // TODO: register
+cvar_t room_lp = {"room_lp", "0"}; // TODO: register
+cvar_t room_mod = {"room_mod", "0"}; // TODO: register
+cvar_t room_type = {"room_type", "0"}; // TODO: register
+cvar_t waterroom_type = {"waterroom_type", "14"}; // TODO: register
+cvar_t room_off = {"room_off", "0", FCVAR_ARCHIVE}; // TODO: register
+
 portable_samplepair_t paintbuffer[PAINTBUFFER_SIZE];
 int snd_scaletable[32][256];
 int *snd_p, snd_linear_count, snd_vol;

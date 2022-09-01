@@ -22,8 +22,13 @@
 #include "quakedef.h"
 #include "winquake.h"
 
-cvar_t cl_nopred = { "cl_nopred", "0" };
-cvar_t cl_pushlatency = { "pushlatency", "-999" };
+cvar_t cl_nopred = { "cl_nopred", "0" }; // TODO: remove
+cvar_t cl_pushlatency = { "pushlatency", "-999" }; // TODO: remove
+
+cvar_t cl_showerror = {"cl_showerror", "0"}; // TODO: register
+
+cvar_t cl_nosmooth = {"cl_nosmooth", "0"}; // TODO: register
+cvar_t cl_smoothtime = {"cl_smoothtime", "0.1", FCVAR_ARCHIVE}; // TODO: register
 
 extern frame_t *view_frame;
 

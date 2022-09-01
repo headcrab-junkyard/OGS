@@ -100,7 +100,7 @@ cvar_t scr_connectmsg2 = { "scr_connectmsg2", "0" };
 
 #ifdef GLQUAKE
 //cvar_t scr_allowsnap = {"scr_allowsnap", "1"}; // TODO: outside of the conditional compilation check in qw
-cvar_t gl_triplebuffer = { "gl_triplebuffer", "1", true }; // TODO: remove
+cvar_t gl_triplebuffer = { "gl_triplebuffer", "0", true }; // TODO: remove
 
 extern cvar_t crosshair;
 #endif

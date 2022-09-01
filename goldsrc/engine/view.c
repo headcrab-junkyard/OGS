@@ -56,8 +56,8 @@ cvar_t direct = {"direct", "0.9"};
 
 //
 
-cvar_t cl_rollspeed = { "cl_rollspeed", "200" }; // TODO: remove
-cvar_t cl_rollangle = { "cl_rollangle", "2.0" }; // TODO: remove
+cvar_t cl_rollspeed = { "cl_rollspeed", "200" }; // TODO: remove, make cmd
+cvar_t cl_rollangle = { "cl_rollangle", "2.0" }; // TODO: remove, make cmd
 
 cvar_t v_kicktime = { "v_kicktime", "0.5", false }; // TODO: remove
 cvar_t v_kickroll = { "v_kickroll", "0.6", false }; // TODO: remove
@@ -730,24 +730,23 @@ void V_Init()
 {
 	Cvar_RegisterVariable(&lcd_x);
 	Cvar_RegisterVariable(&lcd_yaw);
-
+	
+	Cvar_RegisterVariable(&v_dark); // TODO: unused
+	
+	Cvar_RegisterVariable(&lambert); // TODO: unused
+	
 	Cvar_RegisterVariable(&crosshair);
-	Cvar_RegisterVariable(&cl_crossx);
-	Cvar_RegisterVariable(&cl_crossy);
-
-#ifdef GLQUAKE
-	Cvar_RegisterVariable(&gl_cshiftpercent);
-#endif
-
-	Cvar_RegisterVariable(&cl_rollspeed);
-	Cvar_RegisterVariable(&cl_rollangle);
-
-	Cvar_RegisterVariable(&v_kicktime);
-	Cvar_RegisterVariable(&v_kickroll);
-	Cvar_RegisterVariable(&v_kickpitch);
-
-	BuildGammaTable(1.0); // no gamma yet
+	
 	Cvar_RegisterVariable(&v_gamma);
+	
+	Cvar_RegisterVariable(&brightness); // TODO: unused
+	
+	Cvar_RegisterVariable(&lightgamma); // TODO: unused
+	Cvar_RegisterVariable(&texgamma); // TODO: unused
+	
+	Cvar_RegisterVariable(&direct); // TODO: unused
+	
+	BuildGammaTable(1.0); // no gamma yet
 };
 
 // TODO: temp

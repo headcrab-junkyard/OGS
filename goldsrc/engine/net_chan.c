@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-2001 Id Software, Inc.
- * Copyright (C) 2018, 2020-2021 BlackPhrase
+ * Copyright (C) 2018, 2020-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,9 +78,16 @@ to the new value before sending out any replies.
 
 int net_drop;
 
+cvar_t net_log = {"net_log", "0"}; // TODO: register
 cvar_t net_showpackets = { "net_showpackets", "0" };
 cvar_t net_showdrop = { "net_showdrop", "0" };
-cvar_t qport = { "qport", "0" };
+cvar_t net_drawslider = {"net_drawslider", "0"}; // TODO: register
+cvar_t net_chokeloop = {"net_chokeloop", "0"}; // TODO: register
+
+cvar_t sv_filetransfercompression = {"sv_filetransfercompression", "1"}; // TODO: register
+cvar_t sv_filetransfermaxsize = {"sv_filetransfermaxsize", "10485760"}; // TODO: register
+
+cvar_t qport = { "qport", "0" }; // TODO: remove
 
 /*
 ===============

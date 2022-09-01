@@ -24,23 +24,53 @@
 
 #define MAX_IPFILTERS 1024
 
-extern cvar_t sv_maxvelocity;
-extern cvar_t sv_gravity;
-extern cvar_t sv_nostep; // TODO: remove
-extern cvar_t sv_friction;
-extern cvar_t sv_edgefriction;
-extern cvar_t sv_waterfriction;
-extern cvar_t sv_stopspeed;
-extern cvar_t sv_maxspeed;
-extern cvar_t sv_spectatormaxspeed;
-extern cvar_t sv_accelerate;
-extern cvar_t sv_airaccelerate;
-extern cvar_t sv_wateraccelerate;
-extern cvar_t sv_idealpitchscale; // TODO: remove
-extern cvar_t sv_aim;
+// Log cvars decls
+extern cvar_t mp_logfile;
+extern cvar_t mp_logecho;
 
+extern cvar_t sv_log_onefile;
+extern cvar_t sv_log_singleplayer;
+
+extern cvar_t sv_logsecret;
+
+// Physics cvars decls
+extern cvar_t sv_friction;
+extern cvar_t sv_stopspeed;
+extern cvar_t sv_gravity;
+extern cvar_t sv_maxvelocity;
 extern cvar_t sv_stepsize;
 extern cvar_t sv_bounce;
+extern cvar_t sv_spectatormaxspeed;
+
+extern cvar_t sv_airaccelerate;
+extern cvar_t sv_wateraccelerate;
+
+extern cvar_t sv_waterfriction;
+extern cvar_t sv_zmax;
+extern cvar_t sv_wateramp;
+extern cvar_t sv_skyname;
+
+// User cvars decls
+extern cvar_t mp_consistency;
+extern cvar_t mp_footsteps;
+
+extern cvar_t sv_edgefriction;
+
+extern cvar_t sv_maxspeed;
+extern cvar_t sv_accelerate;
+
+extern cvar_t sv_rollspeed;
+extern cvar_t sv_rollangle;
+
+extern cvar_t sv_unlag;
+extern cvar_t sv_maxunlag;
+
+extern cvar_t sv_unlagpush;
+extern cvar_t sv_unlagsamples;
+
+extern cvar_t sv_voiceenable;
+
+//
 
 typedef struct
 {
@@ -58,7 +88,7 @@ char localinfo[MAX_LOCALINFO_STRING+1]; // local game info
 
 char localmodels[MAX_MODELS][5]; // inline model names for precache
 
-cvar_t rcon_password = {"rcon_password", ""}; // password for remote server commands // TODO: wrong place?
+cvar_t rcon_password = {"rcon_password", ""}; // password for remote server commands
 
 cvar_t sv_enableoldqueries = {"sv_enableoldqueries", "0"}; // TODO: register
 
@@ -85,7 +115,7 @@ cvar_t violence_agibs = {"violence_agibs", "1", FCVAR_ARCHIVE}; // TODO: registe
 
 cvar_t sv_newunit = {"sv_newunit", "0"}; // TODO: register
 
-cvar_t sv_aim = { "sv_aim", "0.93", FCVAR_ARCHIVE | FCVAR_SERVER }; // TODO: set to 1? or 0?
+cvar_t sv_aim = { "sv_aim", "1", FCVAR_ARCHIVE | FCVAR_SERVER };
 
 cvar_t laddermode = {"laddermode", "0"}; // TODO: register
 
@@ -920,44 +950,53 @@ void SV_Init()
 	Cmd_AddCommand("sendents", SV_SendEnts_f);
 	
 	Cmd_AddCommand("fullupdate", SV_FullUpdate_f);
-	//
 	
+	//
 	
 	Cvar_RegisterVariable(&sv_timeout);
 
 	Cvar_RegisterVariable(&sv_maxvelocity);
+	
 	Cvar_RegisterVariable(&sv_gravity);
+	
 	Cvar_RegisterVariable(&sv_friction);
-	Cvar_RegisterVariable(&sv_edgefriction); // TODO: not present in GS
+	Cvar_RegisterVariable(&sv_edgefriction);
 	Cvar_RegisterVariable(&sv_waterfriction);
+	
 	Cvar_RegisterVariable(&sv_stopspeed);
+	
+	Cvar_RegisterVariable(&sv_stepsize);
+	
+	Cvar_RegisterVariable(&sv_bounce);
+	
 	Cvar_RegisterVariable(&sv_maxspeed);
 	Cvar_RegisterVariable(&sv_spectatormaxspeed);
+	
 	Cvar_RegisterVariable(&sv_accelerate);
 	Cvar_RegisterVariable(&sv_airaccelerate);
 	Cvar_RegisterVariable(&sv_wateraccelerate);
-	
-	Cvar_RegisterVariable(&sv_idealpitchscale); // TODO: not present in GS
 	
 	Cvar_RegisterVariable(&sv_aim);
 	
 	Cvar_RegisterVariable(&sv_filterban);
 	
-	Cvar_RegisterVariable(&sv_nostep); // TODO: not present in GS
-	
+	Cvar_RegisterVariable(&rcon_password);
 	Cvar_RegisterVariable(&sv_password);
 	
 	Cvar_RegisterVariable(&sv_allow_download);
 	
 	Cvar_RegisterVariable(&sv_allow_upload);
 	
-	//Cvar_RegisterVariable(&pausable); // TODO: already defined in host
-	
-	Cvar_RegisterVariable(&sv_stepsize);
-	
-	Cvar_RegisterVariable(&sv_bounce);
-	
 	Cvar_RegisterVariable(&sv_cheats);
+	
+	Cvar_RegisterVariable(&sv_rollspeed);
+	Cvar_RegisterVariable(&sv_rollangle);
+	
+	Cvar_RegisterVariable(&sv_unlag);
+	Cvar_RegisterVariable(&sv_maxunlag);
+	
+	Cvar_RegisterVariable(&sv_unlagpush);
+	Cvar_RegisterVariable(&sv_unlagsamples);
 	
 	// TODO: unused
 	Cvar_RegisterVariable(&sv_minrate);
@@ -968,13 +1007,11 @@ void SV_Init()
 	Cvar_RegisterVariable(&sv_maxupdaterate);
 	
 	Cvar_RegisterVariable(&sv_voiceenable); // TODO: unused
-	// TODO: looks like these cvars are present in the code but not registered
-	//Cvar_RegisterVariable(&sv_voicecodec);
-	//Cvar_RegisterVariable(&sv_voicequality);
 	
 	Cvar_RegisterVariable(&sv_zmax);
 	Cvar_RegisterVariable(&sv_wateramp);
 	
+	Cvar_RegisterVariable(&mp_consistency);
 	Cvar_RegisterVariable(&mp_footsteps);
 	
 	Cvar_RegisterVariable(&sv_skyname);

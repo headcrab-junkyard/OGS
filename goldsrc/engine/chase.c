@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,8 @@ cvar_t chase_up = { "chase_up", "16" };
 cvar_t chase_right = { "chase_right", "0" };
 cvar_t chase_active = { "chase_active", "0" };
 
+cvar_t cl_gg = {"cl_gg", "0"};
+
 vec3_t chase_pos;
 vec3_t chase_angles;
 
@@ -39,6 +41,8 @@ void Chase_Init(void)
 	Cvar_RegisterVariable(&chase_up);
 	Cvar_RegisterVariable(&chase_right);
 	Cvar_RegisterVariable(&chase_active);
+	
+	Cvar_RegisterVariable(&cl_gg);
 }
 
 void Chase_Reset(void)

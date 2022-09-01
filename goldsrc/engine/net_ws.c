@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-2001 Id Software, Inc.
- * Copyright (C) 2018, 2020-2021 BlackPhrase
+ * Copyright (C) 2018, 2020-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -105,6 +105,8 @@ int gethostname(char *, int);
 int close(int);
 #endif
 
+cvar_t net_address = {"net_address", ""}; // TODO: register
+
 cvar_t ip = {"ip", "localhost"/*, CVAR_NOSET*/};
 
 cvar_t ip_hostport = {"ip_hostport", "0"/*, CVAR_NOSET*/};
@@ -115,9 +117,22 @@ cvar_t ipx_hostport = {"ipx_hostport", "0"/*, CVAR_NOSET*/};
 cvar_t ipx_clientport = {"ipx_clientport", "0"/*, CVAR_NOSET*/};
 #endif
 
-cvar_t port = {"port", ""/*, CVAR_NOSET*/};
+cvar_t port = {"port", "27015"/*, CVAR_NOSET*/};
 cvar_t hostport = {"hostport", "0"/*, CVAR_NOSET*/};
-cvar_t clientport = {"clientport", ""/*, CVAR_NOSET*/};
+cvar_t clientport = {"clientport", "27005"/*, CVAR_NOSET*/};
+cvar_t multicastport = {"multicastport", "27025"}; // TODO: register
+
+cvar_t clockwindow = {"clockwindow", "0.5"}; // TODO: register
+
+cvar_t fakelag = {"fakelag", "0.0"}; // TODO: register
+cvar_t fakeloss = {"fakeloss", "0.0"}; // TODO: register
+
+cvar_t net_graph = {"net_graph", "0", FCVAR_ARCHIVE}; // TODO: register
+cvar_t net_graphwidth = {"net_graphwidth", "150"}; // TODO: register
+
+cvar_t net_scale = {"net_scale", "5", FCVAR_ARCHIVE}; // TODO: register
+
+cvar_t net_graphpos = {"net_graphpos", "1", FCVAR_ARCHIVE}; // TODO: register
 
 //cvar_t net_shownet = {TODO};
 

@@ -24,16 +24,16 @@
 
 edict_t *sv_player;
 
-extern cvar_t sv_friction;
-extern cvar_t sv_stopspeed;
+//extern cvar_t sv_friction;
+//extern cvar_t sv_stopspeed;
 
 cvar_t mp_consistency = {"mp_consistency", "1", FCVAR_SERVER}; // TODO: register
 cvar_t mp_footsteps = {"mp_footsteps", "1", FCVAR_SERVER};
 
 cvar_t sv_edgefriction = { "edgefriction", "2", FCVAR_SERVER };
 
-cvar_t	sv_maxspeed			 = { "sv_maxspeed", "320", FCVAR_SERVER};
-cvar_t	sv_accelerate		 = { "sv_accelerate", "10", FCVAR_SERVER};
+cvar_t sv_maxspeed = { "sv_maxspeed", "320", FCVAR_SERVER};
+cvar_t sv_accelerate = { "sv_accelerate", "10", FCVAR_SERVER};
 
 cvar_t sv_rollspeed = {"sv_rollspeed", "200"}; // TODO: register
 cvar_t sv_rollangle = {"sv_rollangle", "2"}; // TODO: register
@@ -44,8 +44,8 @@ cvar_t sv_maxunlag = {"sv_maxunlag", "0.5"}; // TODO: register
 cvar_t sv_unlagpush = {"sv_unlagpush", "0"}; // TODO: register
 cvar_t sv_unlagsamples = {"sv_unlagsamples", "1"}; // TODO: register
 
-cvar_t sv_voiceenable = {"sv_voiceenable", "1", FCVAR_SERVER | FCVAR_ARCHIVE};
 cvar_t sv_voicecodec = {"sv_voicecodec", "voice_speex"};
+cvar_t sv_voiceenable = {"sv_voiceenable", "1", FCVAR_SERVER | FCVAR_ARCHIVE};
 cvar_t sv_voicequality = {"sv_voicequality", "3"};
 
 extern playermove_t svpmove;
@@ -66,7 +66,7 @@ extern vec3_t player_mins;
 
 //usercmd_t cmd;
 
-cvar_t sv_idealpitchscale = { "sv_idealpitchscale", "0.8" };
+cvar_t sv_idealpitchscale = { "sv_idealpitchscale", "0.8" }; // TODO: remove
 
 vec3_t pmove_mins, pmove_maxs;
 
