@@ -2131,6 +2131,7 @@ void Host_InitCommands()
 	Cmd_AddCommand("soundfade", Host_SoundFade_f);
 	
 	Cmd_AddCommand("status", Host_Status_f);
+	//Cmd_AddCommand("status2", Host_Status2_f); // TODO
 	
 	Cmd_AddCommand("stat", Host_Stat_f);
 	Cmd_AddCommand("stats", Host_Stats_f);

@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -89,6 +89,17 @@ void Con_Debug_f()
 		Con_Printf("condebug disabled");
 		con_debuglog = false;
 	};
+};
+
+
+/*
+================
+Con_Times_f
+================
+*/
+void Con_Times_f()
+{
+	// TODO
 };
 
 /*
@@ -352,14 +363,15 @@ void Con_Init()
 	Cvar_RegisterVariable(&con_color); // TODO: unused
 	Cvar_RegisterVariable(&con_shifttoggleconsole); // TODO: unused
 	Cvar_RegisterVariable(&con_mono); // TODO: unused
-
-	Cmd_AddCommand("condebug", Con_Debug_f);
+	
+	Cmd_AddCommand("contimes", Con_Times_f);
 	Cmd_AddCommand("toggleconsole", Con_ToggleConsole_f);
 	Cmd_AddCommand("hideconsole", Con_HideConsole_f);
 	Cmd_AddCommand("messagemode", Con_MessageMode_f);
 	Cmd_AddCommand("messagemode2", Con_MessageMode2_f);
 	Cmd_AddCommand("clear", Con_Clear_f);
-	Cmd_AddCommand("condump", Con_Dump_f);
+	Cmd_AddCommand("condebug", Con_Debug_f);
+	Cmd_AddCommand("condump", Con_Dump_f); // TODO: ghost cmd?
 	
 	con_initialized = true;
 }

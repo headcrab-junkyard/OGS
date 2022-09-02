@@ -458,7 +458,7 @@ void SCR_Init(void)
 	//Cmd_AddCommand("snap", SCR_RSShot_f); // TODO: GLQUAKE only or QW
 	Cmd_AddCommand("sizeup", SCR_SizeUp_f);
 	Cmd_AddCommand("sizedown", SCR_SizeDown_f);
-	//Cmd_AddCommand("timerefresh", SCR_TimeRefresh_f); // TODO: q2
+	//Cmd_AddCommand("timerefresh", SCR_TimeRefresh_f); // TODO: already defined by the renderer code
 	//Cmd_AddCommand("loading", SCR_Loading_f); // TODO: q2
 	//Cmd_AddCommand("sky", SCR_Sky_f); // TODO: q2
 

@@ -1531,17 +1531,17 @@ void CL_Init()
 	Cmd_AddCommand("disconnect", CL_Disconnect_f);
 
 	Cmd_AddCommand("record", CL_Record_f);
-	//Cmd_AddCommand ("rerecord", CL_ReRecord_f);
+	//Cmd_AddCommand("rerecord", CL_ReRecord_f); // TODO: not present
 	Cmd_AddCommand("stop", CL_Stop_f);
 
 	Cmd_AddCommand("playdemo", CL_PlayDemo_f);
-	Cmd_AddCommand("viewdemo", CL_ViewDemo_f); // TODO
+	Cmd_AddCommand("viewdemo", CL_ViewDemo_f);
 	Cmd_AddCommand("timedemo", CL_TimeDemo_f);
-	Cmd_AddCommand("listdemo", CL_ListDemo_f) // TODO
-	Cmd_AddCommand("appenddemo", CL_AppendDemo_f); // TODO
-	Cmd_AddCommand("removedemo", CL_RemoveDemo_f); // TODO
-	Cmd_AddCommand("swapdemo", CL_SwapDemo_f); // TODO
-	Cmd_AddCommand("setdemoinfo", CL_SetDemoInfo_f); // TODO
+	Cmd_AddCommand("listdemo", CL_ListDemo_f);
+	Cmd_AddCommand("appenddemo", CL_AppendDemo_f);
+	Cmd_AddCommand("removedemo", CL_RemoveDemo_f);
+	Cmd_AddCommand("swapdemo", CL_SwapDemo_f);
+	Cmd_AddCommand("setdemoinfo", CL_SetDemoInfo_f);
 	
 	Cmd_AddCommand("listen", CL_Listen_f);
 	
@@ -1555,7 +1555,7 @@ void CL_Init()
 	Cmd_AddCommand("startmovie", CL_StartMovie_f);
 	Cmd_AddCommand("endmovie", CL_EndMovie_f);
 	
-	//Cmd_AddCommand("users", CL_Users_f);
+	//Cmd_AddCommand("users", CL_Users_f); // TODO: move to server
 	
 	Cmd_AddCommand("fullserverinfo", CL_FullServerinfo_f);
 	
