@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,6 +47,16 @@ GL_Texels_f
 ==================
 */
 void GL_Texels_f()
+{
+	// TODO
+};
+
+/*
+==================
+GL_TextureMode_f
+==================
+*/
+void GL_TextureMode_f()
 {
 	// TODO
 };
@@ -227,7 +237,8 @@ void R_Init()
 	Cmd_AddCommand("pointfile", R_ReadPointFile_f);
 	
 	Cmd_AddCommand("gl_dump", GL_Dump_f);
-	Cmd_AddCommand("gl_texels", GL_Texels_f);
+	Cmd_AddCommand("gl_texels", GL_Texels_f); // TODO: remove?
+	Cmd_AddCommand("gl_texturemode", GL_TextureMode_f);
 	
 	Cvar_RegisterVariable(&r_norefresh);
 	Cvar_RegisterVariable(&r_lightmap);
