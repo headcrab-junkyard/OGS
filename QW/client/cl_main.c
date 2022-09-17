@@ -1,24 +1,3 @@
-/*
-Copyright (C) 1996-1997 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
-// cl_main.c  -- client main loop
-
 #include "winquake.h"
 #ifdef _WIN32
 #include "winsock.h"
@@ -32,11 +11,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 qboolean	noclip_anglehack;		// remnant from old quake
 
-cvar_t	rcon_password = {"rcon_password", "", false};
-
 cvar_t	rcon_address = {"rcon_address", ""};
-
-
 
 extern cvar_t cl_hightrack;
 
@@ -48,8 +23,6 @@ entity_state_t	cl_baselines[MAX_EDICTS]; // TODO: instead of cl_entities?
 int				cl_numvisedicts, cl_oldnumvisedicts;
 entity_t		*cl_visedicts, *cl_oldvisedicts;
 entity_t		cl_visedicts_list[2][MAX_VISEDICTS];
-
-double			connect_time = -1;		// for connection retransmits
 
 netadr_t	master_adr;				// address of the master server
 
@@ -86,13 +59,6 @@ void CL_Quit_f ()
 	CL_Disconnect ();
 	Sys_Quit ();
 }
-
-/*
-================
-CL_Connect_f
-
-================
-*/
 
 /*
 =====================
@@ -151,43 +117,6 @@ void CL_Rcon_f ()
 		, to);
 }
 
-void CL_ClearState ()
-{
-
-	
-
-// clear other arrays	
-	memset (cl_efrags, 0, sizeof(cl_efrags));
-	memset (cl_dlights, 0, sizeof(cl_dlights));
-	memset (cl_lightstyle, 0, sizeof(cl_lightstyle));
-}
-
-void CL_Disconnect ()
-{
-	else if (cls.state != ca_disconnected)
-	{
-
-		final[0] = clc_stringcmd;
-		strcpy (final+1, "drop");
-		Netchan_Transmit (&cls.netchan, 6, final);
-		Netchan_Transmit (&cls.netchan, 6, final);
-		Netchan_Transmit (&cls.netchan, 6, final);
-
-		cls.state = ca_disconnected;
-
-		cls.demoplayback = cls.demorecording = cls.timedemo = false;
-	}
-	
-
-	if (cls.download) {
-		fclose(cls.download);
-		cls.download = NULL;
-	}
-
-	CL_StopUpload();
-
-}
-
 void CL_Disconnect_f ()
 {
 	CL_Disconnect ();
@@ -230,32 +159,6 @@ void CL_User_f ()
 }
 
 /*
-====================
-CL_Users_f
-
-Dump userids for all current players
-====================
-*/
-void CL_Users_f ()
-{
-	int		i;
-	int		c;
-
-	c = 0;
-	Con_Printf ("userid frags name\n");
-	Con_Printf ("------ ----- ----\n");
-	for (i=0 ; i<MAX_CLIENTS ; i++)
-	{
-		if (cl.players[i].name[0])
-		{
-			Con_Printf ("%6i %4i %s\n", cl.players[i].userid, cl.players[i].frags, cl.players[i].name);
-			c++;
-		}
-	}
-
-	Con_Printf ("%i total users\n", c);
-}
-
 void CL_Color_f ()
 {
 	// just for quake compatability...
@@ -291,115 +194,7 @@ void CL_Color_f ()
 	sprintf (num, "%i", bottom);
 	Cvar_Set ("bottomcolor", num);
 }
-
-/*
-==================
-CL_FullServerinfo_f
-
-Sent by server when serverinfo changes
-==================
 */
-void CL_FullServerinfo_f ()
-{
-	char *p;
-	float v;
-
-	if (Cmd_Argc() != 2)
-	{
-		Con_Printf ("usage: fullserverinfo <complete info string>\n");
-		return;
-	}
-
-	strcpy (cl.serverinfo, Cmd_Argv(1));
-
-	if ((p = Info_ValueForKey(cl.serverinfo, "*vesion")) && *p) {
-		v = Q_atof(p);
-		if (v) {
-			if (!server_version)
-				Con_Printf("Version %1.2f Server\n", v);
-			server_version = v;
-		}
-	}
-}
-
-/*
-==================
-CL_FullInfo_f
-
-Allow clients to change userinfo
-==================
-*/
-void CL_FullInfo_f ()
-{
-	char	key[512];
-	char	value[512];
-	char	*o;
-	char	*s;
-
-	if (Cmd_Argc() != 2)
-	{
-		Con_Printf ("fullinfo <complete info string>\n");
-		return;
-	}
-
-	s = Cmd_Argv(1);
-	if (*s == '\\')
-		s++;
-	while (*s)
-	{
-		o = key;
-		while (*s && *s != '\\')
-			*o++ = *s++;
-		*o = 0;
-
-		if (!*s)
-		{
-			Con_Printf ("MISSING VALUE\n");
-			return;
-		}
-
-		o = value;
-		s++;
-		while (*s && *s != '\\')
-			*o++ = *s++;
-		*o = 0;
-
-		if (*s)
-			s++;
-
-		if (!stricmp(key, pmodel_name) || !stricmp(key, emodel_name))
-			continue;
-
-		Info_SetValueForKey (cls.userinfo, key, value, MAX_INFO_STRING);
-	}
-}
-
-/*
-==================
-CL_SetInfo_f
-
-Allow clients to change userinfo
-==================
-*/
-void CL_SetInfo_f ()
-{
-	if (Cmd_Argc() == 1)
-	{
-		Info_Print (cls.userinfo);
-		return;
-	}
-	if (Cmd_Argc() != 3)
-	{
-		Con_Printf ("usage: setinfo [ <key> <value> ]\n");
-		return;
-	}
-	if (!stricmp(Cmd_Argv(1), pmodel_name) || !strcmp(Cmd_Argv(1), emodel_name))
-		return;
-
-	Info_SetValueForKey (cls.userinfo, Cmd_Argv(1), Cmd_Argv(2), MAX_INFO_STRING);
-	if (cls.state >= ca_connected)
-		Cmd_ForwardToServer ();
-}
 
 /*
 ====================
@@ -410,6 +205,7 @@ packet <destination> <contents>
 Contents allows \n escape character
 ====================
 */
+/*
 void CL_Packet_f ()
 {
 	char	send[2048];
@@ -448,38 +244,7 @@ void CL_Packet_f ()
 
 	NET_SendPacket (out-send, send, adr);
 }
-
-
-/*
-=====================
-CL_NextDemo
-
-Called to play the next demo in the demo loop
-=====================
 */
-void CL_NextDemo ()
-{
-	char	str[1024];
-
-	if (cls.demonum == -1)
-		return;		// don't play demos
-
-	if (!cls.demos[cls.demonum][0] || cls.demonum == MAX_DEMOS)
-	{
-		cls.demonum = 0;
-		if (!cls.demos[cls.demonum][0])
-		{
-//			Con_Printf ("No demos listed with startdemos\n");
-			cls.demonum = -1;
-			return;
-		}
-	}
-
-	sprintf (str,"playdemo %s\n", cls.demos[cls.demonum]);
-	Cbuf_InsertText (str);
-	cls.demonum++;
-}
-
 
 /*
 =================
@@ -501,38 +266,6 @@ void CL_Changing_f ()
 	Con_Printf ("\nChanging map...\n");
 }
 */
-
-
-/*
-=================
-CL_Reconnect_f
-
-The server is changing levels
-=================
-*/
-void CL_Reconnect_f ()
-{
-	if (cls.download)  // don't change when downloading
-		return;
-
-	S_StopAllSounds (true);
-
-	if (cls.state == ca_connected) {
-		Con_Printf ("reconnecting...\n");
-		MSG_WriteChar (&cls.netchan.message, clc_stringcmd);
-		MSG_WriteString (&cls.netchan.message, "new");
-		return;
-	}
-
-	if (!*cls.servername) {
-		Con_Printf("No server to reconnect to...\n");
-		return;
-	}
-
-	CL_Disconnect();
-	CL_BeginServerConnect();
-}
-
 
 //=============================================================================
 
@@ -576,15 +309,13 @@ void CL_Download_f ()
 	cls.downloadtype = dl_single;
 
 	MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
-	SZ_Print (&cls.netchan.message, va("download %s\n",Cmd_Argv(1)));
+	SZ_Print (&cls.netchan.message, va("dlfile %s\n",Cmd_Argv(1)));
 }
 */
 
 void CL_Init ()
 {
 	char st[80];
-
-	Cvar_RegisterVariable (&show_fps);
 
 	Cmd_AddCommand ("version", CL_Version_f);
 
@@ -595,20 +326,14 @@ void CL_Init ()
 
 	Cmd_AddCommand ("quit", CL_Quit_f);
 
-	Cmd_AddCommand ("connect", CL_Connect_f);
 	Cmd_AddCommand ("reconnect", CL_Reconnect_f);
 
 	Cmd_AddCommand ("rcon", CL_Rcon_f);
-	Cmd_AddCommand ("packet", CL_Packet_f);
+	//Cmd_AddCommand ("packet", CL_Packet_f);
 	Cmd_AddCommand ("user", CL_User_f);
-	Cmd_AddCommand ("users", CL_Users_f);
 
-	Cmd_AddCommand ("setinfo", CL_SetInfo_f);
-	Cmd_AddCommand ("fullinfo", CL_FullInfo_f);
-	Cmd_AddCommand ("fullserverinfo", CL_FullServerinfo_f);
-
-	Cmd_AddCommand ("color", CL_Color_f);
-	//Cmd_AddCommand ("download", CL_Download_f);
+	//Cmd_AddCommand ("color", CL_Color_f);
+	//Cmd_AddCommand ("dlfile", CL_Download_f);
 
 	//Cmd_AddCommand ("nextul", CL_NextUpload);
 	//Cmd_AddCommand ("stopul", CL_StopUpload);
@@ -639,14 +364,6 @@ void Host_EndGame (char *message, ...)
 	
 	CL_Disconnect (); // only this here for qw
 }
-
-void Host_WriteConfiguration ()
-{
-	if (host_initialized)
-	{
-	}
-}
-
 
 //============================================================================
 
@@ -816,17 +533,8 @@ void Host_Init (quakeparms_t *parms)
 	IN_Init ();
 #endif
 
-	Cbuf_InsertText ("exec quake.rc\n");
+	Cbuf_InsertText ("exec valve.rc\n");
 	Cbuf_AddText ("echo Type connect <internet address> or use GameSpy to connect to a game.\n");
-	Cbuf_AddText ("cl_warncmd 1\n");
 
 	Con_Printf ("\nClient Version %4.2f (Build %04d)\n\n", VERSION, build_number());	
 }
-
-void Host_Shutdown()
-{
-
-	if (host_basepal)
-		VID_Shutdown();
-}
-

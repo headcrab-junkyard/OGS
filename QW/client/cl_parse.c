@@ -1,37 +1,5 @@
-/*
-Copyright (C) 1996-1997 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
-// cl_parse.c  -- parse a message received from the server
-
-#include "quakedef.h"
-
 char *svc_strings[] =
 {
-	"svc_bad",
-	"svc_nop",
-	"svc_disconnect",
-	"svc_updatestat",
-	"svc_version",		// [long] server version
-	"svc_setview",		// [short] entity number
-	"svc_sound",			// <see code>
-	"svc_time",			// [float] server time
-	"svc_print",			// [string] null terminated string
 	"svc_stufftext",		// [string] stuffed into client's console buffer
 						// the string should be \n terminated
 	"svc_setangle",		// [vec3] set the view angle to this absolute value
@@ -51,35 +19,13 @@ char *svc_strings[] =
 	"svc_spawnbaseline",
 	
 	"svc_temp_entity",		// <variable>
-	"svc_setpause",
-	"svc_signonnum",
-	"svc_centerprint",
-	"svc_killedmonster",
-	"svc_foundsecret",
-	"svc_spawnstaticsound",
-	"svc_intermission",
-	"svc_finale",
 
-	"svc_cdtrack",
-	"svc_sellscreen",
-
-	"svc_smallkick",
-	"svc_bigkick",
-
-	"svc_updateping",
-	"svc_updateentertime",
-
-	"svc_updatestatlong",
 	"svc_muzzleflash",
 	"svc_updateuserinfo",
 	"svc_download",
 	"svc_playerinfo",
-	"svc_nails",
-	"svc_choke",
 	"svc_modellist",
 	"svc_soundlist",
-	"svc_packetentities",
- 	"svc_deltapacketentities",
 	"svc_maxspeed",
 	"svc_entgravity",
 
@@ -133,182 +79,12 @@ int CL_CalcNet ()
 //=============================================================================
 
 /*
-===============
-CL_CheckOrDownloadFile
-
-Returns true if the file exists, otherwise it attempts
-to start a download from the server.
-===============
-*/
-qboolean	CL_CheckOrDownloadFile (char *filename)
-{
-	FILE	*f;
-
-	if (strstr (filename, ".."))
-	{
-		Con_Printf ("Refusing to download a path with ..\n");
-		return true;
-	}
-
-	COM_FOpenFile (filename, &f);
-	if (f)
-	{	// it exists, no need to download
-		fclose (f);
-		return true;
-	}
-
-	//ZOID - can't download when recording
-	if (cls.demorecording) {
-		Con_Printf("Unable to download %s in record mode.\n", cls.downloadname);
-		return true;
-	}
-	//ZOID - can't download when playback
-	if (cls.demoplayback)
-		return true;
-
-	strcpy (cls.downloadname, filename);
-	Con_Printf ("Downloading %s...\n", cls.downloadname);
-
-	// download to a temp name, and only rename
-	// to the real name when done, so if interrupted
-	// a runt file wont be left
-	COM_StripExtension (cls.downloadname, cls.downloadtempname);
-	strcat (cls.downloadtempname, ".tmp");
-
-	MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
-	MSG_WriteString (&cls.netchan.message, va("download %s", cls.downloadname));
-
-	cls.downloadnumber++;
-
-	return false;
-}
-
-/*
-=================
-Model_NextDownload
-=================
-*/
-void Model_NextDownload ()
-{
-	char	*s;
-	int		i;
-	extern	char gamedirfile[];
-
-	if (cls.downloadnumber == 0)
-	{
-		Con_Printf ("Checking models...\n");
-		cls.downloadnumber = 1;
-	}
-
-	cls.downloadtype = dl_model;
-	for ( 
-		; cl.model_name[cls.downloadnumber][0]
-		; cls.downloadnumber++)
-	{
-		s = cl.model_name[cls.downloadnumber];
-		if (s[0] == '*')
-			continue;	// inline brush model
-		if (!CL_CheckOrDownloadFile(s))
-			return;		// started a download
-	}
-
-	for (i=1 ; i<MAX_MODELS ; i++)
-	{
-		if (!cl.model_name[i][0])
-			break;
-
-		cl.model_precache[i] = Mod_ForName (cl.model_name[i], false);
-
-		if (!cl.model_precache[i])
-		{
-			Con_Printf ("\nThe required model file '%s' could not be found or downloaded.\n\n"
-				, cl.model_name[i]);
-			Con_Printf ("You may need to download or purchase a %s client "
-				"pack in order to play on this server.\n\n", gamedirfile);
-			CL_Disconnect ();
-			return;
-		}
-	}
-
-	// all done
-	cl.worldmodel = cl.model_precache[1];	
-	R_NewMap ();
-	Hunk_Check ();		// make sure nothing is hurt
-
-	// done with modellist, request first of static signon messages
-	MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
-//	MSG_WriteString (&cls.netchan.message, va("prespawn %i 0 %i", cl.servercount, cl.worldmodel->checksum2));
-	MSG_WriteString (&cls.netchan.message, va(prespawn_name, cl.servercount, cl.worldmodel->checksum2));
-}
-
-/*
-=================
-Sound_NextDownload
-=================
-*/
-void Sound_NextDownload ()
-{
-	char	*s;
-	int		i;
-
-	if (cls.downloadnumber == 0)
-	{
-		Con_Printf ("Checking sounds...\n");
-		cls.downloadnumber = 1;
-	}
-
-	cls.downloadtype = dl_sound;
-	for ( 
-		; cl.sound_name[cls.downloadnumber][0]
-		; cls.downloadnumber++)
-	{
-		s = cl.sound_name[cls.downloadnumber];
-		if (!CL_CheckOrDownloadFile(va("sound/%s",s)))
-			return;		// started a download
-	}
-
-	for (i=1 ; i<MAX_SOUNDS ; i++)
-	{
-		if (!cl.sound_name[i][0])
-			break;
-		cl.sound_precache[i] = S_PrecacheSound (cl.sound_name[i]);
-	}
-
-	// done with sounds, request models now
-	memset (cl.model_precache, 0, sizeof(cl.model_precache));
-	cl_playerindex = -1;
-	cl_spikeindex = -1;
-	cl_flagindex = -1;
-	MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
-//	MSG_WriteString (&cls.netchan.message, va("modellist %i 0", cl.servercount));
-	MSG_WriteString (&cls.netchan.message, va(modellist_name, cl.servercount, 0));
-}
-
-
-/*
 ======================
 CL_RequestNextDownload
 ======================
 */
 void CL_RequestNextDownload ()
 {
-	switch (cls.downloadtype)
-	{
-	case dl_single:
-		break;
-	case dl_skin:
-		Skin_NextDownload ();
-		break;
-	case dl_model:
-		Model_NextDownload ();
-		break;
-	case dl_sound:
-		Sound_NextDownload ();
-		break;
-	case dl_none:
-	default:
-		Con_DPrintf("Unknown download type.\n");
-	}
 }
 
 /*
@@ -682,28 +458,6 @@ void CL_ParseModellist ()
 }
 
 /*
-==================
-CL_ParseBaseline
-==================
-*/
-void CL_ParseBaseline (entity_state_t *es)
-{
-	int			i;
-	
-	es->modelindex = MSG_ReadByte ();
-	es->frame = MSG_ReadByte ();
-	es->colormap = MSG_ReadByte();
-	es->skinnum = MSG_ReadByte();
-	for (i=0 ; i<3 ; i++)
-	{
-		es->origin[i] = MSG_ReadCoord ();
-		es->angles[i] = MSG_ReadAngle ();
-	}
-}
-
-
-
-/*
 =====================
 CL_ParseStatic
 
@@ -736,28 +490,6 @@ void CL_ParseStatic ()
 	
 	R_AddEfrags (ent);
 }
-
-/*
-===================
-CL_ParseStaticSound
-===================
-*/
-void CL_ParseStaticSound ()
-{
-	vec3_t		org;
-	int			sound_num, vol, atten;
-	int			i;
-	
-	for (i=0 ; i<3 ; i++)
-		org[i] = MSG_ReadCoord ();
-	sound_num = MSG_ReadByte ();
-	vol = MSG_ReadByte ();
-	atten = MSG_ReadByte ();
-	
-	S_StaticSound (cl.sound_precache[sound_num], org, vol, atten);
-}
-
-
 
 /*
 =====================================================================
@@ -1042,9 +774,8 @@ CL_ParseServerMessage
 int	received_framecount;
 void CL_ParseServerMessage ()
 {
-	int			cmd;
 	char		*s;
-	int			i, j;
+	int			j;
 
 	received_framecount = host_framecount;
 	cl.last_servermessage = realtime;
@@ -1202,13 +933,6 @@ void CL_ParseServerMessage ()
 			VectorCopy (vec3_origin, cl.simvel);
 			break;
 
-		case svc_finale:
-			cl.intermission = 2;
-			cl.completed_time = realtime;
-			vid.recalc_refdef = true;	// go to full screen
-			SCR_CenterPrint (MSG_ReadString ());			
-			break;
-
 		case svc_muzzleflash:
 			CL_MuzzleFlash ();
 			break;
@@ -1254,15 +978,6 @@ void CL_ParseServerMessage ()
 		case svc_entgravity :
 			movevars.entgravity = MSG_ReadFloat();
 			break;
-
-		case svc_setpause:
-			cl.paused = MSG_ReadByte ();
-			if (cl.paused)
-				CDAudio_Pause ();
-			else
-				CDAudio_Resume ();
-			break;
-
 		}
 	}
 

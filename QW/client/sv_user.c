@@ -410,76 +410,6 @@ void OutofBandPrintf(netadr_t where, char *fmt, ...)
 
 /*
 ==================
-SV_NextUpload
-==================
-*/
-void SV_NextUpload ()
-{
-	byte	buffer[1024];
-	int		r;
-	int		percent;
-	int		size;
-	client_t *client;
-
-	if (!*host_client->uploadfn) {
-		SV_ClientPrintf(host_client, PRINT_HIGH, "Upload denied\n");
-		ClientReliableWrite_Begin (host_client, svc_stufftext, 8);
-		ClientReliableWrite_String (host_client, "stopul");
-
-		// suck out rest of packet
-		size = MSG_ReadShort ();	MSG_ReadByte ();
-		msg_readcount += size;
-		return;
-	}
-
-	size = MSG_ReadShort ();
-	percent = MSG_ReadByte ();
-
-	if (!host_client->upload)
-	{
-		host_client->upload = fopen(host_client->uploadfn, "wb");
-		if (!host_client->upload) {
-			Sys_Printf("Can't create %s\n", host_client->uploadfn);
-			ClientReliableWrite_Begin (host_client, svc_stufftext, 8);
-			ClientReliableWrite_String (host_client, "stopul");
-			*host_client->uploadfn = 0;
-			return;
-		}
-		Sys_Printf("Receiving %s from %d...\n", host_client->uploadfn, host_client->userid);
-		if (host_client->remote_snap)
-			OutofBandPrintf(host_client->snap_from, "Server receiving %s from %d...\n", host_client->uploadfn, host_client->userid);
-	}
-
-	fwrite (net_message.data + msg_readcount, 1, size, host_client->upload);
-	msg_readcount += size;
-
-Con_DPrintf ("UPLOAD: %d received\n", size);
-
-	if (percent != 100) {
-		ClientReliableWrite_Begin (host_client, svc_stufftext, 8);
-		ClientReliableWrite_String (host_client, "nextul\n");
-	} else {
-		fclose (host_client->upload);
-		host_client->upload = NULL;
-
-		Sys_Printf("%s upload completed.\n", host_client->uploadfn);
-
-		if (host_client->remote_snap) {
-			char *p;
-
-			if ((p = strchr(host_client->uploadfn, '/')) != NULL)
-				p++;
-			else
-				p = host_client->uploadfn;
-			OutofBandPrintf(host_client->snap_from, "%s upload completed.\nTo download, enter:\ndownload %s\n", 
-				host_client->uploadfn, p);
-		}
-	}
-
-}
-
-/*
-==================
 SV_BeginDownload_f
 ==================
 */
@@ -741,10 +671,10 @@ void SV_Pause_f ()
 		return;
 	}
 
-	if (host_client->spectator) {
+	/*if (host_client->spectator) {
 		SV_ClientPrintf (host_client, PRINT_HIGH, "Spectators can not pause.\n");
 		return;
-	}
+	}*/
 
 	if (sv.paused)
 		sprintf (st, "%s paused the game\n", host_client->name);

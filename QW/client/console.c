@@ -1,84 +1,4 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
-// console.c
-
-#include "quakedef.h"
-
-int			con_ormask;
-console_t	con_main;
-console_t	con_chat;
-console_t	*con;			// point to either con_main or con_chat
-
-int 		con_linewidth;	// characters across screen
-int			con_totallines;		// total lines in console scrollback
-
-float		con_cursorspeed = 4;
-
-
-cvar_t		con_notifytime = {"con_notifytime","3"};		//seconds
-
-#define	NUM_CON_TIMES 4
-float		con_times[NUM_CON_TIMES];	// realtime time the line was generated
-								// for transparent notify lines
-
-int			con_vislines;
-int			con_notifylines;		// scan lines to clear for notify lines
-
-qboolean	con_debuglog;
-
-#define		MAXCMDLINE	256
-extern	char	key_lines[32][MAXCMDLINE];
-extern	int		edit_line;
-extern	int		key_linepos;
-		
-
-qboolean	con_initialized;
-
-
-void Key_ClearTyping (void)
-{
-	key_lines[edit_line][1] = 0;	// clear any typing
-	key_linepos = 1;
-}
-
-/*
-================
-Con_ToggleConsole_f
-================
-*/
-void Con_ToggleConsole_f (void)
-{
-	Key_ClearTyping ();
-
-	if (key_dest == key_console)
-	{
-		if (cls.state == ca_active)
-			key_dest = key_game;
-	}
-	else
-		key_dest = key_console;
-	
-	Con_ClearNotify ();
-}
-
-/*
 ================
 Con_ToggleChat_f
 ================
@@ -109,21 +29,6 @@ void Con_Clear_f (void)
 	Q_memset (con_chat.text, ' ', CON_TEXTSIZE);
 }
 
-						
-/*
-================
-Con_ClearNotify
-================
-*/
-void Con_ClearNotify (void)
-{
-	int		i;
-	
-	for (i=0 ; i<NUM_CON_TIMES ; i++)
-		con_times[i] = 0;
-}
-
-						
 /*
 ================
 Con_MessageMode_f
@@ -667,14 +572,6 @@ void Con_NotifyBox (char *text)
 	realtime = 0;				// put the cursor back to invisible
 }
 
-
-/*
-==================
-Con_SafePrintf
-
-Okay to call even when the screen can't be updated
-==================
-*/
 void Con_SafePrintf (char *fmt, ...)
 {
 	va_list		argptr;

@@ -1,39 +1,7 @@
-/*
-Copyright (C) 1996-1997 Id Software, Inc.
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
-#include "quakedef.h"
 #ifdef _WINDOWS
 #include <windows.h>
 #endif
-/*
-
-key up events are sent even if in console mode
-
-*/
-
-
-#define		MAXCMDLINE	256
-char	key_lines[32][MAXCMDLINE];
-int		key_linepos;
-int		shift_down=false;
-int		key_lastpress;
-
 
 qboolean CheckForCommand ()
 {
@@ -241,62 +209,15 @@ void Key_Event (int key, qboolean down)
 // update auto-repeat status
 	if (down)
 	{
-		key_repeats[key]++;
 		if (key != K_BACKSPACE 
 			&& key != K_PAUSE 
 			&& key != K_PGUP 
 			&& key != K_PGDN
 			&& key_repeats[key] > 1)
 			return;	// ignore most autorepeats
-			
-		if (key >= 200 && !keybindings[key])
-			Con_Printf ("%s is unbound, hit F4 to set.\n", Key_KeynumToString (key) );
 	}
 
-//
-// if not a consolekey, send to the interpreter no matter what mode is
-//
 	if ( (key_dest == key_menu && menubound[key])
 	|| (key_dest == key_console && !consolekeys[key])
 	|| (key_dest == key_game && ( cls.state == ca_active || !consolekeys[key] ) ) )
-	{
-		kb = keybindings[key];
-		if (kb)
-		{
-			if (kb[0] == '+')
-			{	// button commands add keynum as a parm
-				sprintf (cmd, "%s %i\n", kb, key);
-				Cbuf_AddText (cmd);
-			}
-			else
-			{
-				Cbuf_AddText (kb);
-				Cbuf_AddText ("\n");
-			}
-		}
-		return;
-	}
-
-	if (!down)
-		return;		// other systems only care about key down events
-
-	if (shift_down)
-		key = keyshift[key];
-
-	switch (key_dest)
-	{
-	case key_message:
-		Key_Message (key);
-		break;
-	case key_menu:
-		M_Keydown (key);
-		break;
-
-	case key_game:
-	case key_console:
-		Key_Console (key);
-		break;
-	default:
-		Sys_Error ("Bad key_dest");
-	}
 }

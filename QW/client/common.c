@@ -1,24 +1,3 @@
-/*
-Copyright (C) 1996-1997 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
-// common.c -- misc functions used in client and server
-
 #include <ctype.h>
 
 #define MAX_NUM_ARGVS	50
@@ -32,7 +11,7 @@ char	gamedirfile[MAX_OSPATH];
 /*
 
 
-All of Quake's data access is through a hierchal file system, but the contents of the file system can be transparently merged from several sources.
+All of engine's data access is through a hierchal file system, but the contents of the file system can be transparently merged from several sources.
 
 The "base directory" is the path to the directory holding the quake.exe and all game directories.  The sys_* files pass this to host_init in quakeparms_t->basedir.  This can be overridden with the "-basedir" command line parm to allow code debugging in a different directory.  The base directory is
 only used during filesystem initialization.
@@ -48,40 +27,7 @@ into the cache directory, then opened there.
 //============================================================================
 
 
-// ClearLink is used for new headnodes
-void ClearLink (link_t *l)
-{
-	l->prev = l->next = l;
-}
 
-void RemoveLink (link_t *l)
-{
-	l->next->prev = l->prev;
-	l->prev->next = l->next;
-}
-
-void InsertLinkBefore (link_t *l, link_t *before)
-{
-	l->next = before;
-	l->prev = before->prev;
-	l->prev->next = l;
-	l->next->prev = l;
-}
-void InsertLinkAfter (link_t *l, link_t *after)
-{
-	l->next = after->next;
-	l->prev = after;
-	l->prev->next = l;
-	l->next->prev = l;
-}
-
-/*
-============================================================================
-
-					LIBRARY REPLACEMENT FUNCTIONS
-
-============================================================================
-*/
 
 #if 0
 void Q_memset (void *dest, int fill, int count)
@@ -100,7 +46,7 @@ void Q_memset (void *dest, int fill, int count)
 			((byte *)dest)[i] = fill;
 }
 
-void Q_memcpy (void *dest, void *src, int count)
+void Q_memcpy(void *dest, void *src, int count)
 {
 	int		i;
 	
@@ -374,16 +320,6 @@ float Q_atof (char *str)
 	return val*sign;
 }
 
-/*
-============================================================================
-
-					BYTE ORDER FUNCTIONS
-
-============================================================================
-*/
-
-qboolean	bigendien;
-
 short	(*BigShort) (short l);
 short	(*LittleShort) (short l);
 int	(*BigLong) (int l);
@@ -406,57 +342,19 @@ short	ShortNoSwap (short l)
 	return l;
 }
 
-int    LongSwap (int l)
+int LongSwap(int l)
 {
-	byte    b1,b2,b3,b4;
+	byte b1, b2, b3, b4;
 
-	b1 = l&255;
-	b2 = (l>>8)&255;
-	b3 = (l>>16)&255;
-	b4 = (l>>24)&255;
+	b1 = l & 255;
+	b2 = (l >> 8) & 255;
+	b3 = (l >> 16) & 255;
+	b4 = (l >> 24) & 255;
 
-	return ((int)b1<<24) + ((int)b2<<16) + ((int)b3<<8) + b4;
+	return ((int)b1 << 24) + ((int)b2<<16) + ((int)b3<<8) + b4;
 }
 
-int	LongNoSwap (int l)
-{
-	return l;
-}
 
-float FloatSwap (float f)
-{
-	union
-	{
-		float	f;
-		byte	b[4];
-	} dat1, dat2;
-	
-	
-	dat1.f = f;
-	dat2.b[0] = dat1.b[3];
-	dat2.b[1] = dat1.b[2];
-	dat2.b[2] = dat1.b[1];
-	dat2.b[3] = dat1.b[0];
-	return dat2.f;
-}
-
-float FloatNoSwap (float f)
-{
-	return f;
-}
-
-/*
-==============================================================================
-
-			MESSAGE IO FUNCTIONS
-
-Handles byte ordering and avoids alignment errors
-==============================================================================
-*/
-
-//
-// writing functions
-//
 
 void MSG_WriteChar (sizebuf_t *sb, int c)
 {
@@ -795,44 +693,8 @@ char *COM_SkipPath (char *pathname)
 	return last;
 }
 
-/*
-============
-COM_StripExtension
-============
-*/
-void COM_StripExtension (char *in, char *out)
-{
-	while (*in && *in != '.')
-		*out++ = *in++;
-	*out = 0;
-}
 
-/*
-============
-COM_FileExtension
-============
-*/
-char *COM_FileExtension (char *in)
-{
-	static char exten[8];
-	int		i;
 
-	while (*in && *in != '.')
-		in++;
-	if (!*in)
-		return "";
-	in++;
-	for (i=0 ; i<7 && *in ; i++,in++)
-		exten[i] = *in;
-	exten[i] = 0;
-	return exten;
-}
-
-/*
-============
-COM_FileBase
-============
-*/
 void COM_FileBase (char *in, char *out)
 {
 	char *s, *s2;
@@ -856,11 +718,6 @@ void COM_FileBase (char *in, char *out)
 }
 
 
-/*
-==================
-COM_DefaultExtension
-==================
-*/
 void COM_DefaultExtension (char *path, char *extension)
 {
 	char    *src;
@@ -887,13 +744,7 @@ int		com_argc;
 char	**com_argv;
 
 
-/*
-==============
-COM_Parse
 
-Parse a token out of a string
-==============
-*/
 char *COM_Parse (char *data)
 {
 	int		c;
@@ -968,11 +819,6 @@ int COM_CheckParm (char *parm)
 	return 0;
 }
 
-/*
-================
-COM_InitArgv
-================
-*/
 void COM_InitArgv (int argc, char **argv)
 {
 	qboolean	safe;
@@ -1023,10 +869,10 @@ COM_Init
 */
 void COM_Init (void)
 {
-	byte	swaptest[2] = {1,0};
+	byte swaptest[2] = {1,0};
 
-// set the byte swapping variables in a portable manner	
-	if ( *(short *)swaptest == 1)
+	// set the byte swapping variables in a portable manner	
+	if(*(short *)swaptest == 1)
 	{
 		bigendien = false;
 		BigShort = ShortSwap;
@@ -1049,7 +895,7 @@ void COM_Init (void)
 
 	Cmd_AddCommand ("path", COM_Path_f);
 
-	COM_InitFilesystem ();
+	COM_InitFilesystem();
 }
 
 char	com_gamedir[MAX_OSPATH];
@@ -1139,14 +985,6 @@ void COM_WriteFile (char *filename, void *data, int len)
 	fclose (f);
 }
 
-/*
-===========
-COM_CopyFile
-
-Copies a file over from the net to the local cache, creating any directories
-needed.  This is for the convenience of developers using ISDN from home.
-===========
-*/
 void COM_CopyFile (char *netpath, char *cachepath)
 {
 	FILE	*in, *out;

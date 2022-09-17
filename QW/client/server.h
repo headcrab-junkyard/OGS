@@ -211,8 +211,6 @@ void SV_FinalMessage (char *message);
 int SV_CalcPing (client_t *cl);
 void SV_FullClientUpdate (client_t *client, sizebuf_t *buf);
 
-void SV_WriteClientdataToMessage (client_t *client, sizebuf_t *msg);
-
 void SV_Physics_Client (edict_t	*ent);
 
 void SV_ExecuteUserCommand (char *s);
@@ -242,10 +240,8 @@ void SV_SetMoveVars();
 //
 // sv_send.c
 //
-void SV_SendClientMessages ();
 
 void SV_Multicast (vec3_t origin, int to);
-void SV_StartSound (edict_t *entity, int channel, char *sample, int volume, float attenuation);
 
 void SV_SendMessagesToAll ();
 void SV_FindModelNumbers ();
@@ -256,9 +252,6 @@ void SV_FindModelNumbers ();
 
 void SV_UserInit ();
 void SV_TogglePause (const char *msg);
-
-
-
 
 //
 // sv_ccmds.c

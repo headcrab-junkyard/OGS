@@ -930,18 +930,18 @@ void S_Play(void)
 	}
 }
 
-void S_PlayVol(void)
+void S_PlayVol()
 {
-	static int hash=543;
+	static int hash = 543;
 	int i;
 	float vol;
 	char name[256];
-	sfx_t	*sfx;
-	
+	sfx_t *sfx;
+
 	i = 1;
-	while (i<Cmd_Argc())
+	while(i < Cmd_Argc())
 	{
-		if (!Q_strrchr(Cmd_Argv(i), '.'))
+		if(!Q_strrchr(Cmd_Argv(i), '.'))
 		{
 			Q_strcpy(name, Cmd_Argv(i));
 			Q_strcat(name, ".wav");
@@ -949,9 +949,9 @@ void S_PlayVol(void)
 		else
 			Q_strcpy(name, Cmd_Argv(i));
 		sfx = S_PrecacheSound(name);
-		vol = Q_atof(Cmd_Argv(i+1));
+		vol = Q_atof(Cmd_Argv(i + 1));
 		S_StartSound(hash++, 0, sfx, listener_origin, vol, 1.0);
-		i+=2;
+		i += 2;
 	}
 }
 
@@ -979,37 +979,20 @@ void S_SoundList(void)
 	Con_Printf ("Total resident: %i\n", total);
 }
 
-
-void S_LocalSound (char *sound)
+void S_LocalSound(const char *sound)
 {
-	sfx_t	*sfx;
+	sfx_t *sfx;
 
-	if (nosound.value)
+	if(nosound.value)
 		return;
-	if (!sound_started)
+	if(!sound_started)
 		return;
-		
+
 	sfx = S_PrecacheSound (sound);
-	if (!sfx)
+	if(!sfx)
 	{
 		Con_Printf ("S_LocalSound: can't cache %s\n", sound);
 		return;
 	}
 	S_StartSound (cl.viewentity, -1, sfx, vec3_origin, 1, 1);
 }
-
-
-void S_ClearPrecache (void)
-{
-}
-
-
-void S_BeginPrecaching (void)
-{
-}
-
-
-void S_EndPrecaching (void)
-{
-}
-

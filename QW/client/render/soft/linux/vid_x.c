@@ -951,23 +951,6 @@ void VID_DitherOff()
     }
 }
 
-int Sys_OpenWindow()
-{
-	return 0;
-}
-
-void Sys_EraseWindow(int window)
-{
-}
-
-void Sys_DrawCircle(int window, int x, int y, int r)
-{
-}
-
-void Sys_DisplayWindow(int window)
-{
-}
-
 void Sys_SendKeyEvents()
 {
 // get events from x server
@@ -1026,7 +1009,6 @@ void D_EndDirectRect (int x, int y, int width, int height)
 void IN_Init ()
 {
 	Cvar_RegisterVariable (&_windowed_mouse);
-	Cvar_RegisterVariable (&m_filter);
    if ( COM_CheckParm ("-nomouse") )
      return;
    mouse_x = mouse_y = 0.0;

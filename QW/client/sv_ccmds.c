@@ -1,31 +1,12 @@
-/*
-Copyright (C) 1996-1997 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
-
-#include "quakedef.h"
-
 qboolean	sv_allow_cheats;
 
 int fp_messages=4, fp_persecond=4, fp_secondsdead=10;
+
 char fp_msg[255] = { 0 };
+
 extern cvar_t cl_warncmd;
-	extern		redirect_t	sv_redirected;
+
+extern redirect_t sv_redirected;
 
 
 /*
@@ -150,33 +131,6 @@ qboolean SV_SetPlayer ()
 	Con_Printf ("Userid %i is not on the server\n", idnum);
 	return false;
 }
-
-
-/*
-==================
-SV_God_f
-
-Sets client to godmode
-==================
-*/
-void SV_God_f ()
-{
-	if (!sv_allow_cheats)
-	{
-		Con_Printf ("You must run the server with -cheats to enable this command.\n");
-		return;
-	}
-
-	if (!SV_SetPlayer ())
-		return;
-
-	sv_player->v.flags = (int)sv_player->v.flags ^ FL_GODMODE;
-	if (!((int)sv_player->v.flags & FL_GODMODE) )
-		SV_ClientPrintf (host_client, PRINT_HIGH, "godmode OFF\n");
-	else
-		SV_ClientPrintf (host_client, PRINT_HIGH, "godmode ON\n");
-}
-
 
 void SV_Noclip_f ()
 {

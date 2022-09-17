@@ -1,20 +1,9 @@
 
 
 typedef enum {
-ca_disconnected, 	// full screen console with no connection
 ca_demostart,		// starting up a demo
-ca_connected,		// netchan_t established, waiting for svc_serverdata
-ca_onserver,		// processing data lists, donwloading, etc
-ca_active			// everything is in, so frames can be rendered
+ca_connected,		// netchan_t established, waiting for svc_serverdata		
 } cactive_t;
-
-
-
-typedef struct
-{	
-
-	float		latency;		// rolling average
-} client_static_t;
 
 typedef struct
 {
