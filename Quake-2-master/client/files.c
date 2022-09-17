@@ -50,17 +50,6 @@ typedef struct filelink_s
 
 filelink_t	*fs_links;
 
-typedef struct searchpath_s
-{
-	char	filename[MAX_OSPATH];
-	pack_t	*pack;		// only one of filename / pack will be used
-	struct searchpath_s *next;
-} searchpath_t;
-
-searchpath_t	*fs_searchpaths;
-searchpath_t	*fs_base_searchpaths;	// without gamedirs
-
-
 /*
 
 All of Quake's data access is through a hierchal file system, but the contents of the file system can be transparently merged from several sources.
@@ -71,26 +60,6 @@ only used during filesystem initialization.
 The "game directory" is the first tree on the search path and directory that all generated files (savegames, screenshots, demos, config files) will be saved to.  This can be overridden with the "-game" command line parameter.  The game directory can never be changed while quake is executing.  This is a precacution against having a malicious server instruct clients to write files over areas they shouldn't.
 
 */
-
-
-/*
-================
-FS_filelength
-================
-*/
-int FS_filelength (FILE *f)
-{
-	int		pos;
-	int		end;
-
-	pos = ftell (f);
-	fseek (f, 0, SEEK_END);
-	end = ftell (f);
-	fseek (f, pos, SEEK_SET);
-
-	return end;
-}
-
 
 /*
 ============
@@ -141,11 +110,6 @@ int	Developer_searchpath (int who)
 //	char	*start;
 	searchpath_t	*search;
 	
-	if (who == 1) // xatrix
-		ch = 'x';
-	else if (who == 2)
-		ch = 'r';
-
 	for (search = fs_searchpaths ; search ; search = search->next)
 	{
 		if (strstr (search->filename, "xatrix"))
@@ -153,15 +117,6 @@ int	Developer_searchpath (int who)
 
 		if (strstr (search->filename, "rogue"))
 			return 2;
-/*
-		start = strchr (search->filename, ch);
-
-		if (start == NULL)
-			continue;
-
-		if (strcmp (start ,"xatrix") == 0)
-			return (1);
-*/
 	}
 	return (0);
 

@@ -127,8 +127,6 @@ typedef struct
 								// is rendering at.  always <= cls.realtime
 	float		lerpfrac;		// between oldframe and frame
 
-	refdef_t	refdef;
-
 	vec3_t		v_forward, v_right, v_up;	// set when refdef.angles is set
 
 	//

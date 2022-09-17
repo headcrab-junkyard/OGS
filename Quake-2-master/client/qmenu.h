@@ -22,17 +22,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #define MAXMENUITEMS	64
 
-enum eMenuType
-{
-	MTYPE_INVALID = -1,
-	MTYPE_SLIDER = 0,
-	MTYPE_LIST,
-	MTYPE_ACTION,
-	MTYPE_SPINCONTROL,
-	MTYPE_SEPARATOR,
-	MTYPE_FIELD
-};
-
 #define	K_TAB			9
 #define	K_ENTER			13
 #define	K_ESCAPE		27
@@ -73,74 +62,6 @@ struct menuframework_s
 
 	void (*cursordraw)( struct _tag_menuframework *m );
 	
-};
-
-struct menucommon_s
-{
-	eMenuType type{MTYPE_INVALID};
-	const char *name{""};
-	int x{0}, y{0};
-	menuframework_s *parent{nullptr};
-	int cursor_offset{0};
-	int	localdata[4]{};
-	unsigned int flags{0};
-
-	const char *statusbar{""};
-
-	void (*callback)( void *self );
-	void (*statusbarfunc)( void *self );
-	void (*ownerdraw)( void *self );
-	void (*cursordraw)( void *self );
-};
-
-struct menufield_s : public menucommon_s
-{
-	bool Field_DoEnter( menufield_s *f );
-	void Field_Draw( menufield_s *f );
-	bool Field_Key( menufield_s *field, int key );
-	
-	char buffer[80]{};
-	int cursor{0};
-	int length{0};
-	int visible_length{0};
-	int visible_offset{0};
-};
-
-struct menuslider_s : public menucommon_s
-{
-	void Slider_DoSlide( int dir );
-	void Slider_Draw();
-
-	float minvalue{0.0f};
-	float maxvalue{0.0f};
-	float curvalue{0.0f};
-
-	float range{0.0f};
-};
-
-struct menulist_s : public menucommon_s
-{
-	void Menulist_DoEnter();
-	void MenuList_Draw();
-
-	void SpinControl_DoEnter();
-	void SpinControl_Draw();
-	void SpinControl_DoSlide( int dir );
-
-	int curvalue{0};
-
-	const char **itemnames{""};
-};
-
-struct menuaction_s : public menucommon_s
-{
-	void Action_DoEnter();
-	void Action_Draw();
-};
-
-struct menuseparator_s : public menucommon_s
-{
-	void Separator_Draw();
 };
 
 void	 Menu_DrawString( int, int, const char * );

@@ -17,8 +17,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-// in_win.c -- windows 95 mouse and joystick code
-// 02/21/97 JCB Added extended DirectInput code to support external controllers.
 
 #include "../client/client.h"
 #include "winquake.h"
@@ -29,35 +27,15 @@ extern	unsigned	sys_msg_time;
 // where should defines be moved?
 #define JOY_ABSOLUTE_AXIS	0x00000000		// control like a joystick
 #define JOY_RELATIVE_AXIS	0x00000010		// control like a mouse, spinner, trackball
-#define	JOY_MAX_AXES		6				// X, Y, Z, R, U, V
-#define JOY_AXIS_X			0
-#define JOY_AXIS_Y			1
-#define JOY_AXIS_Z			2
-#define JOY_AXIS_R			3
-#define JOY_AXIS_U			4
-#define JOY_AXIS_V			5
-
-enum _ControlList
-{
-	AxisNada = 0,
-	AxisForward,
-	AxisLook,
-	AxisSide,
-	AxisTurn,
-	AxisUp
-};
 
 DWORD	dwAxisFlags[JOY_MAX_AXES] =
 {
 	JOY_RETURNX, JOY_RETURNY, JOY_RETURNZ, JOY_RETURNR, JOY_RETURNU, JOY_RETURNV
 };
 
-DWORD	dwAxisMap[JOY_MAX_AXES];
-DWORD	dwControlMap[JOY_MAX_AXES];
 PDWORD	pdwRawValue[JOY_MAX_AXES];
 
 cvar_t	*in_mouse;
-cvar_t	*in_joystick;
 
 // none of these cvars are saved over a session
 // this means that advanced controller configuration needs to be executed
@@ -85,30 +63,16 @@ void IN_JoyMove (usercmd_t *cmd);
 // mouse variables
 cvar_t	*m_filter;
 
-qboolean	mlooking;
-
-void IN_MLookDown (void)
-{
-	mlooking = true;
-}
 void IN_MLookUp (void)
 {
-	mlooking = false;
 	if (!freelook->value && lookspring->value)
 		IN_CenterView ();
 }
 
-int			mouse_buttons;
-int			mouse_oldbuttonstate;
-POINT		current_pos;
-int			mouse_x, mouse_y, old_mouse_x, old_mouse_y, mx_accum, my_accum;
-
 int			old_x, old_y;
 
-qboolean	mouseactive;	// false when not focus app
-
 qboolean	restore_spi;
-qboolean	mouseinitialized;
+
 int		originalmouseparms[3], newmouseparms[3] = {0, 0, 1};
 qboolean	mouseparmsvalid;
 
@@ -135,11 +99,6 @@ void IN_ActivateMouse (void)
 	}
 	if (mouseactive)
 		return;
-
-	mouseactive = true;
-
-	if (mouseparmsvalid)
-		restore_spi = SystemParametersInfo (SPI_SETMOUSE, 0, newmouseparms, 0);
 
 	width = GetSystemMetrics (SM_CXSCREEN);
 	height = GetSystemMetrics (SM_CYSCREEN);
@@ -172,25 +131,18 @@ void IN_ActivateMouse (void)
 ===========
 IN_DeactivateMouse
 
-Called when the window loses focus
+
 ===========
 */
 void IN_DeactivateMouse (void)
 {
-	if (!mouseinitialized)
-		return;
-	if (!mouseactive)
-		return;
-
-	if (restore_spi)
-		SystemParametersInfo (SPI_SETMOUSE, 0, originalmouseparms, 0);
-
-	mouseactive = false;
-
+	if(mouseinitialized)
+	{
 	ClipCursor (NULL);
 	ReleaseCapture ();
 	while (ShowCursor (TRUE) < 0)
 		;
+	};
 }
 
 /*
@@ -204,11 +156,7 @@ void IN_StartupMouse (void)
 
 	cv = Cvar_Get ("in_initmouse", "1", CVAR_NOSET);
 	if ( !cv->value ) 
-		return; 
-
-	mouseinitialized = true;
-	mouseparmsvalid = SystemParametersInfo (SPI_GETMOUSE, 0, originalmouseparms, 0);
-	mouse_buttons = 3;
+		return;
 }
 
 /*
@@ -342,16 +290,6 @@ void IN_Init (void)
 
 /*
 ===========
-IN_Shutdown
-===========
-*/
-void IN_Shutdown (void)
-{
-	IN_DeactivateMouse ();
-}
-
-/*
-===========
 IN_Activate
 
 Called when the main window gains or loses focus.
@@ -396,18 +334,6 @@ void IN_Frame (void)
 	IN_ActivateMouse ();
 }
 
-/*
-===========
-IN_Move
-===========
-*/
-void IN_Move (usercmd_t *cmd)
-{
-	IN_MouseMove (cmd);
-
-	if (ActiveApp)
-		IN_JoyMove (cmd);
-}
 /*
 =========================================================================
 
@@ -484,30 +410,6 @@ void IN_StartupJoystick (void)
 	joy_advancedinit = false;
 
 	Com_Printf ("\njoystick detected\n\n"); 
-}
-
-/*
-===========
-RawValuePointer
-===========
-*/
-PDWORD RawValuePointer (int axis)
-{
-	switch (axis)
-	{
-	case JOY_AXIS_X:
-		return &ji.dwXpos;
-	case JOY_AXIS_Y:
-		return &ji.dwYpos;
-	case JOY_AXIS_Z:
-		return &ji.dwZpos;
-	case JOY_AXIS_R:
-		return &ji.dwRpos;
-	case JOY_AXIS_U:
-		return &ji.dwUpos;
-	case JOY_AXIS_V:
-		return &ji.dwVpos;
-	}
 }
 
 /*
@@ -645,32 +547,6 @@ void IN_Commands (void)
 			}
 		}
 		joy_oldpovstate = povstate;
-	}
-}
-
-/* 
-=============== 
-IN_ReadJoystick
-=============== 
-*/  
-qboolean IN_ReadJoystick (void)
-{
-	memset (&ji, 0, sizeof(ji));
-	ji.dwSize = sizeof(ji);
-	ji.dwFlags = joy_flags;
-
-	if (joyGetPosEx (joy_id, &ji) == JOYERR_NOERROR)
-	{
-		return true;
-	}
-	else
-	{
-		// read error occurred
-		// turning off the joystick seems too harsh for 1 read error,\
-		// but what should be done?
-		// Com_Printf ("IN_ReadJoystick: no response\n");
-		// joy_avail = false;
-		return false;
 	}
 }
 

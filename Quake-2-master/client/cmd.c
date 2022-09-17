@@ -13,10 +13,6 @@ next frame.  This allows commands like:
 bind g "impulse 5 ; +attack ; wait ; -attack ; impulse 2"
 ============
 */
-void Cmd_Wait_f (void)
-{
-	cmd_wait = true;
-}
 
 
 /*
@@ -293,7 +289,6 @@ qboolean Cbuf_AddLateCommands (void)
 	return ret;
 }
 
-
 /*
 ==============================================================================
 
@@ -526,22 +521,9 @@ void Cmd_TokenizeString (char *text, qboolean macroExpand)
 	
 }
 
-
-/*
-============
-Cmd_CompleteCommand
-============
-*/
 char *Cmd_CompleteCommand (char *partial)
 {
-	cmd_function_t	*cmd;
-	int				len;
 	cmdalias_t		*a;
-	
-	len = strlen(partial);
-	
-	if (!len)
-		return NULL;
 		
 // check for exact match
 	for (cmd=cmd_functions ; cmd ; cmd=cmd->next)
@@ -558,8 +540,6 @@ char *Cmd_CompleteCommand (char *partial)
 	for (a=cmd_alias ; a ; a=a->next)
 		if (!strncmp (partial, a->name, len))
 			return a->name;
-
-	return NULL;
 }
 
 

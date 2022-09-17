@@ -52,10 +52,6 @@ then a packet only needs to be delivered if there is something in the
 unacknowledged reliable
 */
 
-cvar_t		*showpackets;
-cvar_t		*showdrop;
-cvar_t		*qport;
-
 netadr_t	net_from;
 sizebuf_t	net_message;
 byte		net_message_buffer[MAX_MSGLEN];
@@ -64,61 +60,8 @@ void Netchan_Init ()
 {
 	port = Sys_Milliseconds() & 0xffff;
 
-	showpackets = Cvar_Get ("showpackets", "0", 0);
-	showdrop = Cvar_Get ("showdrop", "0", 0);
 	qport = Cvar_Get ("qport", va("%i", port), CVAR_NOSET);
 }
-
-void Netchan_OutOfBand (int net_socket, netadr_t adr, int length, byte *data)
-{
-	byte		send_buf[MAX_MSGLEN];
-
-// write the packet header
-	SZ_Init (&send, send_buf, sizeof(send_buf));
-
-// send the datagram
-	NET_SendPacket (net_socket, send.cursize, send.data, adr);
-}
-
-void Netchan_OutOfBandPrint (int net_socket, netadr_t adr, char *format, ...)
-{
-	static char		string[MAX_MSGLEN - 4];
-	
-	va_start (argptr, format);
-	vsprintf (string, format,argptr);
-	va_end (argptr);
-
-	Netchan_OutOfBand (net_socket, adr, strlen(string), (byte *)string);
-}
-
-void Netchan_Setup (netsrc_t sock, netchan_t *chan, netadr_t adr, int qport)
-{
-	chan->sock = sock;
-	chan->remote_address = adr;
-	chan->qport = qport;
-	chan->last_received = curtime;
-	chan->incoming_sequence = 0;
-	chan->outgoing_sequence = 1;
-
-	SZ_Init (&chan->message, chan->message_buf, sizeof(chan->message_buf));
-	chan->message.allowoverflow = true;
-}
-
-
-/*
-===============
-Netchan_CanReliable
-
-Returns true if the last reliable message has acked
-================
-*/
-qboolean Netchan_CanReliable (netchan_t *chan)
-{
-	if (chan->reliable_length)
-		return false;			// waiting for ack
-	return true;
-}
-
 
 qboolean Netchan_NeedReliable (netchan_t *chan)
 {
@@ -143,15 +86,6 @@ qboolean Netchan_NeedReliable (netchan_t *chan)
 void Netchan_Transmit (netchan_t *chan, int length, byte *data)
 {
 	byte		send_buf[MAX_MSGLEN];
-
-// check for message overflow
-	if (chan->message.overflowed)
-	{
-		chan->fatal_error = true;
-		Com_Printf ("%s:Outgoing message overflow\n"
-			, NET_AdrToString (chan->remote_address));
-		return;
-	}
 
 	send_reliable = Netchan_NeedReliable (chan);
 
@@ -217,21 +151,6 @@ void Netchan_Transmit (netchan_t *chan, int length, byte *data)
 qboolean Netchan_Process (netchan_t *chan, sizebuf_t *msg)
 {
 	int			qport;
-
-// get sequence numbers		
-	MSG_BeginReading (msg);
-	sequence = MSG_ReadLong (msg);
-	sequence_ack = MSG_ReadLong (msg);
-
-	// read the qport if we are a server
-	if (chan->sock == NS_SERVER)
-		qport = MSG_ReadShort (msg);
-
-	reliable_message = sequence >> 31;
-	reliable_ack = sequence_ack >> 31;
-
-	sequence &= ~(1<<31);
-	sequence_ack &= ~(1<<31);	
 
 	if (showpackets->value)
 	{

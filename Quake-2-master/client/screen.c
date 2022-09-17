@@ -37,8 +37,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 float		scr_con_current;	// aproaches scr_conlines at scr_conspeed
 float		scr_conlines;		// 0.0 to 1.0 lines of console to display
 
-qboolean	scr_initialized;		// ready to draw
-
 int			scr_draw_loading;
 
 vrect_t		scr_vrect;		// position of render window on screen
@@ -413,6 +411,7 @@ void SCR_Init (void)
 	scr_showpause = Cvar_Get ("scr_showpause", "1", 0);
 	scr_centertime = Cvar_Get ("scr_centertime", "2.5", 0);
 	scr_printspeed = Cvar_Get ("scr_printspeed", "8", 0);
+	
 	scr_netgraph = Cvar_Get ("netgraph", "0", 0);
 	scr_timegraph = Cvar_Get ("timegraph", "0", 0);
 	scr_debuggraph = Cvar_Get ("debuggraph", "0", 0);
@@ -420,17 +419,6 @@ void SCR_Init (void)
 	scr_graphscale = Cvar_Get ("graphscale", "1", 0);
 	scr_graphshift = Cvar_Get ("graphshift", "0", 0);
 	scr_drawall = Cvar_Get ("scr_drawall", "0", 0);
-
-//
-// register our commands
-//
-	Cmd_AddCommand ("timerefresh",SCR_TimeRefresh_f);
-	Cmd_AddCommand ("loading",SCR_Loading_f);
-	Cmd_AddCommand ("sizeup",SCR_SizeUp_f);
-	Cmd_AddCommand ("sizedown",SCR_SizeDown_f);
-	Cmd_AddCommand ("sky",SCR_Sky_f);
-
-	scr_initialized = true;
 }
 
 
@@ -446,42 +434,6 @@ void SCR_DrawNet (void)
 		return;
 
 	re.DrawPic (scr_vrect.x+64, scr_vrect.y, "net");
-}
-
-/*
-==============
-SCR_DrawPause
-==============
-*/
-void SCR_DrawPause (void)
-{
-	int		w, h;
-
-	if (!scr_showpause->value)		// turn off for screenshots
-		return;
-
-	if (!cl_paused->value)
-		return;
-
-	re.DrawGetPicSize (&w, &h, "pause");
-	re.DrawPic ((viddef.width-w)/2, viddef.height/2 + 8, "pause");
-}
-
-/*
-==============
-SCR_DrawLoading
-==============
-*/
-void SCR_DrawLoading (void)
-{
-	int		w, h;
-		
-	if (!scr_draw_loading)
-		return;
-
-	scr_draw_loading = false;
-	re.DrawGetPicSize (&w, &h, "loading");
-	re.DrawPic ((viddef.width-w)/2, (viddef.height-h)/2, "loading");
 }
 
 //=============================================================================
@@ -618,44 +570,6 @@ int entitycmpfnc( const entity_t *a, const entity_t *b )
 	{
 		return ( ( int ) a->model - ( int ) b->model );
 	}
-}
-
-void SCR_TimeRefresh_f (void)
-{
-	int		i;
-	int		start, stop;
-	float	time;
-
-	if ( cls.state != ca_active )
-		return;
-
-	start = Sys_Milliseconds ();
-
-	if (Cmd_Argc() == 2)
-	{	// run without page flipping
-		re.BeginFrame( 0 );
-		for (i=0 ; i<128 ; i++)
-		{
-			cl.refdef.viewangles[1] = i/128.0*360.0;
-			re.RenderFrame (&cl.refdef);
-		}
-		re.EndFrame();
-	}
-	else
-	{
-		for (i=0 ; i<128 ; i++)
-		{
-			cl.refdef.viewangles[1] = i/128.0*360.0;
-
-			re.BeginFrame( 0 );
-			re.RenderFrame (&cl.refdef);
-			re.EndFrame();
-		}
-	}
-
-	stop = Sys_Milliseconds ();
-	time = (stop-start)/1000.0;
-	Com_Printf ("%f seconds (%f fps)\n", time, 128/time);
 }
 
 /*

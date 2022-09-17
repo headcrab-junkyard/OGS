@@ -196,7 +196,6 @@ typedef struct miptex_s
 #define	MAX_MAP_BRUSHES		8192
 #define	MAX_MAP_ENTITIES	2048
 #define	MAX_MAP_ENTSTRING	0x40000
-#define	MAX_MAP_TEXINFO		8192
 
 #define	MAX_MAP_AREAS		256
 #define	MAX_MAP_AREAPORTALS	1024
@@ -209,25 +208,9 @@ typedef struct miptex_s
 #define	MAX_MAP_LEAFFACES	65536
 #define	MAX_MAP_LEAFBRUSHES 65536
 #define	MAX_MAP_PORTALS		65536
-#define	MAX_MAP_EDGES		128000
-#define	MAX_MAP_SURFEDGES	256000
-#define	MAX_MAP_LIGHTING	0x200000
-#define	MAX_MAP_VISIBILITY	0x100000
-
-// key / value pair sizes
-
-#define	MAX_KEY		32
-#define	MAX_VALUE	1024
 
 //=============================================================================
 
-typedef struct
-{
-	int		fileofs, filelen;
-} lump_t;
-
-#define	LUMP_ENTITIES		0
-#define	LUMP_PLANES			1
 #define	LUMP_VERTEXES		2
 #define	LUMP_VISIBILITY		3
 #define	LUMP_NODES			4
@@ -262,18 +245,6 @@ typedef struct
 	int			firstface, numfaces;	// submodels just draw faces
 										// without walking the bsp tree
 } dmodel_t;
-
-
-typedef struct
-{
-	float	point[3];
-} dvertex_t;
-
-
-// 0-2 are axial planes
-#define	PLANE_X			0
-#define	PLANE_Y			1
-#define	PLANE_Z			2
 
 // 3-5 are non-axial planes snapped to the nearest
 #define	PLANE_ANYX		3

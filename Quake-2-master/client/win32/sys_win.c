@@ -177,26 +177,7 @@ char *Sys_ScanForCD (void)
 	return NULL;
 }
 
-/*
-================
-Sys_CopyProtect
-
-================
-*/
-void	Sys_CopyProtect (void)
-{
-#ifndef DEMO
-	char	*cddir;
-
-	cddir = Sys_ScanForCD();
-	if (!cddir[0])
-		Com_Error (ERR_FATAL, "You must have the Quake2 CD in the drive to play.");
-#endif
-}
-
-
 //================================================================
-
 
 /*
 ================
@@ -364,33 +345,6 @@ void Sys_ConsoleOutput (char *string)
 	if (console_textlen)
 		WriteFile(houtput, console_text, console_textlen, &dummy, NULL);
 }
-
-
-/*
-================
-Sys_SendKeyEvents
-
-Send Key_Event calls
-================
-*/
-void Sys_SendKeyEvents (void)
-{
-    MSG        msg;
-
-	while (PeekMessage (&msg, NULL, 0, 0, PM_NOREMOVE))
-	{
-		if (!GetMessage (&msg, NULL, 0, 0))
-			Sys_Quit ();
-		sys_msg_time = msg.time;
-      	TranslateMessage (&msg);
-      	DispatchMessage (&msg);
-	}
-
-	// grab frame time 
-	sys_frame_time = timeGetTime();	// FIXME: should this be at start?
-}
-
-
 
 /*
 ================
@@ -568,24 +522,6 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	global_hInstance = hInstance;
 
 	ParseCommandLine (lpCmdLine);
-
-	// if we find the CD, add a +set cddir xxx command line
-	cddir = Sys_ScanForCD ();
-	if (cddir && argc < MAX_NUM_ARGVS - 3)
-	{
-		int		i;
-
-		// don't override a cddir on the command line
-		for (i=0 ; i<argc ; i++)
-			if (!strcmp(argv[i], "cddir"))
-				break;
-		if (i == argc)
-		{
-			argv[argc++] = "+set";
-			argv[argc++] = "cddir";
-			argv[argc++] = cddir;
-		}
-	}
 
 	Qcommon_Init (argc, argv);
 	oldtime = Sys_Milliseconds ();

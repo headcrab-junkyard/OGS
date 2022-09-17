@@ -728,16 +728,7 @@ void CL_ConnectionlessPacket ()
 	// server connection
 	if (!strcmp(c, "client_connect"))
 	{
-		if (cls.state == ca_connected)
-		{
-			Com_Printf ("Dup connect received.  Ignored.\n");
-			return;
-		}
-		Netchan_Setup (NS_CLIENT, &cls.netchan, net_from, cls.quakePort);
-		MSG_WriteChar (&cls.netchan.message, clc_stringcmd);
-		MSG_WriteString (&cls.netchan.message, "new");	
-		cls.state = ca_connected;
-		return;
+		
 	}
 
 	// server responding to a status broadcast
@@ -764,24 +755,19 @@ void CL_ConnectionlessPacket ()
 	// print command from somewhere
 	if (!strcmp(c, "print"))
 	{
-		s = MSG_ReadString (&net_message);
-		Com_Printf ("%s", s);
-		return;
+		
 	}
 
 	// ping from somewhere
 	if (!strcmp(c, "ping"))
 	{
-		Netchan_OutOfBandPrint (NS_CLIENT, net_from, "ack");
-		return;
+		
 	}
 
 	// challenge from the server we are connecting to
 	if (!strcmp(c, "challenge"))
 	{
-		cls.challenge = atoi(Cmd_Argv(1));
-		CL_SendConnectPacket ();
-		return;
+		
 	}
 
 	// echo request from server
@@ -790,8 +776,6 @@ void CL_ConnectionlessPacket ()
 		Netchan_OutOfBandPrint (NS_CLIENT, net_from, "%s", Cmd_Argv(1) );
 		return;
 	}
-
-	Com_Printf ("Unknown command.\n");
 }
 
 
@@ -1176,8 +1160,7 @@ void CL_InitLocal ()
 
 	cl_run = Cvar_Get ("cl_run", "0", CVAR_ARCHIVE);
 	freelook = Cvar_Get( "freelook", "0", CVAR_ARCHIVE );
-	lookspring = Cvar_Get ("lookspring", "0", CVAR_ARCHIVE);
-	lookstrafe = Cvar_Get ("lookstrafe", "0", CVAR_ARCHIVE);
+	
 	sensitivity = Cvar_Get ("sensitivity", "3", CVAR_ARCHIVE);
 
 	m_pitch = Cvar_Get ("m_pitch", "0.022", CVAR_ARCHIVE);
@@ -1229,7 +1212,6 @@ void CL_InitLocal ()
 
 	Cmd_AddCommand ("quit", CL_Quit_f);
 
-	Cmd_AddCommand ("connect", CL_Connect_f);
 	Cmd_AddCommand ("reconnect", CL_Reconnect_f);
 
 	Cmd_AddCommand ("rcon", CL_Rcon_f);

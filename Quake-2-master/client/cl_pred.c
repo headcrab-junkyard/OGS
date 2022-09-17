@@ -158,7 +158,6 @@ Sets cl.predicted_origin and cl.predicted_angles
 */
 void CL_PredictMovement (void)
 {
-	int			ack, current;
 	int			frame;
 	int			oldframe;
 	usercmd_t	*cmd;
@@ -166,12 +165,6 @@ void CL_PredictMovement (void)
 	int			i;
 	int			step;
 	int			oldz;
-
-	if (cls.state != ca_active)
-		return;
-
-	if (cl_paused->value)
-		return;
 
 	if (!cl_predict->value || (cl.frame.playerstate.pmove.pm_flags & PMF_NO_PREDICTION))
 	{	// just set angles
