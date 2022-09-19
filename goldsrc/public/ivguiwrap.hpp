@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018, 2020 BlackPhrase
+ * Copyright (C) 2018, 2020-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,21 +20,21 @@
 
 #pragma once
 
-#include "tier1/interface.h"
+#include <tier1/interface.h>
 
-const char OGS_VGUIWRAP_INTERFACE_VERSION[] = "OGSVGuiWrap001";
+constexpr auto OGS_VGUIWRAP_INTERFACE_VERSION{"OGSVGuiWrap001"};
 
 struct IVGuiWrap : public IBaseInterface
 {
-	///
+	/// Initialize and start the module
 	virtual void Startup() = 0;
 	
-	///
+	/// Shutdown the module
 	virtual void Shutdown() = 0;
 	
 	///
 	//virtual void CallSurfaceProc() = 0;
 	
-	///
+	/// @return a pointer to the main vgui panel to be used by other panels that requires it (on the client dll module side)
 	virtual void *GetPanel() const = 0;
 };
