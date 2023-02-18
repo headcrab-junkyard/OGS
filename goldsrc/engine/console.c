@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018, 2021-2022 BlackPhrase
+ * Copyright (C) 2018, 2021-2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -163,71 +163,6 @@ void Con_Clear_f()
 
 /*
 ================
-Con_Dump_f
-
-Save the console contents out to a file
-================
-*/
-void Con_Dump_f()
-{
-	int l, x;
-	char *line;
-	FileHandle_t f;
-	char buffer[1024];
-	char name[MAX_OSPATH];
-
-	if(Cmd_Argc() != 2)
-	{
-		Con_Printf("usage: condump <filename>\n");
-		return;
-	};
-
-	snprintf(name, sizeof(name), "%s/%s.txt", com_gamedir, Cmd_Argv(1)); // TODO: COM_Gamedir()
-
-	Con_Printf("Dumped console text to %s.\n", name);
-	COM_CreatePath(name);
-	f = FS_Open(name, "w"/*, "GAMEFOLDER"*/); // TODO: FS_OpenPathID?
-	if(!f)
-	{
-		Con_Printf("ERROR: couldn't open.\n");
-		return;
-	}
-
-	// skip empty lines
-	for(l = con_current - con_totallines + 1; l <= con_current; l++)
-	{
-		line = con_text + (l % con_totallines) * con_linewidth;
-		for(x = 0; x < con_linewidth; x++)
-			if(line[x] != ' ')
-				break;
-		if(x != con_linewidth)
-			break;
-	}
-
-	// write the remaining lines
-	buffer[con_linewidth] = 0;
-	for(; l <= con_current; l++)
-	{
-		line = con_text + (l % con_totallines) * con_linewidth;
-		strncpy(buffer, line, con_linewidth);
-		for(x = con_linewidth - 1; x >= 0; x--)
-		{
-			if(buffer[x] == ' ')
-				buffer[x] = 0;
-			else
-				break;
-		}
-		for(x = 0; buffer[x]; x++)
-			buffer[x] &= 0x7f;
-
-		FS_FPrintf(f, "%s\n", buffer);
-	}
-
-	FS_Close(f);
-}
-
-/*
-================
 Con_ClearNotify
 ================
 */
@@ -371,7 +306,7 @@ void Con_Init()
 	Cmd_AddCommand("messagemode2", Con_MessageMode2_f);
 	Cmd_AddCommand("clear", Con_Clear_f);
 	Cmd_AddCommand("condebug", Con_Debug_f);
-	Cmd_AddCommand("condump", Con_Dump_f); // TODO: ghost cmd?
+	//Cmd_AddCommand("condump", Con_Dump_f); // TODO: part of gameui
 	
 	con_initialized = true;
 }
