@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-2001 Id Software, Inc.
- * Copyright (C) 2018-2022 BlackPhrase
+ * Copyright (C) 2018-2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -873,7 +873,19 @@ void Host_Init(quakeparms_t *parms)
 	DELTA_Init();
 	
 	SV_Init();
-	Pmove_Init(&svpmove);
+	PM_Init(&svpmove); // TODO: move inside the SV_Init?
+	
+	// TODO: wrong place?
+	for(int i = 0; i < MAX_HULLS; ++i)
+	{
+		vec3_t mins, maxs;
+		
+		if(gEntityInterface.pfnGetHullBounds(i, &mins, &maxs))
+		{
+			VectorCopy(mins, svpmove.player_mins[i]);
+			VectorCopy(maxs, svpmove.player_maxs[i]);
+		};
+	};
 
 	Con_Printf("Protocol version %d\n", PROTOCOL_VERSION);
 	Con_Printf("Exe version %s/%s (%s)\n", "TODO", "TODO", com_gamedir); // Exe version 1.1.2.2/Stdio (tfc)
