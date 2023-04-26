@@ -97,6 +97,23 @@ cvar_t _snd_mixahead = { "_snd_mixahead", "0.1", true };
 
 cvar_t speak_enabled = {"speak_enabled", "1"}; // TODO: register
 
+//
+
+extern cvar_t room_delay;
+extern cvar_t room_feedback;
+extern cvar_t room_dlylp;
+extern cvar_t room_size;
+extern cvar_t room_refl;
+extern cvar_t room_rvblp;
+extern cvar_t room_left;
+extern cvar_t room_lp;
+extern cvar_t room_mod;
+extern cvar_t room_type;
+extern cvar_t waterroom_type;
+extern cvar_t room_off;
+
+//
+
 // ====================================================================
 // User-setable variables
 // ====================================================================
@@ -205,7 +222,24 @@ void S_Init()
 	Cvar_RegisterVariable(&snd_noextraupdate);
 	Cvar_RegisterVariable(&snd_show);
 	Cvar_RegisterVariable(&_snd_mixahead);
-
+	
+	//
+	
+	Cvar_RegisterVariable(&room_delay);
+	Cvar_RegisterVariable(&room_feedback);
+	Cvar_RegisterVariable(&room_dlylp);
+	Cvar_RegisterVariable(&room_size);
+	Cvar_RegisterVariable(&room_refl);
+	Cvar_RegisterVariable(&room_rvblp);
+	Cvar_RegisterVariable(&room_left);
+	Cvar_RegisterVariable(&room_lp);
+	Cvar_RegisterVariable(&room_mod);
+	Cvar_RegisterVariable(&room_type);
+	Cvar_RegisterVariable(&waterroom_type);
+	Cvar_RegisterVariable(&room_off);
+	
+	//
+	
 	if(host_parms.memsize < 0x800000)
 	{
 		Cvar_Set("loadas8bit", "1");
