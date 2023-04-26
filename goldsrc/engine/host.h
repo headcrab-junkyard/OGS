@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,8 +51,8 @@ extern double host_frametime;
 extern byte *host_basepal;
 extern byte *host_colormap;
 extern int host_framecount; // incremented every frame, never reset
-extern double realtime;     // not bounded in any way, changed at
-                            // start of every frame, never reset
+extern double realtime; // not bounded in any way, changed at
+                        // start of every frame, never reset
 
 void Host_ClearMemory();
 void Host_InitCommands();
@@ -66,7 +66,7 @@ int Host_Frame(float time, int iState, int *stateInfo);
 void Host_Quit_f();
 void Host_ClientCommands(const char *fmt, ...);
 void Host_ShutdownServer(qboolean crash);
-//void Host_WriteConfiguration ();
+//void Host_WriteConfiguration();
 void Host_UpdateStatus(float *fps, int *nActive, /*int *nSpectators*/ int *nMaxPlayers, /*const*/ char *pszMap);
 void Host_EndSection(const char *sName);
 

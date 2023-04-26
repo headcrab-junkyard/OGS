@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018-2021 BlackPhrase
+ * Copyright (C) 2018-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,9 @@
 /// @brief studiorender interface implementation
 
 #include "quakedef.h"
-#include "r_studioint.h"
-#include "studio.h"
+
+#include <common/r_studioint.h>
+#include <engine/studio.h>
 
 int gnForceFaceFlags{0};
 studiohdr_t *gpStudioHdr{nullptr};

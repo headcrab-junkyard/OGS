@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,24 +19,29 @@
 /// @file
 
 #include "quakedef.h"
-#include "BaseUI/IBaseUI.h"
+
+#include <BaseUI/IBaseUI.h>
 
 extern IBaseUI *gpBaseUI;
 
+/*
 void BaseUI_Initialize(void *factories, int count)
 {
-	gpBaseUI->Initialize((CreateInterfaceFn*)factories, count);
+	gpBaseUI->Initialize(reinterpret_cast<CreateInterfaceFn*>(factories), count);
 };
+*/
 
 void BaseUI_Start(struct cl_enginefuncs_s *engineFuncs, int interfaceVersion)
 {
 	gpBaseUI->Start(engineFuncs, interfaceVersion);
 };
 
+/*
 void BaseUI_Shutdown()
 {
 	gpBaseUI->Shutdown();
 };
+*/
 
 int BaseUI_Key_Event(int down, int keynum, const char *pszCurrentBinding)
 {

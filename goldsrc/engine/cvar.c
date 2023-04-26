@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-2001 Id Software, Inc.
- * Copyright (C) 2018, 2020-2021 BlackPhrase
+ * Copyright (C) 2018, 2020-2021, 2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -101,7 +101,7 @@ int Cvar_VariableInt(const char *var_name)
 	var = Cvar_FindVar(var_name);
 	if(!var)
 		return 0;
-	return Q_atoi(var->string); // TODO
+	return Q_atoi(var->string); // TODO: multiply by 0.5?
 };
 
 /*
@@ -220,17 +220,30 @@ void Cvar_RegisterVariable(cvar_t *variable)
 		Con_Printf("Cvar_RegisterVariable: %s is a command\n", variable->name);
 		return;
 	};
-
+	
+	// TODO: non-qw
 	// copy the value off, because future sets will Z_Free it
 	char *oldstr = variable->string;
 	variable->string = Z_Malloc(Q_strlen(variable->string) + 1);
 	Q_strcpy(variable->string, oldstr);
 	variable->value = Q_atof(variable->string);
+	//
 
 	// link the variable in
 	variable->next = cvar_vars;
 	cvar_vars = variable;
-}
+	
+	// TODO: qw below
+	
+	//char value[512];
+	
+	// copy the value off, because future sets will Z_Free it
+	//strcpy(value, variable->string);
+	//variable->string = Z_Malloc(1);
+	
+	// set it through the function to be consistant
+	//Cvar_Set(variable->name, value);
+};
 
 cvar_t *Cvar_AddVariable(const char *name, const char *value, int flags)
 {

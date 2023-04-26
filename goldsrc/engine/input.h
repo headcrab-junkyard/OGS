@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-2001 Id Software, Inc.
- * Copyright (C) 2018-2020, 2022 BlackPhrase
+ * Copyright (C) 2018-2020, 2022-2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,3 +36,7 @@ void IN_ClearStates(); // TODO: not present in Q2
 void IN_Accumulate();
 
 void IN_MouseEvent(int mstate);
+
+// TODO: temp?
+void IN_SetCursorPos(int x, int y);
+void IN_GetCursorPos(int *x, int *y);

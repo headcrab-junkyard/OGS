@@ -77,10 +77,12 @@ extern struct texture_s *r_notexture_mip;
 void R_Init();
 void R_InitTextures();
 void R_InitEfrags();
+void R_InitSky(struct texture_s *mt); // Called at level load
+void R_LoadSkys();
+
 void R_RenderView(); // Must set r_refdef first
 void R_ViewChanged(vrect_t *pvrect, int lineadj, float aspect);
 // Called whenever r_refdef or vid change
-void R_InitSky(struct texture_s *mt); // Called at level load
 
 void R_AddEfrags(cl_entity_t *ent);
 void R_RemoveEfrags(cl_entity_t *ent);

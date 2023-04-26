@@ -35,7 +35,7 @@ static void CD_f() // TODO: CD_Command_f?
 	if(Cmd_Argc() < 2)
 		return;
 
-	char *command = Cmd_Argv(1);
+	const char *command = Cmd_Argv(1);
 	
 	int n;
 	
@@ -47,7 +47,7 @@ static void CD_f() // TODO: CD_Command_f?
 
 	if(Q_strcasecmp(command, "off") == 0)
 	{
-		if(playing)
+		if(cdaudio->playing)
 			CDAudio_Stop();
 		cdaudio->m_bEnabled = false; // TODO: cdaudio->SetActive(false);
 		return;
@@ -56,7 +56,7 @@ static void CD_f() // TODO: CD_Command_f?
 	if(Q_strcasecmp(command, "reset") == 0)
 	{
 		cdaudio->m_bEnabled = true; // TODO: cdaudio->SetActive(true);
-		if(playing)
+		if(cdaudio->playing)
 			CDAudio_Stop();
 		for(n = 0; n < 100; n++)
 			remap[n] = n;
@@ -181,7 +181,7 @@ private:
 	//char cd_dev[64]{"/dev/cdrom"};
 	
 	bool cdValid{false};
-	bool playing{false;
+	bool playing{false};
 	bool wasPlaying{false};
 	bool playLooping{false};
 };

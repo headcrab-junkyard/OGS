@@ -36,20 +36,20 @@ Memory is cleared / released when a server or client begins, not when they end.
 
 quakeparms_t host_parms;
 
-qboolean host_initialized; // true if into command execution
-//qboolean	nomaster;
+qboolean host_initialized; // True if into command execution
+//qboolean nomaster;
 
 double host_frametime;
 double host_time; // TODO: doesn't look like GS use that
-double realtime;    // without any filtering or bounding
-double oldrealtime; // last frame run
+double realtime; // Without any filtering or bounding
+double oldrealtime; // Last frame run
 int host_framecount;
 
 int host_hunklevel;
 
 int minimum_memory;
 
-client_t *host_client; // current client
+client_t *host_client; // Current client
 
 jmp_buf host_abortserver;
 
@@ -68,8 +68,8 @@ cvar_t sv_stats = {"sv_stats", "1"};
 
 cvar_t hostname = {"hostname", "Half-Life"/*, FCVAR_SERVER*/};
 
-cvar_t host_framerate = { "host_framerate", "0" }; // set for slow motion
-cvar_t host_speeds = { "host_speeds", "0" }; // set for running times
+cvar_t host_framerate = { "host_framerate", "0" }; // Set for slow motion
+cvar_t host_speeds = { "host_speeds", "0" }; // Set for running times
 cvar_t host_profile = { "host_profile", "0" };
 
 cvar_t host_killtime = {"host_killtime", "0"};
@@ -79,7 +79,7 @@ cvar_t timelimit = { "timelimit", "0", false, true };
 cvar_t teamplay = { "teamplay", "0", false, true };
 
 #if defined(OGS_DEV) || defined(OGS_DEBUG)
-cvar_t developer = { "developer", "1" }; // show extra messages (should be 0 for release!)
+cvar_t developer = { "developer", "1" }; // Show extra messages (should be 0 for release!)
 #else
 cvar_t developer = { "developer", "0" };
 #endif
@@ -105,6 +105,7 @@ void Host_EndGame(const char *message, ...)
 	va_start(argptr, message);
 	vsprintf(string, message, argptr);
 	va_end(argptr);
+	
 	Con_DPrintf("Host_EndGame: %s\n", string);
 
 	if(sv.active)
@@ -119,7 +120,7 @@ void Host_EndGame(const char *message, ...)
 		CL_Disconnect();
 
 	longjmp(host_abortserver, 1);
-}
+};
 
 /*
 ================

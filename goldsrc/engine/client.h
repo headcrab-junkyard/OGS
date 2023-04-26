@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018-2021 BlackPhrase
+ * Copyright (C) 2018-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,9 @@
 
 /// @file
 
-#include "usercmd.h"
-#include "custom.h"
+#include <usercmd.h>
+#include <custom.h>
+#include <screenfade.h>
 
 /*
 typedef struct
@@ -96,11 +97,15 @@ typedef struct
 	int percent; // 0-256
 } cshift_t;
 
-#define CSHIFT_CONTENTS 0
-#define CSHIFT_DAMAGE 1
-#define CSHIFT_BONUS 2
-#define CSHIFT_POWERUP 3
-#define NUM_CSHIFTS 4
+enum
+{
+	CSHIFT_CONTENTS = 0,
+	CSHIFT_DAMAGE,
+	CSHIFT_BONUS,
+	CSHIFT_POWERUP,
+
+	NUM_CSHIFTS
+};
 
 #define NAME_LENGTH 64
 
@@ -127,9 +132,10 @@ typedef enum {
 	//ca_uninitialized = -1,
 	ca_dedicated = 0,    // a dedicated server with no ability to start a client
 	ca_disconnected, // full screen console with no connection
-	ca_connecting,   // sending request packets to the server
+	ca_connecting,   // sending request packets to the server // TODO: ca_demostart in qw
 	ca_connected,    // valid netcon, talking to a server
-	ca_active
+	//ca_onserver,   // processing data lists, donwloading, etc // TODO: qw
+	ca_active        // everything is in, so frames can be rendered
 } cactive_t;
 
 /*
@@ -282,12 +288,12 @@ typedef struct
 
 	struct model_s *model_precache[MAX_MODELS];
 	struct sfx_s *sound_precache[MAX_SOUNDS];
-	struct event_s *event_precache[MAX_EVENTS];
+	struct event_s *event_precache[MAX_EVENTS]; // TODO: events
 
-	struct usermsg_s *messages[MAX_USERMSGS];
+	struct usermsg_s *messages[MAX_USER_MESSAGES];
 
 	char levelname[40]; // for display on solo scoreboard
-	int viewentity;     // cl_entitites[cl.viewentity] = player
+	int viewentity; // cl_entitites[cl.viewentity] = player
 	int maxclients;
 	int gametype;
 	int playernum;
@@ -327,13 +333,15 @@ typedef struct
 	char clientdllhash[16];
 	char hostname[32];
 	char mapcycle[8192];
+	
+	screenfade_t screenfade; ///< screen fade vars
 } client_state_t;
 
 typedef void (*pfnEventHook)(struct event_args_s *args);
 
 typedef struct event_s
 {
-	const char *name;
+	char name[16];
 	pfnEventHook fnHook;
 } event_t;
 
@@ -347,7 +355,7 @@ extern cvar_t cl_nolerp;
 
 extern cvar_t sensitivity;
 
-#define MAX_TEMP_ENTITIES 64    // lightning bolts, etc
+#define MAX_TEMP_ENTITIES 64 // lightning bolts, etc
 #define MAX_STATIC_ENTITIES 128 // torches, etc
 
 extern client_state_t cl;
@@ -357,7 +365,7 @@ extern playermove_t clpmove;
 
 // FIXME, allocate dynamically
 extern efrag_t cl_efrags[MAX_EFRAGS];
-extern cl_entity_t cl_entities[MAX_EDICTS];
+extern cl_entity_t cl_entities[MAX_EDICTS]; // TODO: make dynamic
 extern cl_entity_t cl_static_entities[MAX_STATIC_ENTITIES];
 extern lightstyle_t cl_lightstyle[MAX_LIGHTSTYLES];
 extern dlight_t cl_dlights[MAX_DLIGHTS];

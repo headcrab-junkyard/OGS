@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018-2021 BlackPhrase
+ * Copyright (C) 2018-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 #include "quakedef.h"
 
 extern cvar_t pausable;
+
+cvar_t HostMap = {"HostMap", ""}; // TODO: register
 
 int current_skill;
 
@@ -104,7 +106,10 @@ void Host_InitializeGameDLL()
 	static qboolean bLoaded = false;
 	
 	if(bLoaded)
+	{
+		Con_DPrintf("Sys_InitializeGameDLL called twice, skipping second call\n");
 		return;
+	};
 	
 	Cbuf_Execute();
 	
@@ -558,7 +563,7 @@ Host_Career_f
 */
 void Host_Career_f()
 {
-	// TODO
+	// TODO: looks like this is the same as a map cmd
 };
 
 /*

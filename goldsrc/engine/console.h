@@ -25,23 +25,44 @@
 // console
 //
 extern int con_totallines;
-extern int con_backscroll;
-extern qboolean con_forcedup; // because no entities to refresh
+extern int con_backscroll; // TODO: non-qw
+extern qboolean con_forcedup; // because no entities to refresh // TODO: non-qw
 extern qboolean con_initialized;
 extern byte *con_chars;
 extern int con_notifylines; // scan lines to clear for notify lines
+
+// TODO: qw
+/*
+#define CON_TEXTSIZE 16384
+
+typedef struct
+{
+	char text[CON_TEXTSIZE];
+	int current;		// line where next message will be printed
+	int x;				// offset in current line for next print
+	int display;		// bottom of console displays this line
+} console_t;
+
+extern console_t con_main;
+extern console_t con_chat;
+extern console_t *con; // point to either con_main or con_chat
+
+extern int con_ormask;
+*/
 
 void Con_DrawCharacter(int cx, int line, int num);
 
 void Con_CheckResize();
 void Con_Init();
-void Con_DrawConsole(int lines, qboolean drawinput);
+void Con_DrawConsole(int lines, qboolean drawinput); // TODO: no drawinput arg in qw
+
 void Con_Print(const char *txt);
 void Con_Printf(const char *fmt, ...);
 void Con_DPrintf(const char *fmt, ...);
 void Con_NPrintf(int anPos, const char *fmt, ...); // TODO
 void Con_NXPrintf(struct con_nprint_s *apInfo, const char *fmt, ...); // TODO
 void Con_SafePrintf(const char *fmt, ...);
+
 void Con_Clear_f();
 void Con_DrawNotify();
 void Con_ClearNotify();

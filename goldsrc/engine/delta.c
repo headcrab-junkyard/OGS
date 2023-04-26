@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -67,7 +67,7 @@ void DELTA_UnsetField(struct delta_s *pFields, const char *fieldname)
 	// TODO
 };
 
-typedef void (*fnEncoderCallback)(struct delta_s *pFields);
+typedef void (*fnEncoderCallback)(struct delta_s *pFields, const byte *pFrom, const byte *pTo);
 
 typedef struct encoder_s
 {
@@ -104,7 +104,7 @@ void DELTA_AddEncoder(char *name, void (*conditionalencode)(struct delta_s *pFie
 int DELTA_FindFieldIndex(struct delta_s *pFields, const char *fieldname)
 {
 	if(!pFields)
-		return;
+		return 0;
 	
 	// TODO
 	
