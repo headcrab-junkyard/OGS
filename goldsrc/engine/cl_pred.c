@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018-2019, 2021-2022 BlackPhrase
+ * Copyright (C) 2018-2019, 2021-2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -127,47 +127,162 @@ void CL_PredictUsercmd(local_state_t *from, local_state_t *to, usercmd_t *u, qbo
 		CL_PredictUsercmd(from, &temp, &split, spectator);
 		CL_PredictUsercmd(&temp, to, &split, spectator);
 		return;
-	}
-
+	};
+	
 	// TODO: clpmove was pmove
+	
+	clpmove.player_index = 0; // TODO: ?
+	
+	clpmove.multiplayer = cl.maxclients > 1; // TODO: should this be here?
+	
+	clpmove.time = realtime;
+	
 	VectorCopy(from->playerstate.origin, clpmove.origin);
-	//	VectorCopy (from->playerstate.angles, clpmove.angles);
+	
+	//VectorCopy(from->playerstate.angles, clpmove.angles); // TODO
 	VectorCopy(u->viewangles, clpmove.angles);
+	
+	VectorCopy(from->playerstate.oldangles, clpmove.oldangles);
+	
 	VectorCopy(from->playerstate.velocity, clpmove.velocity);
 	//VectorCopy(from->playerstate.movedir, clpmove.movedir); // TODO
-
-	clpmove.flags = from->client.flags;
+	
+	VectorCopy(from->playerstate.basevelocity, clpmove.basevelocity);
+	
+	VectorCopy(clpmove.view_ofs, from->client.view_ofs); // TODO: shouldn't args be reverted here?
+	
+	clpmove.flDuckTime = from->client.flDuckTime;
+	clpmove.bInDuck = from->client.bInDuck;
+	
+	clpmove.flTimeStepSound = from->client.flTimeStepSound;
+	
+	clpmove.iStepLeft = from->playerstate.iStepLeft;
+	//clpmove.flFallVelocity = from->playerstate.flFallVelocity; // TODO: will be set by pmove code
+	
+	VectorCopy(from->client.punchangle, clpmove.punchangle);
+	
+	clpmove.flSwimTime = from->client.flSwimTime;
+	clpmove.flNextPrimaryAttack = from->client.m_flNextAttack;
+	clpmove.effects = from->playerstate.effects;
+	
+	clpmove.flags = from->client.flags; // TODO: or eflags of playerstate?
+	
+	clpmove.usehull = from->playerstate.usehull;
+	clpmove.gravity = from->playerstate.gravity;
+	clpmove.friction = from->playerstate.friction;
 	clpmove.oldbuttons = from->playerstate.oldbuttons;
 	clpmove.waterjumptime = from->client.waterjumptime;
+	
 	clpmove.dead = cl.stats[STAT_HEALTH] <= 0;
+	clpmove.deadflag = from->client.deadflag;
+	
 	clpmove.spectator = spectator;
+	
 	clpmove.movetype = from->playerstate.movetype;
-
 	clpmove.onground = from->playerstate.onground;
+	
 	clpmove.waterlevel = from->client.waterlevel;
 	clpmove.watertype = from->client.watertype;
-	VectorCopy(clpmove.view_ofs, from->client.view_ofs);
+	//oldwaterlevel // TODO: will be set by pmove code
+	
+	//sztexturename
+	//chtexturetype
 	
 	clpmove.maxspeed = from->client.maxspeed;
+	//clpmove.clientmaxspeed // TODO: init
+	
+	//clpmove.iuser1 // TODO: init
+	//clpmove.iuser2 // TODO: init
+	//clpmove.iuser3 // TODO: init
+	//iuser4
+	
+	//fuser1
+	//fuser2
+	//fuser3
+	//fuser4
+	
+	//vuser1
+	//vuser2
+	//vuser3
+	//vuser4
+	
+	//numphysent // TODO: init
+	//physents // TODO: init
+	
+	//nummoveent // TODO: init
+	//moveents // TODO: init
+	
+	//numvisent // TODO: init
+	//visents // TODO: init
 	
 	clpmove.cmd = *u;
-
+	
+	//numtouch // NOTE: modified inside of pmove, will be set to 0 by pmove code
+	//touchindex // NOTE: modified inside of pmove
+	
+	Q_strcpy(clpmove.physinfo, from->client.physinfo); // TODO: should this be updated every time?
+	
+	//player_mins // TODO: init
+	//player_maxs // TODO: init
+	
+	//runfuncs
+	
+	// Make a move!
+	
 	ClientDLL_MoveClient(&clpmove); // TODO: was PlayerMove();
+	
+	// Now copy the modified values over to local state
 	
 	//for (i=0 ; i<3 ; i++)
 		//clpmove.origin[i] = ((int)(clpmove.origin[i]*8))*0.125;
 	
+	to->playerstate.iStepLeft = clpmove.iStepLeft;
+	to->playerstate.flFallVelocity = clpmove.flFallVelocity;
+	
+	//runfuncs?
+	
+	to->client.flTimeStepSound = clpmove.flTimeStepSound;
+	
+	//waterlevel?
+	//watertype?
+	
+	to->client.flSwimTime = clpmove.flSwimTime;
+	
 	to->client.waterjumptime = clpmove.waterjumptime;
 	to->playerstate.oldbuttons = clpmove.cmd.buttons;
+	
 	VectorCopy(clpmove.origin, to->playerstate.origin);
 	VectorCopy(clpmove.angles, to->playerstate.angles);
+	
+	// TODO: update the old angles here?
+	
 	VectorCopy(clpmove.velocity, to->playerstate.velocity);
+	VectorCopy(clpmove.basevelocity, to->playerstate.basevelocity);
+	
+	VectorCopy(clpmove.view_ofs, to->client.view_ofs);
+	
+	VectorCopy(clpmove.punchangle, to->client.punchangle);
+	
+	// TODO: clpmove.movedir
+	
 	to->playerstate.onground = clpmove.onground;
-
+	to->playerstate.usehull = clpmove.usehull;
+	to->playerstate.gravity = clpmove.gravity;
+	to->playerstate.friction = clpmove.friction;
+	
+	to->client.flags = clpmove.flags;
+	
+	to->client.bInDuck = clpmove.bInDuck;
+	to->client.flDuckTime = clpmove.flDuckTime;
+	
+	to->playerstate.movetype = clpmove.movetype; // TODO: or not?
+	
+	to->client.maxspeed = clpmove.maxspeed; // TODO: or not?
+	
 	//to->weaponframe = from->weaponframe;
 	
-	qboolean runfuncs = true; // TODO
-	double time = 1.0; // TODO
+	qboolean runfuncs = true; // TODO: should be 1 if this is the first time the command is predicted, then the sounds and effects will play, otherwise, they should be ignored
+	double time = 1.0; // TODO: realtime?
 	uint random_seed = 0; // TODO
 	ClientDLL_PostRunCmd(from, to, u, runfuncs, time, random_seed);
 }
