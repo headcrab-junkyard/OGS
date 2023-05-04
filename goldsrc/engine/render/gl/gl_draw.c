@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,9 +27,14 @@
 extern unsigned char d_15to8table[65536];
 extern cvar_t crosshair, cl_crossx, cl_crossy, crosshaircolor; // TODO
 
-cvar_t gl_nobind = { "gl_nobind", "0" };
-cvar_t gl_max_size = { "gl_max_size", "256", FCVAR_ARCHIVE };
-cvar_t gl_picmip = { "gl_picmip", "0" };
+cvar_t gl_nobind = {"gl_nobind", "0"}; // TODO: remove
+
+cvar_t gl_max_size = {"gl_max_size", "256", FCVAR_ARCHIVE};
+cvar_t gl_round_down = {"gl_round_down", "3", FCVAR_ARCHIVE}; // TODO: unused
+cvar_t gl_picmip = {"gl_picmip", "0", FCVAR_ARCHIVE};
+cvar_t gl_palette_tex = {"gl_palette_tex", "1"}; // TODO: unused
+cvar_t gl_texturemode = {"gl_texturemode", "GL_LINEAR_MIPMAP_LINEAR", FCVAR_ARCHIVE}; // TODO: register as a cvar, set the def value to 0?
+cvar_t gl_ansio = {"gl_ansio", "16", FCVAR_ARCHIVE}; // TODO: unused
 
 byte *draw_chars; // 8*8 graphic characters
 qpic_t *draw_disc;
@@ -386,9 +391,12 @@ void Draw_Init(void)
 	int start;
 	byte *ncdata;
 
-	Cvar_RegisterVariable(&gl_nobind);
 	Cvar_RegisterVariable(&gl_max_size);
+	Cvar_RegisterVariable(&gl_round_down);
 	Cvar_RegisterVariable(&gl_picmip);
+	Cvar_RegisterVariable(&gl_palette_tex);
+	//Cvar_RegisterVariable(&gl_texturemode); // TODO
+	Cvar_RegisterVariable(&gl_ansio);
 
 	// 3dfx can only handle 256 wide textures
 	if(!Q_strncasecmp((char *)gl_renderer, "3dfx", 4) ||

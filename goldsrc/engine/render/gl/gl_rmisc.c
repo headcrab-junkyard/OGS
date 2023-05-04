@@ -230,15 +230,13 @@ R_Init
 */
 void R_Init()
 {
-	extern cvar_t gl_finish; // TODO
-
 	Cmd_AddCommand("timerefresh", R_TimeRefresh_f);
 	Cmd_AddCommand("envmap", R_Envmap_f);
 	Cmd_AddCommand("pointfile", R_ReadPointFile_f);
 	
 	Cmd_AddCommand("gl_dump", GL_Dump_f);
 	Cmd_AddCommand("gl_texels", GL_Texels_f); // TODO: remove?
-	Cmd_AddCommand("gl_texturemode", GL_TextureMode_f);
+	//Cmd_AddCommand("gl_texturemode", GL_TextureMode_f); // TODO: should be cvar, already registered in gl_draw
 	
 	Cvar_RegisterVariable(&r_norefresh);
 	Cvar_RegisterVariable(&r_lightmap);
@@ -252,28 +250,42 @@ void R_Init()
 	Cvar_RegisterVariable(&r_novis);
 	Cvar_RegisterVariable(&r_speeds);
 	//Cvar_RegisterVariable (&r_netgraph); // TODO
+	
+	// TODO: r_decals is mentioned somewhere here
 
-	Cvar_RegisterVariable(&gl_finish);
-	Cvar_RegisterVariable(&gl_clear);
-	Cvar_RegisterVariable(&gl_texsort);
+	Cvar_RegisterVariable(&gl_texsort); // TODO: remove
 
 	if(gl_mtexable)
-		Cvar_SetValue("gl_texsort", 0.0);
-
+		Cvar_SetValue("gl_texsort", 0.0); // TODO: remove?
+	
+	Cvar_RegisterVariable(&gl_clear);
 	Cvar_RegisterVariable(&gl_cull);
-	Cvar_RegisterVariable(&gl_smoothmodels);
 	Cvar_RegisterVariable(&gl_affinemodels);
-	Cvar_RegisterVariable(&gl_polyblend);
 	Cvar_RegisterVariable(&gl_flashblend);
-	Cvar_RegisterVariable(&gl_playermip);
-	Cvar_RegisterVariable(&gl_nocolors);
-
 	Cvar_RegisterVariable(&gl_keeptjunctions);
-	Cvar_RegisterVariable(&gl_reporttjunctions);
-
-	Cvar_RegisterVariable(&gl_doubleeyes);
+	Cvar_RegisterVariable(&gl_wateramp);
+	Cvar_RegisterVariable(&gl_dither);
+	Cvar_RegisterVariable(&gl_spriteblend);
+	Cvar_RegisterVariable(&gl_polyoffset);
+	Cvar_RegisterVariable(&gl_lightholes);
+	Cvar_RegisterVariable(&gl_zmax);
+	Cvar_RegisterVariable(&gl_alphamin);
+	Cvar_RegisterVariable(&gl_overdraw);
+	Cvar_RegisterVariable(&gl_watersides);
+	Cvar_RegisterVariable(&gl_overbright);
+	Cvar_RegisterVariable(&gl_envmapsize);
+	Cvar_RegisterVariable(&gl_flipmatrix);
+	Cvar_RegisterVariable(&gl_monolights);
+	Cvar_RegisterVariable(&gl_fog);
+	Cvar_RegisterVariable(&gl_wireframe);
+	
+	Cvar_RegisterVariable(&gl_ztrick_old);
+	
+	Cvar_RegisterVariable(&gl_vsync);
 
 	//R_InitBubble(); // TODO: qw
+	
+	// TODO: gl_overbright is mentioned somewhere here
 
 	R_InitParticles();
 	R_InitParticleTexture();
