@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-2001 Id Software, Inc.
- * Copyright (C) 2018, 2020-2022 BlackPhrase
+ * Copyright (C) 2018, 2020-2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,52 +42,52 @@ cvar_t localid = { "localid", "" }; // TODO: remove
 
 //
 
-cvar_t ex_interp = {"ex_interp", "0.1", FCVAR_ARCHIVE}; // TODO: register
+cvar_t ex_interp = {"ex_interp", "0.1", FCVAR_ARCHIVE}; // TODO: unused
 
-cvar_t cl_weaponlistfix = {"cl_weaponlistfix", "0"}; // TODO: register
+cvar_t cl_weaponlistfix = {"cl_weaponlistfix", "0"}; // TODO: unused
 
-cvar_t cl_fixtimerate = {"cl_fixtimerate", "7.5"}; // TODO: register
+cvar_t cl_fixtimerate = {"cl_fixtimerate", "7.5"}; // TODO: unused
 
-cvar_t cl_connect_test = {"cl_connect_test", "0"}; // TODO: register?
+cvar_t cl_connect_test = {"cl_connect_test", "0"}; // TODO: unused (register?)
 
-cvar_t cl_needinstanced = {"cl_needinstanced", "0"}; // TODO: register
+cvar_t cl_needinstanced = {"cl_needinstanced", "0"}; // TODO: unused
 
-cvar_t cl_clockreset = {"cl_clockreset", "0.1"}; // TODO: register
+cvar_t cl_clockreset = {"cl_clockreset", "0.1"}; // TODO: unused
 
-cvar_t cl_himodels = {"cl_himodels", "0", FCVAR_ARCHIVE}; // TODO: register
+cvar_t cl_himodels = {"cl_himodels", "0", FCVAR_ARCHIVE}; // TODO: unused
 
-cvar_t cl_gaitestimation = {"cl_gaitestimation", "1"}; // TODO: register
+cvar_t cl_gaitestimation = {"cl_gaitestimation", "1"}; // TODO: unused
 
 cvar_t cl_timeout = { "cl_timeout", "60", FCVAR_ARCHIVE };
 
-cvar_t cl_showmessages = {"cl_showmessages", "0"}; // TODO: register
+cvar_t cl_showmessages = {"cl_showmessages", "0"}; // TODO: unused
 cvar_t show_fps = {"cl_showfps", "0", FCVAR_ARCHIVE}; // set for running times TODO: cl_showfps
-cvar_t cl_showevents = {"cl_showevents", "0"}; // TODO: register
+cvar_t cl_showevents = {"cl_showevents", "0"}; // TODO: unused
 cvar_t cl_shownet = { "cl_shownet", "0" }; // can be 0, 1, or 2
-cvar_t cl_showsizes = {"cl_showsizes", "0"}; // TODO: register
+cvar_t cl_showsizes = {"cl_showsizes", "0"}; // TODO: unused
 
 cvar_t cl_solid_players = { "cl_solid_players", "1" };
 
 cvar_t cl_nodelta = {"cl_nodelta", "0"}; // TODO: register?
-cvar_t cl_idealpitchscale = {"cl_idealpitchscale", "0.8", FCVAR_ARCHIVE}; // TODO: register
+cvar_t cl_idealpitchscale = {"cl_idealpitchscale", "0.8", FCVAR_ARCHIVE}; // TODO: unused
 
 cvar_t rcon_address = {"rcon_address", ""};
 cvar_t rcon_port = {"rcon_port", "0"};
 
-cvar_t cl_resend = {"cl_resend", "6"}; // TODO: register
+cvar_t cl_resend = {"cl_resend", "6"}; // TODO: unused
 
-cvar_t cl_slist = {"cl_slist", "10"}; // TODO: register
+cvar_t cl_slist = {"cl_slist", "10"}; // TODO: unused
 
-cvar_t cl_allowdownload = {"cl_allowdownload", "1", FCVAR_ARCHIVE}; // TODO: register
-cvar_t cl_allowupload = {"cl_allowupload", "1", FCVAR_ARCHIVE}; // TODO: register
+cvar_t cl_allowdownload = {"cl_allowdownload", "1", FCVAR_ARCHIVE}; // TODO: unused
+cvar_t cl_allowupload = {"cl_allowupload", "1", FCVAR_ARCHIVE}; // TODO: unused
 
-cvar_t cl_download_ingame = {"cl_download_ingame", "1", FCVAR_ARCHIVE}; // TODO: register
+cvar_t cl_download_ingame = {"cl_download_ingame", "1", FCVAR_ARCHIVE}; // TODO: unused
 
-cvar_t cl_cmdrate = {"cl_cmdrate", "60", FCVAR_ARCHIVE}; // TODO: register
-cvar_t cl_cmdbackup = {"cl_cmdbackup", "2", FCVAR_ARCHIVE}; // TODO: register
+cvar_t cl_cmdrate = {"cl_cmdrate", "60", FCVAR_ARCHIVE}; // TODO: unused
+cvar_t cl_cmdbackup = {"cl_cmdbackup", "2", FCVAR_ARCHIVE}; // TODO: unused
 
-cvar_t cl_logofile = {"cl_logofile", "lambda", FCVAR_ARCHIVE}; // TODO: register
-cvar_t cl_logocolor = {"cl_logocolor", "orange", FCVAR_ARCHIVE}; // TODO: register
+cvar_t cl_logofile = {"cl_logofile", "lambda", FCVAR_ARCHIVE}; // TODO: unused
+cvar_t cl_logocolor = {"cl_logocolor", "orange", FCVAR_ARCHIVE}; // TODO: unused
 
 //
 // info mirrors
@@ -102,22 +102,21 @@ cvar_t bottomcolor = { "bottomcolor", "0", FCVAR_ARCHIVE | FCVAR_USERINFO };
 cvar_t rate = { "rate", "30000", FCVAR_ARCHIVE | FCVAR_USERINFO };
 cvar_t spectator = { "spectator", "", FCVAR_USERINFO }; // TODO: remove
 
-// TODO: handle
-cvar_t cl_updaterate = { "cl_updaterate", "60", FCVAR_ARCHIVE | FCVAR_USERINFO };
-cvar_t cl_lw = { "cl_lw", "1", FCVAR_ARCHIVE | FCVAR_USERINFO };
-cvar_t cl_lc = { "cl_lc", "1", FCVAR_ARCHIVE | FCVAR_USERINFO };
-cvar_t cl_dlmax = { "cl_dlmax", "512", FCVAR_ARCHIVE | FCVAR_USERINFO };
+cvar_t cl_updaterate = { "cl_updaterate", "60", FCVAR_ARCHIVE | FCVAR_USERINFO }; // TODO: unused
+cvar_t cl_lw = { "cl_lw", "1", FCVAR_ARCHIVE | FCVAR_USERINFO }; // TODO: unused
+cvar_t cl_lc = { "cl_lc", "1", FCVAR_ARCHIVE | FCVAR_USERINFO }; // TODO: unused
+cvar_t cl_dlmax = { "cl_dlmax", "512", FCVAR_ARCHIVE | FCVAR_USERINFO }; // TODO: unused
 
-cvar_t fs_lazy_precache = {"fs_lazy_precache", "0"}; // TODO: register
-cvar_t fs_perf_warnings = {"fs_perf_warnings", "0"}; // TODO: register
-cvar_t fs_startup_timings = {"fs_startup_timings", "0"}; // TODO: register
-cvar_t fs_precache_timings = {"fs_precache_timings", "0"}; // TODO: register
+cvar_t fs_lazy_precache = {"fs_lazy_precache", "0"}; // TODO: unused
+cvar_t fs_perf_warnings = {"fs_perf_warnings", "0"}; // TODO: unused
+cvar_t fs_startup_timings = {"fs_startup_timings", "0"}; // TODO: unused
+cvar_t fs_precache_timings = {"fs_precache_timings", "0"}; // TODO: unused
 
-cvar_t cl_mousegrab = {"cl_mousegrab", "1", FCVAR_ARCHIVE}; // TODO: register
+cvar_t cl_mousegrab = {"cl_mousegrab", "1", FCVAR_ARCHIVE}; // TODO: unused
 
-cvar_t m_rawinput = {"m_rawinput", "0", FCVAR_ARCHIVE}; // TODO: register, wrong place?
+cvar_t m_rawinput = {"m_rawinput", "0", FCVAR_ARCHIVE}; // TODO: unused, wrong place?
 
-cvar_t cl_filterstuffcmd = {"cl_filterstuffcmd", "0", FCVAR_ARCHIVE}; // TODO: register
+cvar_t cl_filterstuffcmd = {"cl_filterstuffcmd", "0", FCVAR_ARCHIVE}; // TODO: unused
 
 //
 
@@ -1489,21 +1488,49 @@ void CL_Init()
 	Pmove_Init(&clpmove);
 
 	//
-	// register our commands
+	// register our variables
 	//
 	
-	//Cvar_RegisterVariable(&cl_warncmd);
-
-	Cvar_RegisterVariable(&cl_shownet);
-	Cvar_RegisterVariable(&show_fps);
+	Cvar_RegisterVariable(&ex_interp);
 	
-	//Cvar_RegisterVariable (&cl_sbar);
+	Cvar_RegisterVariable(&cl_weaponlistfix);
+	Cvar_RegisterVariable(&cl_fixtimerate);
+	//Cvar_RegisterVariable(&cl_connect_test);
+	Cvar_RegisterVariable(&cl_needinstanced);
+	Cvar_RegisterVariable(&cl_clockreset);
+	Cvar_RegisterVariable(&cl_himodels);
+	Cvar_RegisterVariable(&cl_gaitestimation);
 	Cvar_RegisterVariable(&cl_timeout);
+	
+	Cvar_RegisterVariable(&cl_showmessages);
+	Cvar_RegisterVariable(&show_fps);
+	Cvar_RegisterVariable(&cl_showevents);
+	Cvar_RegisterVariable(&cl_shownet);
+	Cvar_RegisterVariable(&cl_showsizes);
+	
+	Cvar_RegisterVariable(&cl_solid_players);
+	//Cvar_RegisterVariable(&cl_nodelta);
+	Cvar_RegisterVariable(&cl_idealpitchscale);
 
 	Cvar_RegisterVariable(&rcon_address);
 	Cvar_RegisterVariable(&rcon_port);
 
-	Cvar_RegisterVariable(&cl_solid_players);
+	Cvar_RegisterVariable(&cl_resend);
+	
+	Cvar_RegisterVariable(&cl_slist);
+	
+	Cvar_RegisterVariable(&cl_allowdownload);
+	Cvar_RegisterVariable(&cl_allowupload);
+	Cvar_RegisterVariable(&cl_download_ingame);
+
+	Cvar_RegisterVariable(&cl_cmdrate);
+	Cvar_RegisterVariable(&cl_cmdbackup);
+
+	Cvar_RegisterVariable(&cl_logofile);
+	Cvar_RegisterVariable(&cl_logocolor);
+	
+	//Cvar_RegisterVariable(&cl_warncmd);
+	//Cvar_RegisterVariable(&cl_sbar);
 
 	//
 	// info mirrors
@@ -1521,7 +1548,22 @@ void CL_Init()
 	Cvar_RegisterVariable(&cl_lc);
 	Cvar_RegisterVariable(&cl_lw);
 	Cvar_RegisterVariable(&cl_updaterate);
+	
+	Cvar_RegisterVariable(&fs_lazy_precache);
+	Cvar_RegisterVariable(&fs_perf_warnings);
+	Cvar_RegisterVariable(&fs_startup_timings);
+	Cvar_RegisterVariable(&fs_precache_timings);
 
+	Cvar_RegisterVariable(&cl_mousegrab);
+	
+	Cvar_RegisterVariable(&m_rawinput);
+
+	Cvar_RegisterVariable(&cl_filterstuffcmd);
+	
+	//
+	// register our commands
+	//
+	
 	Cmd_AddCommand("entities", CL_PrintEntities_f);
 
 	Cmd_AddCommand("gamedir", CL_GameDir_f);
