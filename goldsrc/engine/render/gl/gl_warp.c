@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-2001 Id Software, Inc.
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,6 +41,8 @@ texture_t sky_images[6];
 msurface_t *warpface;
 
 extern cvar_t gl_subdivide_size;
+
+const char *suf[6] = { "rt", "bk", "lf", "ft", "up", "dn" };
 
 void BoundPoly(int numverts, float *verts, vec3_t mins, vec3_t maxs)
 {
@@ -642,8 +644,7 @@ void LoadTGA(FileHandle_t fin)
 R_LoadSkys
 ==================
 */
-const char *suf[6] = { "rt", "bk", "lf", "ft", "up", "dn" };
-void R_LoadSkys(void)
+void R_LoadSkys()
 {
 	int i;
 	FileHandle_t f;
@@ -652,13 +653,22 @@ void R_LoadSkys(void)
 	for(i = 0; i < 6; i++)
 	{
 		GL_Bind(SKY_TEX + i);
-		sprintf(name, "gfx/env/%s%s.tga", "2desert", suf[i]); // TODO: was bkgtst; use sv_skyname.string
+		
+		sprintf(name, "gfx/env/%s%s.bmp", "2desert", suf[i]); // TODO: was bkgtst; use sv_skyname.string
 		f = FS_Open(name, "rb");
+		
 		if(!f)
 		{
-			Con_Printf("Couldn't load %s\n", name);
-			continue;
-		}
+			sprintf(name, "gfx/env/%s%s.tga", "2desert", suf[i]); // TODO: was bkgtst; use sv_skyname.string
+			f = FS_Open(name, "rb");
+			
+			if(!f)
+			{
+				Con_Printf("R_LoadSkys: Couldn't load %s\n", name);
+				continue;
+			};
+		};
+		
 		LoadTGA(f);
 		//		LoadPCX (f);
 
@@ -1020,7 +1030,8 @@ qglDisable (GL_DEPTH_TEST);
 		if(skymins[0][i] >= skymaxs[0][i] || skymins[1][i] >= skymaxs[1][i])
 			continue;
 
-		GL_Bind (sky_images[skytexorder[i]].gl_texturenum); //GL_Bind (sky_images[skytexorder[i]]->texnum); //GL_Bind(SKY_TEX + skytexorder[i]);
+		//GL_Bind (sky_images[skytexorder[i]].gl_texturenum); //GL_Bind (sky_images[skytexorder[i]]->texnum); 
+		GL_Bind(SKY_TEX + skytexorder[i]);
 
 		qglBegin(GL_QUADS);
 		MakeSkyVec(skymins[0][i], skymins[1][i], i);
