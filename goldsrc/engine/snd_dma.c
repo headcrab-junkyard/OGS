@@ -5,7 +5,7 @@
  * Copyright (C) 2007-2008 Kristian Duske
  * Copyright (C) 2010-2011 O. Sezer <sezero@users.sourceforge.net>
  * Copyright (C) 2010-2014 QuakeSpasm developers
- * Copyright (C) 2018, 2021-2022 BlackPhrase
+ * Copyright (C) 2018, 2021-2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -74,17 +74,18 @@ int desired_bits = 16;
 
 int sound_started = 0;
 
-cvar_t s_show = {"s_show", "0"}; // TODO: register
-cvar_t s_a3d = {"s_a3d", "0"}; // TODO: register
-cvar_t s_eax = {"s_eax", "0"}; // TODO: register
+cvar_t s_show = {"s_show", "0"}; // TODO: unused
+
+cvar_t s_a3d = {"s_a3d", "0"}; // TODO: unused
+cvar_t s_eax = {"s_eax", "0"}; // TODO: unused
 
 cvar_t bgmvolume = { "bgmvolume", "1", true };
 cvar_t mp3volume = {"MP3Volume", "0.8", FCVAR_ARCHIVE};
 cvar_t mp3fadetime = {"MP3FadeTime", "2", FCVAR_ARCHIVE};
 cvar_t volume = { "volume", "0.7", true };
-cvar_t suitvolume = {"suitvolume", "0.25", FCVAR_ARCHIVE}; // TODO: register (why it's here?)
+cvar_t suitvolume = {"suitvolume", "0.25", FCVAR_ARCHIVE}; // TODO: unused (why it's here?)
 
-cvar_t hisound = {"hisound", "1", FCVAR_ARCHIVE}; // TODO: register
+cvar_t hisound = {"hisound", "1", FCVAR_ARCHIVE}; // TODO: unused
 cvar_t nosound = { "nosound", "0" };
 cvar_t precache = { "precache", "1" }; // TODO: remove?
 cvar_t loadas8bit = { "loadas8bit", "0" };
@@ -95,7 +96,7 @@ cvar_t snd_noextraupdate = { "snd_noextraupdate", "1" }; // TODO: remove?
 cvar_t snd_show = { "snd_show", "0" }; // TODO: remove?
 cvar_t _snd_mixahead = { "_snd_mixahead", "0.1", true };
 
-cvar_t speak_enabled = {"speak_enabled", "1"}; // TODO: register
+cvar_t speak_enabled = {"speak_enabled", "1"}; // TODO: unused
 
 //
 
@@ -208,20 +209,32 @@ void S_Init()
 	Cmd_AddCommand("stopsound", S_StopAllSoundsC);
 	Cmd_AddCommand("soundlist", S_SoundList);
 	Cmd_AddCommand("soundinfo", S_SoundInfo_f);
-
-	Cvar_RegisterVariable(&nosound);
-	Cvar_RegisterVariable(&volume);
+	
+	//
+	
+	Cvar_RegisterVariable(&s_show);
+	
+	Cvar_RegisterVariable(&s_a3d);
+	Cvar_RegisterVariable(&s_eax);
+	
+	Cvar_RegisterVariable(&bgmvolume);
 	Cvar_RegisterVariable(&mp3volume); // TODO: unused
 	Cvar_RegisterVariable(&mp3fadetime); // TODO: unused
+	Cvar_RegisterVariable(&volume);
+	Cvar_RegisterVariable(&suitvolume);
+	
+	Cvar_RegisterVariable(&hisound);
+	Cvar_RegisterVariable(&nosound);
 	Cvar_RegisterVariable(&precache);
 	Cvar_RegisterVariable(&loadas8bit);
-	Cvar_RegisterVariable(&bgmvolume);
-	Cvar_RegisterVariable(&bgmbuffer);
+	//Cvar_RegisterVariable(&bgmbuffer);
 	Cvar_RegisterVariable(&ambient_level);
 	Cvar_RegisterVariable(&ambient_fade);
 	Cvar_RegisterVariable(&snd_noextraupdate);
 	Cvar_RegisterVariable(&snd_show);
 	Cvar_RegisterVariable(&_snd_mixahead);
+	
+	Cvar_RegisterVariable(&speak_enabled);
 	
 	//
 	
