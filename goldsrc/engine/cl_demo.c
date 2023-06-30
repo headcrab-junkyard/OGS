@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021, 2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,6 +57,58 @@ void CL_StopPlayback()
 		CL_FinishTimeDemo();
 };
 
+// TODO: qw
+/*
+#define dem_cmd		0
+#define dem_read	1
+#define dem_set		2
+*/
+
+// TODO: qw
+/*
+====================
+CL_WriteDemoCmd
+
+Writes the current user cmd
+====================
+*/
+/*
+void CL_WriteDemoCmd (usercmd_t *pcmd)
+{
+	int		i;
+	float	fl;
+	byte	c;
+	usercmd_t cmd;
+
+//Con_Printf("write: %ld bytes, %4.4f\n", msg->cursize, realtime);
+
+	fl = LittleFloat((float)realtime);
+	fwrite (&fl, sizeof(fl), 1, cls.demofile);
+
+	c = dem_cmd;
+	fwrite (&c, sizeof(c), 1, cls.demofile);
+
+	// correct for byte order, bytes don't matter
+	cmd = *pcmd;
+
+	for (i = 0; i < 3; i++)
+		cmd.angles[i] = LittleFloat(cmd.angles[i]);
+	cmd.forwardmove = LittleShort(cmd.forwardmove);
+	cmd.sidemove    = LittleShort(cmd.sidemove);
+	cmd.upmove      = LittleShort(cmd.upmove);
+
+	fwrite(&cmd, sizeof(cmd), 1, cls.demofile);
+
+	for (i=0 ; i<3 ; i++)
+	{
+		fl = LittleFloat (cl.viewangles[i]);
+		fwrite (&fl, 4, 1, cls.demofile);
+	}
+
+	fflush (cls.demofile);
+}
+*/
+
 /*
 ====================
 CL_WriteDemoMessage
@@ -64,22 +116,94 @@ CL_WriteDemoMessage
 Dumps the current net message, prefixed by the length and view angles
 ====================
 */
-void CL_WriteDemoMessage()
+void CL_WriteDemoMessage(/*sizebuf_t *msg*/)
 {
 	int len;
-	int i;
-	float f;
+	
+	//Con_Printf("write: %ld bytes, %4.4f\n", msg->cursize, realtime);
+	
+	// TODO: qw
+	//if(!cls.demorecording)
+		//return;
+	
+	// TODO: qw
+	/*
+	float fl = LittleFloat((float)realtime);
+	fwrite (&fl, sizeof(fl), 1, cls.demofile);
 
+	byte c = dem_read;
+	fwrite (&c, sizeof(c), 1, cls.demofile);
+
+	len = LittleLong (msg->cursize);
+	fwrite (&len, 4, 1, cls.demofile);
+	fwrite (msg->data, msg->cursize, 1, cls.demofile);
+	*/
+	//
 	len = LittleLong(net_message.cursize);
 	fwrite(&len, 4, 1, cls.demofile);
-	for(i = 0; i < 3; i++)
+	
+	float f;
+	for(int i = 0; i < 3; i++)
 	{
 		f = LittleFloat(cl.viewangles[i]);
 		fwrite(&f, 4, 1, cls.demofile);
 	};
 
 	fwrite(net_message.data, net_message.cursize, 1, cls.demofile);
+	//
+	
 	fflush(cls.demofile);
+};
+
+/*
+====================
+CL_GetDemoMessage
+
+  FIXME...
+====================
+*/
+qboolean CL_GetDemoMessage()
+{
+	int r, i;
+	float f;
+	
+	// decide if it is time to grab the next message
+	if(cls.signon == SIGNONS) // allways grab until fully connected
+	{
+		if(cls.timedemo)
+		{
+			if(host_framecount == cls.td_lastframe)
+				return 0; // allready read this frame's message
+			cls.td_lastframe = host_framecount;
+			// if this is the second frame, grab the real td_starttime
+			// so the bogus time on the first frame doesn't count
+			if(host_framecount == cls.td_startframe + 1)
+				cls.td_starttime = realtime;
+		}
+		else if(/* cl.time > 0 && */ cl.time <= cl.mtime[0])
+			return 0; // don't need another message yet
+	};
+
+	// get the next message
+	fread(&net_message.cursize, 4, 1, cls.demofile);
+	VectorCopy(cl.mviewangles[0], cl.mviewangles[1]);
+	for(i = 0; i < 3; i++)
+	{
+		r = fread(&f, 4, 1, cls.demofile);
+		cl.mviewangles[0][i] = LittleFloat(f);
+	};
+
+	net_message.cursize = LittleLong(net_message.cursize);
+	if(net_message.cursize > MAX_MSGLEN)
+		Sys_Error("Demo message > MAX_MSGLEN");
+	r = fread(net_message.data, net_message.cursize, 1, cls.demofile);
+	if(r != 1)
+	{
+		CL_StopPlayback();
+		return false;
+	};
+
+	return true;
 };
 
 /*
@@ -91,50 +215,11 @@ Handles recording and playback of demos, on top of NET_ code
 */
 qboolean CL_GetMessage()
 {
-	int r, i;
-	float f;
-
 	if(cls.demoplayback)
-	{
-		// decide if it is time to grab the next message
-		if(cls.signon == SIGNONS) // allways grab until fully connected
-		{
-			if(cls.timedemo)
-			{
-				if(host_framecount == cls.td_lastframe)
-					return 0; // allready read this frame's message
-				cls.td_lastframe = host_framecount;
-				// if this is the second frame, grab the real td_starttime
-				// so the bogus time on the first frame doesn't count
-				if(host_framecount == cls.td_startframe + 1)
-					cls.td_starttime = realtime;
-			}
-			else if(/* cl.time > 0 && */ cl.time <= cl.mtime[0])
-				return 0; // don't need another message yet
-		};
-
-		// get the next message
-		fread(&net_message.cursize, 4, 1, cls.demofile);
-		VectorCopy(cl.mviewangles[0], cl.mviewangles[1]);
-		for(i = 0; i < 3; i++)
-		{
-			r = fread(&f, 4, 1, cls.demofile);
-			cl.mviewangles[0][i] = LittleFloat(f);
-		};
-
-		net_message.cursize = LittleLong(net_message.cursize);
-		if(net_message.cursize > MAX_MSGLEN)
-			Sys_Error("Demo message > MAX_MSGLEN");
-		r = fread(net_message.data, net_message.cursize, 1, cls.demofile);
-		if(r != 1)
-		{
-			CL_StopPlayback();
-			return false;
-		};
-
-		return true;
-	};
-
+		return CL_GetDemoMessage();
+	
+	int r;
+	
 	// TODO: BYE NETQUAKE!
 	//while(1) // TODO
 	{
@@ -145,14 +230,14 @@ qboolean CL_GetMessage()
 			//return r;
 
 		// discard nop keepalive message
-		if(net_message.cursize == 1 && net_message.data[0] == svc_nop)
-			Con_Printf("<-- server to client keepalive\n");
+		if(net_message.cursize == 1 && net_message.data[0] == svc_nop) // TODO: non-qw
+			Con_Printf("<-- server to client keepalive\n"); // TODO: non-qw
 		//else
 			//break;
 	};
 
-	if(cls.demorecording)
-		CL_WriteDemoMessage();
+	if(cls.demorecording) // TODO: non-qw
+		CL_WriteDemoMessage(/*&net_message*/);
 
 	return true;
 };
@@ -166,8 +251,8 @@ stop recording a demo
 */
 void CL_Stop_f()
 {
-	if(cmd_source != src_command)
-		return;
+	if(cmd_source != src_command) // TODO: non-qw
+		return; // TODO: non-qw
 
 	if(!cls.demorecording)
 	{
@@ -177,8 +262,15 @@ void CL_Stop_f()
 
 	// write a disconnect message to the demo file
 	SZ_Clear(&net_message);
+	//
 	MSG_WriteByte(&net_message, svc_disconnect);
-	CL_WriteDemoMessage();
+	// TODO: qw
+	/*
+	MSG_WriteLong(&net_message, -1); // -1 sequence means out of band
+	MSG_WriteByte(&net_message, svc_disconnect);
+	MSG_WriteString(&net_message, "EndOfDemo");
+	*/
+	CL_WriteDemoMessage(/*&net_message*/);
 
 	// finish up
 	fclose(cls.demofile);
@@ -272,11 +364,9 @@ play [demoname]
 void CL_PlayDemo_f()
 {
 	char name[256];
-	int c;
-	qboolean neg = false;
 
-	if(cmd_source != src_command)
-		return;
+	if(cmd_source != src_command) // TODO: non-qw
+		return; // TODO: non-qw
 
 	if(Cmd_Argc() != 2)
 	{
@@ -294,10 +384,10 @@ void CL_PlayDemo_f()
 	//
 	strcpy(name, Cmd_Argv(1));
 	COM_DefaultExtension(name, ".dem");
-
+	
 	Con_Printf("Playing demo from %s.\n", name);
-	cls.demofile = FS_Open(name, "rb");
-
+	cls.demofile = FS_Open(name, "rb"); // TODO: COM_FOpenFile(name, &cls.demofile); in qw
+	
 	if(!cls.demofile)
 	{
 		Con_Printf("ERROR: couldn't open.\n");
@@ -306,9 +396,18 @@ void CL_PlayDemo_f()
 	};
 
 	cls.demoplayback = true;
-	cls.state = ca_connected;
-	cls.forcetrack = 0;
-
+	cls.state = ca_connected; // TODO: ca_demostart in qw
+	cls.forcetrack = 0; // TODO: non-qw
+	
+	// TODO: qw
+	//Netchan_Setup(&cls.netchan, net_from, 0);
+	//realtime = 0;
+	//
+	// TODO: non-qw
+	//
+	int c;
+	qboolean neg = false;
+	
 	while((c = fgetc((FILE*)cls.demofile)) != '\n') // TODO: was getc
 		if(c == '-')
 			neg = true;
@@ -317,8 +416,10 @@ void CL_PlayDemo_f()
 
 	if(neg)
 		cls.forcetrack = -cls.forcetrack;
+	
 	// ZOID, fscanf is evil
-	//	fscanf (cls.demofile, "%i\n", &cls.forcetrack);
+	//fscanf(cls.demofile, "%i\n", &cls.forcetrack);
+	//
 };
 
 /*
@@ -334,7 +435,6 @@ void CL_ViewDemo_f()
 /*
 ====================
 CL_FinishTimeDemo
-
 ====================
 */
 void CL_FinishTimeDemo()
@@ -346,7 +446,7 @@ void CL_FinishTimeDemo()
 
 	// the first frame didn't count
 	frames = (host_framecount - cls.td_startframe) - 1;
-	time = realtime - cls.td_starttime;
+	time = realtime - cls.td_starttime; // TODO: realtime -> Sys_FloatTime in qw
 	if(!time)
 		time = 1;
 	Con_Printf("%i frames %5.1f seconds %5.1f fps\n", frames, time, frames / time);
@@ -361,8 +461,8 @@ timedemo [demoname]
 */
 void CL_TimeDemo_f()
 {
-	if(cmd_source != src_command)
-		return;
+	if(cmd_source != src_command) // TODO: non-qw
+		return; // TODO: non-qw
 
 	if(Cmd_Argc() != 2)
 	{
@@ -371,11 +471,16 @@ void CL_TimeDemo_f()
 	};
 
 	CL_PlayDemo_f();
+	
+	// TODO: qw
+	//if(cls.state != ca_demostart)
+		//return;
 
 	// cls.td_starttime will be grabbed at the second frame of the demo, so
 	// all the loading time doesn't get counted
 
 	cls.timedemo = true;
+	//cls.td_starttime = 0; // TODO: qw
 	cls.td_startframe = host_framecount;
 	cls.td_lastframe = -1; // get a new message this frame
 };

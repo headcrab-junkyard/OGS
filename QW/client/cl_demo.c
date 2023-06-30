@@ -1,125 +1,8 @@
-/*
-Copyright (C) 1996-1997 Id Software, Inc.
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
-*/
-
-void CL_StopPlayback ()
-{
-	if (!cls.demoplayback)
-		return;
-
-	fclose (cls.demofile);
-	cls.demofile = NULL;
-	cls.state = ca_disconnected;
-	cls.demoplayback = 0;
-
-	if (cls.timedemo)
-		CL_FinishTimeDemo ();
-}
-
-#define dem_cmd		0
-#define dem_read	1
-#define dem_set		2
-
-/*
-====================
-CL_WriteDemoCmd
-
-Writes the current user cmd
-====================
-*/
-void CL_WriteDemoCmd (usercmd_t *pcmd)
-{
-	int		i;
-	float	fl;
-	byte	c;
-	usercmd_t cmd;
-
-//Con_Printf("write: %ld bytes, %4.4f\n", msg->cursize, realtime);
-
-	fl = LittleFloat((float)realtime);
-	fwrite (&fl, sizeof(fl), 1, cls.demofile);
-
-	c = dem_cmd;
-	fwrite (&c, sizeof(c), 1, cls.demofile);
-
-	// correct for byte order, bytes don't matter
-	cmd = *pcmd;
-
-	for (i = 0; i < 3; i++)
-		cmd.angles[i] = LittleFloat(cmd.angles[i]);
-	cmd.forwardmove = LittleShort(cmd.forwardmove);
-	cmd.sidemove    = LittleShort(cmd.sidemove);
-	cmd.upmove      = LittleShort(cmd.upmove);
-
-	fwrite(&cmd, sizeof(cmd), 1, cls.demofile);
-
-	for (i=0 ; i<3 ; i++)
-	{
-		fl = LittleFloat (cl.viewangles[i]);
-		fwrite (&fl, 4, 1, cls.demofile);
-	}
-
-	fflush (cls.demofile);
-}
-
-/*
-====================
-CL_WriteDemoMessage
-
-Dumps the current net message, prefixed by the length and view angles
-====================
-*/
-void CL_WriteDemoMessage (sizebuf_t *msg)
-{
-	int		len;
-	float	fl;
-	byte	c;
-
-//Con_Printf("write: %ld bytes, %4.4f\n", msg->cursize, realtime);
-
-	if (!cls.demorecording)
-		return;
-
-	fl = LittleFloat((float)realtime);
-	fwrite (&fl, sizeof(fl), 1, cls.demofile);
-
-	c = dem_read;
-	fwrite (&c, sizeof(c), 1, cls.demofile);
-
-	len = LittleLong (msg->cursize);
-	fwrite (&len, 4, 1, cls.demofile);
-	fwrite (msg->data, msg->cursize, 1, cls.demofile);
-
-	fflush (cls.demofile);
-}
-
-/*
-====================
-CL_GetDemoMessage
-
-  FIXME...
-====================
-*/
 qboolean CL_GetDemoMessage ()
 {
 	int		r, i, j;
-	float	f;
+	
 	float	demotime;
 	byte	c;
 	usercmd_t *pcmd;
@@ -223,56 +106,6 @@ qboolean CL_GetDemoMessage ()
 	}
 
 	return 1;
-}
-
-/*
-====================
-CL_GetMessage
-
-Handles recording and playback of demos, on top of NET_ code
-====================
-*/
-qboolean CL_GetMessage ()
-{
-	if	(cls.demoplayback)
-		return CL_GetDemoMessage ();
-
-	if (!NET_GetPacket ())
-		return false;
-
-	CL_WriteDemoMessage (&net_message);
-	
-	return true;
-}
-
-
-/*
-====================
-CL_Stop_f
-
-stop recording a demo
-====================
-*/
-void CL_Stop_f ()
-{
-	if (!cls.demorecording)
-	{
-		Con_Printf ("Not recording a demo.\n");
-		return;
-	}
-
-// write a disconnect message to the demo file
-	SZ_Clear (&net_message);
-	MSG_WriteLong (&net_message, -1);	// -1 sequence means out of band
-	MSG_WriteByte (&net_message, svc_disconnect);
-	MSG_WriteString (&net_message, "EndOfDemo");
-	CL_WriteDemoMessage (&net_message);
-
-// finish up
-	fclose (cls.demofile);
-	cls.demofile = NULL;
-	cls.demorecording = false;
-	Con_Printf ("Completed demo\n");
 }
 
 /*
@@ -640,6 +473,7 @@ CL_ReRecord_f
 record <demoname>
 ====================
 */
+/*
 void CL_ReRecord_f ()
 {
 	int		c;
@@ -680,77 +514,4 @@ void CL_ReRecord_f ()
 	CL_Disconnect();
 	CL_BeginServerConnect();
 }
-
-void CL_PlayDemo_f ()
-{
-	char	name[256];
-
-	if (Cmd_Argc() != 2)
-	{
-		Con_Printf ("play <demoname> : plays a demo\n");
-		return;
-	}
-
-//
-// disconnect from server
-//
-	CL_Disconnect ();
-	
-//
-// open the demo file
-//
-	strcpy (name, Cmd_Argv(1));
-	COM_DefaultExtension (name, ".qwd");
-
-	Con_Printf ("Playing demo from %s.\n", name);
-	COM_FOpenFile (name, &cls.demofile);
-	if (!cls.demofile)
-	{
-		Con_Printf ("ERROR: couldn't open.\n");
-		cls.demonum = -1;		// stop demo loop
-		return;
-	}
-
-	cls.demoplayback = true;
-	cls.state = ca_demostart;
-	Netchan_Setup (&cls.netchan, net_from, 0);
-	realtime = 0;
-}
-
-void CL_FinishTimeDemo ()
-{
-	int		frames;
-	float	time;
-	
-	cls.timedemo = false;
-	
-// the first frame didn't count
-	frames = (host_framecount - cls.td_startframe) - 1;
-	time = Sys_FloatTime() - cls.td_starttime;
-	if (!time)
-		time = 1;
-	Con_Printf ("%i frames %5.1f seconds %5.1f fps\n", frames, time, frames/time);
-}
-
-void CL_TimeDemo_f ()
-{
-	if (Cmd_Argc() != 2)
-	{
-		Con_Printf ("timedemo <demoname> : gets demo speeds\n");
-		return;
-	}
-
-	CL_PlayDemo_f ();
-	
-	if (cls.state != ca_demostart)
-		return;
-
-// cls.td_starttime will be grabbed at the second frame of the demo, so
-// all the loading time doesn't get counted
-	
-	cls.timedemo = true;
-	cls.td_starttime = 0;
-	cls.td_startframe = host_framecount;
-	cls.td_lastframe = -1;		// get a new message this frame
-}
-
+*/
