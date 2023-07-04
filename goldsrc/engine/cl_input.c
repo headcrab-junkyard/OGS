@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021, 2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,12 @@ void CL_SendMove(usercmd_t *cmd)
 	if(cl.spectator)
 		Cam_Track(cmd);
 
+	
 	//CL_FinishMove(cmd); // TODO
+	cmd->msec = host_frametime * 1000;
+	if(cmd->msec > 250)
+		cmd->msec = 100;
+	
 
 	Cam_FinishMove(cmd);
 	
@@ -86,6 +91,8 @@ void CL_SendMove(usercmd_t *cmd)
 	MSG_WriteByte(&buf, cmd->impulse);
 	
 	MSG_WriteByte(&buf, cmd->weaponselect);
+	
+	MSG_WriteByte(&buf, cmd->msec);
 
 	//
 	// always dump the first two message, because it may contain leftover inputs from the last level

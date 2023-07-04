@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018-2022 BlackPhrase
+ * Copyright (C) 2018-2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -702,6 +702,9 @@ void SV_ReadClientMove(client_t *host_client, usercmd_t *move)
 		host_client->edict->v.impulse = i;
 
 	// read weapon selection
+	MSG_ReadByte(); // TODO: handle
+	
+	// read time
 	MSG_ReadByte(); // TODO: handle
 }
 
