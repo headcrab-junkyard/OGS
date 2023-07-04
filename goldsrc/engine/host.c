@@ -74,10 +74,6 @@ cvar_t host_profile = { "host_profile", "0" };
 
 cvar_t host_killtime = {"host_killtime", "0"};
 
-cvar_t fraglimit = { "fraglimit", "0", false, true };
-cvar_t timelimit = { "timelimit", "0", false, true };
-cvar_t teamplay = { "teamplay", "0", false, true };
-
 #if defined(OGS_DEV) || defined(OGS_DEBUG)
 cvar_t developer = { "developer", "1" }; // Show extra messages (should be 0 for release!)
 #else
@@ -235,10 +231,6 @@ void Host_InitLocal()
 	Cvar_RegisterVariable(&host_profile);
 	Cvar_RegisterVariable(&host_killtime);
 	Cvar_RegisterVariable(&host_limitlocal);
-	
-	Cvar_RegisterVariable(&fraglimit);
-	Cvar_RegisterVariable(&timelimit);
-	Cvar_RegisterVariable(&teamplay);
 
 	Cvar_RegisterVariable(&developer);
 
