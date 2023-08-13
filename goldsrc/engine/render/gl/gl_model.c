@@ -1,7 +1,8 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018-2021 BlackPhrase
+ * Copyright (C) 2005 A Nourai
+ * Copyright (C) 2018-2021, 2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -435,6 +436,19 @@ void Mod_LoadTextures(lump_t *l)
 				R_InitSky(tx);
 			else
 			{
+				//if(loadmodel->bspversion == HL_BSPVERSION)
+				{
+					if((data = WAD3_LoadTexture(mt)))
+					{
+						//com_netpath[0] = 0;		
+						//int alpha_flag = ISALPHATEX(tx->name) ? TEX_ALPHA : 0; // TODO
+						int alpha_flag = 0;
+						tx->gl_texturenum = GL_LoadTexturePixels(data, tx->name, tx->width, tx->height, texmode | alpha_flag);
+						free(data);
+						continue;
+					};
+				};
+				
 				texture_mode = GL_LINEAR_MIPMAP_NEAREST; //_LINEAR;
 				tx->gl_texturenum = GL_LoadTexture(mt->name, tx->width, tx->height, (byte *)(tx + 1), palette, true, false);
 				texture_mode = GL_LINEAR;

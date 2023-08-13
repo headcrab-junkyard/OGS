@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -72,9 +72,15 @@ extern lumpinfo_t *wad_lumps;
 extern byte *wad_base;
 
 void W_LoadWadFile(const char *filename);
+
 void W_CleanupName(const char *in, char *out);
 lumpinfo_t *W_GetLumpinfo(const char *name);
 void *W_GetLumpName(const char *name);
 void *W_GetLumpNum(int num);
 
 void SwapPic(qpic_t *pic);
+
+// WAD3
+
+void WAD3_LoadTextureWadFile(const char *filename);
+//byte WAD3_LoadTexture(miptex_t *mt);
