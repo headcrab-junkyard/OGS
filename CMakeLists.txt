@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.14)
 project(OGSEngine VERSION 0.6.5)
 
 #####################################################################
@@ -6,12 +6,14 @@ project(OGSEngine VERSION 0.6.5)
 # Define available options
 
 option(OGS_DEV "Developer Build" OFF)
+option(OGS_DEDICATED "Skip building of client-side modules" OFF)
 option(OGS_USE_SDL "Use SDL2 for platform-specific functionality implementation" OFF)
 option(OGS_USE_IMGUI "Use ImGui for internal GUI system implementation" OFF)
+option(OGS_USE_INTERNAL_RENDER "Integrate render code into the engine" ON)
 
+# TODO: these options should be parts of a list
 option(OGS_4554 "4554 preset")
 option(OGS_6153 "6153+ preset")
-option(OGS_DEDICATED "Skip building of client-side modules" OFF)
 
 #####################################################################
 
@@ -72,6 +74,8 @@ endif()
 #find_package(CEF REQUIRED)
 
 find_package(Speex)
+
+#####################################################################
 
 # Set C language standard
 set(CMAKE_C_STANDARD 11)

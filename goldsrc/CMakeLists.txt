@@ -22,8 +22,13 @@ include_directories(
 
 # Add subdirectories
 
+#add_subdirectory(tier0)
+#add_subdirectory(vstdlib)
 
 add_subdirectory(optional)
+
+add_subdirectory(core)
+add_subdirectory(demoplayer)
 
 add_subdirectory(filesystem)
 add_subdirectory(voice) # TODO: isn't it client-side only?

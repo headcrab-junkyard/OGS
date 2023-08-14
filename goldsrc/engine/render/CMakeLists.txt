@@ -1,4 +1,4 @@
-if(OGS_ENGINE_HW)
+if(OGS_ENGINE_HW AND NOT OGS_DEDICATED)
 	add_subdirectory(gl)
 else()
 	add_subdirectory(soft)

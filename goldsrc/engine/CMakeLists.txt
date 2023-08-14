@@ -14,23 +14,25 @@ target_sources(${PROJECT_NAME}
 	PRIVATE ${PROJECT_SOURCES}
 )
 
-if(OGS_USE_SDL)
-	add_subdirectory(sdl2)
+if(NOT OGS_DEDICATED)
+	if(OGS_USE_SDL)
+		add_subdirectory(sdl2)
+	endif()
 	
-	# TODO: input and sound impls still should be taken from the platform-specific sources
-else()
 	if(WIN32)
 		add_subdirectory(win)
 	elseif(UNIX)
 		add_subdirectory(linux)
-	else()
-		add_subdirectory(null)
 	endif()
+	
+	if(OGS_USE_IMGUI)
+		add_subdirectory(imgui)
+	endif()
+else()
+	set(UNSUPPORTED_PLATFORM ON)
 endif()
 
-if(OGS_USE_IMGUI)
-	add_subdirectory(imgui)
-endif()
+add_subdirectory(null)
 
 target_link_libraries(${PROJECT_NAME} ogs-tier1 ogs-mathlib)
 
