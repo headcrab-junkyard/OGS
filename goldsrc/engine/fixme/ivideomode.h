@@ -17,25 +17,12 @@
  */
 
 /// @file
+/// @brief video mode interface
 
-// BP: I don't think we need this crap...
+#pragma once
 
-#include "ivideomode.h"
-
-class CVideoMode_Common : public IVideoMode
+struct IVideoMode
 {
-public:
-	CVideoMode_Common();
-	~CVideoMode_Common();
-	
-	void Init(/*void *pvInstance*/) override;
-};
-
-class CVideoMode_OpenGL final : public CVideoMode_Common
-{
-public:
-	CVideoMode_OpenGL();
-	~CVideoMode_OpenGL();
-
-	void Init(void *pvInstance) override;
+	///
+	virtual void Init(/*void *pvInstance*/) = 0;
 };
