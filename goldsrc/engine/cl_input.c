@@ -24,6 +24,50 @@
 
 //==========================================================================
 
+int MakeChar(int i)
+{
+	i &= ~3;
+	if(i < -127 * 4)
+		i = -127 * 4;
+	if(i > 127 * 4)
+		i = 127 * 4;
+	return i;
+};
+
+/*
+==============
+CL_FinishMove
+==============
+*/
+void CL_FinishMove(usercmd_t *cmd)
+{
+	//
+	// always dump the first two message, because it may contain leftover inputs
+	// from the last level
+	//
+	// TODO: should this be used? having this commented out probably allows the player to keep moving after the level change
+	//if(++cl.movemessages <= 2)
+		//return;
+
+	// Send milliseconds of time to apply the move
+	int ms = host_frametime * 1000;
+	if(ms > 250)
+		ms = 100; // Time was unreasonable
+	cmd->msec = ms;
+	
+	// TODO: the code below is unused for now
+	
+	//
+	// chop down so no extra bits are kept that the server wouldn't get
+	//
+	//cmd->forwardmove = MakeChar(cmd->forwardmove);
+	//cmd->sidemove = MakeChar(cmd->sidemove);
+	//cmd->upmove = MakeChar(cmd->upmove);
+
+	//for(int i = 0; i < 3; i++)
+		//cmd->angles[i] = ((int)(cmd->angles[i]*65536.0/360)&65535) * (360.0/65536.0);
+};
+
 /*
 ==============
 CL_SendMove
@@ -31,21 +75,6 @@ CL_SendMove
 */
 void CL_SendMove(usercmd_t *cmd)
 {
-	int bits;
-
-	// if we are spectator, try autocam
-	if(cl.spectator)
-		Cam_Track(cmd);
-
-	
-	//CL_FinishMove(cmd); // TODO
-	cmd->msec = host_frametime * 1000;
-	if(cmd->msec > 250)
-		cmd->msec = 100;
-	
-
-	Cam_FinishMove(cmd);
-	
 	sizebuf_t buf;
 	byte data[128];
 
@@ -84,7 +113,7 @@ void CL_SendMove(usercmd_t *cmd)
 	//
 	// light level
 	//
-	MSG_WriteByte(&buf, cmd->lightlevel); // TODO: not set properly
+	MSG_WriteByte(&buf, cmd->lightlevel); // TODO: should be equal to cl.light_level
 
 	MSG_WriteShort(&buf, cmd->buttons);
 
@@ -97,11 +126,16 @@ void CL_SendMove(usercmd_t *cmd)
 	//
 	// always dump the first two message, because it may contain leftover inputs from the last level
 	//
+	// TODO: non-qw, qw checks for that a bit earlier
 	//if(++cl.movemessages <= 2)
 		//return;
+	
+	// TODO: qw
+	//if(cls.demorecording)
+		//CL_WriteDemoCmd(cmd);
 
 	//
-	// deliver the message
+	// Deliver the message
 	//
 	Netchan_Transmit(&cls.netchan, buf.cursize, buf.data);
 };

@@ -1421,12 +1421,23 @@ void CL_SendCmd()
 	//	seq_hash = (cls.netchan.outgoing_sequence & 0xffff) ; // ^ QW_CHECK_HASH;
 	seq_hash = cls.netchan.outgoing_sequence;
 
-	if (cls.signon == SIGNONS)
+	
+	if(cls.signon == SIGNONS)
 	{
-		// get basic movement from keyboard
-		ClientDLL_CreateMove(host_frametime, cmd, true); // TODO: passing true here for now; should actually check for "active" (cl.active?)		
-
-		// send the unreliable message
+		//if(ActiveApp && !Minimized) // TODO
+		
+		// Get basic movement from keyboard, mouse and controllers
+		ClientDLL_CreateMove(host_frametime, cmd, true); // TODO: passing true here for now; should actually check for "active" (cl.active?)
+		
+		// If we are spectator, try autocam
+		//if(cl.spectator)
+			//Cam_Track(cmd); // TODO: unused
+		
+		CL_FinishMove(cmd);
+		
+		//Cam_FinishMove(cmd); // TODO: unused
+		
+		// Send the unreliable message
 		CL_SendMove(cmd);
 	};
 
