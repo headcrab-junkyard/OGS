@@ -81,7 +81,7 @@ typedef struct	//this is stored as the cache. an hlmodel_t is generated when dra
 // HL mathlib prototypes:
 void	QuaternionGLAngle(const vec3_t angles, vec4_t quaternion);
 void	QuaternionGLMatrix(float x, float y, float z, float w, vec4_t *GLM);
-//void	UploadTexture(hlmdl_tex_t *ptexture, byte *data, byte *pal);
+//void	UploadTexture(mstudiotexture_t *ptexture, byte *data, byte *pal);
 
 qboolean /*QDECL*/ Mod_LoadStudioModel (model_t *mod, void *buffer, size_t fsize);
 
@@ -105,6 +105,7 @@ int HLMDL_GetAttachment(model_t *model, int tagnum, float *resultmatrix);
 void R_DrawHLModel(cl_entity_t *curent);
 void HLMDL_DrawHitBoxes(cl_entity_t *ent);
 #endif
+
 ///////////////////////////////////////////////
 
 qboolean HLMDL_Trace(struct model_s *model, int hulloverride, framestate_t *framestate, vec3_t axis[3], vec3_t p1, vec3_t p2, vec3_t mins, vec3_t maxs, qboolean capsule, unsigned int against, struct trace_s *trace);
@@ -130,7 +131,6 @@ QuaternionGLAngle - Convert a GL angle to a quaternion matrix
 */
 void QuaternionGLAngle(const vec3_t angles, vec4_t quaternion)
 {
-	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 	float	yaw = angles[2] * 0.5;
 	float	pitch = angles[1] * 0.5;
 	float	roll = angles[0] * 0.5;
@@ -140,7 +140,6 @@ void QuaternionGLAngle(const vec3_t angles, vec4_t quaternion)
 	float	cosp = cos(pitch);
 	float	sinr = sin(roll);
 	float	cosr = cos(roll);
-	/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 	quaternion[0] = sinr * cosp * cosy - cosr * sinp * siny;
 	quaternion[1] = cosr * sinp * cosy + sinr * cosp * siny;
@@ -317,8 +316,13 @@ static void HLMDL_PrepareVerticies (hlmodel_t *model, mstudiomodel_t *amodel, st
 Mod_LoadHLModel - read in the model's constituent parts
 ================
 */
-qboolean /*QDECL*/ Mod_LoadStudioModel(model_t *mod, void *buffer, size_t fsize)
+qboolean /*QDECL*/ Mod_LoadStudioModel(model_t *mod, void *buffer)
 {
+	byte *pin;
+	studiohdr_t *phdr;
+	mstudiotexture_t *ptexture;
+	
+/*
 #ifndef SWDS
 	int i;
 	int body;
@@ -326,11 +330,10 @@ qboolean /*QDECL*/ Mod_LoadStudioModel(model_t *mod, void *buffer, size_t fsize)
 	mstudiotexture_t	*tex;
 #endif
 
-	hlmodel_t *model;
+	//hlmodel_t *model;
 	studiohdr_t *header;
 	studiohdr_t *texheader;
-	mstudiobone_t	*bones;
-	mstudiobonecontroller_t	*bonectls;
+	
 	void *texmem = NULL;
 
 	// load the model into hunk
@@ -339,117 +342,23 @@ qboolean /*QDECL*/ Mod_LoadStudioModel(model_t *mod, void *buffer, size_t fsize)
 
 	header = ZG_Malloc(&mod->memgroup, fsize);
 	memcpy(header, buffer, fsize);
+*/
 
-#if defined(HLSERVER) && (defined(__powerpc__) || defined(__ppc__))
-// this is to let anyone who tries porting it know that there is a serious issue. And I'm lazy.
-#ifdef warningmsg
-#pragma warningmsg("-----------------------------------------")
-#pragma warningmsg("FIXME: No byteswapping on halflife models")	//hah, yeah, good luck with that, you'll need it.
-#pragma warningmsg("-----------------------------------------")
-#endif
-#endif
-
-	if (header->version != 10)
-	{
-		Con_Printf("Error: Cannot load model %s - unknown version %i\n", mod->name, header->version);
-		return false;
-	};
-
-	if (header->numcontrollers > MAX_BONE_CONTROLLERS)
-	{
-		Con_Printf("Error: Cannot load model %s - too many controllers %i\n", mod->name, header->numcontrollers);
-		return false;
-	};
-	if (header->numbones > MAX_BONES)
-	{
-		Con_Printf("Error: Cannot load model %s - too many bones %i\n", mod->name, header->numbones);
-		return false;
-	};
-
-	texheader = NULL;
-	if (!header->numtextures)
-	{
-		size_t fz;
-		char texmodelname[MAX_QPATH];
-		COM_StripExtension(mod->name, texmodelname, sizeof(texmodelname));
-		Q_strncatz(texmodelname, "T.mdl", sizeof(texmodelname));
-		// no textures? eesh. They must be stored externally.
-		texheader = texmem = (studiohdr_t*)FS_LoadMallocFile(texmodelname, &fz);
-		if (texheader)
-		{
-			if (texheader->version != 10)
-				texheader = NULL;
-		};
-	};
-
-	if (!texheader)
-		texheader = header;
-	else
-		header->numtextures = texheader->numtextures;
-
-	bones = (mstudiobone_t *) ((qbyte *) header + header->boneindex);
-	bonectls = (mstudiobonecontroller_t *) ((qbyte *) header + header->controllerindex);
-
-	model->header = header;
-	model->bones = bones;
-	model->bonectls = bonectls;
-
-#ifndef SWDS
-	tex = (mstudiotexture_t *) ((qbyte *) texheader + texheader->textures);
-
-	shaders = ZG_Malloc(&mod->memgroup, texheader->numtextures*sizeof(shader_t));
-	model->shaders = shaders;
-	for(i = 0; i < texheader->numtextures; i++)
-	{
-		Q_snprintfz(shaders[i].name, sizeof(shaders[i].name), "%s/%s", mod->name, COM_SkipPath(tex[i].name));
-		memset(&shaders[i].defaulttex, 0, sizeof(shaders[i].defaulttex));
-		shaders[i].defaulttex.base = Image_GetTexture(shaders[i].name, "", IF_NOALPHA, (qbyte *) texheader + tex[i].offset, (qbyte *) texheader + tex[i].w * tex[i].h + tex[i].offset, tex[i].w, tex[i].h, TF_8PAL24);
-		shaders[i].w = tex[i].w;
-		shaders[i].h = tex[i].h;
-	};
-
-	model->numskinrefs = texheader->skinrefs;
-	model->numskingroups = texheader->skingroups;
-	model->skinref = ZG_Malloc(&mod->memgroup, model->numskinrefs*model->numskingroups*sizeof(*model->skinref));
-	memcpy(model->skinref, (short *) ((qbyte *) texheader + texheader->skins), model->numskinrefs*model->numskingroups*sizeof(*model->skinref));
-#endif
-
-	if (texmem)
-		Z_Free(texmem);
-
-	mod->funcs.NativeContents = HLMDL_Contents;
-	mod->funcs.NativeTrace = HLMDL_Trace;
-	mod->type = mod_halflife;
-	mod->numframes = model->header->numseq;
-	mod->meshinfo = model;
-
-#ifndef SWDS
-	model->numgeomsets = model->header->numbodyparts;
-	model->geomset = ZG_Malloc(&mod->memgroup, sizeof(*model->geomset) * model->numgeomsets);
-	for (body = 0; body < model->numgeomsets; body++)
-	{
-		mstudiobodyparts_t	*bodypart = (mstudiobodyparts_t *) ((qbyte *) model->header + model->header->bodypartindex) + body;
-		int					bodyindex;
-		model->geomset[body].numalternatives = bodypart->nummodels;
-		model->geomset[body].alternatives = ZG_Malloc(&mod->memgroup, sizeof(*model->geomset[body].alternatives) * bodypart->nummodels);
-		for (bodyindex = 0; bodyindex < bodypart->nummodels; bodyindex++)
-		{
-			mstudiomodel_t		*amodel = (mstudiomodel_t *) ((qbyte *) model->header + bodypart->modelindex) + bodyindex;
-			model->geomset[body].alternatives[bodyindex].numsubmeshes = amodel->nummesh;
-			model->geomset[body].alternatives[bodyindex].submesh = ZG_Malloc(&mod->memgroup, sizeof(*model->geomset[body].alternatives[bodyindex].submesh) * amodel->nummesh);
-			HLMDL_PrepareVerticies(model, amodel, &model->geomset[body].alternatives[bodyindex]);
-		};
-	};
-	// FIXME: No VBOs used.
-#endif
-	return true;
+	buffer = Hunk_AllocTempName(size);
+	if(!buffer)
+		return 0;
+	
+	pin = (byte*)buffer;
+	phdr = (studiohdr_t*)pin;
+	ptexture = (mstudiotexture_t*)(pin + phdr->textureindex);
 };
 
 #ifdef HLSERVER
 void *Mod_GetHalfLifeModelData(model_t *mod)
 {
 	hlmodelcache_t *mc;
-	if (!mod || mod->type != mod_halflife)
+	
+	if (!mod || mod->type != mod_studio)
 		return NULL;	// halflife models only, please
 
 	mc = Mod_Extradata(mod);
@@ -463,7 +372,7 @@ int HLMDL_FrameForName(model_t *mod, const char *name)
 	studiohdr_t *h;
 	mstudioseqdesc_t *seqs;
 	hlmodel_t *mc;
-	if (!mod || mod->type != mod_halflife)
+	if (!mod || mod->type != mod_studio)
 		return -1;	// halflife models only, please
 
 	mc = Mod_Extradata(mod);
@@ -500,7 +409,7 @@ int HLMDL_BoneForName(model_t *mod, const char *name)
 	studiohdr_t *h;
 	mstudiobone_t *bones;
 	hlmodel_t *mc;
-	if (!mod || mod->type != mod_halflife)
+	if (!mod || mod->type != mod_studio)
 		return -1;	// halflife models only, please
 
 	mc = Mod_Extradata(mod);
@@ -541,10 +450,8 @@ void HL_CalculateBones
 
 		if(animation->offset[i] != 0)
 		{
-			/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 			int					tempframe;
 			mstudioanimvalue_t	*animvalue = (mstudioanimvalue_t *) ((qbyte *) animation + animation->offset[i]);
-			/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 			/* find values including the required frame */
 			tempframe = frame;
@@ -928,7 +835,7 @@ void HL_SetupBones(hlmodel_t *model, int seqnum, int firstbone, int lastbone, fl
 int HLMDL_GetNumBones(model_t *mod, qboolean tags)
 {
 	hlmodel_t *mc;
-	if (!mod || mod->type != mod_halflife)
+	if (!mod || mod->type != mod_studio)
 		return -1;	// halflife models only, please
 
 	mc = Mod_Extradata(mod);
