@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-2001 Id Software, Inc.
- * Copyright (C) 2018-2019 BlackPhrase
+ * Copyright (C) 2018-2019, 2021-2022, 2024 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -75,30 +75,6 @@ void Sys_PageIn(void *ptr, int size)
 	};
 };
 #endif
-
-void Sys_InitAuthentication(){
-	// TODO
-};
-
-void Sys_ShutdownAuthentication(){
-	// TODO
-};
-
-void Sys_InitLauncherInterface(){
-	// TODO
-};
-
-void Sys_ShutdownLauncherInterface(){
-	// TODO
-};
-
-void Sys_InitMemory(){
-	// TODO
-};
-
-void Sys_ShutdownMemory(){
-	// TODO
-};
 
 /*
 ================

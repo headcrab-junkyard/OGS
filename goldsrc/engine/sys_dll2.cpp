@@ -1,6 +1,7 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018, 2020-2021 BlackPhrase
+ * Copyright (C) 1996-1997 Id Software, Inc.
+ * Copyright (C) 2018, 2020-2024 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +28,8 @@
 #include "iengine.h"
 #include "igame.h"
 
+#include "traceinit.h"
+
 qboolean gbDedicatedServer{false};
 
 char *gsPostRestartCmdLineArgs{nullptr};
@@ -37,6 +40,78 @@ IDedicatedExports *gpDedicatedExports{nullptr};
 {
 	if(gpDedicatedExports)
 		gpDedicatedExports->Sys_Printf(text);
+};
+
+/*
+================
+Sys_InitMemory
+================
+*/
+void Sys_InitMemory()
+{
+	host_parms.memsize = 128 * 1024 * 1024; // TODO: 128Mb; should the dedicated server use the same amount?
+	
+	int t;
+	
+	if((t = COM_CheckParm("-heapsize")) != 0 && t + 1 < com_argc)
+		host_parms.memsize = Q_atoi(com_argv[t + 1]) * 1024;
+	
+	// TODO: -minmemory
+	
+	host_parms.membase = malloc(host_parms.memsize);
+	
+	if(!host_parms.membase)
+		Sys_Error("Insufficient memory.\n");
+};
+
+/*
+================
+Sys_ShutdownMemory
+================
+*/
+void Sys_ShutdownMemory()
+{
+	// TODO
+};
+
+/*
+================
+Sys_InitLauncherInterface
+================
+*/
+void Sys_InitLauncherInterface()
+{
+	// TODO
+};
+
+/*
+================
+Sys_ShutdownLauncherInterface
+================
+*/
+void Sys_ShutdownLauncherInterface()
+{
+	// TODO
+};
+
+/*
+================
+Sys_InitAuthentication
+================
+*/
+void Sys_InitAuthentication()
+{
+	// TODO: STEAM Auth Server
+};
+
+/*
+================
+Sys_ShutdownAuthentication
+================
+*/
+void Sys_ShutdownAuthentication()
+{
+	// TODO
 };
 
 void Sys_InitGame(const char *lpOrgCmdLine, const char *pBaseDir /*TODO: szBaseDir?*/, void *pwnd, int bIsDedicated)
@@ -50,27 +125,22 @@ void Sys_InitGame(const char *lpOrgCmdLine, const char *pBaseDir /*TODO: szBaseD
 	//signal(SIGFPE, floating_point_exception_handler); // TODO
 	signal(SIGFPE, SIG_IGN);
 #endif
-
-#ifdef OGS_EVOL
-	host_parms.memsize = 512*1024*1024; // TODO: 512Mb // TODO: 256?
-#else
-	host_parms.memsize = 128*1024*1024; // TODO: 128Mb; should the dedicated server use the same amount?
-#endif
-
-	int t;
 	
-	if((t = COM_CheckParm ("-heapsize")) != 0 && t + 1 < com_argc)
-		host_parms.memsize = Q_atoi (com_argv[t + 1]) * 1024;
-
-	/*
-	if ((t = COM_CheckParm ("-mem")) != 0 && t + 1 < com_argc)
-		host_parms.memsize = Q_atoi (com_argv[t + 1]) * 1024 * 1024;
-	*/
-
-	host_parms.membase = malloc(host_parms.memsize);
+	isDedicated = bIsDedicated;
 	
-	if(!host_parms.membase)
-		Sys_Error("Insufficient memory.\n");
+	if(isDedicated)
+		cls.state = ca_dedicated;
+	
+	TraceInit("Sys_Shutdown()", "Sys_Init()");
+	Sys_Init();
+	
+	// TODO: "Launcher" static string here
+	
+	TraceInit("Sys_ShutdownMemory()", "Sys_InitMemory()");
+	Sys_InitMemory();
+	
+	TraceInit("Sys_ShutdownLauncherInterface()", "Sys_InitLauncherInterface()");
+	Sys_InitLauncherInterface();
 	
 	host_parms.basedir = (char*)pBaseDir;
 	
@@ -84,31 +154,53 @@ void Sys_InitGame(const char *lpOrgCmdLine, const char *pBaseDir /*TODO: szBaseD
 	
 	host_parms.cachedir = NULL; // TODO
 	
-	Sys_InitArgv((char*)lpOrgCmdLine);
 	
-	//host_parms.argc = com_argc; // TODO: already done in Sys_InitArgv
-	//host_parms.argv = com_argv; // TODO: already done in Sys_InitArgv
 	
-	isDedicated = bIsDedicated;
-	
-	if(isDedicated)
-		cls.state = ca_dedicated;
-	
-	//printf("Host_Init\n");
+	TraceInit("Host_Shutdown()", "Host_Init( &host_parms )");
 	Host_Init(&host_parms);
 	
-	//oldtime = Sys_FloatTime();
+	TraceInit("Sys_ShutdownAuthentication()", "Sys_InitAuthentication()");
+	Sys_InitAuthentication();
 	
-	//if(isDedicated) // TODO: only for dedicated mode!
+	//oldtime = Sys_FloatTime(); // TODO
+	
 		Host_InitializeGameDLL();
 		NET_Config(true);
 };
 
+void Sys_ShutdownGame()
+{
+	TraceShutdown("Host_Shutdown()");
+	Host_Shutdown();
+	
+	TraceShutdown("Sys_ShutdownLauncherInterface()");
+	Sys_ShutdownLauncherInterface();
+	
+	TraceShutdown("Sys_ShutdownAuthentication()");
+	Sys_ShutdownAuthentication();
+	
+	TraceShutdown("Sys_ShutdownMemory()");
+	Sys_ShutdownMemory();
+	
+	TraceShutdown("Sys_Shutdown()");
+	Sys_Shutdown();
+};
+
 int RunListenServer(void *instance, const char *basedir, const char *cmdline, char *postRestartCmdLineArgs, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory)
 {
-	// TODO: Whole bunch of Sys_Init* calls?
-
+	// TODO: make sized
+	const char *OrigCmd = cmdline;
+	
+	TraceInit("Sys_ShutdownArgv()", "Sys_InitArgv( OrigCmd )");
+	Sys_InitArgv((char*)lpOrgCmdLine); // TODO: was COM_InitArgv(c, v);
+	
+	//host_parms.argc = com_argc; // TODO: already done in Sys_InitArgv
+	//host_parms.argv = com_argv; // TODO: already done in Sys_InitArgv
+	
+	TraceInit("FileSystem_Shutdown()", "FileSystem_Init(basedir, (void *)filesystemFactory)");
 	FileSystem_Init(basedir, (void*)filesystemFactory);
+	
+	// TODO: exec something? "exec %s"
 	
 	gpGame->CreateGameWindow();
 
@@ -121,8 +213,14 @@ int RunListenServer(void *instance, const char *basedir, const char *cmdline, ch
 	gpEngine->Unload();
 
 	// TODO: IGame::DestroyGameWindow()?
-
+	
+	// TODO: CrashInitializingVideoMode  CrashInitializingVideoMode
+	
+	TraceShutdown("FileSystem_Shutdown()");
 	FileSystem_Shutdown();
+	
+	TraceShutdown("Sys_ShutdownArgv()");
+	Sys_ShutdownArgv();
 	
 	// TODO: Whole bunch of Sys_Shutdown* calls?
 
@@ -252,6 +350,8 @@ public:
 	void AddConsoleText(const char *text) override;
 
 	void UpdateStatus(float *fps, int *nActive, int *nMaxPlayers, /*const*/ char *pszMap) override;
+private:
+	const char *m_OrigCmd{nullptr}; // TODO: make sized?
 };
 
 EXPOSE_SINGLE_INTERFACE(CDedicatedServerAPI, IDedicatedServerAPI, VENGINE_HLDS_API_VERSION);
@@ -266,11 +366,22 @@ bool CDedicatedServerAPI::Init(const char *basedir, const char *cmdline, CreateI
 	if(!gpDedicatedExports)
 		return false;
 	
-	FileSystem_Init(basedir, (void*)filesystemFactory);
+	// TODO: check for "-nobreakpad"
+	
+	
+	m_OrigCmd = cmdline;
+	
+	TraceInit("Sys_ShutdownArgv()", "Sys_InitArgv( m_OrigCmd )");
+	Sys_InitArgv(m_OrigCmd);
+	
+	TraceInit("FileSystem_Shutdown()", "FileSystem_Init(basedir, (void*)filesystemFactory");
+	FileSystem_Init(basedir, reinterpret_cast<void*>(filesystemFactory));
 	
 	if(!gpEngine->Load(true, basedir, cmdline))
 		return false;
-
+	
+	// TODO: "exec %s" here (or during shutdown), mb some server config
+	
 	return true;
 };
 
@@ -278,8 +389,12 @@ int CDedicatedServerAPI::Shutdown()
 {
 	gpEngine->Unload();
 	
+	TraceShutdown("FileSystem_Shutdown()");
 	FileSystem_Shutdown();
-
+	
+	TraceShutdown("Sys_ShutdownArgv()");
+	Sys_ShutdownArgv();
+	
 	return 0;
 };
 
