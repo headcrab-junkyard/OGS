@@ -43,6 +43,106 @@ IDedicatedExports *gpDedicatedExports{nullptr};
 };
 
 /*
+=============
+Sys_Init
+
+Engine calls this so the system can register variables before host_hunklevel
+is marked
+=============
+*/
+void Sys_Init()
+{
+#ifdef _WIN32
+	LARGE_INTEGER PerformanceFreq;
+	unsigned int lowpart, highpart;
+	OSVERSIONINFO vinfo;
+
+// TODO: this should be somewhere else
+/*
+#ifndef SWDS
+	// allocate a named semaphore on the client so the
+	// front end can tell if it is alive
+
+	// mutex will fail if semephore allready exists
+    qwclsemaphore = CreateMutex(
+        NULL,         // Security attributes
+        0,            // owner
+        "qwcl"); // Semaphore name
+	if (!qwclsemaphore)
+		Sys_Error ("QWCL is already running on this system");
+	CloseHandle (qwclsemaphore);
+
+    qwclsemaphore = CreateSemaphore(
+        NULL,         // Security attributes
+        0,            // Initial count
+        1,            // Maximum count
+        "qwcl"); // Semaphore name
+#endif
+*/
+
+	MaskExceptions();
+	Sys_SetFPCW();
+
+	if(!QueryPerformanceFrequency(&PerformanceFreq))
+		Sys_Error("No hardware timer available");
+
+	// get 32 out of the 64 time bits such that we have around
+	// 1 microsecond resolution
+	lowpart = (unsigned int)PerformanceFreq.LowPart;
+	highpart = (unsigned int)PerformanceFreq.HighPart;
+	lowshift = 0;
+
+	while(highpart || (lowpart > 2000000.0))
+	{
+		lowshift++;
+		lowpart >>= 1;
+		lowpart |= (highpart & 1) << 31;
+		highpart >>= 1;
+	};
+
+	pfreq = 1.0 / (double)lowpart;
+
+	Sys_InitFloatTime();
+
+	vinfo.dwOSVersionInfoSize = sizeof(vinfo);
+
+	if(!GetVersionEx(&vinfo))
+		Sys_Error("Couldn't get OS info");
+	
+	// TODO
+	//if((vinfo.dwMajorVersion < 4) || (vinfo.dwPlatformId == VER_PLATFORM_WIN32s))
+		//Sys_Error("WinQuake requires at least Win95 or NT 4.0");
+
+	if(vinfo.dwPlatformId == VER_PLATFORM_WIN32_NT)
+		WinNT = true;
+	else
+		WinNT = false;
+	
+#ifdef SWDS
+	//Cvar_RegisterVariable (&sys_nostdout);
+#endif
+
+#else // if linux or sun or something else
+#	if id386
+	Sys_SetFPCW();
+#	endif
+	
+	//Cvar_RegisterVariable(&sys_nostdout);
+	//Cvar_RegisterVariable(&sys_extrasleep);
+#endif // _WIN32
+};
+
+/*
+=============
+Sys_Shutdown
+=============
+*/
+void Sys_Shutdown()
+{
+	// TODO
+};
+
+/*
 ================
 Sys_InitMemory
 ================
@@ -61,7 +161,7 @@ void Sys_InitMemory()
 	host_parms.membase = malloc(host_parms.memsize);
 	
 	if(!host_parms.membase)
-		Sys_Error("Insufficient memory.\n");
+		Sys_Error("Insufficient memory.\n"); // TODO
 };
 
 /*
@@ -71,7 +171,15 @@ Sys_ShutdownMemory
 */
 void Sys_ShutdownMemory()
 {
-	// TODO
+	if(host_parms.membase)
+	{
+		free(host_parms.membase);
+		host_parms.membase = nullptr;
+	};
+	
+	host_parms.memsize = 0;
+	
+	// TODO: something else?
 };
 
 /*
@@ -119,7 +227,8 @@ void Sys_InitGame(const char *lpOrgCmdLine, const char *pBaseDir /*TODO: szBaseD
 	// TODO: pwnd should be handled
 	// TODO: &mainwindow = pwnd;?
 	
-	memset(&host_parms, 0, sizeof(host_parms));
+	// TODO: move somewhere else
+	//Q_memset(&host_parms, 0, sizeof(host_parms));
 
 #ifdef __linux__
 	//signal(SIGFPE, floating_point_exception_handler); // TODO
@@ -164,8 +273,11 @@ void Sys_InitGame(const char *lpOrgCmdLine, const char *pBaseDir /*TODO: szBaseD
 	
 	//oldtime = Sys_FloatTime(); // TODO
 	
+	if(isDedicated) // TODO: cl.state == ca_dedicated?
+	{
 		Host_InitializeGameDLL();
 		NET_Config(true);
+	};
 };
 
 void Sys_ShutdownGame()
@@ -192,7 +304,7 @@ int RunListenServer(void *instance, const char *basedir, const char *cmdline, ch
 	const char *OrigCmd = cmdline;
 	
 	TraceInit("Sys_ShutdownArgv()", "Sys_InitArgv( OrigCmd )");
-	Sys_InitArgv((char*)lpOrgCmdLine); // TODO: was COM_InitArgv(c, v);
+	Sys_InitArgv((char*)OrigCmd); // TODO: was COM_InitArgv(c, v);
 	
 	//host_parms.argc = com_argc; // TODO: already done in Sys_InitArgv
 	//host_parms.argv = com_argv; // TODO: already done in Sys_InitArgv
@@ -200,18 +312,20 @@ int RunListenServer(void *instance, const char *basedir, const char *cmdline, ch
 	TraceInit("FileSystem_Shutdown()", "FileSystem_Init(basedir, (void *)filesystemFactory)");
 	FileSystem_Init(basedir, (void*)filesystemFactory);
 	
-	// TODO: exec something? "exec %s"
-	
 	gpGame->CreateGameWindow();
-
+	
 	if(!gpEngine->Load(false, basedir, cmdline))
 		return EXIT_FAILURE;
-
+	
+	// Execute the listen server config
+	Cbuf_AddText(va("exec %s", lservercfgfile.string)); // TODO: Cbuf_InsertText?
+	Cbuf_Execute();
+	
 	while(true)
 		gpEngine->Frame();
-
+	
 	gpEngine->Unload();
-
+	
 	// TODO: IGame::DestroyGameWindow()?
 	
 	// TODO: CrashInitializingVideoMode  CrashInitializingVideoMode
@@ -222,8 +336,6 @@ int RunListenServer(void *instance, const char *basedir, const char *cmdline, ch
 	TraceShutdown("Sys_ShutdownArgv()");
 	Sys_ShutdownArgv();
 	
-	// TODO: Whole bunch of Sys_Shutdown* calls?
-
 	return EXIT_SUCCESS;
 };
 
@@ -374,13 +486,15 @@ bool CDedicatedServerAPI::Init(const char *basedir, const char *cmdline, CreateI
 	TraceInit("Sys_ShutdownArgv()", "Sys_InitArgv( m_OrigCmd )");
 	Sys_InitArgv(m_OrigCmd);
 	
-	TraceInit("FileSystem_Shutdown()", "FileSystem_Init(basedir, (void*)filesystemFactory");
+	TraceInit("FileSystem_Shutdown()", "FileSystem_Init(basedir, (void*)filesystemFactory)");
 	FileSystem_Init(basedir, reinterpret_cast<void*>(filesystemFactory));
 	
 	if(!gpEngine->Load(true, basedir, cmdline))
 		return false;
 	
-	// TODO: "exec %s" here (or during shutdown), mb some server config
+	// Execute the dedicated server config
+	Cbuf_AddText(va("exec %s", servercfgfile.string)); // TODO: Cbuf_InsertText?
+	Cbuf_Execute();
 	
 	return true;
 };

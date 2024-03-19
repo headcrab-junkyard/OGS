@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018-2021 BlackPhrase
+ * Copyright (C) 2018-2024 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
  */
 
 /// @file
+
+#pragma once
 
 #include "usercmd.h"
 
@@ -201,6 +203,9 @@ extern cvar_t deathmatch;
 extern cvar_t coop;
 extern cvar_t fraglimit;
 extern cvar_t timelimit;
+
+extern cvar_t servercfgfile;
+extern cvar_t lservercfgfile;
 
 extern server_static_t svs; // persistant server info
 extern server_t sv;         // local server

@@ -100,93 +100,6 @@ void Sys_InitFloatTime()
 #endif // _WIN32
 
 /*
-================
-Sys_Init
-================
-*/
-void Sys_Init()
-{
-#ifdef _WIN32
-	LARGE_INTEGER PerformanceFreq;
-	unsigned int lowpart, highpart;
-	OSVERSIONINFO vinfo;
-
-// TODO
-/*
-#ifndef SWDS
-	// allocate a named semaphore on the client so the
-	// front end can tell if it is alive
-
-	// mutex will fail if semephore allready exists
-    qwclsemaphore = CreateMutex(
-        NULL,         // Security attributes
-        0,            // owner
-        "qwcl"); // Semaphore name
-	if (!qwclsemaphore)
-		Sys_Error ("QWCL is already running on this system");
-	CloseHandle (qwclsemaphore);
-
-    qwclsemaphore = CreateSemaphore(
-        NULL,         // Security attributes
-        0,            // Initial count
-        1,            // Maximum count
-        "qwcl"); // Semaphore name
-#endif
-*/
-
-	MaskExceptions();
-	Sys_SetFPCW();
-
-	if(!QueryPerformanceFrequency(&PerformanceFreq))
-		Sys_Error("No hardware timer available");
-
-	// get 32 out of the 64 time bits such that we have around
-	// 1 microsecond resolution
-	lowpart = (unsigned int)PerformanceFreq.LowPart;
-	highpart = (unsigned int)PerformanceFreq.HighPart;
-	lowshift = 0;
-
-	while(highpart || (lowpart > 2000000.0))
-	{
-		lowshift++;
-		lowpart >>= 1;
-		lowpart |= (highpart & 1) << 31;
-		highpart >>= 1;
-	}
-
-	pfreq = 1.0 / (double)lowpart;
-
-	Sys_InitFloatTime();
-
-	vinfo.dwOSVersionInfoSize = sizeof(vinfo);
-
-	if(!GetVersionEx(&vinfo))
-		Sys_Error("Couldn't get OS info");
-
-	if((vinfo.dwMajorVersion < 4) || (vinfo.dwPlatformId == VER_PLATFORM_WIN32s))
-		Sys_Error("WinQuake requires at least Win95 or NT 4.0");
-
-	if(vinfo.dwPlatformId == VER_PLATFORM_WIN32_NT)
-		WinNT = true;
-	else
-		WinNT = false;
-	
-#ifdef SWDS
-	//Cvar_RegisterVariable (&sys_nostdout);
-#endif
-
-#else // if linux or sun or something else
-#if id386
-	Sys_SetFPCW();
-#endif
-#endif
-};
-
-void Sys_Shutdown(){
-	// TODO
-};
-
-/*
 ==================
 ParseCommandLine
 
@@ -232,7 +145,13 @@ void Sys_InitArgv(char *lpCmdLine)
 	host_parms.argv = com_argv;
 };
 
-void Sys_ShutdownArgv(){
+/*
+================
+Sys_ShutdownArgv
+================
+*/
+void Sys_ShutdownArgv()
+{
 	// TODO: nothing?
 };
 
