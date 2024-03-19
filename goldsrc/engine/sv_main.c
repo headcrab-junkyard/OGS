@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018, 2020-2022 BlackPhrase
+ * Copyright (C) 2018, 2020-2024 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -90,11 +90,11 @@ char localmodels[MAX_MODELS][5]; // inline model names for precache
 
 cvar_t rcon_password = {"rcon_password", ""}; // password for remote server commands
 
-cvar_t sv_enableoldqueries = {"sv_enableoldqueries", "0"}; // TODO: register
+cvar_t sv_enableoldqueries = {"sv_enableoldqueries", "0"};
 
-cvar_t sv_instancedbaseline = {"sv_instancedbaseline", "1"}; // TODO: register
+cvar_t sv_instancedbaseline = {"sv_instancedbaseline", "1"};
 
-cvar_t sv_contact = {"sv_contact", "", FCVAR_SERVER}; // TODO: register
+cvar_t sv_contact = {"sv_contact", "", FCVAR_SERVER};
 
 cvar_t sv_minupdaterate = {"sv_minupdaterate", "10"};
 cvar_t sv_maxupdaterate = {"sv_maxupdaterate", "30"};
@@ -104,58 +104,58 @@ cvar_t sv_maxrate = {"sv_maxrate", "0", FCVAR_SERVER};
 
 cvar_t sv_filterban = { "sv_filterban", "1" };
 
-cvar_t sv_logrelay = {"sv_logrelay", "0"}; // TODO: register
+cvar_t sv_logrelay = {"sv_logrelay", "0"};
 
-cvar_t sv_language = {"sv_language", "0"}; // TODO: register
+cvar_t sv_language = {"sv_language", "0"};
 
-cvar_t violence_hblood = {"violence_hblood", "1", FCVAR_ARCHIVE}; // TODO: register
-cvar_t violence_ablood = {"violence_ablood", "1", FCVAR_ARCHIVE}; // TODO: register
-cvar_t violence_hgibs = {"violence_hgibs", "1", FCVAR_ARCHIVE}; // TODO: register
-cvar_t violence_agibs = {"violence_agibs", "1", FCVAR_ARCHIVE}; // TODO: register
+cvar_t violence_hblood = {"violence_hblood", "1", FCVAR_ARCHIVE};
+cvar_t violence_ablood = {"violence_ablood", "1", FCVAR_ARCHIVE};
+cvar_t violence_hgibs = {"violence_hgibs", "1", FCVAR_ARCHIVE};
+cvar_t violence_agibs = {"violence_agibs", "1", FCVAR_ARCHIVE};
 
-cvar_t sv_newunit = {"sv_newunit", "0"}; // TODO: register
+cvar_t sv_newunit = {"sv_newunit", "0"};
 
 cvar_t sv_aim = { "sv_aim", "1", FCVAR_ARCHIVE | FCVAR_SERVER };
 
-cvar_t laddermode = {"laddermode", "0"}; // TODO: register
+cvar_t laddermode = {"laddermode", "0"}; // TODO: unused
 
-cvar_t sv_clienttrace = {"sv_clienttrace", "1", FCVAR_SERVER}; // TODO: register
+cvar_t sv_clienttrace = {"sv_clienttrace", "1", FCVAR_SERVER};
 
 cvar_t sv_timeout = { "sv_timeout", "60" }; // seconds without any message
 
-cvar_t sv_failuretime = {"sv_failuretime", "0.5"}; // TODO: register
+cvar_t sv_failuretime = {"sv_failuretime", "0.5"};
 
 cvar_t sv_cheats = {"sv_cheats", "0", FCVAR_SERVER};
 
 cvar_t sv_password = {"sv_password", "", FCVAR_SERVER};	// password for entering the game
 
-cvar_t sv_lan = {"sv_lan", "0"}; // TODO: register, set to 0?
-cvar_t sv_lan_rate = {"sv_lan_rate", "20000"}; // TODO: register
+cvar_t sv_lan = {"sv_lan", "0"};
+cvar_t sv_lan_rate = {"sv_lan_rate", "20000"};
 
-cvar_t sv_proxies = {"sv_proxies", "1", FCVAR_SERVER}; // TODO: register
+cvar_t sv_proxies = {"sv_proxies", "1", FCVAR_SERVER};
 
-cvar_t sv_outofdatetime = {"sv_outofdatetime", "1800"}; // TODO: register
+cvar_t sv_outofdatetime = {"sv_outofdatetime", "1800"};
 
-cvar_t mapcyclefile = {"mapcyclefile", "mapcycle.txt"}; // TODO: register, set to ""/0?
-cvar_t motdfile = {"motdfile", "motd.txt"}; // TODO: register, set to ""/0?
-cvar_t servercfgfile = {"servercfgfile", "server.cfg"}; // TODO: register, set to ""/0?
-cvar_t mapchangecfgfile = {"mapchangecfgfile", ""}; // TODO: register
-cvar_t lservercfgfile = {"lservercfgfile", "listenserver.cfg"}; // TODO: register, set to ""/0?
-cvar_t logsdir = {"logsdir", "logs"}; // TODO: register, set to ""/0?
-cvar_t bannedcfgfile = {"bannedcfgfile", "banned.cfg"}; // TODO: register, set to ""/0?
+cvar_t mapcyclefile = {"mapcyclefile", "mapcycle.txt"}; // TODO: set to ""/0?
+cvar_t motdfile = {"motdfile", "motd.txt"}; // TODO: set to ""/0?
+cvar_t servercfgfile = {"servercfgfile", "server.cfg"}; // TODO: set to ""/0?
+cvar_t mapchangecfgfile = {"mapchangecfgfile", ""};
+cvar_t lservercfgfile = {"lservercfgfile", "listenserver.cfg"}; // TODO: set to ""/0?
+cvar_t logsdir = {"logsdir", "logs"}; // TODO: set to ""/0?
+cvar_t bannedcfgfile = {"bannedcfgfile", "banned.cfg"}; // TODO: set to ""/0?
 
 cvar_t sv_allow_download = {"sv_allowdownload", "1"};
 
-cvar_t sv_send_logos = {"sv_send_logos", "1"}; // TODO: register
-cvar_t sv_send_resources = {"sv_send_resources", "1"}; // TODO: register
+cvar_t sv_send_logos = {"sv_send_logos", "1"};
+cvar_t sv_send_resources = {"sv_send_resources", "1"};
 
-cvar_t sv_logbans = {"sv_logbans", "0"}; // TODO: register
+cvar_t sv_logbans = {"sv_logbans", "0"};
 
 cvar_t sv_allow_upload = {"sv_allowupload", "1", FCVAR_SERVER};
 
-cvar_t sv_uploadmax = {"sv_uploadmax", "0.5", FCVAR_SERVER}; // TODO: register
+cvar_t sv_uploadmax = {"sv_uploadmax", "0.5", FCVAR_SERVER};
 
-cvar_t hpk_maxsize = {"hpk_maxsize", "4", FCVAR_ARCHIVE}; // TODO: register
+cvar_t hpk_maxsize = {"hpk_maxsize", "4", FCVAR_ARCHIVE};
 
 cvar_t sv_skycolor_r = {"sv_skycolor_r", "0"};
 cvar_t sv_skycolor_g = {"sv_skycolor_g", "0"};
@@ -165,47 +165,26 @@ cvar_t sv_skyvec_x = {"sv_skyvec_x", "0"};
 cvar_t sv_skyvec_y = {"sv_skyvec_y", "0"};
 cvar_t sv_skyvec_z = {"sv_skyvec_z", "0"};
 
-cvar_t sv_visiblemaxplayers = {"sv_visiblemaxplayers", "-1"}; // TODO: register
+cvar_t sv_visiblemaxplayers = {"sv_visiblemaxplayers", "-1"};
 
-cvar_t max_queries_sec = {"max_queries_sec", "3", FCVAR_SERVER}; // TODO: register
-cvar_t max_queries_sec_global = {"max_queries_sec_global", "30", FCVAR_SERVER}; // TODO: register
-cvar_t max_queries_window = {"max_queries_window", "60", FCVAR_SERVER}; // TODO: register
+cvar_t max_queries_sec = {"max_queries_sec", "3", FCVAR_SERVER};
+cvar_t max_queries_sec_global = {"max_queries_sec_global", "30", FCVAR_SERVER};
+cvar_t max_queries_window = {"max_queries_window", "60", FCVAR_SERVER};
 
-cvar_t sv_logblocks = {"sv_logblocks", "0", FCVAR_SERVER}; // TODO: register
+cvar_t sv_logblocks = {"sv_logblocks", "0", FCVAR_SERVER};
 
-cvar_t sv_downloadurl = {"sv_downloadurl", ""}; // TODO: register
+cvar_t sv_downloadurl = {"sv_downloadurl", ""};
 
-cvar_t sv_allow_dlfile = {"sv_allow_dlfile", "1"}; // TODO: register
+cvar_t sv_allow_dlfile = {"sv_allow_dlfile", "1"};
 
-cvar_t sv_version = {"sv_version", ""}; // TODO: register
+cvar_t sv_version = {"sv_version", ""};
 
-cvar_t sv_rcon_minfailures = {"sv_rcon_minfailures", "5"}; // TODO: register
-cvar_t sv_rcon_maxfailures = {"sv_rcon_maxfailures", "10"}; // TODO: register
-cvar_t sv_rcon_minfailuretime = {"sv_rcon_minfailuretime", "30"}; // TODO: register
-cvar_t sv_rcon_banpenalty = {"sv_rcon_banpenalty", "0"}; // TODO: register
+cvar_t sv_rcon_minfailures = {"sv_rcon_minfailures", "5"};
+cvar_t sv_rcon_maxfailures = {"sv_rcon_maxfailures", "10"};
 
-//
+cvar_t sv_rcon_minfailuretime = {"sv_rcon_minfailuretime", "30"};
 
-extern cvar_t sv_voiceenable;
-extern cvar_t sv_voicecodec;
-extern cvar_t sv_voicequality;
-
-extern cvar_t sv_zmax;
-extern cvar_t sv_wateramp;
-
-extern cvar_t mp_footsteps;
-
-extern cvar_t sv_skyname;
-
-/*
-extern cvar_t sv_skycolor_r;
-extern cvar_t sv_skycolor_g;
-extern cvar_t sv_skycolor_b;
-
-extern cvar_t sv_skyvec_x;
-extern cvar_t sv_skyvec_y;
-extern cvar_t sv_skyvec_z;
-*/
+cvar_t sv_rcon_banpenalty = {"sv_rcon_banpenalty", "0"};
 
 //============================================================================
 
@@ -951,43 +930,141 @@ void SV_Init()
 	
 	Cmd_AddCommand("fullupdate", SV_FullUpdate_f);
 	
-	//
+	// Main cvars
 	
-	Cvar_RegisterVariable(&sv_timeout);
-
-	Cvar_RegisterVariable(&sv_maxvelocity);
+	Cvar_RegisterVariable(&rcon_password);
 	
-	Cvar_RegisterVariable(&sv_gravity);
+	Cvar_RegisterVariable(&sv_enableoldqueries); // TODO: unused
 	
-	Cvar_RegisterVariable(&sv_friction);
-	Cvar_RegisterVariable(&sv_edgefriction);
-	Cvar_RegisterVariable(&sv_waterfriction);
+	Cvar_RegisterVariable(&sv_instancedbaseline); // TODO: unused
 	
-	Cvar_RegisterVariable(&sv_stopspeed);
+	Cvar_RegisterVariable(&sv_contact); // TODO: unused
 	
-	Cvar_RegisterVariable(&sv_stepsize);
+	Cvar_RegisterVariable(&sv_minupdaterate); // TODO: unused
+	Cvar_RegisterVariable(&sv_maxupdaterate); // TODO: unused
 	
-	Cvar_RegisterVariable(&sv_bounce);
-	
-	Cvar_RegisterVariable(&sv_maxspeed);
-	Cvar_RegisterVariable(&sv_spectatormaxspeed);
-	
-	Cvar_RegisterVariable(&sv_accelerate);
-	Cvar_RegisterVariable(&sv_airaccelerate);
-	Cvar_RegisterVariable(&sv_wateraccelerate);
-	
-	Cvar_RegisterVariable(&sv_aim);
+	Cvar_RegisterVariable(&sv_minrate); // TODO: unused
+	Cvar_RegisterVariable(&sv_maxrate); // TODO: unused
 	
 	Cvar_RegisterVariable(&sv_filterban);
 	
-	Cvar_RegisterVariable(&rcon_password);
-	Cvar_RegisterVariable(&sv_password);
+	Cvar_RegisterVariable(&sv_logrelay); // TODO: unused
 	
-	Cvar_RegisterVariable(&sv_allow_download);
+	Cvar_RegisterVariable(&sv_language); // TODO: unused
 	
-	Cvar_RegisterVariable(&sv_allow_upload);
+	Cvar_RegisterVariable(&violence_hblood); // TODO: unused
+	Cvar_RegisterVariable(&violence_ablood); // TODO: unused
+	Cvar_RegisterVariable(&violence_hgibs); // TODO: unused
+	Cvar_RegisterVariable(&violence_agibs); // TODO: unused
+	
+	Cvar_RegisterVariable(&sv_newunit); // TODO: unused
+	
+	Cvar_RegisterVariable(&sv_aim);
+	
+	Cvar_RegisterVariable(&sv_clienttrace); // TODO: unused
+	
+	Cvar_RegisterVariable(&sv_timeout);
+	
+	Cvar_RegisterVariable(&sv_failuretime); // TODO: unused
 	
 	Cvar_RegisterVariable(&sv_cheats);
+	
+	Cvar_RegisterVariable(&sv_password);
+	
+	Cvar_RegisterVariable(&sv_lan); // TODO: unused
+	Cvar_RegisterVariable(&sv_lan_rate); // TODO: unused
+	
+	Cvar_RegisterVariable(&sv_proxies); // TODO: unused
+	
+	Cvar_RegisterVariable(&sv_outofdatetime); // TODO: unused
+	
+	Cvar_RegisterVariable(&mapcyclefile); // TODO: unused
+	Cvar_RegisterVariable(&motdfile); // TODO: unused
+	Cvar_RegisterVariable(&servercfgfile);
+	Cvar_RegisterVariable(&mapchangecfgfile); // TODO: unused
+	Cvar_RegisterVariable(&lservercfgfile);
+	Cvar_RegisterVariable(&logsdir); // TODO: unused
+	Cvar_RegisterVariable(&bannedcfgfile); // TODO: unused
+	
+	Cvar_RegisterVariable(&sv_allow_download); // TODO: unused
+	
+	Cvar_RegisterVariable(&sv_send_logos); // TODO: unused
+	Cvar_RegisterVariable(&sv_send_resources); // TODO: unused
+	
+	Cvar_RegisterVariable(&sv_logbans); // TODO: unused
+	
+	Cvar_RegisterVariable(&sv_allow_upload); // TODO: unused
+	
+	Cvar_RegisterVariable(&sv_uploadmax); // TODO: unused
+	
+	Cvar_RegisterVariable(&hpk_maxsize); // TODO: unused
+	
+	Cvar_RegisterVariable(&sv_skycolor_r);
+	Cvar_RegisterVariable(&sv_skycolor_g);
+	Cvar_RegisterVariable(&sv_skycolor_b);
+	
+	Cvar_RegisterVariable(&sv_skyvec_x);
+	Cvar_RegisterVariable(&sv_skyvec_y);
+	Cvar_RegisterVariable(&sv_skyvec_z);
+	
+	Cvar_RegisterVariable(&sv_visiblemaxplayers); // TODO: unused
+	
+	Cvar_RegisterVariable(&max_queries_sec); // TODO: unused
+	Cvar_RegisterVariable(&max_queries_sec_global); // TODO: unused
+	Cvar_RegisterVariable(&max_queries_window); // TODO: unused
+	
+	Cvar_RegisterVariable(&sv_logblocks); // TODO: unused
+	
+	Cvar_RegisterVariable(&sv_downloadurl);
+	
+	Cvar_RegisterVariable(&sv_allow_dlfile); // TODO: unused
+	
+	Cvar_RegisterVariable(&sv_version); // TODO: unused
+	
+	Cvar_RegisterVariable(&sv_rcon_minfailures); // TODO: unused
+	Cvar_RegisterVariable(&sv_rcon_maxfailures); // TODO: unused
+	
+	Cvar_RegisterVariable(&sv_rcon_minfailuretime); // TODO: unused
+	
+	Cvar_RegisterVariable(&sv_rcon_banpenalty); // TODO: unused
+	
+	// Log cvars
+	
+	Cvar_RegisterVariable(&mp_logfile); // TODO: unused
+	Cvar_RegisterVariable(&mp_logecho); // TODO: unused
+	
+	Cvar_RegisterVariable(&sv_log_onefile); // TODO: unused
+	Cvar_RegisterVariable(&sv_log_singleplayer); // TODO: unused
+	
+	Cvar_RegisterVariable(&sv_logsecret); // TODO: unused
+	
+	// Physics cvars
+	
+	Cvar_RegisterVariable(&sv_friction);
+	Cvar_RegisterVariable(&sv_stopspeed);
+	Cvar_RegisterVariable(&sv_gravity);
+	Cvar_RegisterVariable(&sv_maxvelocity);
+	Cvar_RegisterVariable(&sv_stepsize);
+	Cvar_RegisterVariable(&sv_bounce);
+	Cvar_RegisterVariable(&sv_spectatormaxspeed);
+	
+	Cvar_RegisterVariable(&sv_airaccelerate);
+	Cvar_RegisterVariable(&sv_wateraccelerate);
+	
+	Cvar_RegisterVariable(&sv_waterfriction);
+	Cvar_RegisterVariable(&sv_zmax);
+	Cvar_RegisterVariable(&sv_wateramp);
+	Cvar_RegisterVariable(&sv_skyname);
+	
+	// User cvars
+	
+	Cvar_RegisterVariable(&mp_consistency);
+	Cvar_RegisterVariable(&mp_footsteps);
+	
+	Cvar_RegisterVariable(&sv_edgefriction);
+	
+	Cvar_RegisterVariable(&sv_maxspeed);
+	Cvar_RegisterVariable(&sv_accelerate);
 	
 	Cvar_RegisterVariable(&sv_rollspeed);
 	Cvar_RegisterVariable(&sv_rollangle);
@@ -998,31 +1075,9 @@ void SV_Init()
 	Cvar_RegisterVariable(&sv_unlagpush);
 	Cvar_RegisterVariable(&sv_unlagsamples);
 	
-	// TODO: unused
-	Cvar_RegisterVariable(&sv_minrate);
-	Cvar_RegisterVariable(&sv_maxrate);
-	
-	// TODO: unused
-	Cvar_RegisterVariable(&sv_minupdaterate);
-	Cvar_RegisterVariable(&sv_maxupdaterate);
-	
 	Cvar_RegisterVariable(&sv_voiceenable); // TODO: unused
 	
-	Cvar_RegisterVariable(&sv_zmax);
-	Cvar_RegisterVariable(&sv_wateramp);
-	
-	Cvar_RegisterVariable(&mp_consistency);
-	Cvar_RegisterVariable(&mp_footsteps);
-	
-	Cvar_RegisterVariable(&sv_skyname);
-	
-	Cvar_RegisterVariable(&sv_skycolor_r);
-	Cvar_RegisterVariable(&sv_skycolor_g);
-	Cvar_RegisterVariable(&sv_skycolor_b);
-	
-	Cvar_RegisterVariable(&sv_skyvec_x);
-	Cvar_RegisterVariable(&sv_skyvec_y);
-	Cvar_RegisterVariable(&sv_skyvec_z);
+	//
 	
 	// Allow cheats if dev mode is enabled
 	if(COM_CheckParm("-dev"))
