@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018-2022 BlackPhrase
+ * Copyright (C) 2018-2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,8 @@
 #include "quakedef.h"
 #include "delta.h"
 #include "usermsg.h"
-#include "Sequence.h"
+
+#include <common/Sequence.h>
 
 extern cvar_t sv_aim;
 

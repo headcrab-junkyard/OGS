@@ -25,18 +25,28 @@
 //   TYPES
 //===============
 
-#define CMP_NONE 0
-#define CMP_LZSS 1
+/// Wad compression
+enum
+{
+	CMP_NONE = 0,
+	CMP_LZSS
+};
 
-#define TYP_NONE 0
-#define TYP_LABEL 1
+/// Wad type
+enum
+{
+	TYP_NONE = 0,
+	TYP_LABEL,
 
-#define TYP_LUMPY 64 // 64 + grab command number
-#define TYP_PALETTE 64
-#define TYP_QTEX 65
-#define TYP_QPIC 66
-#define TYP_SOUND 67
-#define TYP_MIPTEX 68
+	TYP_LUMPY = 64, // 64 + grab command number
+	TYP_PALETTE = 64,
+	TYP_QTEX,
+	TYP_QPIC,
+	TYP_SOUND,
+	TYP_MIPTEX = 68,
+	// TODO: something type 69,
+	TYP_QFONT = 70
+};
 
 typedef struct qpic_s
 {

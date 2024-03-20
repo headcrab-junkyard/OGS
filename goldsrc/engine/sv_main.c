@@ -78,8 +78,8 @@ typedef struct
 	unsigned compare;
 } ipfilter_t;
 
-server_t sv;         // local server
-server_static_t svs; // persistent server info
+server_t sv;         // Local server
+server_static_t svs; // Persistent server info
 
 ipfilter_t ipfilters[MAX_IPFILTERS];
 int numipfilters;
@@ -274,7 +274,7 @@ void SV_New_f ()
 		// set up the edict
 		ent = host_client->edict;
 
-		memset(&ent->v, 0, sizeof(ent->v));
+		Q_memset(&ent->v, 0, sizeof(ent->v));
 		ent->v.colormap = NUM_FOR_EDICT(ent);
 		ent->v.team = (host_client->topcolor & 15) + 1;
 		ent->v.netname = PR_SetString(host_client->name);

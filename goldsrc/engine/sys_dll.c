@@ -57,17 +57,14 @@ Sys_PageIn
 #ifdef _WIN32
 void Sys_PageIn(void *ptr, int size)
 {
-	byte *x;
-	int j, m, n;
-
 	// touch all the memory to make sure it's there. The 16-page skip is to
 	// keep Win 95 from thinking we're trying to page ourselves in (we are
 	// doing that, of course, but there's no reason we shouldn't)
-	x = (byte *)ptr;
+	byte *x = (byte *)ptr;
 
-	for(n = 0; n < 4; n++)
+	for(int n = 0; n < 4; n++)
 	{
-		for(m = 0; m < (size - 16 * 0x1000); m += 4)
+		for(int m = 0; m < (size - 16 * 0x1000); m += 4)
 		{
 			sys_checksum += *(int *)&x[m];
 			sys_checksum += *(int *)&x[m + 16 * 0x1000];
@@ -84,11 +81,9 @@ Sys_InitFloatTime
 #ifdef _WIN32
 void Sys_InitFloatTime()
 {
-	int j;
-
 	Sys_FloatTime();
 
-	j = COM_CheckParm("-starttime");
+	int j = COM_CheckParm("-starttime");
 
 	if(j)
 		curtime = (double)(Q_atof(com_argv[j + 1]));
@@ -244,16 +239,14 @@ void Sys_MakeCodeWriteable(unsigned long startaddr, unsigned long length)
 #endif
 
 #else
-	int r;
-	unsigned long addr;
 	int psize = getpagesize();
 
-	addr = (startaddr & ~(psize - 1)) - psize;
+	unsigned long addr = (startaddr & ~(psize - 1)) - psize;
 
 	//	fprintf(stderr, "writable code %lx(%lx)-%lx, length=%lx\n", startaddr,
 	//			addr, startaddr+length, length);
 
-	r = mprotect((char *)addr, length + startaddr - addr + psize, 7);
+	int r = mprotect((char *)addr, length + startaddr - addr + psize, 7);
 
 	if(r < 0)
 		Sys_Error("Protection change failed\n");
@@ -262,24 +255,49 @@ void Sys_MakeCodeWriteable(unsigned long startaddr, unsigned long length)
 
 //#ifndef _M_IX86 // TODO: check for non-Intel?
 
+/*
+================
+Sys_SetFPCW
+================
+*/
 void Sys_SetFPCW()
 {
 };
 
+/*
+================
+Sys_PushFPCW_SetHigh
+================
+*/
 void Sys_PushFPCW_SetHigh()
 {
 };
 
+/*
+================
+Sys_PopFPCW
+================
+*/
 void Sys_PopFPCW()
 {
 };
 
+/*
+================
+MaskExceptions
+================
+*/
 void MaskExceptions()
 {
 };
 
 //#endif // _M_IX86
 
+/*
+================
+Sys_Error
+================
+*/
 void Sys_Error(const char *error, ...)
 {
 #ifdef _WIN32
@@ -545,6 +563,11 @@ double Sys_FloatTime()
 #endif // _WIN32
 };
 
+/*
+================
+Sys_Sleep
+================
+*/
 void Sys_Sleep()
 {
 #ifdef _WIN32

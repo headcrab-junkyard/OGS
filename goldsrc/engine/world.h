@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "const.h" // TODO: plane_t, trace_t
+#include <common/const.h> // TODO: plane_t, trace_t
 
 #define MOVE_NORMAL 0
 #define MOVE_NOMONSTERS 1
@@ -55,8 +55,8 @@ void SV_LinkEdict(edict_t *ent, qboolean touch_triggers);
 // sets ent->v.absmin and ent->v.absmax
 // if touch_triggers, calls prog functions for the intersected triggers
 
-int SV_PointContents(vec3_t p);
-int SV_TruePointContents(vec3_t p); // TODO: not present in qw
+int SV_PointContents(const vec3_t p);
+int SV_TruePointContents(const vec3_t p); // TODO: not present in qw
 // returns the CONTENTS_* value from the world at the given point.
 // does not check any entities at all
 // the non-true version remaps the water current contents to content_water

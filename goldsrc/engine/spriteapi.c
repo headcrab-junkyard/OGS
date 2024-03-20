@@ -56,7 +56,7 @@ SpriteHandle_t SPR_Load(const char *asName)
 	
 	int size = sizeof(msprite_t) + (numframes - 1) * sizeof(psprite->frames);
 	
-	msprite_t *psprite = Hunk_AllocName(size, asName);
+	msprite_t *psprite = (msprite_t*)Hunk_AllocName(size, asName);
 	
 	psprite->type = LittleLong(pin->type);
 	psprite->maxwidth = LittleLong(pin->width);

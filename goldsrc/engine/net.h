@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-2001 Id Software, Inc.
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021, 2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
 /// @file
 /// @brief engine's interface to the networking layer
 
+#pragma once
+
 /*
 ==============================================================
 
@@ -28,10 +30,10 @@ NET
 ==============================================================
 */
 
-#define PORT_ANY -1
+const int PORT_ANY = -1;
 
-//#define	MAX_MSGLEN		1400		// max length of a message
-//#define	PACKET_HEADER	10			// two ints and a short
+//#define MAX_MSGLEN 1400 // max length of a message
+//#define PACKET_HEADER 10 // two ints and a short
 
 #include "enums.h"
 #include "netadr.h"
@@ -41,8 +43,7 @@ extern netadr_t net_from; // address of who sent the packet
 extern sizebuf_t net_message;
 
 extern cvar_t hostname; // TODO
-
-//extern	int		net_socket;
+//extern int net_socket;
 
 void NET_Init();
 void NET_Shutdown();

@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 
 #pragma once
 
-/*
+/**
  memory allocation
 
 
@@ -119,14 +119,14 @@ typedef struct cache_user_s
 
 void Cache_Flush();
 
-// Returns the cached data, and moves to the head of the LRU list
-// if present, otherwise returns NULL
+/// Returns the cached data, and moves to the head of the LRU list
+/// if present, otherwise returns NULL
 void *Cache_Check(cache_user_t *c);
 
 void Cache_Free(cache_user_t *c);
 
-// Returns NULL if all purgable data was tossed and there still
-// wasn't enough room.
+/// Returns NULL if all purgable data was tossed and there still
+/// wasn't enough room
 void *Cache_Alloc(cache_user_t *c, int size, char *name);
 
 void Cache_Report();

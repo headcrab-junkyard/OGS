@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018-2021 BlackPhrase
+ * Copyright (C) 2018-2021, 2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,13 +24,13 @@
 
 //=========================================
 
-#define PROTOCOL_VERSION 48
+const int PROTOCOL_VERSION = 48;
 
 //=========================================
 
-#define PORT_CLIENT 27005
-#define PORT_MASTER 27010
-#define PORT_SERVER 27015
+const int PORT_CLIENT = 27005;
+const int PORT_MASTER = 27010;
+const int PORT_SERVER = 27015;
 
 //=========================================
 
@@ -222,9 +222,9 @@ enum
 
 //==============================================
 
-#define DEFAULT_SOUND_PACKET_VOLUME 255
-#define DEFAULT_SOUND_PACKET_ATTENUATION 1.0
-#define DEFAULT_SOUND_PACKET_PITCH PITCH_NORM
+const int DEFAULT_SOUND_PACKET_VOLUME = 255;
+const float DEFAULT_SOUND_PACKET_ATTENUATION = 1.0;
+const int DEFAULT_SOUND_PACKET_PITCH = PITCH_NORM;
 
 // TODO: QW
 

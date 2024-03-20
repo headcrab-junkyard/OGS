@@ -28,17 +28,17 @@
 
 typedef struct memblock_s
 {
-	int size; // including the header and possibly tiny fragments
-	int tag;  // a tag of 0 is a free block
-	int id;   // should be ZONEID
+	int size; ///< Including the header and possibly tiny fragments
+	int tag;  ///< A tag of 0 is a free block
+	int id;   ///< Should be ZONEID
 	struct memblock_s *next, *prev;
-	int pad; // pad to 64 bit boundary
+	int pad; ///< Pad to 64 bit boundary
 } memblock_t;
 
 typedef struct
 {
-	int size;             // total bytes malloced, including header
-	memblock_t blocklist; // start / end cap for linked list
+	int size;             /// Total bytes malloced, including header
+	memblock_t blocklist; /// Start / end cap for linked list
 	memblock_t *rover;
 } memzone_t;
 
@@ -73,17 +73,17 @@ void Z_ClearZone(memzone_t *zone, int size)
 {
 	memblock_t *block;
 
-	// set the entire zone to one free block
+	// Set the entire zone to one free block
 
 	zone->blocklist.next = zone->blocklist.prev = block =
 	(memblock_t *)((byte *)zone + sizeof(memzone_t));
-	zone->blocklist.tag = 1; // in use block
+	zone->blocklist.tag = 1; // In use block
 	zone->blocklist.id = 0;
 	zone->blocklist.size = 0;
 	zone->rover = block;
 
 	block->prev = block->next = &zone->blocklist;
-	block->tag = 0; // free block
+	block->tag = 0; // Free block
 	block->id = ZONEID;
 	block->size = size - sizeof(memzone_t);
 };

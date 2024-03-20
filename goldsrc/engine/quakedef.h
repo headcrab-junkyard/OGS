@@ -30,7 +30,7 @@
 #endif
 */
 
-//#define	GLTEST			// experimental stuff
+//#define GLTEST // experimental stuff
 
 #define QUAKE_GAME // as opposed to utilities
 
@@ -41,7 +41,7 @@
 #define LINUX_VERSION 1.30
 #define X11_VERSION 1.10
 
-//define	PARANOID			// speed sapping error checking
+//define PARANOID // speed sapping error checking
 
 #define GAMENAME "valve" // directory to look in by default
 
@@ -124,7 +124,7 @@ void VID_UnlockBuffer();
 
 #define ON_EPSILON 0.1 // point on plane side epsilon
 
-#define MAX_MSGLEN 8000   // max length of a reliable message // TODO: 1450 in qw
+#define MAX_MSGLEN 8000 // max length of a reliable message // TODO: 1450 in qw
 #define MAX_DATAGRAM 1024 // max length of unreliable message // TODO: 1450 in qw
 
 //
@@ -137,7 +137,7 @@ void VID_UnlockBuffer();
 
 #define MAX_EVENTS 1024
 
-#define MAX_USERMSGS 128 // TODO: ???
+#define MAX_USER_MESSAGES 128 // TODO: ???
 
 #define SAVEGAME_COMMENT_LENGTH 39
 

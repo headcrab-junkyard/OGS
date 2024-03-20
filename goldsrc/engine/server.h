@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "usercmd.h"
+#include <common/usercmd.h>
 
 typedef struct
 {

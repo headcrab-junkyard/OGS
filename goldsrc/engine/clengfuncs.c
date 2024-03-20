@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018-2021 BlackPhrase
+ * Copyright (C) 2018-2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,12 +26,12 @@
 #include "draw.h"
 #include "view.h"
 #include "vgui_int.h"
-#include "event_api.h"
-#include "demo_api.h"
-#include "net_api.h"
-#include "voicetweak.h"
-#include "triangleapi.h"
-#include "r_efx.h"
+#include <common/event_api.h>
+#include <common/demo_api.h>
+#include <common/net_api.h>
+#include <common/ivoicetweak.h>
+#include <common/triangleapi.h>
+#include <common/r_efx.h>
 
 #include "winquake.h"
 

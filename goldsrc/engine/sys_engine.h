@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ private:
 	quakeparms_t mParms{};
 
 	// TODO: floats for sun
-	double newtime{ 0.0 };
-	double oldtime{ 0.0 };
-	double frametime{ 0.0 };
+	double newtime{0.0};
+	double oldtime{0.0};
+	double frametime{0.0};
 };

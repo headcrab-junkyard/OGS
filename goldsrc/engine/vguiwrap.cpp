@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 /// @file
 
 #include "quakedef.h"
-#include "ivguiwrap.hpp"
+#include <vguiwrap/ivguiwrap.hpp>
 
 void *gpVGuiWrapLib{nullptr};
 IVGuiWrap *gpVGuiWrap{nullptr};
@@ -47,7 +47,7 @@ bool LoadVGuiWrapModule()
 	if(!fnVGuiWrapFactory)
 		return false;
 	
-	gpVGuiWrap = (IVGuiWrap*)fnVGuiWrapFactory(OGS_VGUIWRAP_INTERFACE_VERSION, nullptr);
+	gpVGuiWrap = reinterpret_cast<IVGuiWrap*>(fnVGuiWrapFactory(OGS_VGUIWRAP_INTERFACE_VERSION, nullptr));
 	
 	if(!gpVGuiWrap)
 		return false;

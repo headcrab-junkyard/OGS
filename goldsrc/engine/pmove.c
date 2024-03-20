@@ -96,4 +96,4 @@ void PM_Init(playermove_t *pmove)
 	pmove->PM_PlaySound = NULL; // TODO
 	
 	pmove->PM_PlaybackEventFull = NULL; // TODO
-}
+};

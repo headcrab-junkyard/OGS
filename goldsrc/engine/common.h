@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-2005 Id Software, Inc.
- * Copyright (C) 2018-2021 BlackPhrase
+ * Copyright (C) 2018-2021, 2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,9 @@
 /// @file
 /// @brief general definitions
 
-#include "const.h"
+#pragma once
+
+#include <common/const.h>
 
 #define	MAX_SERVERINFO_STRING 512
 #define	MAX_LOCALINFO_STRING 32768

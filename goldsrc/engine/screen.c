@@ -172,22 +172,19 @@ void SCR_CenterPrint(const char *str)
 	}
 }
 
-void SCR_DrawCenterString(void)
+void SCR_DrawCenterString()
 {
-	char *start;
 	int l;
 	int j;
 	int x, y;
-	int remaining;
+	int remaining = 9999;
 
 	// the finale prints the characters one at a time
 	if(cl.intermission)
 		remaining = scr_printspeed.value * (cl.time - scr_centertime_start);
-	else
-		remaining = 9999;
 
 	scr_erase_center = 0;
-	start = scr_centerstring;
+	char *start = scr_centerstring;
 
 	if(scr_center_lines <= 4)
 		y = vid.height * 0.35;

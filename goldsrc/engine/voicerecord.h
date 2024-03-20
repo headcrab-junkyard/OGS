@@ -27,7 +27,7 @@ struct IVoiceRecord
 	//virtual void RecordAddBuffer() = 0;
 };
 
-class VoiceRecord_DSound
+class VoiceRecord_DSound : public IVoiceRecord
 {
 public:
 	//void Init();
@@ -35,7 +35,7 @@ public:
 	//void RecordAddBuffer();
 };
 
-class VoiceRecord_WaveIn
+class VoiceRecord_WaveIn : public IVoiceRecord
 {
 public:
 	void Init();

@@ -21,9 +21,7 @@
 
 #include "quakedef.h"
 
-/*
-
-
+/**
 pushmove objects do not obey gravity, and do not interact with each other or trigger fields, but block normal movement and push normal objects when they move.
 
 onground is set for toss objects when they come to a complete rest.  it is set for steping or walking objects 

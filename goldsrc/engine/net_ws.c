@@ -1092,10 +1092,8 @@ void NET_Sleep(int msec)
 
 //===================================================================
 
-static void MaxPlayers_f (void)
+static void MaxPlayers_f()
 {
-	int 	n;
-
 	if (Cmd_Argc () != 2)
 	{
 		Con_Printf ("\"maxplayers\" is \"%u\"\n", svs.maxclients);
@@ -1108,7 +1106,7 @@ static void MaxPlayers_f (void)
 		return;
 	}
 
-	n = Q_atoi(Cmd_Argv(1));
+	int n = Q_atoi(Cmd_Argv(1));
 	if (n < 1)
 		n = 1;
 	if (n > svs.maxclientslimit)

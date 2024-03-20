@@ -21,7 +21,9 @@
 /// @brief coordinates spawning and killing of local servers
 
 #include "quakedef.h"
-#include "r_local.h"
+//#include "r_local.h"
+
+extern vec3_t r_origin;
 
 /*
 
@@ -161,7 +163,7 @@ void Host_Error(const char *error, ...)
 	inerror = false;
 
 	longjmp(host_abortserver, 1);
-}
+};
 
 /*
 ================
@@ -173,6 +175,8 @@ void Host_FindMaxClients()
 	int i;
 
 	svs.maxclients = 1;
+	
+	cls.state = ca_disconnected;
 	
 	if(isDedicated)
 	{
@@ -187,9 +191,7 @@ void Host_FindMaxClients()
 			else
 				svs.maxclients = 8;
 		};
-	}
-	else
-		cls.state = ca_disconnected;
+	};
 	
 	if(svs.maxclients < 1)
 		svs.maxclients = 8;
@@ -205,7 +207,7 @@ void Host_FindMaxClients()
 		Cvar_SetValue("deathmatch", 1.0);
 	else
 		Cvar_SetValue("deathmatch", 0.0);
-}
+};
 
 /*
 =======================
@@ -246,7 +248,7 @@ void Host_InitLocal()
 	
 	if(COM_CheckParm("-dev")) // TODO: wrong place?
 		Cvar_SetValue("developer", 1);
-}
+};
 
 /*
 ===============
@@ -266,7 +268,7 @@ void Host_WriteConfiguration()
 		{
 			Con_Printf("Couldn't write config.cfg.\n");
 			return;
-		}
+		};
 		
 		fprintf(f, "// This file is overwritten whenever you change your user settings in the game.\n");
 		fprintf(f, "// Add custom configurations to the file \"userconfig.cfg\".\n\n");
@@ -285,8 +287,8 @@ void Host_WriteConfiguration()
 		fprintf(f, "exec userconfig.cfg\n");
 		
 		fclose(f);
-	}
-}
+	};
+};
 
 /*
 =================
@@ -311,7 +313,7 @@ void SV_ClientPrintf(client_t *cl, /*int level,*/ const char *fmt, ...)
 	MSG_WriteByte(&cl->netchan.message, svc_print);
 	//MSG_WriteByte (&cl->netchan.message, level);
 	MSG_WriteString(&cl->netchan.message, string);
-}
+};
 
 /*
 =================
@@ -335,8 +337,8 @@ void SV_BroadcastPrintf(const char *fmt, ...)
 		{
 			MSG_WriteByte(&svs.clients[i].netchan.message, svc_print);
 			MSG_WriteString(&svs.clients[i].netchan.message, string);
-		}
-}
+		};
+};
 
 /*
 =================
@@ -356,7 +358,7 @@ void Host_ClientCommands(const char *fmt, ...)
 
 	MSG_WriteByte(&host_client->netchan.message, svc_stufftext);
 	MSG_WriteString(&host_client->netchan.message, string);
-}
+};
 
 /*
 =====================

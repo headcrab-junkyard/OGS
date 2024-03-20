@@ -33,10 +33,9 @@ Cvar_List_f
 */
 void Cvar_List_f()
 {
-	cvar_t	*var;
-	int		i;
+	cvar_t *var;
+	int i = 0;
 
-	i = 0;
 	for (var = cvar_vars ; var ; var = var->next, i++)
 	{
 		Con_Printf ("%s : %s", var->name, var->string);

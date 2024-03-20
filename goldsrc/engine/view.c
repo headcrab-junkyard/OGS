@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018, 2020-2022 BlackPhrase
+ * Copyright (C) 2018, 2020-2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -541,9 +541,7 @@ V_BoundOffsets
 */
 void V_BoundOffsets()
 {
-	cl_entity_t *ent;
-
-	ent = &cl_entities[cl.viewentity];
+	cl_entity_t *ent = &cl_entities[cl.viewentity];
 
 	// absolutely bound refresh reletive to entity clipping hull
 	// so the view can never be inside a solid wall

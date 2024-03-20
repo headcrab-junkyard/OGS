@@ -54,10 +54,9 @@ void Snd_WriteLinearBlastStereo16();
 //#if !id386 // TODO: check for non-Intel?
 void Snd_WriteLinearBlastStereo16()
 {
-	int i;
 	int val;
 
-	for(i = 0; i < snd_linear_count; i += 2)
+	for(int i = 0; i < snd_linear_count; i += 2)
 	{
 		val = (snd_p[i] * snd_vol) >> 8;
 		if(val > 0x7fff)
@@ -348,10 +347,8 @@ void S_PaintChannels(int endtime)
 
 void SND_InitScaletable()
 {
-	int i, j;
-
-	for(i = 0; i < 32; i++)
-		for(j = 0; j < 256; j++)
+	for(int i = 0; i < 32; i++)
+		for(int j = 0; j < 256; j++)
 			snd_scaletable[i][j] = ((signed char)j) * i * 8;
 };
 
@@ -359,20 +356,18 @@ void SND_InitScaletable()
 void SND_PaintChannelFrom8(channel_t *ch, sfxcache_t *sc, int count)
 {
 	int data;
-	int *lscale, *rscale;
 	unsigned char *sfx;
-	int i;
 
 	if(ch->leftvol > 255)
 		ch->leftvol = 255;
 	if(ch->rightvol > 255)
 		ch->rightvol = 255;
 
-	lscale = snd_scaletable[ch->leftvol >> 3];
-	rscale = snd_scaletable[ch->rightvol >> 3];
+	int *lscale = snd_scaletable[ch->leftvol >> 3];
+	int *rscale = snd_scaletable[ch->rightvol >> 3];
 	sfx = (signed char *)sc->data + ch->pos;
 
-	for(i = 0; i < count; i++)
+	for(int i = 0; i < count; i++)
 	{
 		data = sfx[i];
 		paintbuffer[i].left += lscale[data];

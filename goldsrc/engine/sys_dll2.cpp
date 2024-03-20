@@ -18,13 +18,15 @@
  */
 
 /// @file
-/// @brief Listen and Dedicated Server API implementation
+/// @brief Listen and dedicated server API implementations
 
 #include "quakedef.h"
-#include "engine_launcher_api.h"
-#include "engine_hlds_api.h"
-#include "igameuifuncs.h"
-#include "dedicated/idedicatedexports.h"
+
+#include <engine_launcher_api.h>
+#include <engine_hlds_api.h>
+#include <igameuifuncs.h>
+#include <dedicated/idedicatedexports.h>
+
 #include "iengine.h"
 #include "igame.h"
 
@@ -461,7 +463,7 @@ public:
 
 	void AddConsoleText(const char *text) override;
 
-	void UpdateStatus(float *fps, int *nActive, int *nMaxPlayers, /*const*/ char *pszMap) override;
+	void UpdateStatus(float *fps, int *nActive, int *nMaxPlayers, char *pszMap) override;
 private:
 	const char *m_OrigCmd{nullptr}; // TODO: make sized?
 };
@@ -523,7 +525,7 @@ void CDedicatedServerAPI::AddConsoleText(const char *text)
 	Cbuf_AddText(text);
 };
 
-void CDedicatedServerAPI::UpdateStatus(float *fps, int *nActive, int *nMaxPlayers, /*const*/ char *pszMap)
+void CDedicatedServerAPI::UpdateStatus(float *fps, int *nActive, int *nMaxPlayers, char *pszMap)
 {
 	Host_UpdateStatus(fps, nActive, nMaxPlayers, pszMap);
 };
