@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2022, 2024 BlackPhrase
+ * Copyright (C) 2024 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,15 +20,10 @@
 
 #pragma once
 
-#include "IDemoPlayer.hpp"
+#include <tier1/interface.h>
 
-class DemoPlayer : public IDemoPlayer //, TODO: IDirector?, BaseSystemModule?
+constexpr auto DEMOPLAYER_INTERFACE_VERSION{"demoplayer001"};
+
+struct IDemoPlayer : public IBaseInterface
 {
-	void Init();
-	
-	void ReadDemoMessage();
-	
-	void ExecuteCommand(const char *asCmd);
-	
-	void ExecuteDemoFileCommands();
 };
