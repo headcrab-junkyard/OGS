@@ -52,8 +52,7 @@ public:
 	
 	void VID_LockBuffer() override;
 	void VID_UnlockBuffer() override;
-	int VID_GetWidth() const override;
-	int VID_GetHeight() const override;
+	
 	bool VID_IsWindowed() const override;
 	int VID_GetCurrentModeNum() const override;
 	int VID_NumModes() const override;
@@ -69,9 +68,7 @@ public:
 	double Host_GetTime() const override;
 	void Host_Quit_f() override;
 	
-	const char *Key_KeynumToString(int keynum) override;
 	void Key_SetBinding(int key, const char *cmd) override;
-	const char *Key_GetBinding(int key) const override;
 	
 	void Con_ToggleConsole_f() override;
 	
@@ -90,6 +87,4 @@ public:
 	
 	int GetMaxClients() const override;
 	int GetMaxClientsLimit() const override;
-	
-	const char *GetGameDir() const override;
 };

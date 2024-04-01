@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018, 2021 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,10 +76,16 @@ void CGameUI::Initialize(CreateInterfaceFn *factories, int count)
 
 void CGameUI::Start(/*cl_enginefunc_t*/ struct cl_enginefuncs_s *engineFuncs, int interfaceVersion, void /*IBaseSystem*/ *system)
 {
+	// TODO: interfaceVersion
+	
+	mpEngine = engineFuncs;
+	mpBaseSystem = system;
 };
 
 void CGameUI::Shutdown()
 {
+	mpEngine = nullptr;
+	mpBaseSystem = nullptr;
 };
 
 int CGameUI::ActivateGameUI()
@@ -101,10 +107,13 @@ int CGameUI::HasExclusiveInput()
 
 void CGameUI::RunFrame()
 {
+	// TODO: call VID_MenuDraw here?
 };
 
 void CGameUI::ConnectToServer(const char *game, int IP, int port)
 {
+	byte vIP[4] = IP;
+	mpEngine->Con_Printf("Connecting to %s (%d.%d.%d.%d:%d)...\n", game, vIP[0], vIP[1], vIP[2], vIP[3], port);
 };
 
 void CGameUI::DisconnectFromServer()
@@ -124,10 +133,12 @@ bool CGameUI::IsGameUIActive()
 
 void CGameUI::LoadingStarted(const char *resourceType, const char *resourceName)
 {
+	mpEngine->Con_Printf("Loading started for %s (%s)...\n", resourceName, resourceType);
 };
 
 void CGameUI::LoadingFinished(const char *resourceType, const char *resourceName)
 {
+	mpEngine->Con_Printf("Loading finished for %s (%s)...\n", resourceName, resourceType);
 };
 
 void CGameUI::StartProgressBar(const char *progressType, int progressSteps)
@@ -163,4 +174,31 @@ void CGameUI::ValidateCDKey(bool force, bool inConnect)
 
 void CGameUI::OnDisconnectFromServer(int eSteamLoginFailure, const char *username)
 {
+	const char *sReason{""};
+	
+	switch(eSteamLoginFailure)
+	{
+	//case STEAMLOGINFAILURE_NONE:
+		//break;
+	case STEAMLOGINFAILURE_BADTICKET:
+		sReason = "Bad Ticket";
+		break;
+	case STEAMLOGINFAILURE_NOSTEAMLOGIN:
+		sReason = "No Steam Login";
+		break;
+	case STEAMLOGINFAILURE_VACBANNED:
+		sReason = "VAC Banned";
+		break;
+	case STEAMLOGINFAILURE_LOGGED_IN_ELSEWHERE:
+		sReason = "Logged-In Elsewhere";
+		break;
+	case STEAMLOGINFAILURE_CONNECTIONLOST:
+		sReason = "Lost Connection To Server";
+		break;
+	case STEAMLOGINFAILURE_NOCONNECTION:
+		sReason = "No Connection";
+		break;
+	};
+	
+	mpEngine->Con_Printf("Disconnected from server (Reason: %s)\n", sReason);
 };

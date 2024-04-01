@@ -54,6 +54,12 @@ typedef enum { key_game,
 #include "IMenuExportsTemp.hpp"
 extern IMenuExportsTemp *gpMenuExports;
 
+#include "cdll_int.h"
+extern cl_enginefunc_t *gpEngine;
+
+#include "IGameUIFuncs.h"
+extern IGameUIFuncs *gpGameUIFuncs;
+
 enum menu_state_e
 {
 	m_none,
@@ -312,7 +318,9 @@ Draws one solid graphics character
 */
 void M_DrawCharacter(int cx, int line, int num)
 {
-	gpMenuExports->Draw_Character(cx + ((gpMenuExports->VID_GetWidth() - 320) >> 1), line, num);
+	int width;
+	gpGameUIFuncs->GetCurrentVideoMode(&width, nullptr, nullptr);
+	gpMenuExports->Draw_Character(cx + ((width - 320) >> 1), line, num);
 }
 
 void M_Print(int cx, int cy, const char *str)
@@ -643,7 +651,7 @@ void M_ScanSaves()
 	{
 		strcpy(m_filenames[i], "--- UNUSED SLOT ---");
 		loadable[i] = false;
-		sprintf(name, "%s/s%i.sav", gpMenuExports->GetGameDir(), i);
+		sprintf(name, "%s/s%i.sav", gpEngine->pfnGetGameDirectory(), i);
 		f = fopen(name, "r");
 		if(!f)
 			continue;
@@ -878,10 +886,10 @@ void M_Menu_Setup_f()
 	gpMenuExports->SetKeyDest(key_menu);
 	m_state = m_setup;
 	m_entersound = true;
-	strcpy(setup_myname, gpMenuExports->Cvar_VariableString("name"));
-	strcpy(setup_hostname, gpMenuExports->Cvar_VariableString("hostname"));
-	setup_top = setup_oldtop = ((int)gpMenuExports->Cvar_VariableValue("topcolor")) >> 4;
-	setup_bottom = setup_oldbottom = ((int)gpMenuExports->Cvar_VariableValue("bottomcolor")) & 15;
+	strcpy(setup_myname, gpEngine->pfnGetCvarString("name"));
+	strcpy(setup_hostname, gpEngine->pfnGetCvarString("hostname"));
+	setup_top = setup_oldtop = ((int)gpEngine->pfnGetCvarFloat("topcolor")) >> 4;
+	setup_bottom = setup_oldbottom = ((int)gpEngine->pfnGetCvarFloat("bottomcolor")) & 15;
 }
 
 void M_Setup_Draw()
@@ -973,9 +981,9 @@ void M_Setup_Key(int k)
 			goto forward;
 
 		// setup_cursor == 4 (OK)
-		if(strcmp(gpMenuExports->Cvar_VariableString("name"), setup_myname) != 0)
+		if(strcmp(gpEngine->pfnGetCvarString("name"), setup_myname) != 0)
 			gpMenuExports->Cbuf_AddText(va("name \"%s\"\n", setup_myname));
-		if(strcmp(gpMenuExports->Cvar_VariableString("hostname"), setup_hostname) != 0)
+		if(strcmp(gpEngine->pfnGetCvarString("hostname"), setup_hostname) != 0)
 			gpMenuExports->Cvar_Set("hostname", setup_hostname);
 		if(setup_top != setup_oldtop || setup_bottom != setup_oldbottom)
 			gpMenuExports->Cbuf_AddText(va("color %i %i\n", setup_top, setup_bottom));
@@ -1281,42 +1289,42 @@ void M_AdjustSliders(int dir)
 		gpMenuExports->Cvar_SetValue("bgmvolume", gpMenuExports->Cvar_VariableValue("bgmvolume"));
 		break;
 	case 7: // sfx volume
-		gpMenuExports->Cvar_SetValue("volume", gpMenuExports->Cvar_VariableValue("volume") + dir * 0.1);
-		if(gpMenuExports->Cvar_VariableValue("volume") < 0)
-			gpMenuExports->Cvar_SetValue("volume", 0);
-		if(gpMenuExports->Cvar_VariableValue("volume") > 1)
-			gpMenuExports->Cvar_SetValue("volume", 1);
-		gpMenuExports->Cvar_SetValue("volume", gpMenuExports->Cvar_VariableValue("volume"));
+		gpEngine->Cvar_SetValue("volume", gpEngine->pfnGetCvarFloat("volume") + dir * 0.1);
+		if(gpMenuExports->pfnGetCvarFloat("volume") < 0)
+			gpEngine->Cvar_SetValue("volume", 0);
+		if(gpEngine->pfnGetCvarFloat("volume") > 1)
+			gpEngine->Cvar_SetValue("volume", 1);
+		gpEngine->Cvar_SetValue("volume", gpEngine->pfnGetCvarFloat("volume"));
 		break;
 
 	case 8: // allways run
-		if(gpMenuExports->Cvar_VariableValue("cl_forwardspeed") > 200)
+		if(gpMenuExports->pfnGetCvarFloat("cl_forwardspeed") > 200)
 		{
-			gpMenuExports->Cvar_SetValue("cl_forwardspeed", 200);
-			gpMenuExports->Cvar_SetValue("cl_backspeed", 200);
+			gpEngine->Cvar_SetValue("cl_forwardspeed", 200);
+			gpEngine->Cvar_SetValue("cl_backspeed", 200);
 		}
 		else
 		{
-			gpMenuExports->Cvar_SetValue("cl_forwardspeed", 400);
-			gpMenuExports->Cvar_SetValue("cl_backspeed", 400);
+			gpEngine->Cvar_SetValue("cl_forwardspeed", 400);
+			gpEngine->Cvar_SetValue("cl_backspeed", 400);
 		}
 		break;
 
 	case 9: // invert mouse
-		gpMenuExports->Cvar_SetValue("m_pitch", -gpMenuExports->Cvar_VariableValue("m_pitch"));
+		gpEngine->Cvar_SetValue("m_pitch", -gpEngine->pfnGetCvarFloat("m_pitch"));
 		break;
 
 	case 10: // lookspring
-		gpMenuExports->Cvar_SetValue("lookspring", !gpMenuExports->Cvar_VariableValue("lookspring"));
+		gpEngine->Cvar_SetValue("lookspring", !gpEngine->pfnGetCvarFloat("lookspring"));
 		break;
 
 	case 11: // lookstrafe
-		gpMenuExports->Cvar_SetValue("lookstrafe", !gpMenuExports->Cvar_VariableValue("lookstrafe"));
+		gpEngine->Cvar_SetValue("lookstrafe", !gpEngine->pfnGetCvarFloat("lookstrafe"));
 		break;
 
 #ifdef _WIN32
 	case 13: // _windowed_mouse
-		//gpMenuExports->Cvar_SetValue("_windowed_mouse", !gpMenuExports->Cvar_VariableValue("_windowed_mouse")); // TODO
+		//gpEngine->Cvar_SetValue("_windowed_mouse", !gpEngine->pfnGetCvarFloat("_windowed_mouse")); // TODO
 		break;
 #endif
 	}
@@ -1534,7 +1542,7 @@ void M_FindKeysForCommand(const char *command, int *twokeys)
 
 	for(j = 0; j < 256; j++)
 	{
-		b = gpMenuExports->Key_GetBinding(j);
+		b = gpGameUIFuncs->Key_BindingForKey(j);
 		if(!b)
 			continue;
 		if(!strncmp(b, command, l))
@@ -1557,7 +1565,7 @@ void M_UnbindCommand(const char *command)
 
 	for(j = 0; j < 256; j++)
 	{
-		b = gpMenuExports->Key_GetBinding(j);
+		b = gpGameUIFuncs->Key_BindingForKey(j);
 		if(!b)
 			continue;
 		if(!strncmp(b, command, l))
@@ -1598,13 +1606,13 @@ void M_Keys_Draw()
 		}
 		else
 		{
-			name = gpMenuExports->Key_KeynumToString(keys[0]);
+			name = gpGameUIFuncs->Key_NameForKey(keys[0]);
 			M_Print(140, y, name);
 			x = strlen(name) * 8;
 			if(keys[1] != -1)
 			{
 				M_Print(140 + x + 8, y, "or");
-				M_Print(140 + x + 32, y, gpMenuExports->Key_KeynumToString(keys[1]));
+				M_Print(140 + x + 32, y, gpGameUIFuncs->Key_NameForKey(keys[1]));
 			}
 		}
 	}
@@ -1629,7 +1637,7 @@ void M_Keys_Key(int k)
 		}
 		else if(k != '`')
 		{
-			sprintf(cmd, "bind \"%s\" \"%s\"\n", gpMenuExports->Key_KeynumToString(k), bindnames[keys_cursor][0]);
+			sprintf(cmd, "bind \"%s\" \"%s\"\n", gpGameUIFuncs->Key_NameForKey(k), bindnames[keys_cursor][0]);
 			gpMenuExports->Cbuf_InsertText(cmd);
 		}
 
@@ -3084,7 +3092,9 @@ void M_Draw()
 
 		if(gpMenuExports->SCR_Con_Current())
 		{
-			gpMenuExports->Draw_ConsoleBackground(gpMenuExports->VID_GetHeight());
+			int height;
+			gpGameUIFuncs->GetCurrentVideoMode(nullptr, &height, nullptr);
+			gpMenuExports->Draw_ConsoleBackground(height);
 			gpMenuExports->VID_UnlockBuffer();
 			gpMenuExports->S_ExtraUpdate();
 			gpMenuExports->VID_LockBuffer();

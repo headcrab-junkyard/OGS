@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018, 2021 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,5 +62,9 @@ public:
 
 	void OnDisconnectFromServer(int eSteamLoginFailure, const char *username) override;
 private:
+	struct cl_enginefuncs_s *mpEngine{nullptr};
+	
+	void *mpBaseSystem{nullptr};
+	
 	bool mbActive{false};
 };

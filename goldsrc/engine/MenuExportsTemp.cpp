@@ -132,16 +132,6 @@ void CMenuExportsTemp::VID_UnlockBuffer()
 	//::VID_UnlockBuffer(); // TODO
 };
 
-int CMenuExportsTemp::VID_GetWidth() const
-{
-	return vid.width;
-};
-
-int CMenuExportsTemp::VID_GetHeight() const
-{
-	return vid.height;
-};
-
 bool CMenuExportsTemp::VID_IsWindowed() const
 {
 #ifdef _WIN32
@@ -217,10 +207,10 @@ void CMenuExportsTemp::Key_SetBinding(int key, const char *cmd)
 	::Key_SetBinding(key, cmd);
 };
 
-const char *CMenuExportsTemp::Key_GetBinding(int key) const
-{
-	return keybindings[key];
-};
+//const char *CMenuExportsTemp::Key_GetBinding(int key) const
+//{
+	//return keybindings[key];
+//};
 
 void CMenuExportsTemp::Con_ToggleConsole_f()
 {
@@ -285,9 +275,4 @@ int CMenuExportsTemp::GetMaxClients() const
 int CMenuExportsTemp::GetMaxClientsLimit() const
 {
 	return svs.maxclientslimit;
-};
-
-const char *CMenuExportsTemp::GetGameDir() const
-{
-	return com_gamedir;
 };
