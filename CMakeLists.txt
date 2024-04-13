@@ -21,8 +21,8 @@ option(OGS_6153 "6153+ preset")
 #set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/build)
 
 # Specify output directory (for compiled binaries)
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
+#set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
+#set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 
 # Set additional paths to search for cmake modules
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")

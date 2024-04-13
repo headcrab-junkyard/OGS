@@ -1,8 +1,14 @@
 project(ogs-engine)
 
+###############################################################################
+
 option(OGS_ENGINE_HW "Build the engine module with hardware renderer (OpenGL) support, it will be using software renderer otherwise" ON)
 
+###############################################################################
+
 add_subdirectory(render) # TODO: renderer
+
+###############################################################################
 
 add_library(${PROJECT_NAME} MODULE)
 
@@ -34,7 +40,7 @@ endif()
 
 add_subdirectory(null)
 
-target_link_libraries(${PROJECT_NAME} ogs-tier1 ogs-mathlib)
+###############################################################################
 
 if(NOT OGS_DEDICATED)
 	if(OGS_ENGINE_HW)
@@ -61,3 +67,9 @@ else()
 	
 	target_link_libraries(${PROJECT_NAME} ogs-renderer-soft)
 endif()
+
+target_link_libraries(${PROJECT_NAME} ogs-tier1 ogs-mathlib)
+
+###############################################################################
+
+install(TARGETS ${PROJECT_NAME} DESTINATION .)

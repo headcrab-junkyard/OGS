@@ -1,5 +1,7 @@
 project(ogs-vstdlib)
 
+###############################################################################
+
 # Build as a shared library
 add_library(${PROJECT_NAME} MODULE) # TODO: SHARED?
 
@@ -10,8 +12,14 @@ target_sources(${PROJECT_NAME}
 	PRIVATE ${PROJECT_SOURCES}
 )
 
+###############################################################################
+
 set_target_properties(${PROJECT_NAME} PROPERTIES
 	OUTPUT_NAME "vstdlib"
 )
 
 target_link_libraries(${PROJECT_NAME} ogs-tier1)
+
+###############################################################################
+
+install(TARGETS ${PROJECT_NAME} DESTINATION .)

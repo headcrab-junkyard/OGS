@@ -1,5 +1,7 @@
 project(ogs-filesystem)
 
+###############################################################################
+
 add_library(${PROJECT_NAME} MODULE)
 
 target_sources(${PROJECT_NAME}
@@ -16,8 +18,14 @@ elseif(UNIX)
 	)
 endif()
 
+###############################################################################
+
 set_target_properties(${PROJECT_NAME} PROPERTIES
 	OUTPUT_NAME "filesystem_stdio"
 )
 
 target_link_libraries(${PROJECT_NAME} ogs-tier1)
+
+###############################################################################
+
+install(TARGETS ${PROJECT_NAME} DESTINATION .)
