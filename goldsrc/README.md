@@ -3,9 +3,10 @@
 * **common** - common code and engine interfaces;
 * **engine** - engine module implementation;
 * **filesystem** - reimplemented filesystem(_stdio) module;
-* **gameui** - reimplemented Game User Interface module;
 * **optional** - optional engine extensions/components;
 * **public** - public code and engine interfaces;
-* **tier0** - original Valve's tier0 pieces from GameNetworkingSockets repo (Steam sources) (BSD-3);
+* **tier0** - original Valve's tier0 library pieces from GameNetworkingSockets repo (Steam sources) (BSD-3);
+* **utils** - engine tools sources (original Quake (1/2) engine utils upgraded to support GS features + rewritten GS-only tools);
 * **vgui2** - reimplemented VGUI2 library;
-* **vstdlib** - original Valve's vstdlib pieces from GameNetworkingSockets repo (Steam sources) (BSD-3);
+* **voice** - reimplemented voice (codec) module sources;
+* **vstdlib** - original Valve's vstdlib library pieces from GameNetworkingSockets repo (Steam sources) (BSD-3);
