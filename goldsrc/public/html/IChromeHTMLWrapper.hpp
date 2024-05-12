@@ -21,6 +21,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 #include "tier1/interface.h"
 #include "HTMLMessages.hpp"
 

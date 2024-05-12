@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018-2019 BlackPhrase
+ * Copyright (C) 2018-2019, 2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,15 +20,17 @@
 
 #pragma once
 
-#include "tier1/interface.h"
+#include <tier1/interface.h>
 
 constexpr auto OGS_VOICECODEC_INTERFACE_VERSION{"IOGSVoiceCodec001"};
 
 struct IVoiceCodec : public IBaseInterface
 {
-	///
+	/// Initialize the voice codec module
+	/// @param anQuality - preffered quality setting
+	/// @return true on success, false otherwise
 	virtual bool Init(int anQuality) = 0;
 	
-	///
+	/// Shutdown the voice codec module
 	virtual void Shutdown() = 0;
 };
