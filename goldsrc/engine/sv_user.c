@@ -98,11 +98,10 @@ void AddLinksToPmove ( areanode_t *node )
 {
 	link_t		*l, *next;
 	edict_t		*check;
-	edict_t		*pl;
 	int			i;
 	physent_t	*pe;
 
-	pl = sv_player;
+	edict_t *pl = sv_player;
 
 	// touch linked edicts
 	for (l = node->solid_edicts.next ; l != &node->solid_edicts ; l = next)
@@ -192,7 +191,7 @@ void SV_RunCmd(usercmd_t *ucmd)
 		pmove->cmd.impulse = 0;
 		SV_RunCmd(&pmove->cmd);
 		return;
-	}
+	};
 
 	if(!sv_player->v.fixangle)
 		VectorCopy(ucmd->viewangles, sv_player->v.v_angle);
@@ -210,10 +209,11 @@ void SV_RunCmd(usercmd_t *ucmd)
 		{
 			sv_player->v.angles[PITCH] = -sv_player->v.v_angle[PITCH] / 3;
 			sv_player->v.angles[YAW] = sv_player->v.v_angle[YAW];
-		}
+		};
+		
 		sv_player->v.angles[ROLL] =
 		V_CalcRoll(sv_player->v.angles, sv_player->v.velocity) * 4;
-	}
+	};
 
 	host_frametime = ucmd->msec * 0.001;
 	if(host_frametime > 0.1)
@@ -229,7 +229,7 @@ void SV_RunCmd(usercmd_t *ucmd)
 		SV_RunThink(sv_player);
 		
 		gEntityInterface.pfnPlayerPostThink(sv_player);
-	}
+	};
 
 	for(i = 0; i < 3; i++)
 		pmove->origin[i] = sv_player->v.origin[i] + (sv_player->v.mins[i] - player_mins[i]);
@@ -251,7 +251,7 @@ void SV_RunCmd(usercmd_t *ucmd)
 	{
 		pmove_mins[i] = pmove->origin[i] - 256;
 		pmove_maxs[i] = pmove->origin[i] + 256;
-	}
+	};
 
 #if 1
 	AddLinksToPmove(sv_areanodes);
@@ -261,7 +261,7 @@ void SV_RunCmd(usercmd_t *ucmd)
 
 	//{
 	//int before = PM_TestPlayerPosition (pmove->origin);
-	gEntityInterface.pfnPM_Move (pmove, true);
+	gEntityInterface.pfnPM_Move(pmove, true);
 	//int after = PM_TestPlayerPosition (pmove->origin);
 
 	//if (sv_player->v.health > 0 && before && !after )
@@ -272,6 +272,7 @@ void SV_RunCmd(usercmd_t *ucmd)
 	sv_player->v.teleport_time = pmove->waterjumptime;
 	sv_player->v.waterlevel = pmove->waterlevel;
 	sv_player->v.watertype = pmove->watertype;
+	
 	if(pmove->onground != -1) // TODO
 	{
 		sv_player->v.flags = (int)sv_player->v.flags | FL_ONGROUND;
@@ -279,6 +280,7 @@ void SV_RunCmd(usercmd_t *ucmd)
 	}
 	else
 		sv_player->v.flags = (int)sv_player->v.flags & ~FL_ONGROUND;
+	
 	for(i = 0; i < 3; i++)
 		sv_player->v.origin[i] = pmove->origin[i] - (sv_player->v.mins[i] - player_mins[i]);
 
@@ -306,9 +308,9 @@ void SV_RunCmd(usercmd_t *ucmd)
 				continue;
 			gEntityInterface.pfnTouch(ent, sv_player);
 			playertouch[n / 8] |= 1 << (n % 8);
-		}
-	}
-}
+		};
+	};
+};
 
 /*
 ===========
@@ -920,7 +922,7 @@ void SV_ParseCvarValueResponse(client_t *cl)
 	// TODO: something else?
 	
 	if(gNewDLLFunctions.pfnCvarValue)
-		gNewDLLFunctions.pfnCvarValue(client->edict, sCvarValue); // TODO: why there is no cvar name here?
+		gNewDLLFunctions.pfnCvarValue(cl->edict, sCvarValue); // TODO: why there is no cvar name here?
 };
 
 void SV_ParseCvarValueResponseEx(client_t *cl)
@@ -932,7 +934,7 @@ void SV_ParseCvarValueResponseEx(client_t *cl)
 	// TODO: something else?
 	
 	if(gNewDLLFunctions.pfnCvarValue2)
-		gNewDLLFunctions.pfnCvarValue2(client->edict, nRequestID, sCvarName, sCvarValue);
+		gNewDLLFunctions.pfnCvarValue2(cl->edict, nRequestID, sCvarName, sCvarValue);
 };
 
 /*
@@ -942,7 +944,7 @@ SV_ExecuteUserCommand
 */
 void SV_ExecuteUserCommand(const char *s)
 {
-	//ucmd_t	*u;
+	//ucmd_t *u;
 	
 	Cmd_TokenizeString (s /*, true*/); // TODO: q2
 	sv_player = host_client->edict; // TODO: = sv_client->edict in q2
@@ -1112,6 +1114,7 @@ void SV_ExecuteClientMessage(client_t *cl)
 		
 		case clc_resourcelist:
 			SV_ParseResourceList(cl);
+			//SV_NextUpload();
 			break;
 
 		case clc_tmove:
@@ -1148,13 +1151,6 @@ void SV_ExecuteClientMessage(client_t *cl)
 		case clc_cvarvalue2:
 			SV_ParseCvarValueResponseEx(cl);
 			break;
-		
-		// TODO: unused
-		/*
-		case clc_upload:
-			SV_NextUpload();
-			break;
-		*/
-		}
-	}
-}
+		};
+	};
+};

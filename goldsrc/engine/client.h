@@ -73,7 +73,7 @@ typedef struct
 
 	// received from server
 	double receivedtime;                    // time message was received, or -1
-	local_state_t playerstate[MAX_CLIENTS]; // message received that reflects performing the usercmd
+	local_state_t playerstate[MAX_CLIENTS]; // message received that reflects performing the usercmd // TODO: should this be entity_state_t?
 	packet_entities_t packet_entities;
 	qboolean invalid; // true if the packet_entities delta was invalid
 } frame_t;
@@ -196,6 +196,8 @@ typedef struct
 	int signon; // 0 to SIGNONS
 	
 	// QW
+	
+	//float latency; // rolling average
 	
 	FileHandle_t download; // file transfer from server
 	char downloadtempname[MAX_OSPATH];
@@ -322,12 +324,12 @@ typedef struct
 	// light level at player's position including dlights
 	// this is sent back to the server each frame
 	// architectually ugly but it works
-	int light_level;
+	int light_level; // TODO: change to byte?
 #endif
 
-	vec3_t		simorg;
-	vec3_t		simvel;
-	vec3_t		simangles;
+	vec3_t simorg;
+	vec3_t simvel;
+	vec3_t simangles;
 
 	// TODO: temp(?) entries to support protocol 48
 	
@@ -336,7 +338,7 @@ typedef struct
 	char hostname[32];
 	char mapcycle[8192];
 	
-	screenfade_t screenfade; ///< screen fade vars
+	screenfade_t screenfade; ///< Screen fade vars
 } client_state_t;
 
 typedef void (*pfnEventHook)(struct event_args_s *args);

@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018-2019, 2021-2022 BlackPhrase
+ * Copyright (C) 2018-2019, 2021-2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -79,11 +79,6 @@ static DIDATAFORMAT df = {
 	NUM_OBJECTS,                // number of objects
 	rgodf,                      // and here they are
 };
-
-// forward-referenced functions
-void IN_StartupJoystick();
-void Joy_AdvancedUpdate_f();
-void IN_JoyMove(usercmd_t *cmd);
 
 /*
 ===========
@@ -234,17 +229,6 @@ IN_InitDInput
 */
 qboolean IN_InitDInput()
 {
-	HRESULT hr;
-	DIPROPDWORD dipdw = {
-		{
-		sizeof(DIPROPDWORD),  // diph.dwSize
-		sizeof(DIPROPHEADER), // diph.dwHeaderSize
-		0,                    // diph.dwObj
-		DIPH_DEVICE,          // diph.dwHow
-		},
-		DINPUT_BUFFERSIZE, // dwData
-	};
-
 	if(!hInstDI)
 	{
 		hInstDI = LoadLibrary("dinput.dll");
@@ -268,7 +252,7 @@ qboolean IN_InitDInput()
 	};
 
 	// register with DirectInput and get an IDirectInput to play with.
-	hr = iDirectInputCreate(0 /*global_hInstance*/, DIRECTINPUT_VERSION, &g_pdi, NULL); // TODO
+	HRESULT hr = iDirectInputCreate(0 /*global_hInstance*/, DIRECTINPUT_VERSION, &g_pdi, NULL); // TODO
 
 	if(FAILED(hr))
 		return false;
@@ -300,6 +284,18 @@ qboolean IN_InitDInput()
 		Con_SafePrintf("Couldn't set DI coop level\n");
 		return false;
 	};
+	
+	DIPROPDWORD dipdw =
+	{
+		{
+		sizeof(DIPROPDWORD),  // diph.dwSize
+		sizeof(DIPROPHEADER), // diph.dwHeaderSize
+		0,                    // diph.dwObj
+		DIPH_DEVICE,          // diph.dwHow
+		},
+		DINPUT_BUFFERSIZE, // dwData
+	};
+	
 	// set the buffer size to DINPUT_BUFFERSIZE elements.
 	// the buffer size is a DWORD property associated with the device
 	hr = IDirectInputDevice_SetProperty(g_pMouse, DIPROP_BUFFERSIZE, &dipdw.diph);
@@ -372,11 +368,10 @@ IN_MouseMove
 */
 void IN_MouseMove(usercmd_t *cmd)
 {
-	HDC hdc;
-	int i;
-	DIDEVICEOBJECTDATA od;
-	DWORD dwElements;
-	HRESULT hr;
+	//HDC hdc;
+	//DIDEVICEOBJECTDATA od;
+	//DWORD dwElements;
+	//HRESULT hr;
 
 	// TODO
 	//if(!mouseactive)
@@ -446,7 +441,7 @@ void IN_MouseMove(usercmd_t *cmd)
 		}
 
 		// perform button actions
-		for(i = 0; i < mouse_buttons; i++)
+		for(int i = 0; i < mouse_buttons; i++)
 		{
 			if((mstate_di & (1 << i)) && !(mouse_oldbuttonstate & (1 << i)))
 			{
@@ -466,7 +461,7 @@ void IN_MouseMove(usercmd_t *cmd)
 	else
 	{
 	};
-}
+};
 
 void IN_Move(usercmd_t *cmd)
 {
@@ -475,11 +470,6 @@ void IN_Move(usercmd_t *cmd)
 	};
 }
 
-/* 
-=============== 
-IN_StartupJoystick 
-=============== 
-*/
 void IN_StartupJoystick()
 {
 }

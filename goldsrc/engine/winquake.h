@@ -77,15 +77,24 @@ extern qboolean ActiveApp, Minimized;
 
 extern qboolean WinNT;
 
+// Video
 int VID_ForceUnlockedAndReturnState();
 void VID_ForceLockState(int lk);
 
+void VID_SetDefaultMode();
+
+// Input
 void IN_ShowMouse();
 void IN_DeactivateMouse();
 void IN_HideMouse();
 void IN_ActivateMouse();
 void IN_RestoreOriginalMouseState();
 void IN_SetQuakeMouseState();
+void IN_UpdateClipCursor();
+
+// Sound
+void S_BlockSound();
+void S_UnblockSound();
 
 extern qboolean winsock_lib_initialized;
 
@@ -94,19 +103,14 @@ extern cvar_t _windowed_mouse; // TODO: not present in qw
 extern int window_center_x, window_center_y;
 extern RECT window_rect;
 
-extern qboolean mouseinitialized;
-extern HWND hwnd_dialog;
+//extern qboolean mouseinitialized; // TODO: remove
+extern HWND hwnd_dialog; // TODO: remove?
 
-extern HANDLE hinput, houtput;
+extern HANDLE hinput, houtput; // TODO: remove?
 
-void IN_UpdateClipCursor();
 void CenterWindow(HWND hWndCenter, int width, int height, BOOL lefttopjustify);
 
-void S_BlockSound();
-void S_UnblockSound();
-
-void VID_SetDefaultMode();
-
+// Networking
 extern int (PASCAL FAR *pWSAStartup)(WORD wVersionRequired, LPWSADATA lpWSAData);
 extern int (PASCAL FAR *pWSACleanup)();
 extern int (PASCAL FAR *pWSAGetLastError)();

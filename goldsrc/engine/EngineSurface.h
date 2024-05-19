@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 
 #include "IEngineSurface.h"
 
+// TODO: EngineSurface
 class CEngineSurface : public IEngineSurface
 {
 public:
@@ -68,4 +69,11 @@ public:
 	
 	void drawSetTextureBGRA(int id, const unsigned char *rgba, int wide, int tall, int hardwareFilter, bool forceUpload) override;
 	void drawUpdateRegionTextureBGRA(int textureID, int drawX, int drawY, unsigned const char *rgba, int subTextureWide, int subTextureTall) override;
+};
+
+// TODO
+class EngineSurfaceWrap
+{
+public:
+private:
 };

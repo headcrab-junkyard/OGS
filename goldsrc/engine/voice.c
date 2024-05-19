@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,6 +38,8 @@ cvar_t voice_scale = {"voice_scale", "0", FCVAR_ARCHIVE};
 cvar_t voice_showchannels = {"voice_showchannels", "0"};
 cvar_t voice_showincoming = {"voice_showincoming", "0"};
 
+qboolean gbInVoiceRecord = false;
+
 void Voice_Init()
 {
 	// TODO
@@ -73,4 +75,12 @@ void Voice_RegisterCvars()
 void Voice_RecordStart()
 {
 	// TODO
+	gbInVoiceRecord = true;
+};
+
+// TODO: I guess
+void Voice_RecordStop()
+{
+	// TODO
+	gbInVoiceRecord = false;
 };

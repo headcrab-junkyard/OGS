@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2017-2018, 2021 BlackPhrase
+ * Copyright (C) 2017-2018, 2021, 2024 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "BaseUI/IBaseUI.h"
+#include <BaseUI/IBaseUI.h>
 
 class CBaseUI : public IBaseUI
 {

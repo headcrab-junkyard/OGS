@@ -457,7 +457,7 @@ void Cmd_Init()
 #endif
 
 	Cmd_AddCommand("wait", Cmd_Wait_f);
-	Cmd_AddCommand("cmdlist", Cmd_List_f); // TODO
+	Cmd_AddCommand("cmdlist", Cmd_List_f);
 }
 
 /*
@@ -805,6 +805,8 @@ Cmd_List_f
 */
 void Cmd_List_f()
 {
+	// TODO
+	
 	cmd_function_t	*cmd;
 	int				i;
 

@@ -47,7 +47,7 @@ void UnloadClientDLL()
 
 qboolean LoadClientDLLF()
 {
-	pfnGetClientDLL fnGetClientDLL = (pfnGetClientDLL)Sys_GetExport_Wrapper(gpClientDLL, "F"); // TODO: GetClientDLL?
+	pfnGetClientDLL fnGetClientDLL = (pfnGetClientDLL)Sys_GetProcAddress(gpClientDLL, "F"); // TODO: GetClientDLL?
 
 	if(!fnGetClientDLL)
 		return false;

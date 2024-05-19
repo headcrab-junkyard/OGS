@@ -82,7 +82,7 @@ CBaseUI::~CBaseUI() = default;
 void CBaseUI::Initialize(CreateInterfaceFn *factories, int count)
 {
 /*
-	if (!gConfigs.bInitialied)
+	if(!gConfigs.bInitialied)
 		Config_Init();
 
 	ghVGUI2 = (HINTERFACEMODULE)GetModuleHandle("vgui2.dll");
@@ -137,6 +137,9 @@ void CBaseUI::Start(struct cl_enginefuncs_s *engineFuncs, int interfaceVersion)
 		engineFuncs->pfnAddCommand("_dump_fonttexture", DumpFontTexture_f);
 	};
 */
+	
+	if(gpGameUI)
+		gpGameUI->Start(engineFuncs, interfaceVersion, nullptr);
 };
 
 void CBaseUI::Shutdown()

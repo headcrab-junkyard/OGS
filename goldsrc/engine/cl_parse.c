@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018-2019, 2021 BlackPhrase
+ * Copyright (C) 2018-2019, 2021-2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -237,6 +237,7 @@ void CL_KeepaliveMessage ()
 CL_ParseServerInfo
 ==================
 */
+// TODO: CL_ParseServerData in qw
 void CL_ParseServerInfo()
 {
 	char *str;
@@ -275,7 +276,8 @@ void CL_ParseServerInfo()
 	{
 		Con_Printf("Bad maxclients (%u) from server\n", cl.maxclients);
 		return;
-	}
+	};
+	
 	cl.scores = Hunk_AllocName(cl.maxclients * sizeof(*cl.scores), "scores");
 
 	// parse player index
@@ -567,7 +569,7 @@ void CL_ParseUpdate(int bits)
 CL_ParseBaseline
 ==================
 */
-void CL_ParseBaseline(cl_entity_t *ent)
+void CL_ParseBaseline(cl_entity_t *ent) // TODO: entity_state_t in qw
 {
 	ent->baseline.modelindex = MSG_ReadByte();
 	ent->baseline.frame = MSG_ReadByte();
@@ -935,6 +937,11 @@ void Model_NextDownload ()
 	//MSG_WriteString(&cls.netchan.message, va(prespawn_name, cl.servercount, cl.worldmodel->checksum2)); // TODO
 };
 
+/*
+=================
+CL_ParseResourceList
+=================
+*/
 void CL_ParseResourceList()
 {
 	//begin CL_ParseResourceList()    end   CL_ParseResourceList()   
@@ -1006,6 +1013,11 @@ void CL_ParseResourceList()
 	};
 };
 
+/*
+=================
+CL_ParseVoiceData
+=================
+*/
 void CL_ParseVoiceData()
 {
 	int nPlayerIndex = MSG_ReadByte();
@@ -1020,16 +1032,31 @@ void CL_ParseVoiceData()
 		pData[i] = MSG_ReadByte();
 };
 
+/*
+==============
+CL_ParseFileTxferFailed
+==============
+*/
 void CL_ParseFileTxferFailed()
 {
 	Con_Printf("Error: server failed to transmit file '%s'\n", MSG_ReadString());
 };
 
+/*
+==============
+CL_Parse_HLTV
+==============
+*/
 void CL_Parse_HLTV()
 {
 	int nMode = MSG_ReadByte(); // TODO: see hltv.h
 };
 
+/*
+==============
+CL_Parse_DeltaDescription
+==============
+*/
 void CL_Parse_DeltaDescription() // TODO: replace with DELTA_ParseDescription
 {
 	// TODO
@@ -1132,14 +1159,14 @@ void CL_ParseServerMessage()
 
 		SHOWNET(svc_strings[cmd]);
 
-		// other commands
+		// Other commands
 		switch(cmd)
 		{
 		default:
 			Host_Error("CL_ParseServerMessage: Illegible server message - %s\n", svc_strings[cmd]); // TODO
 			break;
 		case svc_nop:
-			//Con_Printf ("svc_nop\n");
+			//Con_Printf("svc_nop\n");
 			break;
 		case svc_disconnect:
 			Host_EndGame("Server disconnected\n");
@@ -1201,7 +1228,7 @@ void CL_ParseServerMessage()
 			R_ParseParticleEffect();
 			break;
 		case svc_damage:
-			// Deprecated
+			// NOTE: Deprecated
 			//V_ParseDamage();
 			break;
 		case svc_spawnstatic:
@@ -1225,14 +1252,14 @@ void CL_ParseServerMessage()
 			{
 				CDAudio_Pause();
 #ifdef _WIN32
-				VID_HandlePause(true);
+				VID_HandlePause(true); // TODO: non-qw
 #endif
 			}
 			else
 			{
 				CDAudio_Resume();
 #ifdef _WIN32
-				VID_HandlePause(false);
+				VID_HandlePause(false); // TODO: non-qw
 #endif
 			};
 			break;
@@ -1264,7 +1291,7 @@ void CL_ParseServerMessage()
 			break;
 		case svc_finale:
 			cl.intermission = 2;
-			cl.completed_time = cl.time;
+			cl.completed_time = cl.time; // TODO: realtime in qw
 			vid.recalc_refdef = true; // go to full screen
 			SCR_CenterPrint(MSG_ReadString());
 			break;
@@ -1318,6 +1345,8 @@ void CL_ParseServerMessage()
 			break;
 		case svc_resourcelist:
 			CL_ParseResourceList();
+			//CL_ParseModellist();
+			//CL_ParseSoundlist();
 			break;
 		case svc_newmovevars:
 		{
@@ -1492,6 +1521,7 @@ void CL_ParseServerMessage()
 			cl.scores[i].colors = MSG_ReadByte ();
 			CL_NewTranslation (i);
 			break;
+		
 		case svc_updatestat:
 			i = MSG_ReadByte ();
 			if (i < 0 || i >= MAX_CL_STATS)

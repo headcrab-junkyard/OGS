@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018, 2021-2022 BlackPhrase
+ * Copyright (C) 2018, 2021-2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 #ifdef _WIN32
 #include "winquake.h"
 #else
-#define DWORD unsigned long
+typedef unsigned long DWORD;
 #endif
 
 #define PAINTBUFFER_SIZE 512
@@ -382,15 +382,12 @@ void SND_PaintChannelFrom16(channel_t *ch, sfxcache_t *sc, int count)
 {
 	int data;
 	int left, right;
-	int leftvol, rightvol;
-	signed short *sfx;
-	int i;
 
-	leftvol = ch->leftvol;
-	rightvol = ch->rightvol;
-	sfx = (signed short *)sc->data + ch->pos;
+	int leftvol = ch->leftvol;
+	int rightvol = ch->rightvol;
+	signed short *sfx = (signed short *)sc->data + ch->pos;
 
-	for(i = 0; i < count; i++)
+	for(int i = 0; i < count; i++)
 	{
 		data = sfx[i];
 		left = (data * leftvol) >> 8;

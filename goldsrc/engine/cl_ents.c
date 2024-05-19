@@ -841,8 +841,8 @@ void CL_LinkPlayers()
 {
 	int j;
 	player_info_t *info;
-	local_state_t *state;
-	local_state_t exact;
+	local_state_t *state; // TODO: was entity_state_t
+	local_state_t exact; // TODO: was entity_state_t
 	double playertime;
 	cl_entity_t *ent;
 	int msec;

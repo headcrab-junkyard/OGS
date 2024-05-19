@@ -26,6 +26,15 @@
 #include "winquake.h"
 #endif
 
+// TODO: qw
+/*
+#ifdef _WIN32
+#include "winsock.h"
+#else
+#include <netinet/in.h>
+#endif
+*/
+
 int fps_count; // TODO: used by gl_screen
 
 // we need to declare some mouse variables here, because the menu system
@@ -135,6 +144,12 @@ dlight_t cl_dlights[MAX_DLIGHTS];
 int cl_numvisedicts;
 cl_entity_t *cl_visedicts[MAX_VISEDICTS];
 
+//netadr_t master_adr; // address of the master server // TODO: qw
+
+//void Master_Connect_f(); // TODO: qw
+
+//float server_version = 0; // version of server we connected to // TODO: qw
+
 // TODO: cls.connect_time?
 double connect_time = -1; // for connection retransmits
 
@@ -161,8 +176,14 @@ void CL_Connect_f()
 		Con_Printf("usage: connect <server>\n");
 		return;
 	};
+	
+	if(cmd_source != src_command)
+	{
+		Con_Printf("Connect only works from the console.\n");
+		return;
+	};
 
-	if (cls.demoplayback)
+	if(cls.demoplayback)
 		return;
 	
 	/*
@@ -218,6 +239,11 @@ CL_Retry_f
 void CL_Retry_f()
 {
 	// TODO
+	
+	{
+		Con_Printf("Can't retry, no previous connection\n");
+		return;
+	};
 };
 
 /*
@@ -229,6 +255,12 @@ Dump userids for all current players
 */
 void CL_Users_f()
 {
+	if(cls.state == ca_disconnected)
+	{
+		Con_Printf("Can't 'users', not running a server\n");
+		return;
+	};
+	
 	int c = 0;
 	
 	Con_Printf("userid frags name\n");
@@ -502,11 +534,11 @@ void CL_ClearState()
 
 	// clear other arrays
 	Q_memset(cl_efrags, 0, sizeof(cl_efrags));
-	Q_memset(cl_entities, 0, sizeof(cl_entities));
+	Q_memset(cl_entities, 0, sizeof(cl_entities)); // TODO: non-qw?
 	Q_memset(cl_dlights, 0, sizeof(cl_dlights));
 	Q_memset(cl_lightstyle, 0, sizeof(cl_lightstyle));
-	Q_memset(cl_temp_entities, 0, sizeof(cl_temp_entities));
-	Q_memset(cl_beams, 0, sizeof(cl_beams));
+	Q_memset(cl_temp_entities, 0, sizeof(cl_temp_entities)); // TODO: non-qw?
+	Q_memset(cl_beams, 0, sizeof(cl_beams)); // TODO: non-qw?
 
 	//
 	// allocate the efrags and chain together into a free list
@@ -585,11 +617,16 @@ void CL_Disconnect()
 	//CL_StopUpload(); // TODO: qw
 };
 
+/*
+=====================
+CL_Disconnect_f
+=====================
+*/
 void CL_Disconnect_f()
 {
 	CL_Disconnect();
-	if(sv.active)
-		Host_ShutdownServer(false);
+	if(sv.active) // TODO: non-qw
+		Host_ShutdownServer(false); // TODO: non-qw
 };
 
 /*
@@ -599,16 +636,30 @@ CL_Listen_f
 */
 void CL_Listen_f()
 {
+	if(Cmd_Argc() != 2)
+	{
+		Con_Printf("usage: listen <IP>\n");
+		return;
+	};
+	
 	// TODO
 };
 
 /*
 =====================
 CL_GG_f
+
+GameGauge - benchmark mode 
 =====================
 */
 void CL_GG_f()
 {
+	if(Cmd_Argc() != 2)
+	{
+		Con_Printf("usage: gg <demoname> : Game Gauge 99\n");
+		return;
+	};
+	
 	// TODO
 };
 
@@ -1465,7 +1516,7 @@ void CL_SendCmd()
 	//SZ_Clear (&cls.netchan.message);
 	
 	//
-	// deliver the message
+	// Deliver the message
 	//
 	Netchan_Transmit(&cls.netchan, cls.netchan.message.cursize, cls.netchan.message.data);
 #endif // SWDS
@@ -1496,7 +1547,7 @@ void CL_Init()
 	CL_InitTEnts();
 	CL_InitPrediction();
 	CL_InitCam();
-	Pmove_Init(&clpmove);
+	PM_Init(&clpmove);
 
 	//
 	// register our variables

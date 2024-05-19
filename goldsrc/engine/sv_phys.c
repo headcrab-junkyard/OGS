@@ -34,7 +34,6 @@ walking monsters are SOLID_SLIDEBOX and MOVETYPE_STEP
 flying/floating monsters are SOLID_SLIDEBOX and MOVETYPE_FLY
 
 solid_edge items only clip against bsp models.
-
 */
 
 cvar_t sv_friction = { "sv_friction", "4", FCVAR_SERVER };
@@ -106,12 +105,10 @@ SV_CheckVelocity
 */
 void SV_CheckVelocity(edict_t *ent)
 {
-	int i;
-
 	//
 	// bound velocity
 	//
-	for(i = 0; i < 3; i++)
+	for(int i = 0; i < 3; i++)
 	{
 		if(IS_NAN(ent->v.velocity[i]))
 		{
@@ -229,19 +226,17 @@ returns the blocked flags (1 = floor, 2 = step / wall)
 
 int ClipVelocity(vec3_t in, vec3_t normal, vec3_t out, float overbounce)
 {
-	float backoff;
 	float change;
-	int i, blocked;
 
-	blocked = 0;
+	int blocked = 0;
 	if(normal[2] > 0)
 		blocked |= 1; // floor
 	if(!normal[2])
 		blocked |= 2; // step
 
-	backoff = DotProduct(in, normal) * overbounce;
+	float backoff = DotProduct(in, normal) * overbounce;
 
-	for(i = 0; i < 3; i++)
+	for(int i = 0; i < 3; i++)
 	{
 		change = normal[i] * backoff;
 		out[i] = in[i] - change;
@@ -682,9 +677,7 @@ void SV_PushRotate(edict_t *pusher, float movetime)
 			return;
 		}
 		else
-		{
 			VectorAdd(check->v.angles, amove, check->v.angles);
-		}
 	}
 }
 
@@ -696,21 +689,16 @@ SV_Physics_Pusher
 */
 void SV_Physics_Pusher(edict_t *ent)
 {
-	float thinktime;
-	float oldltime;
-	float movetime;
-
-	oldltime = ent->v.ltime;
-
-	thinktime = ent->v.nextthink;
+	float movetime = host_frametime;
+	float oldltime = ent->v.ltime;
+	float thinktime = ent->v.nextthink;
+	
 	if(thinktime < ent->v.ltime + host_frametime)
 	{
 		movetime = thinktime - ent->v.ltime;
 		if(movetime < 0)
 			movetime = 0;
 	}
-	else
-		movetime = host_frametime;
 
 	if(movetime)
 	{
@@ -1456,24 +1444,24 @@ void SV_Physics_Step(edict_t *ent)
 
 	// regular thinking
 	SV_RunThink(ent);
+	
 	SV_CheckWaterTransition(ent);
 }
 #else
 void SV_Physics_Step(edict_t *ent)
 {
-	qboolean hitsound;
+	qboolean hitsound = false;
 
 	// freefall if not onground
 	if(!((int)ent->v.flags & (FL_ONGROUND | FL_FLY | FL_SWIM)))
 	{
 		if(ent->v.velocity[2] < sv_gravity.value * -0.1) // TODO: sv_gravity.value -> movevars.gravity in qw
 			hitsound = true;
-		else
-			hitsound = false;
 
 		SV_AddGravity(ent); // TODO: scale = 1.0 in qw
 		SV_CheckVelocity(ent);
 		SV_FlyMove(ent, host_frametime, NULL);
+		
 		SV_LinkEdict(ent, true);
 
 		if((int)ent->v.flags & FL_ONGROUND) // just hit ground
@@ -1500,9 +1488,6 @@ SV_Physics
 */
 void SV_Physics()
 {
-	int i;
-	edict_t *ent;
-
 	// let the progs know that a new frame has started
 	gGlobalVariables.time = sv.time;
 	gEntityInterface.pfnStartFrame();
@@ -1512,8 +1497,8 @@ void SV_Physics()
 	//
 	// treat each object in turn
 	//
-	ent = sv.edicts;
-	for(i = 0; i < sv.num_edicts; i++, ent = NEXT_EDICT(ent))
+	edict_t *ent = sv.edicts;
+	for(int i = 0; i < sv.num_edicts; i++, ent = NEXT_EDICT(ent))
 	{
 		if(ent->free)
 			continue;
@@ -1638,7 +1623,7 @@ void SV_SetMoveVars()
 	movevars.edgefriction		= sv_edgefriction.value;
 	movevars.waterfriction	    = sv_waterfriction.value;
 	
-	movevars.entgravity			= 1.0;
+	movevars.entgravity			= 1.0; // TODO
 	
 	movevars.bounce				= sv_bounce.value;
 	movevars.stepsize			= sv_stepsize.value;
@@ -1649,10 +1634,10 @@ void SV_SetMoveVars()
 	
 	movevars.footsteps			= mp_footsteps.value;
 	
-	Q_strcpy(movevars.skyName, "2desert"); //sv_skyname.string; // TODO
+	Q_strcpy(movevars.skyName, sv_skyname.string);
 	
-	movevars.rollangle			= 0.0f; // TODO
-	movevars.rollspeed			= 0.0f; // TODO
+	movevars.rollangle			= sv_rollangle.value;
+	movevars.rollspeed			= sv_rollspeed.value;
 	
 	movevars.skycolor_r			= sv_skycolor_r.value;
 	movevars.skycolor_g			= sv_skycolor_g.value;

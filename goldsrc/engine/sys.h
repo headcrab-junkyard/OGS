@@ -59,3 +59,5 @@ void Sys_InitGame(const char *lpOrgCmdLine, const char *pBaseDir /*TODO: szBaseD
 void Sys_InitArgv(char *lpCmdLine);
 
 void DedicatedExports_Print(const char *text);
+
+void *Sys_GetProcAddress(void *library, const char *name);

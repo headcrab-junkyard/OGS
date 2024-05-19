@@ -113,7 +113,8 @@ void Cmd_TokenizeString(const char *text);
 // breaks the string up into arg tokens.
 
 void Cmd_ExecuteString(const char *text, cmd_source_t src);
-// Parses a single line of text into arguments and tries to execute it.
+// Parses a single line of text into arguments and tries to execute it
+// (as if it was typed at the console).
 // The text can come from the command buffer, a remote client, or stdin.
 
 void Cmd_ForwardToServer();

@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018-2022 BlackPhrase
+ * Copyright (C) 2018-2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,8 @@ extern enginefuncs_t gEngineFuncs; // TODO
 
 void *gamedll = NULL;
 
+qboolean noclip_anglehack; // remnant from old quake
+
 void LoadThisDll(const char *name)
 {
 	pfnGiveFnptrsToDll fnGiveFnptrsToDll = NULL;
@@ -49,14 +51,14 @@ void LoadThisDll(const char *name)
 
 	//pr_strings = (char *)progs + progs->ofs_strings; // TODO
 
-	fnGiveFnptrsToDll = (pfnGiveFnptrsToDll)Sys_GetExport_Wrapper(gamedll, "GiveFnptrsToDll");
+	fnGiveFnptrsToDll = (pfnGiveFnptrsToDll)Sys_GetProcAddress(gamedll, "GiveFnptrsToDll");
 
 	if(!fnGiveFnptrsToDll)
 		return;
 
 	fnGiveFnptrsToDll(&gEngineFuncs, &gGlobalVariables); // TODO
 
-	fnGetNewDLLFunctions = (NEW_DLL_FUNCTIONS_FN)Sys_GetExport_Wrapper(gamedll, "GetNewDLLFunctions");
+	fnGetNewDLLFunctions = (NEW_DLL_FUNCTIONS_FN)Sys_GetProcAddress(gamedll, "GetNewDLLFunctions");
 	
 	int nDLLVersion = NEW_DLL_FUNCTIONS_VERSION;
 	
@@ -68,8 +70,8 @@ void LoadThisDll(const char *name)
 			Sys_Error("Extended API set has a wrong version (got %d, should be %d)", nDLLVersion, NEW_DLL_FUNCTIONS_VERSION);
 	};
 	
-	fnGetEntityAPI = (APIFUNCTION)Sys_GetExport_Wrapper(gamedll, "GetEntityAPI");
-	fnGetEntityAPI2 = (APIFUNCTION2)Sys_GetExport_Wrapper(gamedll, "GetEntityAPI2");
+	fnGetEntityAPI = (APIFUNCTION)Sys_GetProcAddress(gamedll, "GetEntityAPI");
+	fnGetEntityAPI2 = (APIFUNCTION2)Sys_GetProcAddress(gamedll, "GetEntityAPI2");
 
 	nDLLVersion = INTERFACE_VERSION;
 	
@@ -153,7 +155,7 @@ void S_MP3_Play(const char *name)
 
 /*
 ==================
-S_Quit_f
+Host_MP3_f
 ==================
 */
 void Host_MP3_f()
@@ -178,15 +180,17 @@ extern void M_Menu_Quit_f();
 void Host_Quit_f()
 {
 	if(key_dest != key_console && cls.state != ca_dedicated)
+	//if(1) // TODO: qw
 	{
 		Cbuf_AddText("menu_quit"); //M_Menu_Quit_f(); // TODO
 		return;
-	}
+	};
+	
 	CL_Disconnect();
-	Host_ShutdownServer(false);
+	Host_ShutdownServer(false); // TODO: non-qw
 
 	Sys_Quit();
-}
+};
 
 /*
 ==================
@@ -312,9 +316,9 @@ void Host_God_f()
 	
 	sv_player->v.flags = (int)sv_player->v.flags ^ FL_GODMODE;
 	if(!((int)sv_player->v.flags & FL_GODMODE))
-		SV_ClientPrintf(host_client, "godmode OFF\n");
+		SV_ClientPrintf(host_client, /*PRINT_HIGH,*/ "godmode OFF\n");
 	else
-		SV_ClientPrintf(host_client, "godmode ON\n");
+		SV_ClientPrintf(host_client, /*PRINT_HIGH,*/ "godmode ON\n");
 }
 
 void Host_Notarget_f()
@@ -334,8 +338,6 @@ void Host_Notarget_f()
 	else
 		SV_ClientPrintf(host_client, "notarget ON\n");
 }
-
-qboolean noclip_anglehack;
 
 void Host_Noclip_f()
 {
@@ -573,7 +575,14 @@ Host_Maps_f
 */
 void Host_Maps_f()
 {
-	// TODO
+	if(Cmd_Argc() < 2)
+	{
+		Con_Printf("Usage: maps <substring>\n");
+		Con_Printf("maps * for full listing\n");
+		return;
+	};
+	
+	// TODO: print available maps by name mask
 };
 
 /*

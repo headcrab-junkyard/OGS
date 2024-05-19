@@ -41,6 +41,7 @@ qboolean isDedicated;
 void Sys_InitFloatTime();
 
 void MaskExceptions();
+
 void Sys_SetFPCW();
 void Sys_PushFPCW_SetHigh();
 void Sys_PopFPCW();
@@ -193,9 +194,11 @@ void Sys_Printf(const char *fmt, ...)
 #endif // SWDS
 
 #elif __linux__
-	char text[1024];
 	byte *p;
 
+	
+	char text[1024]; // TODO: 2048 in other code
+	
 	va_start(argptr, fmt);
 	vsprintf(text, fmt, argptr);
 	va_end(argptr);
@@ -390,11 +393,12 @@ void Sys_Error(const char *error, ...)
 	va_start(argptr, error);
 	vsprintf(string, error, argptr);
 	va_end(argptr);
-	fprintf(stderr, "Error: %s\n", string);
+	
+	fprintf(stderr, "Error: %s\n", string); // TODO: printf("Fatal error: %s\n", string)
 
 	gEntityInterface.pfnSys_Error(string);
 	
-	Host_Shutdown();
+	Host_Shutdown(); // TODO: remove?
 	exit(1);
 #elif sun
 	va_list argptr;
@@ -435,9 +439,9 @@ void Sys_Quit()
 	Host_Shutdown();
 	fcntl(0, F_SETFL, fcntl(0, F_GETFL, 0) & ~FNDELAY);
 
-	fflush(stdout);
+	fflush(stdout); // TODO: not present in other cases
 #elif sun
-	Host_Shutdown();
+	Host_Shutdown(); // TODO: remove?
 #endif
 
 	exit(0);
@@ -469,14 +473,14 @@ double Sys_FloatTime()
 	static unsigned int oldtime;
 	static int first = 1;
 	LARGE_INTEGER PerformanceCount;
-	unsigned int temp, t2;
+	unsigned int t2;
 	double time;
 
 	Sys_PushFPCW_SetHigh();
 
 	QueryPerformanceCounter(&PerformanceCount);
 
-	temp = ((unsigned int)PerformanceCount.LowPart >> lowshift) |
+	uint temp = ((unsigned int)PerformanceCount.LowPart >> lowshift) |
 	((unsigned int)PerformanceCount.HighPart << (32 - lowshift));
 
 	if(first)
@@ -593,7 +597,7 @@ Send Key_Event calls
 void Sys_SendKeyEvents()
 {
 #ifdef OGS_USE_SDL
-	//SDL_PumpEvents();
+	//SDL_PumpEvents(); // TODO
 	
 	HandleSDLEvents();
 #elif _WIN32

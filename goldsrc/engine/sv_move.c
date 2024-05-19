@@ -280,28 +280,30 @@ SV_NewChaseDir
 #define DI_NODIR -1
 void SV_NewChaseDir(edict_t *actor, edict_t *enemy, float dist)
 {
-	float deltax, deltay;
+	float olddir = anglemod((int)(actor->v.ideal_yaw / 45) * 45);
+	float turnaround = anglemod(olddir - 180);
+
+	float deltax = enemy->v.origin[0] - actor->v.origin[0];
+	float deltay = enemy->v.origin[1] - actor->v.origin[1];
+	
 	float d[3];
-	float tdir, olddir, turnaround;
-
-	olddir = anglemod((int)(actor->v.ideal_yaw / 45) * 45);
-	turnaround = anglemod(olddir - 180);
-
-	deltax = enemy->v.origin[0] - actor->v.origin[0];
-	deltay = enemy->v.origin[1] - actor->v.origin[1];
+	
+	d[1] = DI_NODIR;
+	
 	if(deltax > 10)
 		d[1] = 0;
 	else if(deltax < -10)
 		d[1] = 180;
-	else
-		d[1] = DI_NODIR;
+	
+	d[2] = DI_NODIR;
+	
 	if(deltay < -10)
 		d[2] = 270;
 	else if(deltay > 10)
 		d[2] = 90;
-	else
-		d[2] = DI_NODIR;
-
+	
+	float tdir;
+	
 	// try direct route
 	if(d[1] != DI_NODIR && d[2] != DI_NODIR)
 	{
@@ -366,9 +368,7 @@ SV_CloseEnough
 */
 qboolean SV_CloseEnough(edict_t *ent, edict_t *goal, float dist)
 {
-	int i;
-
-	for(i = 0; i < 3; i++)
+	for(int i = 0; i < 3; i++)
 	{
 		if(goal->v.absmin[i] > ent->v.absmax[i] + dist)
 			return false;
@@ -394,10 +394,7 @@ void SV_MoveToGoal(edict_t *ent, float dist)
 	//goal = ent->v.goalentity; // TODO
 
 	if(!((int)ent->v.flags & (FL_ONGROUND | FL_FLY | FL_SWIM)))
-	{
-		//G_FLOAT(OFS_RETURN) = 0; // TODO
 		return;
-	};
 
 // if the next step hits the enemy, return immediately
 #ifdef QUAKE2

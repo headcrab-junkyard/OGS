@@ -579,6 +579,9 @@ void MSG_BeginReading()
 {
 	msg_readcount = 0;
 	msg_badread = false;
+	
+	net_message.bit = 0;
+	net_message.oob = false;
 }
 
 int MSG_GetReadCount()

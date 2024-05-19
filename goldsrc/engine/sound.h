@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 
 #pragma once
 
-#define CVOXFILESENTENCEMAX 1536
+const int CVOXFILESENTENCEMAX = 1536;
 
 // !!! if this is changed, it much be changed in asm_i386.h too !!!
 typedef struct
@@ -137,7 +137,7 @@ void SNDDMA_Shutdown();
 // ====================================================================
 
 #define MAX_CHANNELS 128
-#define MAX_DYNAMIC_CHANNELS 8
+const int MAX_DYNAMIC_CHANNELS = 8;
 
 extern channel_t channels[MAX_CHANNELS];
 // 0 to MAX_DYNAMIC_CHANNELS-1	= normal entity sounds

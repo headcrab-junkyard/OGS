@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2021 BlackPhrase
+ * Copyright (C) 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,6 +53,12 @@ void Dem_ForceHLTV_f()
 
 void DemoPlayer_Init()
 {
+	// TODO
+	//demoplayer *pDemoPlayer{LoadDemoPlayerModule()};
+	
+	//if(!pDemoPlayer)
+		//Sys_Error("Failed to load demo player module.");
+	
 	//CDemoPlayer::Init()
 	//{
 	Cmd_AddCommand("dem_save", Dem_Save_f);

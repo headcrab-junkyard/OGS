@@ -24,11 +24,11 @@
 #include "igame.h"
 
 // TODO: temp
-const int PAUSE_SLEEP = 50;     ///< sleep time on pause or minimization
-const int NOT_FOCUS_SLEEP = 20; ///< sleep time when not focus
+const int PAUSE_SLEEP{50};     ///< sleep time on pause or minimization
+const int NOT_FOCUS_SLEEP{20}; ///< sleep time when not focus
 
-static CEngine gEngine;       // g_Engine
-IEngine *gpEngine = &gEngine; // eng
+static CEngine gEngine; // TODO: g_Engine
+IEngine *gpEngine = &gEngine; // TODO: eng
 
 // TODO: was located in system code before
 #ifdef _WIN32
@@ -53,18 +53,19 @@ void CEngine::Frame()
 {
 	if(!isDedicated)
 	{
-#ifdef _WIN32
+#ifdef _WIN32 // TODO: should this be used for non-Windows too?
 		// yield the CPU for a little while when paused, minimized, or not the focus
-		if (/*(cl.paused && (!ActiveApp && !DDActive)) ||*/ Minimized || block_drawing) // TODO
+		if (/*(cl.paused && (!ActiveApp && !DDActive)) ||*/ Minimized || block_drawing) // TODO: gpGame->IsActiveApp?
 		{
 			gpGame->SleepUntilInput(PAUSE_SLEEP);
 			scr_skipupdate = 1; // no point in bothering to draw
 		}
-		else if (!ActiveApp /*&& !DDActive*/) // TODO
+		else if(!ActiveApp /*&& !DDActive*/) // TODO: gpGame->IsActiveApp?
 			gpGame->SleepUntilInput(NOT_FOCUS_SLEEP);
 #endif // _WIN32
 	};
-
+	
+	// find time spent rendering last frame
 	newtime = Sys_FloatTime();
 	frametime = newtime - oldtime;
 
@@ -81,6 +82,6 @@ void CEngine::Frame()
 	};
 	*/
 
-	Host_Frame(frametime, 0, nullptr); // TODO
+	Host_Frame(frametime, 0, nullptr); // TODO: state support
 	oldtime = newtime;
 };

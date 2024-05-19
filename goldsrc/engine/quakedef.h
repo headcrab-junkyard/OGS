@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018-2022 BlackPhrase
+ * Copyright (C) 2018-2022, 2024 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,8 +36,6 @@
 
 #define VERSION 1.09
 #define GLQUAKE_VERSION 1.00
-#define D3DQUAKE_VERSION 0.01
-#define WINQUAKE_VERSION 0.996
 #define LINUX_VERSION 1.30
 #define X11_VERSION 1.10
 

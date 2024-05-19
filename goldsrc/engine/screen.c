@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-2001 Id Software, Inc.
- * Copyright (C) 2018-2022 BlackPhrase
+ * Copyright (C) 2018-2023 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,7 +59,7 @@ Con_Printf ();
 net 
 turn off messages option
 
-the refresh is allways rendered, unless the console is full screen
+the refresh is always rendered, unless the console is full screen
 
 
 console is:
@@ -83,6 +83,7 @@ float scr_conlines; // lines of console to display
 
 float oldscreensize, oldfov;
 //float oldsbar; // TODO: qw
+
 cvar_t scr_viewsize = { "viewsize", "120", true };
 cvar_t scr_fov = { "fov", "90" }; // 10 - 170 // TODO: remove?
 cvar_t scr_conspeed = { "scr_conspeed", "300" }; // TODO: remove?
@@ -217,27 +218,25 @@ void SCR_DrawCenterString()
 }
 
 #ifndef GLQUAKE
-void SCR_EraseCenterString(void)
+void SCR_EraseCenterString()
 {
-	int y;
-
 	if(scr_erase_center++ > vid.numpages)
 	{
 		scr_erase_lines = 0;
 		return;
 	}
-
+	
+	int y = 48;
+	
 	if(scr_center_lines <= 4)
 		y = vid.height * 0.35;
-	else
-		y = 48;
 
 	scr_copytop = 1;
 	Draw_TileClear(0, y, vid.width, 8 * scr_erase_lines);
 }
 #endif // GLQUAKE
 
-void SCR_CheckDrawCenterString(void)
+void SCR_CheckDrawCenterString()
 {
 	scr_copytop = 1;
 	if(scr_center_lines > scr_erase_lines)
@@ -285,7 +284,7 @@ Must be called whenever vid changes
 Internal use only
 =================
 */
-static void SCR_CalcRefdef(void)
+static void SCR_CalcRefdef()
 {
 	float size;
 #ifdef GLQUAKE
@@ -408,7 +407,7 @@ SCR_SizeUp_f
 Keybinding command
 =================
 */
-void SCR_SizeUp_f(void)
+void SCR_SizeUp_f()
 {
 	Cvar_SetValue("viewsize", scr_viewsize.value + 10);
 	vid.recalc_refdef = 1;
@@ -421,7 +420,7 @@ SCR_SizeDown_f
 Keybinding command
 =================
 */
-void SCR_SizeDown_f(void)
+void SCR_SizeDown_f()
 {
 	Cvar_SetValue("viewsize", scr_viewsize.value - 10);
 	vid.recalc_refdef = 1;
@@ -434,7 +433,7 @@ void SCR_SizeDown_f(void)
 SCR_Init
 ==================
 */
-void SCR_Init(void)
+void SCR_Init()
 {
 	Cvar_RegisterVariable(&scr_fov);
 	Cvar_RegisterVariable(&scr_viewsize);
@@ -473,7 +472,7 @@ SCR_DrawRam
 */
 // TODO: unused?
 /*
-void SCR_DrawRam(void)
+void SCR_DrawRam()
 {
 	if(!r_cache_thrash)
 		return;
@@ -489,7 +488,7 @@ SCR_DrawTurtle
 */
 // TODO: unused?
 /*
-void SCR_DrawTurtle(void)
+void SCR_DrawTurtle()
 {
 	static int count;
 
@@ -512,7 +511,7 @@ void SCR_DrawTurtle(void)
 SCR_DrawNet
 ==============
 */
-void SCR_DrawNet(void)
+void SCR_DrawNet()
 {
 	if(realtime - cl.last_received_message < 0.3)
 	//if (cls.netchan.outgoing_sequence - cls.netchan.incoming_acknowledged < UPDATE_BACKUP-1) // TODO: qw
@@ -523,7 +522,7 @@ void SCR_DrawNet(void)
 	//Draw_Pic(scr_vrect.x + 64, scr_vrect.y, scr_net); // TODO
 }
 
-void SCR_DrawFPS (void)
+void SCR_DrawFPS()
 {
 	extern cvar_t show_fps;
 	static double lastframetime;
@@ -557,7 +556,7 @@ void SCR_DrawFPS (void)
 SCR_DrawPause
 ==============
 */
-void SCR_DrawPause(void)
+void SCR_DrawPause()
 {
 	if(!scr_showpause.value) // turn off for screenshots
 		return;
@@ -583,7 +582,7 @@ void SCR_DrawPause(void)
 SCR_DrawLoading
 ==============
 */
-void SCR_DrawLoading(void)
+void SCR_DrawLoading()
 {
 	if(!scr_drawloading)
 		return;
@@ -609,11 +608,11 @@ void SCR_DrawLoading(void)
 SCR_SetUpToDrawConsole
 ==================
 */
-void SCR_SetUpToDrawConsole(void)
+void SCR_SetUpToDrawConsole()
 {
 	Con_CheckResize();
 
-	if(scr_drawloading)
+	if(scr_drawloading) // TODO: non-qw?
 		return; // never show a console with loading plaque
 
 	// decide on the height of the console
@@ -667,7 +666,7 @@ void SCR_SetUpToDrawConsole(void)
 SCR_DrawConsole
 ==================
 */
-void SCR_DrawConsole(void)
+void SCR_DrawConsole()
 {
 	if(scr_con_current)
 	{
@@ -1161,7 +1160,7 @@ SCR_BeginLoadingPlaque
 
 ================
 */
-void SCR_BeginLoadingPlaque(void)
+void SCR_BeginLoadingPlaque()
 {
 	S_StopAllSounds(true);
 
@@ -1192,7 +1191,7 @@ SCR_EndLoadingPlaque
 
 ================
 */
-void SCR_EndLoadingPlaque(void)
+void SCR_EndLoadingPlaque()
 {
 	scr_disabled_for_loading = false;
 	scr_fullupdate = 0;
@@ -1204,7 +1203,7 @@ void SCR_EndLoadingPlaque(void)
 const char *scr_notifystring;
 qboolean scr_drawdialog;
 
-void SCR_DrawNotifyString(void)
+void SCR_DrawNotifyString()
 {
 	const char *start;
 	int l;
@@ -1280,13 +1279,11 @@ SCR_BringDownConsole
 Brings the console down and fades the palettes back to normal
 ================
 */
-void SCR_BringDownConsole(void)
+void SCR_BringDownConsole()
 {
-	int i;
-
 	scr_centertime_off = 0;
 
-	for(i = 0; i < 20 && scr_conlines != scr_con_current; i++)
+	for(int i = 0; i < 20 && scr_conlines != scr_con_current; i++)
 		SCR_UpdateScreen();
 
 	cl.cshifts[0].percent = 0; // no area contents palette on next frame
@@ -1294,7 +1291,7 @@ void SCR_BringDownConsole(void)
 }
 
 #ifdef GLQUAKE
-void SCR_TileClear(void)
+void SCR_TileClear()
 {
 	if(r_refdef.vrect.x > 0)
 	{
@@ -1325,7 +1322,7 @@ void SCR_TileClear(void)
 
 /*
 // TODO: qw
-void SCR_UpdateScreen (void)
+void SCR_UpdateScreen()
 {
 	vrect_t		vrect;
 
@@ -1478,7 +1475,7 @@ WARNING: be very careful calling this from elsewhere, because the refresh
 needs almost the entire 256k of stack space!
 ==================
 */
-void SCR_UpdateScreen(void)
+void SCR_UpdateScreen()
 {
 #ifndef GLQUAKE
 	static float oldscr_viewsize;
@@ -1719,7 +1716,7 @@ SCR_UpdateWholeScreen
 ==================
 */
 #ifndef GLQUAKE
-void SCR_UpdateWholeScreen(void)
+void SCR_UpdateWholeScreen()
 {
 	scr_fullupdate = 0;
 	SCR_UpdateScreen();

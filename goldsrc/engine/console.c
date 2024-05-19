@@ -19,6 +19,8 @@
 
 /// @file
 
+// TODO
+/*
 #ifdef NeXT
 #include <libc.h>
 #endif
@@ -28,20 +30,31 @@
 #endif
 
 #include <fcntl.h>
+*/
+
 #include "quakedef.h"
 
 #include "con_nprint.h"
 
-int con_linewidth;
+// TODO: qw
+/*
+int con_ormask;
+console_t con_main;
+console_t con_chat;
+console_t *con; // point to either con_main or con_chat
+*/
+
+int con_linewidth; // characters across screen
 
 float con_cursorspeed = 4;
 
 #define CON_TEXTSIZE 16384
 
-qboolean con_forcedup; // because no entities to refresh
+qboolean con_forcedup; // because no entities to refresh // TODO: non-qw
 
 int con_totallines; // total lines in console scrollback
-int con_backscroll; // lines up from bottom to display
+
+int con_backscroll; // lines up from bottom to display // TODO: non-qw
 int con_current;    // where next message will be printed
 int con_x;          // offset in current line for next print
 char *con_text = 0;
@@ -91,6 +104,11 @@ void Con_Debug_f()
 	};
 };
 
+void Key_ClearTyping()
+{
+	key_lines[edit_line][1] = 0; // clear any typing
+	key_linepos = 1;
+};
 
 /*
 ================
@@ -109,22 +127,33 @@ Con_ToggleConsole_f
 */
 void Con_ToggleConsole_f()
 {
+	//Key_ClearTyping(); // TODO: qw
+	
 	if(key_dest == key_console)
 	{
-		if(cls.state == ca_connected)
+		if(cls.state == ca_connected) // TODO: ca_active in qw
 		{
 			key_dest = key_game;
-			key_lines[edit_line][1] = 0; // clear any typing
-			key_linepos = 1;
+			
+			Key_ClearTyping(); // TODO: non-qw
 		}
-		else
+		else // TODO: non-qw?
 			Cbuf_AddText("menu_main"); //M_Menu_Main_f(); // TODO
+			
+		BaseUI_HideConsole();
 	}
 	else
+	{
 		key_dest = key_console;
+		BaseUI_ShowConsole();
+	};
 
+	// TODO: qw
+	//Con_ClearNotify();
+	//
 	SCR_EndLoadingPlaque();
 	Q_memset(con_times, 0, sizeof(con_times));
+	//
 };
 
 /*
@@ -139,8 +168,7 @@ void Con_HideConsole_f()
 		if(cls.state == ca_connected)
 		{
 			key_dest = key_game;
-			key_lines[edit_line][1] = 0; // clear any typing
-			key_linepos = 1;
+			Key_ClearTyping();
 		}
 		else
 			Cbuf_AddText("menu_main"); //M_Menu_Main_f(); // TODO
@@ -168,9 +196,7 @@ Con_ClearNotify
 */
 void Con_ClearNotify()
 {
-	int i;
-
-	for(i = 0; i < NUM_CON_TIMES; i++)
+	for(int i = 0; i < NUM_CON_TIMES; i++)
 		con_times[i] = 0;
 }
 
@@ -306,7 +332,6 @@ void Con_Init()
 	Cmd_AddCommand("messagemode2", Con_MessageMode2_f);
 	Cmd_AddCommand("clear", Con_Clear_f);
 	Cmd_AddCommand("condebug", Con_Debug_f);
-	//Cmd_AddCommand("condump", Con_Dump_f); // TODO: part of gameui
 	
 	con_initialized = true;
 }
@@ -410,6 +435,7 @@ void Con_Print(const char *txt)
 Con_DebugLog
 ================
 */
+// TODO: Sys_DebugLog in qw
 void Con_DebugLog(const char *file, const char *fmt, ...)
 {
 	va_list argptr;

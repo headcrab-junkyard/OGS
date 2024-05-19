@@ -42,14 +42,16 @@ const int PORT_SERVER = 27015;
 
 #define S2C_CHALLENGE 'c'
 #define S2C_CONNECTION 'j'
+
 #define A2A_PING 'k'  // respond with an A2A_ACK
 #define A2A_ACK 'l'   // general acknowledgement without info
 #define A2A_NACK 'm'  // [+ comment] general failure
 #define A2A_ECHO 'e'  // for echoing
+
 #define A2C_PRINT 'n' // print a message on client
+#define A2C_CLIENT_COMMAND 'B' // + command line
 
 #define S2M_HEARTBEAT 'a'      // + serverinfo + userlist + fraglist
-#define A2C_CLIENT_COMMAND 'B' // + command line
 #define S2M_SHUTDOWN 'C'
 
 //=========================================

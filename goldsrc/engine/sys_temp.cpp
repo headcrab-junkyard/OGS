@@ -22,7 +22,7 @@
 
 extern "C"
 {
-void *Sys_GetExport_Wrapper(void *apModule, const char *asName)
+void *Sys_GetProcAddress(void *apModule, const char *asName)
 {
 	return Sys_GetExport(apModule, asName);
 };

@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018, 2021 BlackPhrase
+ * Copyright (C) 2018, 2021-2022 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ void CEngineSurface::popMakeCurrent()
 
 void CEngineSurface::drawFilledRect(int x0, int y0, int x1, int y1)
 {
-	// TODO
+	Draw_Fill(x0, y0, x1, y1, 0);
 };
 
 void CEngineSurface::drawOutlinedRect(int x0, int y0, int x1, int y1)
@@ -68,7 +68,11 @@ void CEngineSurface::drawSetTextureRGBA(int id, const unsigned char *rgba, int w
 
 void CEngineSurface::drawSetTexture(int id)
 {
-	// TODO
+#ifdef GLQUAKE
+	GL_Bind(id);
+#else
+#	error "TODO"
+#endif
 };
 
 void CEngineSurface::drawTexturedRect(int x0, int y0, int x1, int y1)
@@ -78,8 +82,17 @@ void CEngineSurface::drawTexturedRect(int x0, int y0, int x1, int y1)
 
 int CEngineSurface::createNewTextureID()
 {
-	// TODO
-	return 0;
+	static uint nTextureIDs[512]{};
+	static int nLastID{0};
+	
+#ifdef GLQUAKE
+	qglGenTextures(1, &nTextureIDs[nLastID]);
+#else
+#	error "TODO"
+#endif
+
+	++nLastID;
+	return nLastID - 1;
 };
 
 void CEngineSurface::drawSetColor(int r, int g, int b, int a)
@@ -89,7 +102,7 @@ void CEngineSurface::drawSetColor(int r, int g, int b, int a)
 
 void CEngineSurface::drawSetTextColor(int r, int g, int b, int a)
 {
-	// TODO
+	Draw_SetTextColor(r, g, b); // TODO: alpha
 };
 
 void CEngineSurface::drawSetTextPos(int x, int y)

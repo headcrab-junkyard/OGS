@@ -59,7 +59,7 @@ int PF_precache_model_I(const char *s)
 			return i;
 		};
 		
-		if(!strcmp(sv.model_precache[i], s))
+		if(!Q_strcmp(sv.model_precache[i], s))
 			return i;
 	};
 	
@@ -83,7 +83,7 @@ int PF_precache_sound_I(const char *s)
 			return i;
 		};
 		
-		if(!strcmp(sv.sound_precache[i], s))
+		if(!Q_strcmp(sv.sound_precache[i], s))
 			return i;
 	};
 	
@@ -99,13 +99,13 @@ void SetMinMaxSize(edict_t *e, float *min, float *max, qboolean rotate)
 	float a;
 	vec3_t base, transformed;
 	int i, j, k, l;
-
+	
 	for(i = 0; i < 3; i++)
 		if(min[i] > max[i])
 			Host_Error("backwards mins/maxs");
-
+	
 	rotate = false; // FIXME: implement rotation properly again
-
+	
 	if(!rotate)
 	{
 		VectorCopy(min, rmin);
@@ -113,22 +113,22 @@ void SetMinMaxSize(edict_t *e, float *min, float *max, qboolean rotate)
 	}
 	else
 	{
-		// find min / max for rotations
+		// Find min / max for rotations
 		angles = e->v.angles;
-
+		
 		a = angles[1] / 180 * M_PI;
-
+		
 		xvector[0] = cos(a);
 		xvector[1] = sin(a);
 		yvector[0] = -sin(a);
 		yvector[1] = cos(a);
-
+		
 		VectorCopy(min, bounds[0]);
 		VectorCopy(max, bounds[1]);
-
+		
 		rmin[0] = rmin[1] = rmin[2] = 9999;
 		rmax[0] = rmax[1] = rmax[2] = -9999;
-
+		
 		for(i = 0; i <= 1; i++)
 		{
 			base[0] = bounds[i][0];
@@ -138,8 +138,8 @@ void SetMinMaxSize(edict_t *e, float *min, float *max, qboolean rotate)
 				for(k = 0; k <= 1; k++)
 				{
 					base[2] = bounds[k][2];
-
-					// transform the point
+					
+					// Transform the point
 					transformed[0] = xvector[0] * base[0] + yvector[0] * base[1];
 					transformed[1] = xvector[1] * base[0] + yvector[1] * base[1];
 					transformed[2] = base[2];
@@ -155,12 +155,12 @@ void SetMinMaxSize(edict_t *e, float *min, float *max, qboolean rotate)
 			};
 		};
 	};
-
-	// set derived values
+	
+	// Set derived values
 	VectorCopy(rmin, e->v.mins);
 	VectorCopy(rmax, e->v.maxs);
 	VectorSubtract(max, min, e->v.size);
-
+	
 	SV_LinkEdict(e, false);
 };
 
@@ -177,14 +177,15 @@ void PF_setmodel_I(edict_t *e, const char *m)
 	model_t *mod;
 	int i;
 
-	// check to see if model was properly precached
+	
+	// Check to see if model was properly precached
 	for(i = 0, check = sv.model_precache; *check; i++, check++)
-		if(!strcmp(*check, m))
+		if(!Q_strcmp(*check, m))
 			break;
-
+	
 	if(!*check)
 		Host_Error("no precache: %s\n", m);
-
+	
 	e->v.model = m - pr_strings;
 	e->v.modelindex = i; //SV_ModelIndex (m);
 
@@ -198,6 +199,8 @@ void PF_setmodel_I(edict_t *e, const char *m)
 
 int PF_modelindex(const char *name)
 {
+	// TODO: check if name is valid?
+	
 	return SV_ModelIndex(name);
 };
 
@@ -217,6 +220,8 @@ setsize (entity, minvector, maxvector)
 */
 void PF_setsize_I(edict_t *e, const float *min, const float *max)
 {
+	// TODO: checks for entity/sizes?
+	
 	SetMinMaxSize(e, min, max, false);
 };
 
@@ -1100,7 +1105,12 @@ void PF_WriteEntity_I(int val)
 
 void CVarRegister(struct cvar_s *var)
 {
+	if(!var)
+		return;
+	
 	// TODO
+	
+	Cvar_RegisterVariable(var);
 };
 
 /*
@@ -1240,7 +1250,7 @@ edict_t *FindEntityByVars(struct entvars_s *pVars)
 	if(!pVars)
 		return NULL;
 	
-	for(int i = 0; i < sv.max_edicts; i++)
+	for(int i = 0; i < sv.max_edicts; i++) // TODO: sv.num_edicts?
 		if(&sv.edicts[i].v == pVars)
 			return &sv.edicts[i];
 	
@@ -1281,6 +1291,12 @@ const char *NameForFunction(uint32_t nFunction)
 
 void /*QDECL*/ ClientPrintf(edict_t *pEnt, PRINT_TYPE aType, const char *sMsg)
 {
+	if(aType < 0 || aType > 4) // TODO
+	{
+		Con_Printf("invalid PRINT_TYPE %i\n", aType);
+		return;
+	};
+	
 	int entnum = NUM_FOR_EDICT(pEnt);
 
 	if(entnum < 1 || entnum > svs.maxclients)
@@ -1403,7 +1419,7 @@ void PF_RunPlayerMove_I(edict_t *fakeclient, const float *viewangles, float forw
 int PF_NumberOfEntities_I()
 {
 	// TODO
-	return 0;
+	return sv.num_edicts;
 };
 
 char *PF_GetInfoKeyBuffer_I(edict_t *pent)
@@ -1414,22 +1430,23 @@ char *PF_GetInfoKeyBuffer_I(edict_t *pent)
 	return svs.clients[NUM_FOR_EDICT(pent)-1].userinfo;
 };
 
-char *PF_InfoKeyValue_I(char *infobuffer, char *key)
+char *PF_InfoKeyValue_I(char *infobuffer, const char *key)
 {
+	//bi_trace();
 	return Info_ValueForKey(infobuffer, key);
 };
 
-void PF_SetKeyValue_I(char *infobuffer, char *key, char *value)
+void PF_SetKeyValue_I(char *infobuffer, const char *key, const char *value)
 {
 	Info_SetValueForKey(infobuffer, key, value, MAX_INFO_STRING);
 };
 
-void PF_SetClientKeyValue_I(int clientIndex, char *infobuffer, char *key, char *value)
+void PF_SetClientKeyValue_I(int clientIndex, char *infobuffer, const char *key, const char *value)
 {
 	// TODO
 };
 
-int PF_IsMapValid_I(char *filename)
+int PF_IsMapValid_I(const char *filename)
 {
 	// TODO
 	return 0;
@@ -1440,7 +1457,7 @@ void PF_StaticDecal(const float *origin, int decalIndex, int entityIndex, int mo
 	// TODO
 };
 
-int PF_precache_generic_I(char *name)
+int PF_precache_generic_I(const char *name)
 {
 	// TODO
 	return 0;
@@ -1449,7 +1466,7 @@ int PF_precache_generic_I(char *name)
 int PF_GetPlayerUserId(edict_t *player)
 {
 	if(!player)
-		return 0;
+		return 0; // TODO: or -1?
 	
 	return svs.clients[NUM_FOR_EDICT(player) - 1].userid;
 };
@@ -1474,8 +1491,7 @@ uint PF_GetPlayerWONId(edict_t *player)
 	if(!player)
 		return 0;
 	
-	// TODO
-	return 0;
+	return svs.clients[NUM_FOR_EDICT(player) - 1].wonid;
 };
 
 void PF_RemoveKey_I(char *infobuffer, const char *key)
@@ -1486,7 +1502,7 @@ void PF_RemoveKey_I(char *infobuffer, const char *key)
 const char *PF_GetPhysicsKeyValue(const edict_t *pClient, const char *key)
 {
 	if(!pClient)
-		return NULL;
+		return NULL; // TODO: or return server's value?
 	
 	return Info_ValueForKey(svs.clients[NUM_FOR_EDICT(pClient) - 1].physinfo, key);
 };
@@ -1494,7 +1510,7 @@ const char *PF_GetPhysicsKeyValue(const edict_t *pClient, const char *key)
 void PF_SetPhysicsKeyValue(const edict_t *pClient, const char *key, const char *value)
 {
 	if(!pClient)
-		return;
+		return; // TODO: or change the server's value?
 	
 	Info_SetValueForKey(svs.clients[NUM_FOR_EDICT(pClient) - 1].physinfo, key, value, MAX_INFO_STRING);
 };
@@ -1502,7 +1518,7 @@ void PF_SetPhysicsKeyValue(const edict_t *pClient, const char *key, const char *
 const char *PF_GetPhysicsInfoString(const edict_t *pClient)
 {
 	if(!pClient)
-		return NULL;
+		return NULL; // TODO: or return server's value?
 	
 	return svs.clients[NUM_FOR_EDICT(pClient) - 1].physinfo;
 };
@@ -1578,12 +1594,24 @@ int SV_CheckVisibility(const edict_t *entity, byte *pset)
 
 int PF_GetCurrentPlayer()
 {
-	// TODO
-	return 0;
+	return 0; // TODO: host_client - sv.clients
 };
 
 int PF_CanSkipPlayer(const edict_t *player)
 {
+	if(!player)
+		return 0;
+	
+	int client = NUM_FOR_EDICT(player) - 1;
+	
+	if(client < 1 || client > 32)
+	{
+		Con_DPrintf("tried to PF_CanSkipPlayer a non-client\n");
+		return 0;
+	};
+	
+	client_t *pClient = &svs.clients[client];
+	
 	// TODO
 	return 0;
 };
@@ -1608,6 +1636,18 @@ void PF_ForceUnmodified(FORCE_TYPE type, float *mins, float *maxs, const char *f
 {
 	// TODO
 	
+	if(!filename)
+	{
+		Con_DPrintf("PF_ForceUnmodified: NULL pointer\n");
+		return;
+	};
+	
+	if(!*filename) // TODO
+	{
+		Con_DPrintf("PF_ForceUnmodified: Bad string '%s'\n", filename);
+		return;
+	};
+	
 	switch(type)
 	{
 	case force_exactfile:
@@ -1627,10 +1667,10 @@ void PF_GetPlayerStats(const edict_t *pPlayer, int *ping, int *packet_loss)
 		return;
 	
 	if(ping)
-		*ping = 0;
+		*ping = 0; // TODO
 	
 	if(packet_loss)
-		*packet_loss = 0;
+		*packet_loss = 0; // TODO
 };
 
 void Cmd_AddServerCommand(char *cmd_name, void (*function)())
@@ -1669,7 +1709,7 @@ sentenceEntry_s *pfnSequencePickSentence(const char *sGroupName, int nPickMethod
 	return SequencePickSentence(sGroupName, nPickMethod, pPicked);
 };
 
-int pfnGetFileSize(char *filename)
+int pfnGetFileSize(const char *filename)
 {
 	return FS_FileSize(filename);
 };
@@ -1725,7 +1765,7 @@ void pfnQueryClientCvarValue(const edict_t *player, const char *cvarName)
 	if(!cvarName || !*cvarName)
 		return;
 	
-	SV_QueryCvarValue(svs.clients[NUM_FOR_EDICT(pClient) - 1], cvarName);
+	SV_QueryCvarValue(svs.clients[NUM_FOR_EDICT(player) - 1], cvarName);
 };
 
 void pfnQueryClientCvarValue2(const edict_t *player, const char *cvarName, int requestID)
@@ -1736,7 +1776,7 @@ void pfnQueryClientCvarValue2(const edict_t *player, const char *cvarName, int r
 	if(!cvarName || !*cvarName)
 		return;
 	
-	SV_QueryCvarValueEx(svs.clients[NUM_FOR_EDICT(pClient) - 1], cvarName, requestID);
+	SV_QueryCvarValueEx(svs.clients[NUM_FOR_EDICT(player) - 1], cvarName, requestID);
 };
 
 int pfnCheckParm(const char *sCmdLineToken, char **ppnext)

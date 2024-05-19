@@ -331,7 +331,9 @@ void SV_BroadcastPrintf(const char *fmt, ...)
 	va_start(argptr, fmt);
 	vsprintf(string, fmt, argptr);
 	va_end(argptr);
-
+	
+	//Sys_Printf ("%s", string); // print to the console // TODO: qw
+	
 	for(i = 0; i < svs.maxclients; i++)
 		if(svs.clients[i].active && svs.clients[i].spawned)
 		{
@@ -368,7 +370,7 @@ Called when the player is getting totally kicked off the host
 if (crash = true), don't bother sending signofs
 =====================
 */
-void SV_DropClient(client_t *drop, qboolean crash, char *fmt, ...)
+void SV_DropClient(client_t *drop, qboolean crash, const char *fmt, ...)
 {
 	// TODO: fmt support
 
@@ -389,9 +391,16 @@ void SV_DropClient(client_t *drop, qboolean crash, char *fmt, ...)
 		{
 			// call the prog function for removing a client
 			// this will set the body to a dead frame, among other things
-			//gGlobalVariables.self = EDICT_TO_PROG(drop->edict);
-			gEntityInterface.pfnClientDisconnect(drop->edict);
-		}
+			
+			// TODO
+			//if(drop->spectator)
+				//gEntityInterface.pfnSpectatorDisconnect(drop->edict);
+			//else
+			{
+				//gGlobalVariables.self = EDICT_TO_PROG(drop->edict);
+				gEntityInterface.pfnClientDisconnect(drop->edict);
+			};
+		};
 
 		// TODO
 		//if(drop->spectator)
@@ -407,7 +416,16 @@ void SV_DropClient(client_t *drop, qboolean crash, char *fmt, ...)
 			drop->download = NULL;
 		};
 		
-	}
+		// NOTE: not present in Q2
+		if(drop->upload)
+		{
+			FS_FreeFile(drop->upload); // was fclose
+			drop->upload = NULL;
+		};
+		
+		*drop->uploadfn = 0;
+		*/
+	};
 
 	// free the client (the body stays around)
 	drop->active = false; // TODO: QW: drop->state = cs_zombie; // become free in a few seconds
@@ -420,7 +438,7 @@ void SV_DropClient(client_t *drop, qboolean crash, char *fmt, ...)
 
 	// send notification to all remaining clients
 	SV_FullClientUpdate(drop, &sv.reliable_datagram);
-}
+};
 
 /*
 ==================
@@ -464,12 +482,13 @@ void Host_ShutdownServer(qboolean crash)
 				{
 					NET_GetPacket(NS_SERVER, &net_from, &host_client->netchan.message); // TODO: was NET_GetMessage; REVISIT: We're reading into write buffer?????????
 					count++;
-				}
-			}
-		}
+				};
+			};
+		};
 		if((Sys_FloatTime() - start) > 3.0)
 			break;
-	} while(count);
+	}
+	while(count);
 
 	// make sure all the clients know we're disconnecting
 	buf.data = message;
@@ -489,7 +508,7 @@ void Host_ShutdownServer(qboolean crash)
 	//
 	memset(&sv, 0, sizeof(sv));
 	memset(svs.clients, 0, svs.maxclientslimit * sizeof(client_t));
-}
+};
 
 /*
 ================
@@ -510,7 +529,7 @@ void Host_ClearMemory()
 	cls.signon = 0;
 	memset(&sv, 0, sizeof(sv));
 	memset(&cl, 0, sizeof(cl));
-}
+};
 
 //============================================================================
 
@@ -542,7 +561,7 @@ qboolean Host_FilterTime(float time)
 	}
 
 	return true;
-}
+};
 
 void Host_UpdateScreen()
 {
@@ -594,32 +613,33 @@ void _Host_Frame(float time)
 	static double time1 = 0;
 	static double time2 = 0;
 	static double time3 = 0;
-	int pass1, pass2, pass3;
-
-	if(setjmp(host_abortserver))
-		return; // something bad happened, or the server disconnected
-
-	// keep the random time dependent
-	rand();
-
-	// decide the simulation time
+	
+	// Something bad happened, or the server disconnected
+	if(setjmp(host_abortserver)) // TODO: host_abort in qw
+		return;
+	
+	// Keep the random time dependent
+	rand(); // TODO: non-qw?
+	
+	// Decide the simulation time
 	if(!Host_FilterTime(time))
-		return; // don't run too fast, or packets will flood out
-
-	// get new key events
+		return; // Don't run too fast, or packets will flood out
+	
+	// Get new key events
 	Sys_SendKeyEvents();
-
-	// allow mice or other external controllers to add commands
+	
+	// Allow mice or other external controllers to add commands
 	ClientDLL_UpdateClientData(); // TODO: was IN_Commands(); is this the right place?
 
-	// process console commands
+	// Process console commands
 	Cbuf_Execute();
 
-	// fetch results from server
+	// Fetch results from server
 	//CL_ReadPackets(); // TODO: instead of NET_Poll
 
-	// if running the server locally, make intentions now
+	// If running the server locally, make intentions now
 	// resend a connection request if necessary
+	// TODO: non-qw (can this be rewritten to happen only once for both cases?)
 	if(sv.active)
 	{
 		if(cls.state == ca_disconnected)
@@ -643,18 +663,19 @@ void _Host_Frame(float time)
 	//
 	//-------------------
 	
-	// if in the debugger last frame, don't timeout
-	if (time > 5.0f)
-		cls.netchan.last_received = Sys_FloatTime ();
+	// If in the debugger last frame, don't timeout
+	if(time > 5.0f)
+		cls.netchan.last_received = Sys_FloatTime();
 	
-	// fetch results from server
+	// Fetch results from server
 	//if(cls.state == ca_connected)
 	{
 		CL_ReadPackets();
 	};
 	
-	// if running the server remotely, send intentions now after
+	// If running the server remotely, send intentions now after
 	// the incoming messages have been read
+	// TODO: non-qw (can this be rewritten to happen only once for both cases?)
 	if(!sv.active)
 	{
 		if(cls.state == ca_disconnected)
@@ -662,7 +683,7 @@ void _Host_Frame(float time)
 		else
 			CL_SendCmd();
 	};
-
+	
 	host_time += host_frametime;
 	
 	// TODO: should be somewhere around here
@@ -670,28 +691,29 @@ void _Host_Frame(float time)
 	
 	// Set up prediction for other players
 	CL_SetUpPlayerPrediction(false);
-
-	// do client side motion prediction
+	
+	// Do client side motion prediction
 	CL_PredictMove();
-
+	
 	// Set up prediction for other players
 	CL_SetUpPlayerPrediction(true);
-
-	// build a refresh entity list
+	
+	// Build a refresh entity list
 	CL_EmitEntities();
 	
 	ClientDLL_Frame(host_frametime);
-
-	// update video
+	
+	// Update video
 	if(host_speeds.value)
 		time1 = Sys_FloatTime();
-
+	
 	Host_UpdateScreen(); // TODO: was SCR_UpdateScreen
 	
 	if(host_speeds.value)
 		time2 = Sys_FloatTime();
-
-	// update audio
+	
+	// Update audio
+	//if(cls.state == ca_active) // TODO: in qw
 	if(cls.signon == SIGNONS)
 	{
 		S_Update(r_origin, vpn, vright, vup);
@@ -699,21 +721,24 @@ void _Host_Frame(float time)
 	}
 	else
 		S_Update(vec3_origin, vec3_origin, vec3_origin, vec3_origin);
-
+	
 	CDAudio_Update();
-
+	
 	if(host_speeds.value)
 	{
+		int pass1, pass2, pass3;
+		
 		pass1 = (time1 - time3) * 1000;
 		time3 = Sys_FloatTime();
 		pass2 = (time2 - time1) * 1000;
 		pass3 = (time3 - time2) * 1000;
 		Con_Printf("%3i tot %3i server %3i gfx %3i snd\n",
 		           pass1 + pass2 + pass3, pass1, pass2, pass3);
-	}
-
-	host_framecount++;
-}
+	};
+	
+	++host_framecount;
+	//++fps_count; // TODO: qw
+};
 
 int Host_Frame(float time, int iState, int *stateInfo)
 {
@@ -726,7 +751,7 @@ int Host_Frame(float time, int iState, int *stateInfo)
 	{
 		_Host_Frame(time);
 		return 1;
-	}
+	};
 
 	time1 = Sys_FloatTime();
 	_Host_Frame(time);
@@ -746,11 +771,11 @@ int Host_Frame(float time, int iState, int *stateInfo)
 	{
 		if(svs.clients[i].active)
 			c++;
-	}
+	};
 
 	Con_Printf("host_profile: %2i clients %2i msec\n", c, m);
 	return 1;
-}
+};
 
 //============================================================================
 
@@ -786,11 +811,11 @@ void Host_InitVCR (quakeparms_t *parms)
 			p = malloc(len);
 			FS_FileRead (vcrFile, p, len);
 			com_argv[i+1] = p;
-		}
+		};
 		com_argc++; // add one for arg[0]
 		parms->argc = com_argc;
 		parms->argv = com_argv;
-	}
+	};
 
 	if ( (n = COM_CheckParm("-record")) != 0)
 	{
@@ -808,14 +833,13 @@ void Host_InitVCR (quakeparms_t *parms)
 				FS_FileWrite(vcrFile, &len, sizeof(int));
 				FS_FileWrite(vcrFile, "-playback", len);
 				continue;
-			}
+			};
 			len = Q_strlen(com_argv[i]) + 1;
 			FS_FileWrite(vcrFile, &len, sizeof(int));
 			FS_FileWrite(vcrFile, com_argv[i], len);
-		}
-	}
-	
-}
+		};
+	};
+};
 */
 
 /*
@@ -895,23 +919,25 @@ void Host_Init(quakeparms_t *parms)
 		if(!host_basepal)
 			Sys_Error("Host_Init: Couldn't load gfx/palette.lmp");
 		
-		// TODO: unused?
+		// TODO: unused in gs
 		host_colormap = (byte *)COM_LoadHunkFile("gfx/colormap.lmp");
 		if(!host_colormap)
 			Sys_Error("Couldn't load gfx/colormap.lmp");
 		//
 
-#ifndef _WIN32 // on non win32, mouse comes before video for security reasons
+#ifndef _WIN32 // On non win32, mouse comes before video for security reasons
 		IN_Init();
 #endif
+		
 		VID_Init(host_basepal);
 		// TODO: GL_Init() here + no VID_Shutdown in GS (at least for hw)
 
 		Draw_Init();
 		SCR_Init();
 		R_Init();
+		
 #ifndef _WIN32
-		// on Win32, sound initialization has to come before video initialization, so we
+		// On Win32, sound initialization has to come before video initialization, so we
 		// can put up a popup if the sound hardware is in use
 		S_Init();
 #else
@@ -936,7 +962,7 @@ void Host_Init(quakeparms_t *parms)
 		ClientDLL_Init();
 		
 		Voice_RegisterCvars();
-	}
+	};
 	
 	//Voice_LoadCodec("voice_speex");
 	Cbuf_InsertText("exec valve.rc\n");
@@ -954,11 +980,12 @@ void Host_Init(quakeparms_t *parms)
 	//Cbuf_InsertText ("exec server.cfg\n"); // TODO: dedicated
 
 	host_initialized = true;
-
+	
+	//Con_Printf("\nClient Version %4.2f (Build %04d)\n\n", VERSION, build_number());
 	//Con_Printf ("\nServer Version %4.2f (Build %04d)\n\n", VERSION, build_number());
 	
 	//return true;
-}
+};
 
 /*
 ===============
@@ -995,6 +1022,7 @@ void Host_Shutdown()
 	S_Shutdown();
 	IN_Shutdown();
 
+	// TODO: if(host_basepal) in qw
 	if(cls.state != ca_dedicated)
 		VID_Shutdown();
-}
+};

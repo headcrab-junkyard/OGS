@@ -151,6 +151,10 @@ const char *Cvar_CompleteVariable(const char *partial)
 	return NULL;
 }
 
+#ifdef SWDS
+//void SV_SendServerInfoChange(const char *key, const char *value);
+#endif
+
 /*
 ============
 Cvar_Set
@@ -158,17 +162,37 @@ Cvar_Set
 */
 void Cvar_Set(const char *var_name, const char *value)
 {
-	cvar_t *var;
-	qboolean changed;
-
-	var = Cvar_FindVar(var_name);
+	cvar_t *var = Cvar_FindVar(var_name);
 	if(!var)
-	{ // there is an error in C code if this happens
+	{
+		// there is an error in C code if this happens
 		Con_Printf("Cvar_Set: variable %s not found\n", var_name);
 		return;
-	}
+	};
 
-	changed = Q_strcmp(var->string, value);
+	qboolean changed = Q_strcmp(var->string, value);
+
+	// TODO: qw
+/*
+#ifdef SWDS
+	if (var->info)
+	{
+		Info_SetValueForKey (svs.info, var_name, value, MAX_SERVERINFO_STRING);
+		SV_SendServerInfoChange(var_name, value);
+//		SV_BroadcastCommand ("fullserverinfo \"%s\"\n", svs.info);
+	}
+#else
+	if (var->info)
+	{
+		Info_SetValueForKey (cls.userinfo, var_name, value, MAX_INFO_STRING);
+		if (cls.state >= ca_connected)
+		{
+			MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
+			SZ_Print (&cls.netchan.message, va("setinfo \"%s\" \"%s\"\n", var_name, value));
+		}
+	}
+#endif
+*/
 
 	Z_Free(var->string); // free the old value string
 

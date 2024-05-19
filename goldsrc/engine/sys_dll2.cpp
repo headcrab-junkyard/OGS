@@ -191,7 +191,7 @@ Sys_InitLauncherInterface
 */
 void Sys_InitLauncherInterface()
 {
-	// TODO
+	// TODO: something related to opengl32.dll
 };
 
 /*
@@ -263,15 +263,24 @@ void Sys_InitGame(const char *lpOrgCmdLine, const char *pBaseDir /*TODO: szBaseD
 	host_parms.basedir = cwd;
 	*/
 	
-	host_parms.cachedir = NULL; // TODO
+	// Caching is disabled by default, use -cachedir to enable
+	host_parms.cachedir = NULL; // TODO: = cachedir? commented out on Linux
 	
+	// TODO: Linux
+/*
+	noconinput = COM_CheckParm("-noconinput");
+	if(!noconinput)
+		fcntl(0, F_SETFL, fcntl(0, F_GETFL, 0) | FNDELAY);
 	
+	if(COM_CheckParm("-nostdout"))
+		nostdout = 1;
+*/
 	
 	TraceInit("Host_Shutdown()", "Host_Init( &host_parms )");
 	Host_Init(&host_parms);
 	
 	TraceInit("Sys_ShutdownAuthentication()", "Sys_InitAuthentication()");
-	Sys_InitAuthentication();
+	Sys_InitAuthentication(); // TODO: why here?
 	
 	//oldtime = Sys_FloatTime(); // TODO
 	
@@ -284,6 +293,9 @@ void Sys_InitGame(const char *lpOrgCmdLine, const char *pBaseDir /*TODO: szBaseD
 
 void Sys_ShutdownGame()
 {
+	//if(isDedicated)
+		//NET_Config(false);
+	
 	TraceShutdown("Host_Shutdown()");
 	Host_Shutdown();
 	
@@ -341,35 +353,32 @@ int RunListenServer(void *instance, const char *basedir, const char *cmdline, ch
 	return EXIT_SUCCESS;
 };
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
 
 class CEngineAPI final : public IEngineAPI
 {
 public:
-	CEngineAPI();
-	~CEngineAPI();
+	CEngineAPI() = default;
+	~CEngineAPI() = default;
 
 	int Run(void *instance, const char *basedir, const char *cmdline, char *postRestartCmdLineArgs, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory) override;
 };
 
 EXPOSE_SINGLE_INTERFACE(CEngineAPI, IEngineAPI, VENGINE_LAUNCHER_API_VERSION);
 
-CEngineAPI::CEngineAPI() = default;
-CEngineAPI::~CEngineAPI() = default;
-
 int CEngineAPI::Run(void *instance, const char *basedir, const char *cmdline, char *postRestartCmdLineArgs, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory)
 {
 	return RunListenServer(instance, basedir, cmdline, postRestartCmdLineArgs, launcherFactory, filesystemFactory);
 };
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
 
 // TODO
 class CGameUIFuncs final : public IGameUIFuncs
 {
 public:
-	CGameUIFuncs();
-	~CGameUIFuncs();
+	CGameUIFuncs() = default;
+	~CGameUIFuncs() = default;
 
 	bool IsKeyDown(char const *keyname, bool &isdown) override;
 
@@ -384,7 +393,6 @@ public:
 	void GetCurrentRenderer(char *name, int namelen,
 	                        int *windowed, int *hdmodels,
 	                        int *addons_folder, int *vid_level) override;
-	//void GetCurrentRenderer(char *name, int namelen, int *windowed) override;
 
 	bool IsConnectedToVACSecureServer() override;
 
@@ -393,12 +401,14 @@ public:
 
 EXPOSE_SINGLE_INTERFACE(CGameUIFuncs, IGameUIFuncs, GAMEUIFUNCS_INTERFACE_VERSION);
 
-CGameUIFuncs::CGameUIFuncs() = default;
-CGameUIFuncs::~CGameUIFuncs() = default;
-
 bool CGameUIFuncs::IsKeyDown(const char *keyname, bool &isdown)
 {
-	return false; // TODO: Key_IsDown(keyname, isdown);
+	if(!keyname || !*keyname)
+		return false;
+	
+	auto bIsDown{Key_IsDown(Key_KeyStringToKeyNum(keyname))};
+	isdown = bIsDown;
+	return true; // TODO: Key_IsDown(keyname, isdown)?
 };
 
 const char *CGameUIFuncs::Key_NameForKey(int keynum)
@@ -413,12 +423,37 @@ const char *CGameUIFuncs::Key_BindingForKey(int keynum)
 
 vgui2::KeyCode CGameUIFuncs::GetVGUI2KeyCodeForBind(const char *bind)
 {
+	// TODO
 	return vgui2::KeyCode::KEY_NONE;
 };
 
 void CGameUIFuncs::GetVideoModes(struct vmode_s **liststart, int *count)
 {
+	int nDisplayModes{0};
+	static struct vmode_s *vModes{nullptr};
+	struct vmode_s *pMode{nullptr};
+	
+	// TODO: find a better place?
+#ifdef OGS_USE_SDL
+	nDisplayModes = SDL_GetNumDisplayModes(0);
+	SDL_DisplayMode Mode{};
+	for(int i = 0; i <= nDisplayModes; ++i)
+		if(SDL_GetDisplayMode(0, i, &Mode) == 0)
+		{
+			pMode = reinterpret_cast<struct vmode_s*>(malloc(sizeof(struct vmode_s)));
+			pMode->width;
+			pMode->height;
+			pMode->bpp;
+		};
+#else
 	// TODO
+#endif
+	
+	if(liststart)
+		liststart = vModes;
+	
+	if(count)
+		*count = nDisplayModes;
 };
 
 void CGameUIFuncs::GetCurrentVideoMode(int *wide, int *tall, int *bpp)
@@ -436,11 +471,26 @@ void CGameUIFuncs::GetCurrentVideoMode(int *wide, int *tall, int *bpp)
 void CGameUIFuncs::GetCurrentRenderer(char *name, int namelen, int *windowed, int *hdmodels, int *addons_folder, int *vid_level)
 {
 	// TODO
+	
+	if(name)
+		;
+	
+	if(windowed)
+		;
+	
+	if(hdmodels)
+		;
+	
+	if(addons_folder)
+		;
+	
+	if(vid_level)
+		;
 };
 
 bool CGameUIFuncs::IsConnectedToVACSecureServer()
 {
-	return false;
+	return false; // TODO
 };
 
 int CGameUIFuncs::Key_KeyStringToKeyNum(const char *string)
@@ -448,13 +498,15 @@ int CGameUIFuncs::Key_KeyStringToKeyNum(const char *string)
 	return Key_KeyStringToKeyNum(string);
 };
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
+
+// TODO: switch places between CDedicatedServerAPI and CGameUIFuncs
 
 class CDedicatedServerAPI final : public IDedicatedServerAPI
 {
 public:
-	CDedicatedServerAPI();
-	~CDedicatedServerAPI();
+	CDedicatedServerAPI() = default;
+	~CDedicatedServerAPI() = default;
 
 	bool Init(const char *basedir, const char *cmdline, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory) override;
 	int Shutdown() override;
@@ -470,12 +522,9 @@ private:
 
 EXPOSE_SINGLE_INTERFACE(CDedicatedServerAPI, IDedicatedServerAPI, VENGINE_HLDS_API_VERSION);
 
-CDedicatedServerAPI::CDedicatedServerAPI() = default;
-CDedicatedServerAPI::~CDedicatedServerAPI() = default;
-
 bool CDedicatedServerAPI::Init(const char *basedir, const char *cmdline, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory)
 {
-	gpDedicatedExports = (IDedicatedExports*)launcherFactory(VENGINE_DEDICATEDEXPORTS_API_VERSION, nullptr);
+	gpDedicatedExports = reinterpret_cast<IDedicatedExports*>(launcherFactory(VENGINE_DEDICATEDEXPORTS_API_VERSION, nullptr));
 	
 	if(!gpDedicatedExports)
 		return false;
@@ -522,6 +571,8 @@ bool CDedicatedServerAPI::RunFrame()
 
 void CDedicatedServerAPI::AddConsoleText(const char *text)
 {
+	// TODO: check the string?
+	
 	Cbuf_AddText(text);
 };
 
