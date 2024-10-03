@@ -9,7 +9,7 @@ option(OGS_DEV "Developer Build" OFF)
 option(OGS_DEDICATED "Skip building of client-side modules" OFF)
 option(OGS_USE_SDL "Use SDL2 for platform-specific functionality implementation" OFF)
 option(OGS_USE_IMGUI "Use ImGui for internal GUI system implementation" OFF)
-option(OGS_USE_INTERNAL_RENDER "Integrate render code into the engine" ON)
+option(OGS_USE_INTERNAL_RENDERER "Integrate render code into the engine" ON)
 
 # TODO: these options should be parts of a list
 option(OGS_4554 "4554 preset")
