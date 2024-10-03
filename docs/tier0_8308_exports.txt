@@ -1,0 +1,320 @@
+CThread::CThread(void)
+CThreadEvent::CThreadEvent(void *,bool)
+CThreadEvent::CThreadEvent(bool)
+CThreadFastMutex::CThreadFastMutex(void)
+CThreadFullMutex::CThreadFullMutex(bool,char const *)
+CThreadLocalBase::CThreadLocalBase(void)
+CThreadMutex::CThreadMutex(void)
+CThreadSemaphore::CThreadSemaphore(long,long)
+CThreadSyncObject::CThreadSyncObject(void)
+CVProfNode::CVProfNode(char const *,int,class CVProfNode *,char const *,int)
+CVProfile::CVProfile(void)
+CValidator::CValidator(int)
+CWorkerThread::CWorkerThread(void)
+CThread::~CThread(void)
+CThreadEvent::~CThreadEvent(void)
+CThreadFullMutex::~CThreadFullMutex(void)
+CThreadLocalBase::~CThreadLocalBase(void)
+CThreadMutex::~CThreadMutex(void)
+CThreadSemaphore::~CThreadSemaphore(void)
+CThreadSyncObject::~CThreadSyncObject(void)
+CVProfNode::~CVProfNode(void)
+CVProfile::~CVProfile(void)
+CValidator::~CValidator(void)
+CWorkerThread::~CWorkerThread(void)
+class CThreadFastMutex & CThreadFastMutex::operator=(class CThreadFastMutex const &)
+class CThreadLocalBase & CThreadLocalBase::operator=(class CThreadLocalBase const &)
+class CTier0 & CTier0::operator=(class CTier0 const &)
+class CVProfNode & CVProfNode::operator=(class CVProfNode const &)
+class CVProfile & CVProfile::operator=(class CVProfile const &)
+class CValidator & CValidator::operator=(class CValidator const &)
+bool CThreadSyncObject::operator!(void)
+CThreadSyncObject::operator void *(void)
+const CThread::`vftable'
+const CWorkerThread::`vftable'
+void CThreadEvent::`default constructor closure'(void)
+void CThreadFullMutex::`default constructor closure'(void)
+int CVProfile::AddBudgetGroupName(char const *,int)
+void CValidator::AddValidationLock(class CThreadMutex *)
+bool CThreadFastMutex::AssertOwnedByCurrentThread(void)
+bool CThreadFullMutex::AssertOwnedByCurrentThread(void)
+bool CThreadMutex::AssertOwnedByCurrentThread(void)
+void CThreadSyncObject::AssertUseable(void)
+bool CVProfile::AtRoot(void)
+bool CValidator::BExcludeAllocationFromTracking(char const *,int)
+bool CValidator::BMemLeaks(void)
+int CWorkerThread::BoostPriority(void)
+int CVProfile::BudgetGroupNameToBudgetGroupID(char const *)
+int CVProfile::BudgetGroupNameToBudgetGroupID(char const *,int)
+int CWorkerThread::Call(unsigned int,unsigned int,bool,unsigned int (*)(unsigned int,void * const *,int,unsigned int))
+int CWorkerThread::CallMaster(unsigned int,unsigned int)
+int CWorkerThread::CallWorker(unsigned int,unsigned int,bool)
+bool CThreadEvent::Check(void)
+void CValidator::ClaimArrayMemory(void *)
+void CValidator::ClaimMemory(void *)
+void CVProfNode::ClearPrevTime(void)
+void CValidator::DiffAgainst(class CValidator *)
+void CVProfile::DisableVTuneGroup(void)
+void CVProfile::DumpNodes(class CVProfNode *,int,bool)
+void CVProfile::EnableVTuneGroup(char const *)
+void CVProfNode::EnterScope(void)
+void CVProfile::EnterScope(char const *,int,char const *,bool)
+void CVProfile::EnterScope(char const *,int,char const *,bool,int)
+bool CVProfNode::ExitScope(void)
+void CVProfile::ExitScope(void)
+void CValidator::Finalize(void)
+int CVProfile::FindBudgetGroupName(char const *)
+class CVProfNode * CVProfile::FindNode(class CVProfNode *,char const *)
+class CValObject * CValidator::FindObject(void *)
+int * CVProfile::FindOrCreateCounter(char const *,enum CounterGroup_t)
+void CVProfile::FreeNodes_R(class CVProfNode *)
+void * CThreadLocalBase::Get(void)
+void CVProfile::GetBudgetGroupColor(int,int &,int &,int &,int &)
+int CVProfile::GetBudgetGroupFlags(int)
+int CVProfNode::GetBudgetGroupID(void)
+char const * CVProfile::GetBudgetGroupName(int)
+void * CWorkerThread::GetCallHandle(void)
+unsigned int CWorkerThread::GetCallParam(void)
+class CVProfNode * CVProfNode::GetChild(void)
+int CVProfNode::GetClientData(void)
+enum CounterGroup_t CVProfile::GetCounterGroup(int)
+char const * CVProfile::GetCounterName(int)
+char const * CVProfile::GetCounterNameAndValue(int,int &)
+int CVProfile::GetCounterValue(int)
+int CVProfNode::GetCurCalls(void)
+double CVProfNode::GetCurTime(void)
+double CVProfNode::GetCurTimeLessChildren(void)
+class CThread * CThread::GetCurrentCThread(void)
+int CVProfile::GetDetailLevel(void)
+int CVProfNode::GetL2CacheMisses(void)
+char const * CThread::GetName(void)
+char const * CVProfNode::GetName(void)
+int CVProfile::GetNumBudgetGroups(void)
+int CVProfile::GetNumCounters(void)
+void const * CVProfNode::GetOrigNameAddress(void)
+class CVProfNode * CVProfNode::GetParent(void)
+double CVProfile::GetPeakFrameTime(void)
+double CVProfNode::GetPeakTime(void)
+int CVProfNode::GetPrevCalls(void)
+class CVProfNode * CVProfNode::GetPrevSibling(void)
+double CVProfNode::GetPrevTime(void)
+double CVProfNode::GetPrevTimeLessChildren(void)
+int CThread::GetPriority(void)
+int CThread::GetResult(void)
+class CVProfNode * CVProfile::GetRoot(void)
+class CVProfNode * CVProfNode::GetSibling(void)
+class CVProfNode * CVProfNode::GetSubNode(char const *,int,char const *)
+class CVProfNode * CVProfNode::GetSubNode(char const *,int,char const *,int)
+void * CThread::GetThreadHandle(void)
+unsigned int CThread::GetThreadId(void)
+unsigned int (*CThread::GetThreadProc(void))(void *)
+double CVProfile::GetTimeLastFrame(void)
+int CVProfNode::GetTotalCalls(void)
+double CVProfNode::GetTotalTime(void)
+double CVProfNode::GetTotalTimeLessChildren(void)
+double CVProfile::GetTotalTimeSampled(void)
+int CVProfNode::GetUniqueNodeID(void)
+void * CThreadSyncObject::Handle(void)
+bool CThread::Init(void)
+bool CThread::IsAlive(void)
+bool CVProfile::IsEnabled(void)
+bool CThread::Join(unsigned int)
+void CThreadFastMutex::Lock(unsigned int)
+void CThreadFastMutex::Lock(unsigned int)
+void CThreadFullMutex::Lock(unsigned int)
+void CThreadFullMutex::Lock(void)
+void CThreadMutex::Lock(void)
+void CThreadMutex::Lock(void)
+void CVProfNode::MarkFrame(void)
+void CVProfile::MarkFrame(void)
+int CVProfile::NumFramesSampled(void)
+void CThread::OnExit(void)
+void CVProfile::OutputReport(int,char const *,int)
+void CVProfile::PMEEnable(bool)
+void CVProfile::PMEInitialized(bool)
+class CValObject * CValidator::PValObjectFirst(void)
+void CVProfNode::Pause(void)
+void CVProfile::Pause(void)
+bool CWorkerThread::PeekCall(unsigned int *)
+void CValidator::Pop(void)
+void CVProfile::PopGroup(void)
+bool CThreadEvent::Pulse(void)
+void CValidator::Push(char const *,void *,char const *)
+void CVProfile::PushGroup(int)
+void CVProfile::RegisterNumBudgetGroupsChangedCallBack(void (*)(void))
+bool CThreadFullMutex::Release(void)
+bool CThreadSemaphore::Release(long,long *)
+void CValidator::RenderLeaks(void)
+void CValidator::RenderObjects(int)
+void CWorkerThread::Reply(unsigned int)
+bool CVProfile::RequiresThreadSafety(void)
+bool CThreadEvent::Reset(void)
+void CVProfNode::Reset(void)
+void CVProfile::Reset(void)
+void CVProfile::ResetCounters(enum CounterGroup_t)
+void CVProfNode::ResetPeak(void)
+void CVProfile::ResetPeaks(void)
+unsigned int CThread::Resume(void)
+void CVProfNode::Resume(void)
+void CVProfile::Resume(void)
+bool CThreadEvent::Set(void)
+void CThreadLocalBase::Set(void *)
+void CVProfNode::SetBudgetGroupID(int)
+void CVProfNode::SetClientData(int)
+void CVProfNode::SetCurFrameTime(unsigned long)
+void CThread::SetName(char const *)
+bool CThread::SetPriority(int)
+void CVProfile::SetThreadSafe(bool)
+void CThreadFastMutex::SetTrace(bool)
+void CThreadFullMutex::SetTrace(bool)
+void CThreadMutex::SetTrace(bool)
+void CVProfNode::SetUniqueNodeID(int)
+void CThread::Sleep(unsigned int)
+bool CThread::Start(unsigned int)
+void CVProfile::Start(void)
+void CThread::Stop(int)
+void CVProfile::Stop(void)
+void CVProfile::SumTimes(class CVProfNode *,int)
+void CVProfile::SumTimes(char const *,int)
+unsigned int CThread::Suspend(void)
+void CVProfile::Term(void)
+bool CThread::Terminate(int)
+unsigned int CThread::ThreadProc(void *)
+bool CThreadFastMutex::TryLock(void)
+bool CThreadFastMutex::TryLock(void)
+void CThreadFastMutex::Unlock(void)
+void CThreadFastMutex::Unlock(void)
+void CThreadFullMutex::Unlock(void)
+void CThreadMutex::Unlock(void)
+void CThreadMutex::Unlock(void)
+void CValidator::UnlockValidationLocks(void)
+bool CVProfile::UsePME(void)
+bool CVProfile::VTuneGroupEnabled(void)
+int CVProfile::VTuneGroupID(void)
+void CVProfNode::Validate(class CValidator &,char *)
+void CVProfile::Validate(class CValidator &,char *)
+void CValidator::Validate(class CValidator &,char *)
+void CTier0::ValidateGlobals(class CValidator &)
+bool CThreadEvent::Wait(unsigned int)
+bool CThreadSyncObject::Wait(unsigned int)
+bool CWorkerThread::WaitForCall(unsigned int,unsigned int *)
+bool CWorkerThread::WaitForCall(unsigned int *)
+bool CThread::WaitForCreateComplete(class CThreadEvent *)
+void CThread::Yield(void)
+bool `int CVProfile::GetBudgetGroupFlags(int)'::`16'::fDumped
+bool `char const * CVProfile::GetBudgetGroupName(int)'::`16'::fDumped
+bool `char const * CVProfNode::GetName(void)'::`16'::fDumped
+bool `void const * CVProfNode::GetOrigNameAddress(void)'::`16'::fDumped
+bool `class CVProfNode * CVProfNode::GetParent(void)'::`16'::fDumped
+bool `void CVProfile::PopGroup(void)'::`16'::fDumped
+bool `void CVProfile::PushGroup(int)'::`16'::fDumped
+bool `void CVProfile::PushGroup(int)'::`33'::fDumped
+bool volatile g_bInException
+int CVProfNode::s_iCurrentUniqueNodeID
+AssertValidStringPtr
+BGetMiniDumpLock
+CallAssertFailedNotifyFunc
+CallFlushLogFunc
+CatchAndWriteMiniDump
+CatchAndWriteMiniDumpForVoidPtrFn
+CrackSmokingCompiler
+CreateSimpleThread
+DLog
+DWarning
+DeclareCurrentThreadIsMainThread
+DoNewAssertDialog
+Error
+GetCPUInformation
+GetSpewOutputFunc
+InitPME
+
+Is64BitWindows
+IsInAssert
+IsLogActive
+IsSpewActive
+
+Log
+MemAllocScratch
+MemFreeScratch
+MiniDumpUnlock
+Msg
+
+Plat_Alloc
+Plat_FloatTime
+Plat_Free
+Plat_GetCommandLine
+Plat_GetCurrentThreadID
+Plat_IsInDebugSession
+Plat_MSTime
+Plat_PrimaryThreadID
+Plat_Realloc
+Plat_RegisterPrimaryThread
+Plat_RegisterThread
+Plat_SetThreadName
+Plat_SimpleLog
+
+SetAssertFailedNotifyFunc
+SetFlushLogFunc
+SetInAssert
+SetMiniDumpFunction
+ShouldUseNewAssertDialog
+ShutdownPME
+SpewActivate
+SpewAndLogActivate
+SpewAndLogChangeIfStillDefault
+SpewChangeIfStillDefault
+SpewOutputFunc
+
+TestThread_Yield
+Test_HasFailed
+Test_HasFinished
+Test_IsActive
+Test_RunFrame
+Test_RunTest
+Test_SetFailed
+Test_TerminateThread
+
+ThreadGetCurrentId
+ThreadGetCurrentProcessId
+ThreadGetPriority
+ThreadInMainThread
+ThreadInterlockedCompareExchange
+ThreadInterlockedCompareExchangePointer
+ThreadInterlockedDecrement
+ThreadInterlockedExchange
+ThreadInterlockedExchangeAdd
+ThreadInterlockedExchangePointer
+ThreadInterlockedIncrement
+ThreadIsProcessActive
+ThreadSleep
+
+ValidateSpew
+WaitForMultipleEvents
+Warning
+WriteMiniDump
+
+_AssertValidReadPtr
+_AssertValidReadWritePtr
+_AssertValidWritePtr
+
+_DMsg
+_DSpewMessage
+
+_ExitOnFatalAssert
+
+_SpewInfo
+_SpewMessage
+_SpewMessageType
+
+g_ClockSpeed
+g_ClockSpeedMicrosecondsMultiplier
+g_ClockSpeedMillisecondsMultiplier
+g_ClockSpeedSecondsMultiplier
+g_VProfCurrentProfile
+g_cBadCycleCountReceived
+g_dwClockSpeed
+g_pMemAlloc
+g_pVCR
+g_ulLastCycleSample
+
+vtune
