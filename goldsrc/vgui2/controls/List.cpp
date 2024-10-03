@@ -27,7 +27,7 @@ void menulist_s::Menulist_DoEnter()
 {
 	int start;
 
-	start = this->generic.y / 10 + 1;
+	start = this->y / 10 + 1;
 
 	this->curvalue = this->parent->cursor - start;
 
@@ -81,21 +81,21 @@ void menulist_s::SpinControl_Draw()
 {
 	char buffer[100];
 
-	if ( this->generic.name )
+	if ( this->name )
 	{
-		Menu_DrawStringR2LDark( this->generic.x + this->generic.parent->x + LCOLUMN_OFFSET, 
-							this->generic.y + this->generic.parent->y, 
-							this->generic.name );
+		Menu_DrawStringR2LDark( this->x + this->parent->x + LCOLUMN_OFFSET, 
+							this->y + this->parent->y, 
+							this->name );
 	};
 	
 	if ( !strchr( this->itemnames[this->curvalue], '\n' ) )
-		Menu_DrawString( RCOLUMN_OFFSET + this->generic.x + this->generic.parent->x, this->generic.y + this->generic.parent->y, this->itemnames[this->curvalue] );
+		Menu_DrawString( RCOLUMN_OFFSET + this->x + this->parent->x, this->y + this->parent->y, this->itemnames[this->curvalue] );
 	else
 	{
 		strcpy( buffer, this->itemnames[this->curvalue] );
 		*strchr( buffer, '\n' ) = 0;
-		Menu_DrawString( RCOLUMN_OFFSET + this->generic.x + this->generic.parent->x, this->generic.y + this->generic.parent->y, buffer );
+		Menu_DrawString( RCOLUMN_OFFSET + this->x + this->parent->x, this->y + this->parent->y, buffer );
 		strcpy( buffer, strchr( this->itemnames[this->curvalue], '\n' ) + 1 );
-		Menu_DrawString( RCOLUMN_OFFSET + this->generic.x + this->generic.parent->x, this->generic.y + this->generic.parent->y + 10, buffer );
+		Menu_DrawString( RCOLUMN_OFFSET + this->x + this->parent->x, this->y + this->parent->y + 10, buffer );
 	};
 };

@@ -23,65 +23,65 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "vgui_controls/TextField.hpp"
 
-bool menufield_s::Field_DoEnter( menufield_s *f )
+bool Field::DoEnter()
 {
-	if ( f->generic.callback )
+	if ( this->callback )
 	{
-		f->generic.callback( f );
+		this->callback( this );
 		return true;
 	};
 	return false;
 };
 
-void menufield_s::Field_Draw( menufield_s *f )
+void Field::Draw()
 {
 	int i;
-	char tempbuffer[128]="";
+	char tempbuffer[128] = "";
 
-	if ( f->generic.name )
-		Menu_DrawStringR2LDark( f->generic.x + f->generic.parent->x + LCOLUMN_OFFSET, f->generic.y + f->generic.parent->y, f->generic.name );
+	if ( this->name )
+		Menu_DrawStringR2LDark( this->x + this->parent->x + LCOLUMN_OFFSET, this->y + this->parent->y, this->name );
 
-	strncpy( tempbuffer, f->buffer + f->visible_offset, f->visible_length );
+	strncpy( tempbuffer, this->buffer + this->visible_offset, this->visible_length );
 
-	Draw_Char( f->generic.x + f->generic.parent->x + 16, f->generic.y + f->generic.parent->y - 4, 18 );
-	Draw_Char( f->generic.x + f->generic.parent->x + 16, f->generic.y + f->generic.parent->y + 4, 24 );
+	Draw_Char( this->x + this->parent->x + 16, this->y + this->parent->y - 4, 18 );
+	Draw_Char( this->x + this->parent->x + 16, this->y + this->parent->y + 4, 24 );
 
-	Draw_Char( f->generic.x + f->generic.parent->x + 24 + f->visible_length * 8, f->generic.y + f->generic.parent->y - 4, 20 );
-	Draw_Char( f->generic.x + f->generic.parent->x + 24 + f->visible_length * 8, f->generic.y + f->generic.parent->y + 4, 26 );
+	Draw_Char( this->x + this->parent->x + 24 + this->visible_length * 8, this->y + this->parent->y - 4, 20 );
+	Draw_Char( this->x + this->parent->x + 24 + this->visible_length * 8, this->y + this->parent->y + 4, 26 );
 
-	for ( i = 0; i < f->visible_length; i++ )
+	for ( i = 0; i < this->visible_length; i++ )
 	{
-		Draw_Char( f->generic.x + f->generic.parent->x + 24 + i * 8, f->generic.y + f->generic.parent->y - 4, 19 );
-		Draw_Char( f->generic.x + f->generic.parent->x + 24 + i * 8, f->generic.y + f->generic.parent->y + 4, 25 );
+		Draw_Char( this->x + this->parent->x + 24 + i * 8, this->y + this->parent->y - 4, 19 );
+		Draw_Char( this->x + this->parent->x + 24 + i * 8, this->y + this->parent->y + 4, 25 );
 	};
 
-	Menu_DrawString( f->generic.x + f->generic.parent->x + 24, f->generic.y + f->generic.parent->y, tempbuffer );
+	Menu_DrawString( this->x + this->parent->x + 24, this->y + this->parent->y, tempbuffer );
 
-	if ( Menu_ItemAtCursor( f->generic.parent ) == f )
+	if ( Menu_ItemAtCursor( this->parent ) == this )
 	{
 		int offset;
 
-		if ( f->visible_offset )
-			offset = f->visible_length;
+		if ( this->visible_offset )
+			offset = this->visible_length;
 		else
-			offset = f->cursor;
+			offset = this->cursor;
 
 		if ( ( ( int ) ( Sys_Milliseconds() / 250 ) ) & 1 )
 		{
-			Draw_Char( f->generic.x + f->generic.parent->x + ( offset + 2 ) * 8 + 8,
-					   f->generic.y + f->generic.parent->y,
+			Draw_Char( this->x + this->parent->x + ( offset + 2 ) * 8 + 8,
+					   this->y + this->parent->y,
 					   11 );
 		}
 		else
 		{
-			Draw_Char( f->generic.x + f->generic.parent->x + ( offset + 2 ) * 8 + 8,
-					   f->generic.y + f->generic.parent->y,
+			Draw_Char( this->x + this->parent->x + ( offset + 2 ) * 8 + 8,
+					   this->y + this->parent->y,
 					   ' ' );
 		};
 	};
 };
 
-bool menufield_s::Field_Key( menufield_s *f, int key )
+bool Field::HandleKey(int key)
 {
 	extern int keydown[];
 
@@ -153,11 +153,11 @@ bool menufield_s::Field_Key( menufield_s *f, int key )
 		{
 			strtok( cbd, "\n\r\b" );
 
-			strncpy( f->buffer, cbd, f->length - 1 );
-			f->cursor = strlen( f->buffer );
-			f->visible_offset = f->cursor - f->visible_length;
-			if ( f->visible_offset < 0 )
-				f->visible_offset = 0;
+			strncpy( this->buffer, cbd, this->length - 1 );
+			this->cursor = strlen( this->buffer );
+			this->visible_offset = this->cursor - this->visible_length;
+			if ( this->visible_offset < 0 )
+				this->visible_offset = 0;
 
 			free( cbd );
 		};
@@ -169,21 +169,21 @@ bool menufield_s::Field_Key( menufield_s *f, int key )
 	case K_KP_LEFTARROW:
 	case K_LEFTARROW:
 	case K_BACKSPACE:
-		if ( f->cursor > 0 )
+		if ( this->cursor > 0 )
 		{
-			memmove( &f->buffer[f->cursor-1], &f->buffer[f->cursor], strlen( &f->buffer[f->cursor] ) + 1 );
-			f->cursor--;
+			memmove( &this->buffer[this->cursor-1], &this->buffer[this->cursor], strlen( &this->buffer[this->cursor] ) + 1 );
+			this->cursor--;
 
-			if ( f->visible_offset )
+			if ( this->visible_offset )
 			{
-				f->visible_offset--;
+				this->visible_offset--;
 			};
 		};
 		break;
 
 	case K_KP_DEL:
 	case K_DEL:
-		memmove( &f->buffer[f->cursor], &f->buffer[f->cursor+1], strlen( &f->buffer[f->cursor+1] ) + 1 );
+		memmove( &this->buffer[this->cursor], &this->buffer[this->cursor+1], strlen( &this->buffer[this->cursor+1] ) + 1 );
 		break;
 
 	case K_KP_ENTER:
@@ -194,17 +194,17 @@ bool menufield_s::Field_Key( menufield_s *f, int key )
 
 	case K_SPACE:
 	default:
-		if ( !isdigit( key ) && ( f->generic.flags & QMF_NUMBERSONLY ) )
+		if ( !isdigit( key ) && ( this->generic.flags & QMF_NUMBERSONLY ) )
 			return false;
 
-		if ( f->cursor < f->length )
+		if ( this->cursor < this->length )
 		{
-			f->buffer[f->cursor++] = key;
-			f->buffer[f->cursor] = 0;
+			this->buffer[this->cursor++] = key;
+			this->buffer[this->cursor] = 0;
 
-			if ( f->cursor > f->visible_length )
+			if ( this->cursor > this->visible_length )
 			{
-				f->visible_offset++;
+				this->visible_offset++;
 			};
 		};
 	};

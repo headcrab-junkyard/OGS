@@ -35,9 +35,9 @@ void CSlider::Draw()
 {
 	int	i;
 
-	Menu_DrawStringR2LDark( this->generic.x + this->generic.parent->x + LCOLUMN_OFFSET,
-		                this->generic.y + this->generic.parent->y, 
-						this->generic.name );
+	Menu_DrawStringR2LDark( this->x + this->parent->x + LCOLUMN_OFFSET,
+		                this->y + this->parent->y, 
+						this->name );
 
 	this->range = ( this->curvalue - this->minvalue ) / ( float ) ( this->maxvalue - this->minvalue );
 
@@ -45,11 +45,11 @@ void CSlider::Draw()
 		this->range = 0;
 	if ( this->range > 1)
 		this->range = 1;
-	Draw_Char( this->generic.x + this->generic.parent->x + RCOLUMN_OFFSET, this->generic.y + this->generic.parent->y, 128);
+	Draw_Char( this->x + this->parent->x + RCOLUMN_OFFSET, this->y + this->parent->y, 128);
 	for ( i = 0; i < SLIDER_RANGE; i++ )
-		Draw_Char( RCOLUMN_OFFSET + this->generic.x + i*8 + this->generic.parent->x + 8, this->generic.y + this->generic.parent->y, 129);
-	Draw_Char( RCOLUMN_OFFSET + this->generic.x + i*8 + this->generic.parent->x + 8, this->generic.y + this->generic.parent->y, 130);
-	Draw_Char( ( int ) ( 8 + RCOLUMN_OFFSET + this->generic.parent->x + this->generic.x + (SLIDER_RANGE-1)*8 * this->range ), this->generic.y + this->generic.parent->y, 131);
+		Draw_Char( RCOLUMN_OFFSET + this->x + i*8 + this->parent->x + 8, this->y + this->parent->y, 129);
+	Draw_Char( RCOLUMN_OFFSET + this->x + i*8 + this->parent->x + 8, this->y + this->parent->y, 130);
+	Draw_Char( ( int ) ( 8 + RCOLUMN_OFFSET + this->parent->x + this->x + (SLIDER_RANGE-1)*8 * this->range ), this->y + this->parent->y, 131);
 };
 
 void CSlider::DoSlide( int dir )

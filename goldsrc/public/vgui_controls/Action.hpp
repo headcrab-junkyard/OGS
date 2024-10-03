@@ -22,3 +22,17 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 /// @file
 
 #pragma once
+
+#include "vgui_controls/Widget.hpp"
+
+//menuaction_s
+class CAction : public menucommon_s
+{
+public:
+	CAction();
+	~CAction();
+	
+	void DoEnter();
+	
+	void Draw() override;
+};
